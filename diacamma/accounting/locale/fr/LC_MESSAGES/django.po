@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-06-24 14:41+0000\n"
+"POT-Creation-Date: 2015-06-25 16:55+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -20,4 +20,104 @@ msgstr ""
 
 #: __init__.py:39
 msgid "Diacamma accounting"
+msgstr ""
+
+#: models.py:36
+msgid "contact"
+msgstr ""
+
+#: models.py:37
+msgid "Enabled"
+msgstr ""
+
+#: models.py:37
+msgid "Disabled"
+msgstr ""
+
+#: models.py:49
+msgid "001@Account information"
+msgstr ""
+
+#: models.py:71
+msgid "Show"
+msgstr ""
+
+#: models.py:78 models.py:82
+msgid "third"
+msgstr ""
+
+#: models.py:79
+msgid "thirds"
+msgstr ""
+
+#: models.py:83
+msgid "code"
+msgstr ""
+
+#: models.py:94
+msgid "account"
+msgstr ""
+
+#: models.py:95
+msgid "accounts"
+msgstr ""
+
+#: views.py:42
+msgid "Financial"
+msgstr ""
+
+#: views.py:42
+msgid "Financial tools"
+msgstr ""
+
+#: views.py:45
+msgid "Management of third account"
+msgstr ""
+
+#: views.py:50
+msgid "Thirds"
+msgstr ""
+
+#: views.py:51
+msgid "Search"
+msgstr ""
+
+#: views.py:51
+msgid "Listing"
+msgstr ""
+
+#: views.py:59
+msgid "Search third"
+msgstr ""
+
+#: views.py:82
+msgid "Add third"
+msgstr ""
+
+#: views.py:91
+msgid "Modify third"
+msgstr ""
+
+#: views.py:99
+msgid "Show third"
+msgstr ""
+
+#: views.py:107
+msgid "Delete third"
+msgstr ""
+
+#: views.py:115
+msgid "Listing third"
+msgstr ""
+
+#: views.py:123
+msgid "Add account"
+msgstr ""
+
+#: views.py:124
+msgid "Modify account"
+msgstr ""
+
+#: views.py:132
+msgid "Delete account"
 msgstr ""
