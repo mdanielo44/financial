@@ -23,3 +23,110 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
 from __future__ import unicode_literals
+
+from django.utils.translation import ugettext_lazy as _
+
+from diacamma.accounting.models import Third, Account
+
+from lucterios.framework.xferadvance import XferListEditor
+from lucterios.framework.xferadvance import XferAddEditor
+from lucterios.framework.xferadvance import XferShowEditor
+from lucterios.framework.xferadvance import XferDelete
+from lucterios.framework.xfersearch import XferSearchEditor
+from lucterios.CORE.xferprint import XferPrintListing
+from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage
+from lucterios.contacts.tools import ContactSelection
+from lucterios.framework.xfergraphic import XferContainerAcknowledge
+from lucterios.contacts.models import AbstractContact
+
+MenuManage.add_sub("financial", None, "diacamma.accounting/images/financial.png", _("Financial"), _("Financial tools"), 50)
+
+@ActionsManage.affect('Third', 'list')
+@MenuManage.describ('accounting.change_third', FORMTYPE_NOMODAL, 'financial', _('Management of third account'))
+class ThirdList(XferListEditor):
+    icon = "thirds.png"
+    model = Third
+    field_id = 'third'
+    caption = _("Thirds")
+    action_list = [('search', _("Search"), "diacamma.accounting/images/thirds.png"), ('listing', _("Listing"), "images/print.png")]
+
+@ActionsManage.affect('Third', 'search')
+@MenuManage.describ('accounting.change_third')
+class ThirdSearch(XferSearchEditor):
+    icon = "thirds.png"
+    model = Third
+    field_id = 'third'
+    caption = _("Search third")
+
+@MenuManage.describ('accounting.add_third')
+class ThirdSave(XferContainerAcknowledge):
+    icon = "thirds.png"
+    model = Third
+    field_id = 'third'
+
+    def fillresponse(self, pkname=''):
+        contact_id = self.getparam(pkname)
+        last_thirds = Third.objects.filter(contact__pk=contact_id) # pylint: disable=no-member
+        if len(last_thirds) > 0:
+            self.item = last_thirds[0]
+        else:
+            self.item.contact = AbstractContact.objects.get(id=contact_id) # pylint: disable=no-member
+            self.item.status = 0
+            self.item.save()
+        self.redirect_action(ThirdShow.get_action(), {'params':{self.field_id:self.item.id}})
+
+@ActionsManage.affect('Third', 'add')
+@MenuManage.describ('accounting.add_third')
+class ThirdAdd(ContactSelection):
+    icon = "thirds.png"
+    caption = _("Add third")
+    select_class = ThirdSave
+
+@ActionsManage.affect('Third', 'modify')
+@MenuManage.describ('accounting.add_third')
+class ThirdModify(XferAddEditor):
+    icon = "thirds.png"
+    model = Third
+    field_id = 'third'
+    caption_modify = _("Modify third")
+
+@ActionsManage.affect('Third', 'show')
+@MenuManage.describ('accounting.change_third')
+class ThirdShow(XferShowEditor):
+    icon = "thirds.png"
+    model = Third
+    field_id = 'third'
+    caption = _("Show third")
+
+@ActionsManage.affect('Third', 'del')
+@MenuManage.describ('accounting.delete_third')
+class ThirdDel(XferDelete):
+    icon = "thirds.png"
+    model = Third
+    field_id = 'third'
+    caption = _("Delete third")
+
+@ActionsManage.affect('Third', 'listing')
+@MenuManage.describ('accounting.change_third')
+class ThirdListing(XferPrintListing):
+    icon = "thirds.png"
+    model = Third
+    field_id = 'third'
+    caption = _("Listing third")
+
+@ActionsManage.affect('Account', 'modify', 'add')
+@MenuManage.describ('accounting.add_third')
+class AccountAddModify(XferAddEditor):
+    icon = "account.png"
+    model = Account
+    field_id = 'account'
+    caption_add = _("Add account")
+    caption_modify = _("Modify account")
+
+@ActionsManage.affect('Account', 'del')
+@MenuManage.describ('accounting.delete_third')
+class AccountDel(XferDelete):
+    icon = "account.png"
+    model = Account
+    field_id = 'account'
+    caption = _("Delete account")
