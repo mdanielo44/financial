@@ -24,7 +24,7 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 
 
 from setuptools import setup
-from lucterios.contacts import __version__
+from diacamma.accounting import __version__
 
 setup(
     name="diacamma-accounting",

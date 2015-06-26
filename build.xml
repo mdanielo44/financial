@@ -145,6 +145,7 @@
 		</exec>		
 		<move file="coverage.xml" tofile="${testversion}.xml"/>
 		<replaceregexp file="${testversion}.xml" match='name="\..*\.workspace\.lct-core\.lucterios' replace='name="lucterios' byline="true" />
+		<replaceregexp file="${testversion}.xml" match='name="\..*\.workspace\.lct-contacts\.lucterios' replace='name="lucterios' byline="true" />
 		<replace file="${testversion}.xml" token='filename="diacamma' value='filename="${basedir}/diacamma' />
 		<replaceregexp file="${testversion}.xml" match="&lt;source&gt;.*&lt;/source&gt;" replace="&lt;source&gt;/&lt;/source&gt;" byline="true" />
 	</target>
