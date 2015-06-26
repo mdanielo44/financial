@@ -2,7 +2,7 @@
 	<property name="test.instance" value="test"/>
 	<property environment="env"/>
 	<property name="standard.path" value="${basedir}/../lct-standard"/>
-	<property name="contact.path" value="${basedir}/../lct-contact"/>
+	<property name="contact.path" value="${basedir}/../lct-contacts"/>
 	<property name="core.path" value="${basedir}/../lct-core"/>
 	
 	<available file="/usr/local/bin/coverage2" property="python2.present"/>
@@ -127,7 +127,7 @@
 			<arg value="erase"/> 
 		</exec>	
 		<exec executable="${testversion}">
-			<env key="PYTHONPATH" value="${core.path}:${standard.path}:${env.PYTHONPATH}"/>
+			<env key="PYTHONPATH" value="${core.path}:${contact.path}:${standard.path}:${env.PYTHONPATH}"/>
 			<arg value="run"/>
 			<arg value="--branch"/>
 			<arg value="--source=diacamma,${core.path}/lucterios,${contact.path}/lucterios"/>
