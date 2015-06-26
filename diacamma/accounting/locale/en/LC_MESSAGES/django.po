@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-06-25 16:55+0000\n"
+"POT-Creation-Date: 2015-06-26 12:35+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,104 +19,104 @@ msgstr ""
 
 #: __init__.py:39
 msgid "Diacamma accounting"
-msgstr ""
+msgstr "Diacamma accounting"
 
 #: models.py:36
 msgid "contact"
-msgstr ""
+msgstr "contact"
 
 #: models.py:37
 msgid "Enabled"
-msgstr ""
+msgstr "Enabled"
 
 #: models.py:37
 msgid "Disabled"
-msgstr ""
+msgstr "Disabled"
 
 #: models.py:49
 msgid "001@Account information"
-msgstr ""
+msgstr "001@Account information"
 
 #: models.py:71
 msgid "Show"
-msgstr ""
+msgstr "Show"
 
 #: models.py:78 models.py:82
 msgid "third"
-msgstr ""
+msgstr "third"
 
 #: models.py:79
 msgid "thirds"
-msgstr ""
+msgstr "thirds"
 
 #: models.py:83
 msgid "code"
-msgstr ""
+msgstr "code"
 
 #: models.py:94
 msgid "account"
-msgstr ""
+msgstr "account"
 
 #: models.py:95
 msgid "accounts"
-msgstr ""
+msgstr "accounts"
 
-#: views.py:42
+#: views.py:39
 msgid "Financial"
-msgstr ""
+msgstr "Financial"
+
+#: views.py:39
+msgid "Financial tools"
+msgstr "Financial tools"
 
 #: views.py:42
-msgid "Financial tools"
-msgstr ""
-
-#: views.py:45
 msgid "Management of third account"
-msgstr ""
+msgstr "Management of third account"
 
-#: views.py:50
+#: views.py:47
 msgid "Thirds"
-msgstr ""
+msgstr "Thirds"
 
-#: views.py:51
+#: views.py:48
 msgid "Search"
-msgstr ""
+msgstr "Search"
 
-#: views.py:51
+#: views.py:48
 msgid "Listing"
-msgstr ""
+msgstr "Listing"
 
-#: views.py:59
+#: views.py:56
 msgid "Search third"
-msgstr ""
+msgstr "Search third"
 
-#: views.py:82
+#: views.py:79
 msgid "Add third"
-msgstr ""
+msgstr "Add third"
 
 #: views.py:91
 msgid "Modify third"
-msgstr ""
+msgstr "Modify third"
 
 #: views.py:99
 msgid "Show third"
-msgstr ""
+msgstr "Show third"
 
 #: views.py:107
 msgid "Delete third"
-msgstr ""
+msgstr "Delete third"
 
 #: views.py:115
 msgid "Listing third"
-msgstr ""
+msgstr "Listing third"
 
 #: views.py:123
 msgid "Add account"
-msgstr ""
+msgstr "Add account"
 
 #: views.py:124
 msgid "Modify account"
-msgstr ""
+msgstr "Modify account"
 
 #: views.py:132
 msgid "Delete account"
-msgstr ""
+msgstr "Delete account"

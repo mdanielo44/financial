@@ -28,7 +28,7 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
 from lucterios.framework.models import LucteriosModel
-from lucterios.contacts.models import AbstractContact
+from lucterios.contacts.models import AbstractContact # pylint: disable=no-name-in-module,import-error
 from lucterios.framework.tools import ActionsManage
 from django.utils import six
 

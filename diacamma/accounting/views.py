@@ -28,16 +28,13 @@ from django.utils.translation import ugettext_lazy as _
 
 from diacamma.accounting.models import Third, Account
 
-from lucterios.framework.xferadvance import XferListEditor
-from lucterios.framework.xferadvance import XferAddEditor
-from lucterios.framework.xferadvance import XferShowEditor
-from lucterios.framework.xferadvance import XferDelete
+from lucterios.framework.xferadvance import XferListEditor, XferAddEditor, XferShowEditor, XferDelete
 from lucterios.framework.xfersearch import XferSearchEditor
-from lucterios.CORE.xferprint import XferPrintListing
 from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage
-from lucterios.contacts.tools import ContactSelection
 from lucterios.framework.xfergraphic import XferContainerAcknowledge
-from lucterios.contacts.models import AbstractContact
+from lucterios.CORE.xferprint import XferPrintListing
+from lucterios.contacts.tools import ContactSelection  # pylint: disable=no-name-in-module,import-error
+from lucterios.contacts.models import AbstractContact  # pylint: disable=no-name-in-module,import-error
 
 MenuManage.add_sub("financial", None, "diacamma.accounting/images/financial.png", _("Financial"), _("Financial tools"), 50)
 
@@ -66,11 +63,11 @@ class ThirdSave(XferContainerAcknowledge):
 
     def fillresponse(self, pkname=''):
         contact_id = self.getparam(pkname)
-        last_thirds = Third.objects.filter(contact__pk=contact_id) # pylint: disable=no-member
+        last_thirds = Third.objects.filter(contact__pk=contact_id)  # pylint: disable=no-member
         if len(last_thirds) > 0:
             self.item = last_thirds[0]
         else:
-            self.item.contact = AbstractContact.objects.get(id=contact_id) # pylint: disable=no-member
+            self.item.contact = AbstractContact.objects.get(id=contact_id)  # pylint: disable=no-member
             self.item.status = 0
             self.item.save()
         self.redirect_action(ThirdShow.get_action(), {'params':{self.field_id:self.item.id}})
@@ -81,6 +78,9 @@ class ThirdAdd(ContactSelection):
     icon = "thirds.png"
     caption = _("Add third")
     select_class = ThirdSave
+
+    def __init__(self):
+        ContactSelection.__init__(self)
 
 @ActionsManage.affect('Third', 'modify')
 @MenuManage.describ('accounting.add_third')
