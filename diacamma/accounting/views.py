@@ -35,6 +35,8 @@ from lucterios.framework.xfergraphic import XferContainerAcknowledge
 from lucterios.CORE.xferprint import XferPrintListing
 from lucterios.contacts.tools import ContactSelection  # pylint: disable=no-name-in-module,import-error
 from lucterios.contacts.models import AbstractContact  # pylint: disable=no-name-in-module,import-error
+from lucterios.framework import signal_and_lock
+from lucterios.framework.xfercomponents import XferCompLabelForm
 
 MenuManage.add_sub("financial", None, "diacamma.accounting/images/financial.png", _("Financial"), _("Financial tools"), 50)
 
@@ -130,3 +132,15 @@ class AccountDel(XferDelete):
     model = Account
     field_id = 'account'
     caption = _("Delete account")
+
+@signal_and_lock.Signal.decorate('summary')
+def summary_accounting(xfer):
+    row = xfer.get_max_row() + 1
+    lab = XferCompLabelForm('accountingtitle')
+    lab.set_value_as_infocenter(_("Financial"))
+    lab.set_location(0, row, 4)
+    xfer.add_component(lab)
+    lab = XferCompLabelForm('accountingend')
+    lab.set_value_center('{[hr/]}')
+    lab.set_location(0, row + 3, 4)
+    xfer.add_component(lab)

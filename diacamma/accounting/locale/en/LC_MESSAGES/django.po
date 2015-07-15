@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-06-26 14:10+0000\n"
+"POT-Creation-Date: 2015-07-15 16:22+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -61,62 +61,62 @@ msgstr "account"
 msgid "accounts"
 msgstr "accounts"
 
-#: views.py:39
+#: views.py:41 views.py:140
 msgid "Financial"
 msgstr "Financial"
 
-#: views.py:39
+#: views.py:41
 msgid "Financial tools"
 msgstr "Financial tools"
 
-#: views.py:42
+#: views.py:44
 msgid "Management of third account"
 msgstr "Management of third account"
 
-#: views.py:47
+#: views.py:49
 msgid "Thirds"
 msgstr "Thirds"
 
-#: views.py:48
+#: views.py:50
 msgid "Search"
 msgstr "Search"
 
-#: views.py:48
+#: views.py:50
 msgid "Listing"
 msgstr "Listing"
 
-#: views.py:56
+#: views.py:58
 msgid "Search third"
 msgstr "Search third"
 
-#: views.py:79
+#: views.py:81
 msgid "Add third"
 msgstr "Add third"
 
-#: views.py:91
+#: views.py:93
 msgid "Modify third"
 msgstr "Modify third"
 
-#: views.py:99
+#: views.py:101
 msgid "Show third"
 msgstr "Show third"
 
-#: views.py:107
+#: views.py:109
 msgid "Delete third"
 msgstr "Delete third"
 
-#: views.py:115
+#: views.py:117
 msgid "Listing third"
 msgstr "Listing third"
 
-#: views.py:123
+#: views.py:125
 msgid "Add account"
 msgstr "Add account"
 
-#: views.py:124
+#: views.py:126
 msgid "Modify account"
 msgstr "Modify account"
 
-#: views.py:132
+#: views.py:134
 msgid "Delete account"
 msgstr "Delete account"

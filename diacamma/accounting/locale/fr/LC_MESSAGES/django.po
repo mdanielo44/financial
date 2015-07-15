@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-06-26 14:10+0000\n"
+"POT-Creation-Date: 2015-07-15 16:22+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -62,62 +62,62 @@ msgstr "compte"
 msgid "accounts"
 msgstr "comptes"
 
-#: views.py:39
+#: views.py:41 views.py:140
 msgid "Financial"
 msgstr "Financier"
 
-#: views.py:39
+#: views.py:41
 msgid "Financial tools"
 msgstr "Outils financiers"
 
-#: views.py:42
+#: views.py:44
 msgid "Management of third account"
 msgstr "Gestion des tiers comptables"
 
-#: views.py:47
+#: views.py:49
 msgid "Thirds"
 msgstr "Tiers"
 
-#: views.py:48
+#: views.py:50
 msgid "Search"
 msgstr "Recherche"
 
-#: views.py:48
+#: views.py:50
 msgid "Listing"
 msgstr "Listing"
 
-#: views.py:56
+#: views.py:58
 msgid "Search third"
 msgstr "Recherche de tiers"
 
-#: views.py:79
+#: views.py:81
 msgid "Add third"
 msgstr "Ajout d'un tiers"
 
-#: views.py:91
+#: views.py:93
 msgid "Modify third"
 msgstr "Modifier un tiers"
 
-#: views.py:99
+#: views.py:101
 msgid "Show third"
 msgstr "Voir un tiers"
 
-#: views.py:107
+#: views.py:109
 msgid "Delete third"
 msgstr "Supprimer un tiers"
 
-#: views.py:115
+#: views.py:117
 msgid "Listing third"
 msgstr "Liste de tiers"
 
-#: views.py:123
+#: views.py:125
 msgid "Add account"
 msgstr "Ajouter un compte"
 
-#: views.py:124
+#: views.py:126
 msgid "Modify account"
 msgstr "Modifier un compte"
 
-#: views.py:132
+#: views.py:134
 msgid "Delete account"
 msgstr "Supprimer un compte"
