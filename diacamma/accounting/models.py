@@ -27,14 +27,16 @@ from __future__ import unicode_literals
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
-from lucterios.framework.models import LucteriosModel
-from lucterios.contacts.models import AbstractContact # pylint: disable=no-name-in-module,import-error
+from lucterios.framework.models import LucteriosModel, get_value_converted, \
+    get_value_if_choices
+from lucterios.contacts.models import AbstractContact  # pylint: disable=no-name-in-module,import-error
 from lucterios.framework.tools import ActionsManage
 from django.utils import six
+from datetime import date
 
 class Third(LucteriosModel):
     contact = models.ForeignKey('contacts.AbstractContact', verbose_name=_('contact'), null=False)
-    status = models.IntegerField(choices=((0, _('Enabled')), (1, _('Disabled'))))
+    status = models.IntegerField(verbose_name=_('status'), choices=((0, _('Enable')), (1, _('Disable'))))
 
     @classmethod
     def get_default_fields(cls):
@@ -63,7 +65,7 @@ class Third(LucteriosModel):
         from lucterios.framework.tools import FORMTYPE_MODAL, CLOSE_NO
         xfer.tab = 0
         old_item = xfer.item
-        xfer.item = self.contact.get_final_child() # pylint: disable=no-member
+        xfer.item = self.contact.get_final_child()  # pylint: disable=no-member
         xfer.filltab_from_model(1, 1, True, ['address', ('postal_code', 'city'), 'country', ('tel1', 'tel2')])
         btn = XferCompButton('show')
         btn.set_location(2, 5, 3, 1)
@@ -95,5 +97,39 @@ class Account(LucteriosModel):
         verbose_name_plural = _('accounts')
         default_permissions = []
 
-# class FiscalYear(LucteriosModel):
-#    pass
+class FiscalYear(LucteriosModel):
+    begin = models.DateField(verbose_name=_('begin'), default=date.today())
+    end = models.DateField(verbose_name=_('end'), default=date(date.today().year + 1, date.today().month, date.today().day - 1))
+    status = models.IntegerField(verbose_name=_('status'), choices=((0, _('building')), (1, _('running')), (2, _('finished'))), default=0)
+    is_actif = models.BooleanField(verbose_name=_('actif'), default=False)
+    last_fiscalyear = models.ForeignKey('FiscalYear', verbose_name=_('last fiscal year'), null=True, on_delete=models.CASCADE)
+
+    def can_delete(self):
+        if self.status == 2:
+            return _('Fiscal year finished!')
+        else:
+            return ''
+
+    @classmethod
+    def get_default_fields(cls):
+        return ['begin', 'end', 'status', 'is_actif']
+
+    @classmethod
+    def get_edit_fields(cls):
+        return ['status', 'begin', 'end']
+
+    def edit(self, xfer):
+        xfer.change_to_readonly('status')
+        if self.status != 0:
+            xfer.change_to_readonly('begin')
+        if self.status == 2:
+            xfer.change_to_readonly('end')
+
+    def __str__(self):
+        status = get_value_if_choices(self.status, self._meta.get_field_by_name('status'))  # pylint: disable=protected-access,no-member
+        return _("Fiscal year from %(begin)s to %(end)s [%(status)s]") % {'begin':get_value_converted(self.begin), 'end':get_value_converted(self.end), 'status':status}
+
+    class Meta(object):
+        # pylint: disable=no-init
+        verbose_name = _('fiscal year')
+        verbose_name_plural = _('fiscal years')

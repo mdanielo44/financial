@@ -25,18 +25,20 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import unicode_literals
 
 from django.utils.translation import ugettext_lazy as _
+from django.db.models import Q
 
 from diacamma.accounting.models import Third, Account
 
 from lucterios.framework.xferadvance import XferListEditor, XferAddEditor, XferShowEditor, XferDelete
 from lucterios.framework.xfersearch import XferSearchEditor
-from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage
+from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage, \
+    FORMTYPE_REFRESH, CLOSE_NO
 from lucterios.framework.xfergraphic import XferContainerAcknowledge
 from lucterios.CORE.xferprint import XferPrintListing
 from lucterios.contacts.tools import ContactSelection  # pylint: disable=no-name-in-module,import-error
 from lucterios.contacts.models import AbstractContact  # pylint: disable=no-name-in-module,import-error
 from lucterios.framework import signal_and_lock
-from lucterios.framework.xfercomponents import XferCompLabelForm
+from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompEdit
 
 MenuManage.add_sub("financial", None, "diacamma.accounting/images/financial.png", _("Financial"), _("Financial tools"), 50)
 
@@ -48,6 +50,26 @@ class ThirdList(XferListEditor):
     field_id = 'third'
     caption = _("Thirds")
     action_list = [('search', _("Search"), "diacamma.accounting/images/thirds.png"), ('listing', _("Listing"), "images/print.png")]
+
+    def fillresponse_header(self):
+        contact_filter = self.getparam('filter')
+        if contact_filter is None:
+            contact_filter = ""
+        lbl = XferCompLabelForm('lbl_filtre')
+        lbl.set_value_as_name(_('Filtrer by contact'))
+        lbl.set_location(0, 2)
+        self.add_component(lbl)
+        comp = XferCompEdit('filter')
+        comp.set_value(contact_filter)
+        comp.set_action(self.request, self.get_action(), {'modal':FORMTYPE_REFRESH, 'close':CLOSE_NO})
+        comp.set_location(1, 2)
+        self.add_component(comp)
+        q_filter = Q(status=0)
+        if contact_filter != "":
+            q_legalentity = Q(contact__legalentity__name__contains=contact_filter)
+            q_individual = (Q(contact__individual__firstname__contains=contact_filter) | Q(contact__individual__lastname__contains=contact_filter))
+            q_filter = q_filter & (q_legalentity | q_individual)
+        self.filter = [q_filter]
 
 @ActionsManage.affect('Third', 'search')
 @MenuManage.describ('accounting.change_third')

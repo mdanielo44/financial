@@ -24,9 +24,30 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
 from __future__ import unicode_literals
+from django.utils.translation import ugettext_lazy as _
 
 from django.db import models, migrations
+from lucterios.CORE.models import Parameter
 
+def initial_values(*args):
+    # pylint: disable=unused-argument, no-member, expression-not-assigned
+    param = Parameter.objects.create(name='accounting-devise', typeparam=0)  # pylint: disable=no-member
+    param.title = _("accounting-devise")
+    param.args = "{'Multi':False}"
+    param.value = '€'
+    param.save()
+
+    param = Parameter.objects.create(name='accounting-devise-iso', typeparam=0)  # pylint: disable=no-member
+    param.title = _("accounting-devise-iso")
+    param.args = "{'Multi':False}"
+    param.value = 'EUR'
+    param.save()
+
+    param = Parameter.objects.create(name='accounting-devise-prec', typeparam=1)  # pylint: disable=no-member
+    param.title = _("accounting-devise-prec")
+    param.args = "{'Min':0, 'Max':4}"
+    param.value = '2'
+    param.save()
 
 class Migration(migrations.Migration):
 
@@ -52,7 +73,7 @@ class Migration(migrations.Migration):
             name='Third',
             fields=[
                 ('id', models.AutoField(auto_created=True, verbose_name='ID', serialize=False, primary_key=True)),
-                ('status', models.IntegerField(choices=[(0, 'Enabled'), (1, 'Disabled')])),
+                ('status', models.IntegerField(choices=[(0, 'Enable'), (1, 'Disable')], verbose_name='status')),
                 ('contact', models.ForeignKey(verbose_name='contact', to='contacts.AbstractContact')),
             ],
             options={
@@ -67,4 +88,21 @@ class Migration(migrations.Migration):
             field=models.ForeignKey(verbose_name='third', to='accounting.Third'),
             preserve_default=True,
         ),
+        migrations.CreateModel(
+            name='FiscalYear',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', auto_created=True, serialize=False, primary_key=True)),
+                ('begin', models.DateField(verbose_name='begin')),
+                ('end', models.DateField(verbose_name='end')),
+                ('status', models.IntegerField(verbose_name='status', choices=[(0, 'building'), (1, 'running'), (2, 'finished')], default=0)),
+                ('is_actif', models.BooleanField(verbose_name='actif', default=False)),
+                ('last_fiscalyear', models.ForeignKey(to='accounting.FiscalYear', verbose_name='last fiscal year', null=True)),
+            ],
+            options={
+                'verbose_name_plural': 'fiscal years',
+                'verbose_name': 'fiscal year',
+            },
+            bases=(models.Model,),
+        ),
+        migrations.RunPython(initial_values),
     ]
