@@ -60,7 +60,7 @@ class Migration(migrations.Migration):
             name='AccountThird',
             fields=[
                 ('id', models.AutoField(auto_created=True, verbose_name='ID', serialize=False, primary_key=True)),
-                ('code', models.CharField(max_length=50, verbose_name='code', unique=True)),
+                ('code', models.CharField(max_length=50, verbose_name='code')),
             ],
             options={
                 'verbose_name': 'account',

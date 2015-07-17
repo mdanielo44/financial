@@ -84,7 +84,7 @@ class Third(LucteriosModel):
 
 class AccountThird(LucteriosModel):
     third = models.ForeignKey(Third, verbose_name=_('third'), null=False)
-    code = models.CharField(_('code'), max_length=50, unique=True)
+    code = models.CharField(_('code'), max_length=50)
 
     def __str__(self):
         return self.code
@@ -100,8 +100,8 @@ class AccountThird(LucteriosModel):
         default_permissions = []
 
 class FiscalYear(LucteriosModel):
-    begin = models.DateField(verbose_name=_('begin'), default=date.today())
-    end = models.DateField(verbose_name=_('end'), default=date(date.today().year + 1, date.today().month, date.today().day - 1))
+    begin = models.DateField(verbose_name=_('begin'))
+    end = models.DateField(verbose_name=_('end'))
     status = models.IntegerField(verbose_name=_('status'), choices=((0, _('building')), (1, _('running')), (2, _('finished'))), default=0)
     is_actif = models.BooleanField(verbose_name=_('actif'), default=False)
     last_fiscalyear = models.ForeignKey('FiscalYear', verbose_name=_('last fiscal year'), null=True, on_delete=models.CASCADE)
