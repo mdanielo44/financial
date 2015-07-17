@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-07-16 16:16+0000\n"
+"POT-Creation-Date: 2015-07-17 14:27+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -33,94 +33,158 @@ msgstr "Currency (iso)"
 msgid "accounting-devise-prec"
 msgstr "Currency (precision)"
 
-#: models.py:38
+#: models.py:40
 msgid "contact"
 msgstr "contact"
 
-#: models.py:39 models.py:103
+#: models.py:41 models.py:105
 msgid "status"
 msgstr "status"
 
-#: models.py:39
+#: models.py:41
 msgid "Enable"
 msgstr "Enable"
 
-#: models.py:39
+#: models.py:41
 msgid "Disable"
 msgstr "Disable"
 
-#: models.py:51
-msgid "001@Account information"
+#: models.py:53
+msgid "001@AccountThird information"
 msgstr "001@Account information"
 
-#: models.py:73
+#: models.py:75
 msgid "Show"
 msgstr "Show"
 
-#: models.py:80 models.py:84
+#: models.py:82 models.py:86
 msgid "third"
 msgstr "third"
 
-#: models.py:81
+#: models.py:83
 msgid "thirds"
 msgstr "thirds"
 
-#: models.py:85
+#: models.py:87 models.py:157
 msgid "code"
 msgstr "code"
 
-#: models.py:96
+#: models.py:98
 msgid "account"
 msgstr "account"
 
-#: models.py:97
+#: models.py:99
 msgid "accounts"
 msgstr "accounts"
 
-#: models.py:101
+#: models.py:103
 msgid "begin"
 msgstr "begin"
 
-#: models.py:102
+#: models.py:104
 msgid "end"
 msgstr "end"
 
-#: models.py:103
+#: models.py:105
 msgid "building"
 msgstr "building"
 
-#: models.py:103
+#: models.py:105
 msgid "running"
 msgstr "running"
 
-#: models.py:103
+#: models.py:105
 msgid "finished"
 msgstr "finished"
 
-#: models.py:104
+#: models.py:106
 msgid "actif"
 msgstr "actif"
 
-#: models.py:105
+#: models.py:107
 msgid "last fiscal year"
 msgstr "last fiscal year"
 
-#: models.py:109
+#: models.py:120
 msgid "Fiscal year finished!"
 msgstr "Fiscal year finished!"
 
-#: models.py:130
+#: models.py:142
+msgid "end of fiscal year must be after begin!"
+msgstr "end of fiscal year must be after begin!"
+
+#: models.py:149
 #, python-format
 msgid "Fiscal year from %(begin)s to %(end)s [%(status)s]"
 msgstr "Fiscal year from %(begin)s to %(end)s [%(status)s]"
 
-#: models.py:134
+#: models.py:153 models.py:159
 msgid "fiscal year"
 msgstr "fiscal year"
 
-#: models.py:135
+#: models.py:154
 msgid "fiscal years"
 msgstr "fiscal years"
+
+#: models.py:158
+msgid "name"
+msgstr "name"
+
+#: models.py:160
+msgid "type of account"
+msgstr "type of account"
+
+#: models.py:160
+msgid "Asset"
+msgstr "Asset"
+
+#: models.py:160
+msgid "Liability"
+msgstr "Liability"
+
+#: models.py:160
+msgid "Equity"
+msgstr "Equity"
+
+#: models.py:160
+msgid "Revenue"
+msgstr "Revenue"
+
+#: models.py:160
+msgid "Expense"
+msgstr "Expense"
+
+#: models.py:160
+msgid "Contra-accounts"
+msgstr "Contra-accounts"
+
+#: models.py:164
+msgid "total of last year"
+msgstr "total of last year"
+
+#: models.py:165
+msgid "total current"
+msgstr "total current"
+
+#: models.py:165
+msgid "total validated"
+msgstr "total validated"
+
+#: models.py:201 views_accounts.py:24
+msgid "charts of account"
+msgstr "charts of account"
+
+#: models.py:202
+msgid "charts of accounts"
+msgstr "charts of accounts"
+
+#: models.py:217
+msgid "Credit"
+msgstr "Credit"
+
+#: models.py:222
+msgid "Debit"
+msgstr "Debit"
 
 #: views.py:43 views.py:162
 msgid "Financial"
@@ -186,6 +250,34 @@ msgstr "Modify account"
 msgid "Delete account"
 msgstr "Delete account"
 
+#: views_accounts.py:16
+msgid "Bookkeeping"
+msgstr "Bookkeeping"
+
+#: views_accounts.py:16
+msgid "Manage of Bookkeeping"
+msgstr "Manage of Bookkeeping"
+
+#: views_accounts.py:19
+msgid "Editing and modifying of Charts of accounts for current fiscal year"
+msgstr "Editing and modifying of Charts of accounts for current fiscal year"
+
+#: views_accounts.py:44
+msgid "Add an account"
+msgstr "Add an account"
+
+#: views_accounts.py:45
+msgid "Modify an account"
+msgstr "Modify an account"
+
+#: views_accounts.py:53
+msgid "Show an account"
+msgstr "Show an account"
+
+#: views_accounts.py:61
+msgid "Delete an account"
+msgstr "Delete an account"
+
 #: views_admin.py:18
 msgid "Management of fiscal year and financial parameters"
 msgstr "Management of fiscal year and financial parameters"
@@ -218,6 +310,6 @@ msgstr "Add fiscal year"
 msgid "Modify fiscal year"
 msgstr "Modify fiscal year"
 
-#: views_admin.py:70
+#: views_admin.py:75
 msgid "Delete fiscal year"
 msgstr "Delete fiscal year"

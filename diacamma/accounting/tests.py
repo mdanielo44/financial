@@ -81,7 +81,7 @@ class ThirdTest(LucteriosTest):
         self.assert_observer('Core.Custom', 'diacamma.accounting', 'thirdListing')
         self.assert_count_equal('COMPONENTS/GRID[@name="third"]/HEADER', 2)
         self.assert_xml_equal('COMPONENTS/GRID[@name="third"]/HEADER[@name="contact"]', "contact")
-        self.assert_xml_equal('COMPONENTS/GRID[@name="third"]/HEADER[@name="account_set"]', "compte")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="third"]/HEADER[@name="accountthird_set"]', "compte")
         self.assert_count_equal('COMPONENTS/GRID[@name="third"]/RECORD', 0)
 
         self.factory.xfer = ThirdAdd()

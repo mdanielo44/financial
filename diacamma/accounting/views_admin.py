@@ -61,6 +61,11 @@ class FiscalYearAddModify(XferAddEditor):
     caption_add = _("Add fiscal year")
     caption_modify = _("Modify fiscal year")
 
+    def fillresponse(self):
+        if self.item.id is None:
+            self.item.init_dates()
+        XferAddEditor.fillresponse(self)
+
 @ActionsManage.affect('FiscalYear', 'delete')
 @MenuManage.describ('accounting.delete_fiscalyear')
 class FiscalYearDel(XferDelete):

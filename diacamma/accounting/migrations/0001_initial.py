@@ -57,7 +57,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Account',
+            name='AccountThird',
             fields=[
                 ('id', models.AutoField(auto_created=True, verbose_name='ID', serialize=False, primary_key=True)),
                 ('code', models.CharField(max_length=50, verbose_name='code', unique=True)),
@@ -83,7 +83,7 @@ class Migration(migrations.Migration):
             bases=(models.Model,),
         ),
         migrations.AddField(
-            model_name='account',
+            model_name='accountthird',
             name='third',
             field=models.ForeignKey(verbose_name='third', to='accounting.Third'),
             preserve_default=True,
@@ -101,6 +101,21 @@ class Migration(migrations.Migration):
             options={
                 'verbose_name_plural': 'fiscal years',
                 'verbose_name': 'fiscal year',
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='ChartsAccount',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
+                ('code', models.CharField(verbose_name='code', max_length=50)),
+                ('name', models.CharField(verbose_name='name', max_length=200)),
+                ('type_of_account', models.IntegerField(verbose_name='type of account', \
+                    choices=[(0, 'Asset'), (1, 'Liability'), (2, 'Equity'), (3, 'Revenue'), (4, 'Expense'), (5, 'Contra-accounts')], null=True)),
+                ('year', models.ForeignKey(to='accounting.FiscalYear')),
+            ],
+            options={
+                'abstract': False,
             },
             bases=(models.Model,),
         ),

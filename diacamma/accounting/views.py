@@ -27,7 +27,7 @@ from __future__ import unicode_literals
 from django.utils.translation import ugettext_lazy as _
 from django.db.models import Q
 
-from diacamma.accounting.models import Third, Account
+from diacamma.accounting.models import Third, AccountThird
 
 from lucterios.framework.xferadvance import XferListEditor, XferAddEditor, XferShowEditor, XferDelete
 from lucterios.framework.xfersearch import XferSearchEditor
@@ -122,7 +122,7 @@ class ThirdShow(XferShowEditor):
     field_id = 'third'
     caption = _("Show third")
 
-@ActionsManage.affect('Third', 'del')
+@ActionsManage.affect('Third', 'delete')
 @MenuManage.describ('accounting.delete_third')
 class ThirdDel(XferDelete):
     icon = "thirds.png"
@@ -138,20 +138,20 @@ class ThirdListing(XferPrintListing):
     field_id = 'third'
     caption = _("Listing third")
 
-@ActionsManage.affect('Account', 'modify', 'add')
+@ActionsManage.affect('AccountThird', 'modify', 'add')
 @MenuManage.describ('accounting.add_third')
 class AccountAddModify(XferAddEditor):
     icon = "account.png"
-    model = Account
+    model = AccountThird
     field_id = 'account'
     caption_add = _("Add account")
     caption_modify = _("Modify account")
 
-@ActionsManage.affect('Account', 'del')
+@ActionsManage.affect('AccountThird', 'delete')
 @MenuManage.describ('accounting.delete_third')
 class AccountDel(XferDelete):
     icon = "account.png"
-    model = Account
+    model = AccountThird
     field_id = 'account'
     caption = _("Delete account")
 
