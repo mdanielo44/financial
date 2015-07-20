@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-07-17 14:27+0000\n"
+"POT-Creation-Date: 2015-07-20 09:42+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -135,55 +135,55 @@ msgstr "nom"
 msgid "type of account"
 msgstr "type de compte"
 
-#: models.py:160
+#: models.py:161
 msgid "Asset"
-msgstr "Capital"
+msgstr "Actif"
 
-#: models.py:160
+#: models.py:161
 msgid "Liability"
-msgstr "Dettes"
+msgstr "Passif"
 
-#: models.py:160
+#: models.py:161
 msgid "Equity"
-msgstr "Equité"
+msgstr "Capitaux"
 
-#: models.py:160
+#: models.py:161
 msgid "Revenue"
 msgstr "Produit"
 
-#: models.py:160
+#: models.py:161
 msgid "Expense"
 msgstr "Charge"
 
-#: models.py:160
+#: models.py:161
 msgid "Contra-accounts"
 msgstr "Autres comptes"
 
-#: models.py:164
+#: models.py:165
 msgid "total of last year"
 msgstr "report à nouveau"
 
-#: models.py:165
+#: models.py:166
 msgid "total current"
 msgstr "total exercice"
 
-#: models.py:165
+#: models.py:166
 msgid "total validated"
 msgstr "total validé"
 
-#: models.py:201 views_accounts.py:24
+#: models.py:205 views_accounts.py:24
 msgid "charts of account"
 msgstr "plan comptable"
 
-#: models.py:202
+#: models.py:206
 msgid "charts of accounts"
 msgstr "plans comptables"
 
-#: models.py:217
+#: models.py:222
 msgid "Credit"
 msgstr "Crédit"
 
-#: models.py:222
+#: models.py:227
 msgid "Debit"
 msgstr "Débit"
 
