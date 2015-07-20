@@ -112,10 +112,46 @@ class Migration(migrations.Migration):
                 ('name', models.CharField(verbose_name='name', max_length=200)),
                 ('type_of_account', models.IntegerField(verbose_name='type of account', \
                     choices=[(0, 'Asset'), (1, 'Liability'), (2, 'Equity'), (3, 'Revenue'), (4, 'Expense'), (5, 'Contra-accounts')], null=True)),
-                ('year', models.ForeignKey(to='accounting.FiscalYear')),
+                ('year', models.ForeignKey(verbose_name='fiscal year', to='accounting.FiscalYear')),
             ],
             options={
-                'abstract': False,
+                'verbose_name': 'charts of account',
+                'verbose_name_plural': 'charts of accounts',
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='EntryAccount',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
+                ('num', models.IntegerField(verbose_name='numeros', null=True)),
+                ('date_entry', models.DateField(verbose_name='date entry', null=True)),
+                ('date_value', models.DateField(verbose_name='date value', null=True)),
+                ('designation', models.CharField(verbose_name='name', max_length=200)),
+                ('valid', models.BooleanField(verbose_name='valid', default=False)),
+                ('close', models.BooleanField(verbose_name='close', default=False)),
+                ('year', models.ForeignKey(verbose_name='fiscal year', to='accounting.FiscalYear')),
+            ],
+            options={
+                'verbose_name': 'entry of account',
+                'verbose_name_plural': 'entries of account',
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='EntryLineAccount',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
+                ('amount', models.FloatField(verbose_name='amount')),
+                ('reference', models.CharField(verbose_name='reference', max_length=100, null=True)),
+                ('account', models.ForeignKey(verbose_name='account', to='accounting.ChartsAccount')),
+                ('entry', models.ForeignKey(verbose_name='entry', to='accounting.EntryAccount')),
+                ('third', models.ForeignKey(verbose_name='entry', null=True, to='accounting.Third')),
+            ],
+            options={
+                'default_permissions': [],
+                'verbose_name': 'entry line of account',
+                'verbose_name_plural': 'entry lines of account',
             },
             bases=(models.Model,),
         ),

@@ -5,7 +5,6 @@ Describe database model for Django
 @author: Laurent GAY
 @organization: sd-libre.fr
 @contact: info@sd-libre.fr
-@copyright: 2015 sd-libre.fr
 @license: This file is part of Lucterios.
 
 Lucterios is free software: you can redistribute it and/or modify
@@ -39,6 +38,9 @@ from lucterios.CORE.parameters import Params
 class Third(LucteriosModel):
     contact = models.ForeignKey('contacts.AbstractContact', verbose_name=_('contact'), null=False)
     status = models.IntegerField(verbose_name=_('status'), choices=((0, _('Enable')), (1, _('Disable'))))
+
+    def __str__(self):
+        return six.text_type(self.contact.get_final_child())  # pylint: disable=no-member
 
     @classmethod
     def get_default_fields(cls):
@@ -107,7 +109,7 @@ class FiscalYear(LucteriosModel):
     last_fiscalyear = models.ForeignKey('FiscalYear', verbose_name=_('last fiscal year'), null=True, on_delete=models.CASCADE)
 
     def init_dates(self):
-        fiscal_years = FiscalYear.objects.order_by('end') # pylint: disable=no-member
+        fiscal_years = FiscalYear.objects.order_by('end')  # pylint: disable=no-member
         if len(fiscal_years) == 0:
             self.begin = date.today()
         else:
@@ -140,7 +142,7 @@ class FiscalYear(LucteriosModel):
         # pylint: disable=unused-argument,no-self-use
         if self.end < self.begin:
             raise LucteriosException(IMPORTANT, _("end of fiscal year must be after begin!"))
-        if self.id is None and (len(FiscalYear.objects.all()) == 0): # pylint: disable=no-member
+        if self.id is None and (len(FiscalYear.objects.all()) == 0):  # pylint: disable=no-member
             self.is_actif = True
         return
 
@@ -188,25 +190,111 @@ class ChartsAccount(LucteriosModel):
         # pylint: disable=no-self-use
         return 34.61
 
+    def credit_debit_way(self):
+        if self.type_of_account in [0, 4]:
+
+            return 1
+        else:
+            return -1
+
     @property
     def last_year_total(self):
-        return format_devise(self.get_last_year_total(), 2)
+        return format_devise(self.credit_debit_way() * self.get_last_year_total(), 2)
 
     @property
     def current_total(self):
-        return format_devise(self.get_current_total(), 2)
+        return format_devise(self.credit_debit_way() * self.get_current_total(), 2)
 
     @property
     def current_validated(self):
-        return format_devise(self.get_current_validated(), 2)
+        return format_devise(self.credit_debit_way() * self.get_current_validated(), 2)
 
     class Meta(object):
         # pylint: disable=no-init
         verbose_name = _('charts of account')
         verbose_name_plural = _('charts of accounts')
 
+class EntryAccount(LucteriosModel):
+    year = models.ForeignKey('FiscalYear', verbose_name=_('fiscal year'), null=False, on_delete=models.CASCADE)
+    num = models.IntegerField(verbose_name=_('numeros'), null=True)
+
+    date_entry = models.DateField(verbose_name=_('date entry'), null=True)
+    date_value = models.DateField(verbose_name=_('date value'), null=True)
+    designation = models.CharField(_('name'), max_length=200)
+    valid = models.BooleanField(verbose_name=_('valid'), default=False)
+    close = models.BooleanField(verbose_name=_('close'), default=False)
+
+    @classmethod
+    def get_default_fields(cls):
+        return ['year', 'close', 'num', 'date_entry', 'date_value', 'designation']
+
+    @classmethod
+    def get_edit_fields(cls):
+        return ['year', 'close', 'num', 'date_entry', 'date_value', 'designation']
+
+    @classmethod
+    def get_show_fields(cls):
+        return ['year', 'close', 'num', 'date_entry', 'date_value', 'designation']
+
+    class Meta(object):
+        # pylint: disable=no-init
+        verbose_name = _('entry of account')
+        verbose_name_plural = _('entries of account')
+
+class EntryLineAccount(LucteriosModel):
+
+    account = models.ForeignKey('ChartsAccount', verbose_name=_('account'), null=False, on_delete=models.CASCADE)
+    entry = models.ForeignKey('EntryAccount', verbose_name=_('entry'), null=False, on_delete=models.CASCADE)
+    amount = models.FloatField(_('amount'))
+    reference = models.CharField(_('reference'), max_length=100, null=True)
+    third = models.ForeignKey('Third', verbose_name=_('entry'), null=True, on_delete=models.CASCADE)
+
+    @classmethod
+    def get_default_fields(cls):
+        return ['entry.num', 'entry.date_entry', 'entry.date_value', 'entry.designation', \
+                    (_('account'), 'entry_account'), (_('debit'), 'debit'), (_('credit'), 'credit')]
+
+    @classmethod
+    def get_edit_fields(cls):
+        return ['entry.date_entry', 'entry.date_value', 'entry.designation', \
+                    ((_('account'), 'entry_account'),), ((_('debit'), 'debit'),), ((_('credit'), 'credit'),)]
+
+    @classmethod
+    def get_show_fields(cls):
+        return ['entry.date_entry', 'entry.date_value', 'entry.designation', \
+                    ((_('account'), 'entry_account'),), ((_('debit'), 'debit'),), ((_('credit'), 'credit'),)]
+
+    @property
+    def entry_account(self):
+        if self.third is None:
+            return six.text_type(self.account)
+        else:
+            return "[%s %s]" % (self.account.code, six.text_type(self.third))  # pylint: disable=no-member
+
+    @property
+    def debit(self):
+        return format_devise(self.account.credit_debit_way() * self.amount, 0)  # pylint: disable=no-member
+
+    @property
+    def credit(self):
+        return format_devise(-1 * self.account.credit_debit_way() * self.amount, 0)  # pylint: disable=no-member
+
+    class Meta(object):
+        # pylint: disable=no-init
+        verbose_name = _('entry line of account')
+        verbose_name_plural = _('entry lines of account')
+        default_permissions = []
+
 def format_devise(amount, mode):
     # pylint: disable=too-many-branches
+    # mode 0 25.45 => 25,45€ / -25.45 =>
+
+    # mode 1 25.45 => Credit 25,45€ / -25.45 => Debit 25,45€
+    # mode 2 25.45 => {[font color="green"]}Credit 25,45€{[/font]}     / -25.45 => {[font color="blue"]}Debit 25,45€{[/font]}
+
+    # mode 3 25.45 => 25,45 / -25.45 => -25.45
+    # mode 4 25.45 => 25,45€ / -25.45 => 25.45€
+    # mode 5+ 25.45 => 25,45€ / -25.45 => -25.45€
     result = ''
     currency_short = Params.getvalue("accounting-devise")
     currency_decimal = Params.getvalue("accounting-devise-prec")
@@ -227,6 +315,9 @@ def format_devise(amount, mode):
                 result = '%s%s: ' % (result, _('Debit'))
     if mode == 3:
         result = currency_format % amount
+    elif mode == 0:
+        if amount >= currency_epsilon:
+            result = currency_format % abs(amount) + currency_short
     else:
         if mode < 5:
             amount_text = currency_format % abs(amount)
