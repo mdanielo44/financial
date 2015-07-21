@@ -147,7 +147,7 @@ class FiscalYear(LucteriosModel):
         return
 
     def __str__(self):
-        status = get_value_if_choices(self.status, self._meta.get_field_by_name('status'))  # pylint: disable=protected-access,no-member
+        status = get_value_if_choices(self.status, self._meta.get_field('status'))  # pylint: disable=protected-access,no-member
         return _("Fiscal year from %(begin)s to %(end)s [%(status)s]") % {'begin':get_value_converted(self.begin), 'end':get_value_converted(self.end), 'status':status}
 
     class Meta(object):
