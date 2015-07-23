@@ -274,11 +274,14 @@ class EntryAccount(LucteriosModel):
         grid_lines = xfer.get_components('entrylineaccount_set')
         grid_lines.actions = []
 
-    def get_serial(self):
+    def get_serial(self, entrylines=None):
+        if entrylines is None:
+            entrylines = self.entrylineaccount_set.all() # pylint: disable=no-member
         serial_val = ''
-        for line in self.entrylineaccount_set.all():  # pylint: disable=no-member
+        for line in entrylines:
+            if serial_val != '':
+                serial_val += '\n'
             serial_val += line.get_serial()
-            serial_val += '\n'
         return serial_val
 
     def get_entrylineaccounts(self, serial_vals):
@@ -289,6 +292,26 @@ class EntryAccount(LucteriosModel):
                 new_line = EntryLineAccount.get_entrylineaccount(serial_val)
                 new_line.entry = self
                 res._result_cache.append(new_line)  # pylint: disable=protected-access
+        return res
+
+    def remove_entrylineaccounts(self, serial_vals, entrylineid):
+        lines = self.get_entrylineaccounts(serial_vals)
+        line_idx = -1
+        for idx in range(len(lines)):
+            if lines[idx].id == entrylineid:
+                line_idx = idx
+        del lines._result_cache[line_idx]  # pylint: disable=protected-access
+        return self.get_serial(lines)
+
+    def is_serial_changed(self, serial_vals):
+        res = True
+        serial = self.get_entrylineaccounts(serial_vals)
+        current = self.entrylineaccount_set.all() # pylint: disable=no-member
+        if len(serial) == len(current):
+            for idx in range(len(current)):
+                res = res and current[idx].equals(serial[idx])
+        else:
+            res = False
         return res
 
     class Meta(object):
@@ -353,20 +376,48 @@ class EntryLineAccount(LucteriosModel):
         else:
             self.amount = 0
 
+    def equals(self, other):
+        res = self.id == other.id
+        res = res and (self.account.id == other.account.id)
+        res = res and (self.amount == other.amount)
+        res = res and (self.reference == other.reference)
+        if self.third is None:
+            res = res and (other.third is None)
+        else:
+            res = res and (self.third.id == other.third.id)
+        return res
+
     def get_serial(self):
         if self.third is None:
             third_id = 0
         else:
             third_id = self.third.id
         if self.reference is None:
-            reference = ''
+            reference = 'None'
         else:
             reference = self.reference
-        return "%d %d %d %f %s" % (self.id, self.account.id, third_id, self.amount, reference)
+        return "%d|%d|%d|%f|%s|" % (self.id, self.account.id, third_id, self.amount, reference)
+
+    @classmethod
+    def add_serial(cls, num_cpt, debit_val, credit_val, thirdid=0, reference=None):
+        import time
+        new_entry_line = cls()
+        new_entry_line.id = -1 * int(time.time() * 60)  # pylint: disable=invalid-name,attribute-defined-outside-init
+        new_entry_line.account = ChartsAccount.objects.get(id=num_cpt)  # pylint: disable=no-member
+        if thirdid == 0:
+            new_entry_line.third = None
+        else:
+            new_entry_line.third = Third.objects.get(id=thirdid)  # pylint: disable=no-member
+        new_entry_line.set_montant(debit_val, credit_val)
+        if reference == "None":
+            new_entry_line.reference = None
+        else:
+            new_entry_line.reference = reference
+        return new_entry_line.get_serial()
 
     @classmethod
     def get_entrylineaccount(cls, serial_val):
-        serial_vals = serial_val.split(' ')
+        serial_vals = serial_val.split('|')
         new_entry_line = cls()
         new_entry_line.id = int(serial_vals[0])  # pylint: disable=invalid-name,attribute-defined-outside-init
         new_entry_line.account = ChartsAccount.objects.get(id=int(serial_vals[1]))  # pylint: disable=no-member
@@ -375,7 +426,9 @@ class EntryLineAccount(LucteriosModel):
         else:
             new_entry_line.third = Third.objects.get(id=int(serial_vals[2]))  # pylint: disable=no-member
         new_entry_line.amount = float(serial_vals[3])
-        new_entry_line.reference = " ".join(serial_vals[4:])
+        new_entry_line.reference = "|".join(serial_vals[4:-1])
+        if new_entry_line.reference == "None":
+            new_entry_line.reference = None
         return new_entry_line
 
     def _editaccount_for_line(self, xfer, init_col, init_row):
@@ -410,7 +463,7 @@ class EntryLineAccount(LucteriosModel):
         if current_account is not None:
             sel.set_value(current_account.id)
             self.account = current_account
-            self.set_montant(float(xfer.getparam('debitVal', 0.0)), float(xfer.getparam('creditVal', 0.0)))
+            self.set_montant(float(xfer.getparam('debit_val', 0.0)), float(xfer.getparam('credit_val', 0.0)))
         xfer.add_component(sel)
         return lbl, edt
 
@@ -426,7 +479,7 @@ class EntryLineAccount(LucteriosModel):
         lbl.set_location(init_col + 2, init_row)
         lbl.set_value_as_name(_('debit'))
         xfer.add_component(lbl)
-        edt = XferCompFloat('debitVal', -10000000, 10000000, currency_decimal)
+        edt = XferCompFloat('debit_val', -10000000, 10000000, currency_decimal)
         edt.set_location(init_col + 2, init_row + 1)
         edt.set_value(self.get_debit())
         edt.set_size(20, 75)
@@ -436,7 +489,7 @@ class EntryLineAccount(LucteriosModel):
         lbl.set_location(init_col + 3, init_row)
         lbl.set_value_as_name(_('credit'))
         xfer.add_component(lbl)
-        edt = XferCompFloat('creditVal', -10000000, 10000000, currency_decimal)
+        edt = XferCompFloat('credit_val', -10000000, 10000000, currency_decimal)
         edt.set_location(init_col + 3, init_row + 1)
         edt.set_value(self.get_credit())
         edt.set_size(20, 75)

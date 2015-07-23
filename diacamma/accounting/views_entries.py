@@ -1,4 +1,26 @@
 # -*- coding: utf-8 -*-
+'''
+Describe entries account viewer for Django
+
+@author: Laurent GAY
+@organization: sd-libre.fr
+@contact: info@sd-libre.fr
+@license: This file is part of Lucterios.
+
+Lucterios is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Lucterios is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
+'''
+
 from __future__ import unicode_literals
 
 from django.utils.translation import ugettext_lazy as _
@@ -6,12 +28,10 @@ from django.db.models import Q
 
 from diacamma.accounting.models import EntryLineAccount, EntryAccount, FiscalYear
 
-from lucterios.framework.xferadvance import XferListEditor, XferSave
-from lucterios.framework.xferadvance import XferAddEditor
-from lucterios.framework.xferadvance import XferShowEditor
-from lucterios.framework.xferadvance import XferDelete
+from lucterios.framework.xferadvance import XferShowEditor, XferDelete
 from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage, \
     WrapAction, CLOSE_NO, FORMTYPE_REFRESH, CLOSE_YES
+from lucterios.framework.xferadvance import XferListEditor, XferAddEditor
 from lucterios.framework.xfergraphic import XferContainerAcknowledge
 from lucterios.framework.xfercomponents import XferCompButton, XferCompSelect, \
     XferCompLabelForm, XferCompGrid
@@ -69,18 +89,18 @@ class EntryLineAccountList(XferListEditor):
 
 @ActionsManage.affect('EntryLineAccount', 'delete')
 @MenuManage.describ('accounting.delete_entryaccount')
-class EntryLineAccountDel(XferDelete):
+class EntryAccountDel(XferDelete):
     icon = "entry.png"
     model = EntryAccount
     field_id = 'entryaccount'
     caption = _("Delete accounting entry")
-    
+
     def _search_model(self):
         ids = self.getparam('entrylineaccount')
         if ids is None:
             raise LucteriosException(GRAVE, _("No selection"))
-        ids = ids.split(';')
-        self.items = self.model.objects.filter(entrylineaccount__in=ids)
+        ids = ids.split(';') # pylint: disable=no-member
+        self.items = self.model.objects.filter(entrylineaccount__in=ids) # pylint: disable=no-member
 
 @ActionsManage.affect('EntryLineAccount', 'show')
 @MenuManage.describ('accounting.add_entryaccount')
@@ -123,12 +143,13 @@ class EntryAccountAddModify(XferAddEditor):
             self.params['serial_entry'] = self.item.get_serial()
             serial_vals = self.getparam('serial_entry')
             six.print_(serial_vals)
+        with_change = self.item.is_serial_changed(serial_vals)
+        six.print_(with_change)
         btn = XferCompButton('save_modif')
         btn.set_location(3, 0, 1, 2)
         btn.set_action(self.request, self.get_action(_("Modify"), "images/edit.png"), {'params':{"SAVE":"YES"}})
         self.add_component(btn)
         if self.item.id:
-            with_change = (serial_vals == self.item.get_serial())
             last_row = self.get_max_row() + 5
             lbl = XferCompLabelForm('sep1')
             lbl.set_location(0, last_row, 6)
@@ -151,6 +172,7 @@ class EntryAccountAddModify(XferAddEditor):
             new_grid_lines = XferCompGrid(self.field_id)
             new_grid_lines.set_model(self.item.get_entrylineaccounts(serial_vals), None, self)
             new_grid_lines.set_location(grid_lines.col, grid_lines.row, grid_lines.colspan + 2, grid_lines.rowspan)
+            new_grid_lines.add_action(self.request, EntryLineAccountDel.get_action(_("Delete"), "images/delete.png"), {'close':CLOSE_YES})
             self.add_component(new_grid_lines)
         self.actions = []
         if with_change:
@@ -167,13 +189,32 @@ class EntryAccountAfterSave(XferContainerAcknowledge):
     caption = _("Modify accounting entry")
 
     def fillresponse(self):
-        if "SAVE" in self.params.keys():
-            del self.params["SAVE"]
+        if 'SAVE' in self.params.keys():
+            del self.params['SAVE']
         self.redirect_action(EntryAccountAddModify.get_action(), {})
 
 @MenuManage.describ('accounting.add_entryaccount')
-class EntryLineAccountSave(XferSave):
+class EntryLineAccountSave(XferContainerAcknowledge):
     icon = "entry.png"
-    model = EntryLineAccount
-    field_id = 'entrylineaccount'
     caption = _("Save entry line of account")
+
+    def fillresponse(self, serial_entry='', num_cpt=0, credit_val=0.0, debit_val=0.0, thirdid=0, reference='None'):
+        for old_key in ['num_cpt', 'credit_val', 'debit_val', 'thirdid', 'reference']:
+            if old_key in self.params.keys():
+                del self.params[old_key]
+        if serial_entry != '':
+            serial_entry += '\n'
+        serial_entry += EntryLineAccount.add_serial(num_cpt, debit_val, credit_val, thirdid, reference)
+        self.redirect_action(EntryAccountAddModify.get_action(), {'params':{"serial_entry":serial_entry}})
+
+@MenuManage.describ('accounting.add_entryaccount')
+class EntryLineAccountDel(XferContainerAcknowledge):
+    icon = "entry.png"
+
+    model = EntryAccount
+    field_id = 'entryaccount'
+    caption = _("Delete entry line of account")
+
+    def fillresponse(self, entrylineaccount_set=0, serial_entry=''):
+        serial_entry = self.item.remove_entrylineaccounts(serial_entry, entrylineaccount_set)
+        self.redirect_action(EntryAccountAddModify.get_action(), {'params':{"serial_entry":serial_entry}})
