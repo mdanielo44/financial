@@ -154,12 +154,14 @@
 		<echo message='&lt;testsuite errors="0" failures="0" name="null test" skips="0" tests="0" time="0"&gt;&lt;/testsuite&gt;'  file="junit_py2.xml" append="false" />
 		<antcall target="test"><param name="testversion" value="coverage2"/></antcall>
 		<replace file="junit_py2.xml" token="lucterios." value="lucterios-py2."/>		
+		<replace file="junit_py2.xml" token="diacamma." value="diacamma-py2."/>
 	</target>
 
 	<target name="test_py3" if="python3.present">
 		<echo message='&lt;testsuite errors="0" failures="0" name="null test" skips="0" tests="0" time="0"&gt;&lt;/testsuite&gt;'  file="junit_py3.xml" append="false" />
 		<antcall target="test"><param name="testversion" value="coverage3"/></antcall>
-		<replace file="junit_py3.xml" token="lucterios." value="lucterios-py3."/>		
+		<replace file="junit_py3.xml" token="lucterios." value="lucterios-py3."/>
+		<replace file="junit_py3.xml" token="diacamma." value="diacamma-py3."/>
 	</target>
 
 	<target name="tests">
