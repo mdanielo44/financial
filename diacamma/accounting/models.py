@@ -30,13 +30,13 @@ from django.db.models.query import QuerySet
 from django.utils.translation import ugettext_lazy as _
 from django.utils import six
 
-from lucterios.framework.models import LucteriosModel, get_value_converted, \
-    get_value_if_choices
+from lucterios.framework.models import LucteriosModel, get_value_converted, get_value_if_choices
 from lucterios.framework.error import LucteriosException, IMPORTANT
 
 from lucterios.CORE.parameters import Params
 from lucterios.contacts.models import AbstractContact  # pylint: disable=no-name-in-module,import-error
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models.aggregates import Sum
 
 class Third(LucteriosModel):
     contact = models.ForeignKey('contacts.AbstractContact', verbose_name=_('contact'), null=False)
@@ -149,6 +149,50 @@ class FiscalYear(LucteriosModel):
             self.is_actif = True
         return
 
+    @property
+    def total_revenue(self):
+        val = EntryLineAccount.objects.filter(account__type_of_account=3, account__year=self).aggregate(Sum('amount'))  # pylint: disable=no-member
+        if val['amount__sum'] is None:
+            return 0
+        else:
+            return val['amount__sum']
+
+    @property
+    def total_expense(self):
+        val = EntryLineAccount.objects.filter(account__type_of_account=4, account__year=self).aggregate(Sum('amount'))  # pylint: disable=no-member
+        if val['amount__sum'] is None:
+            return 0
+        else:
+            return val['amount__sum']
+
+    @property
+    def total_cash(self):
+        val = EntryLineAccount.objects.filter(account__code__startswith='5', account__year=self).aggregate(Sum('amount'))  # pylint: disable=no-member
+        if val['amount__sum'] is None:
+            return 0
+        else:
+            return val['amount__sum']
+
+    @property
+    def total_cash_close(self):
+        val = EntryLineAccount.objects.filter(entry__close=True, account__code__startswith='5', account__year=self).aggregate(Sum('amount'))  # pylint: disable=no-member
+        if val['amount__sum'] is None:
+            return 0
+        else:
+            return val['amount__sum']
+
+    @property
+    def total_result_text(self):
+        value = {}
+        value['revenue'] = format_devise(self.total_revenue, 5)
+
+        value['expense'] = format_devise(self.total_expense, 5)
+        value['result'] = format_devise(self.total_revenue - self.total_expense, 5)
+        value['cash'] = format_devise(self.total_cash, 5)
+        value['closed'] = format_devise(self.total_cash_close, 5)
+        res_text = _('{[b]}Revenue:{[/b]} %(revenue)s - {[b]}Expense:{[/b]} %(expense)s = {[b]}Result:{[/b]} %(result)s | {[b]}Cash:{[/b]} %(cash)s - {[b]}Closed:{[/b]} %(closed)s')
+        return res_text % value
+
     @classmethod
     def get_current(cls, select_year=None):
         if select_year is None:
@@ -203,19 +247,24 @@ class ChartsAccount(LucteriosModel):
         return -24.98
 
     def get_current_total(self):
-        # pylint: disable=no-self-use
-        return 0
+        val = self.entrylineaccount_set.all().aggregate(Sum('amount'))  # pylint: disable=no-member
+        if val['amount__sum'] is None:
+            return 0
+        else:
+            return val['amount__sum']
 
     def get_current_validated(self):
-        # pylint: disable=no-self-use
-        return 34.61
+        val = self.entrylineaccount_set.filter(entry__close=True).aggregate(Sum('amount'))  # pylint: disable=no-member
+        if val['amount__sum'] is None:
+            return 0
+        else:
+            return val['amount__sum']
 
     def credit_debit_way(self):
         if self.type_of_account in [0, 4]:
-
-            return 1
-        else:
             return -1
+        else:
+            return 1
 
     @property
     def last_year_total(self):
@@ -233,6 +282,7 @@ class ChartsAccount(LucteriosModel):
         # pylint: disable=no-init
         verbose_name = _('charts of account')
         verbose_name_plural = _('charts of accounts')
+        ordering = ['year', 'code']
 
 class EntryAccount(LucteriosModel):
     year = models.ForeignKey('FiscalYear', verbose_name=_('fiscal year'), null=False, on_delete=models.CASCADE)
@@ -241,7 +291,6 @@ class EntryAccount(LucteriosModel):
     date_entry = models.DateField(verbose_name=_('date entry'), null=True)
     date_value = models.DateField(verbose_name=_('date value'), null=True)
     designation = models.CharField(_('name'), max_length=200)
-    valid = models.BooleanField(verbose_name=_('valid'), default=False)
     close = models.BooleanField(verbose_name=_('close'), default=False)
 
     @classmethod
@@ -276,7 +325,7 @@ class EntryAccount(LucteriosModel):
 
     def get_serial(self, entrylines=None):
         if entrylines is None:
-            entrylines = self.entrylineaccount_set.all() # pylint: disable=no-member
+            entrylines = self.entrylineaccount_set.all()  # pylint: disable=no-member
         serial_val = ''
         for line in entrylines:
             if serial_val != '':
@@ -306,7 +355,7 @@ class EntryAccount(LucteriosModel):
     def is_serial_changed(self, serial_vals):
         res = True
         serial = self.get_entrylineaccounts(serial_vals)
-        current = self.entrylineaccount_set.all() # pylint: disable=no-member
+        current = self.entrylineaccount_set.all()  # pylint: disable=no-member
         if len(serial) == len(current):
             for idx in range(len(current)):
                 res = res and current[idx].equals(serial[idx])

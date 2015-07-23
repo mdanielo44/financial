@@ -87,6 +87,11 @@ class EntryLineAccountList(XferListEditor):
         for action_idx in range(len(grid_entries.actions)):
             grid_entries.actions[action_idx][1]['modal'] = FORMTYPE_NOMODAL
 
+        lbl = XferCompLabelForm("result")
+        lbl.set_value_center(self.item.year.total_result_text)
+        lbl.set_location(0, 10, 2)
+        self.add_component(lbl)
+
 @ActionsManage.affect('EntryLineAccount', 'delete')
 @MenuManage.describ('accounting.delete_entryaccount')
 class EntryAccountDel(XferDelete):

@@ -117,6 +117,7 @@ class Migration(migrations.Migration):
             options={
                 'verbose_name': 'charts of account',
                 'verbose_name_plural': 'charts of accounts',
+                'ordering': ['year', 'code']
             },
             bases=(models.Model,),
         ),
@@ -128,7 +129,6 @@ class Migration(migrations.Migration):
                 ('date_entry', models.DateField(verbose_name='date entry', null=True)),
                 ('date_value', models.DateField(verbose_name='date value', null=True)),
                 ('designation', models.CharField(verbose_name='name', max_length=200)),
-                ('valid', models.BooleanField(verbose_name='valid', default=False)),
                 ('close', models.BooleanField(verbose_name='close', default=False)),
                 ('year', models.ForeignKey(verbose_name='fiscal year', to='accounting.FiscalYear')),
             ],
