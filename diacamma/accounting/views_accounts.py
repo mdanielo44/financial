@@ -26,10 +26,7 @@ class ChartsAccountList(XferListEditor):
     def fillresponse_header(self):
         select_year = self.getparam('year')
         select_type = self.getparam('type_of_account')
-        if select_year is None:
-            self.item.year = FiscalYear.objects.get(is_actif=True) # pylint: disable=no-member
-        else:
-            self.item.year = FiscalYear.objects.get(id=select_year) # pylint: disable=no-member
+        self.item.year = FiscalYear.get_current(select_year)
         self.fill_from_model(0, 1, False, ['year', 'type_of_account'])
         self.get_components('year').set_action(self.request, ChartsAccountList.get_action(), {'close':CLOSE_NO, 'modal':FORMTYPE_REFRESH})
         self.get_components('type_of_account').set_action(self.request, ChartsAccountList.get_action(modal=FORMTYPE_REFRESH), {'close':CLOSE_NO, 'modal':FORMTYPE_REFRESH})

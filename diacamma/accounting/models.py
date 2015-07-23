@@ -23,17 +23,20 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
 
+from datetime import date
+
 from django.db import models
+from django.db.models.query import QuerySet
 from django.utils.translation import ugettext_lazy as _
+from django.utils import six
 
 from lucterios.framework.models import LucteriosModel, get_value_converted, \
     get_value_if_choices
-from lucterios.contacts.models import AbstractContact  # pylint: disable=no-name-in-module,import-error
-from lucterios.framework.tools import ActionsManage
-from django.utils import six
-from datetime import date
 from lucterios.framework.error import LucteriosException, IMPORTANT
+
 from lucterios.CORE.parameters import Params
+from lucterios.contacts.models import AbstractContact  # pylint: disable=no-name-in-module,import-error
+from django.core.exceptions import ObjectDoesNotExist
 
 class Third(LucteriosModel):
     contact = models.ForeignKey('contacts.AbstractContact', verbose_name=_('contact'), null=False)
@@ -66,7 +69,7 @@ class Third(LucteriosModel):
 
     def show(self, xfer):
         from lucterios.framework.xfercomponents import XferCompButton
-        from lucterios.framework.tools import FORMTYPE_MODAL, CLOSE_NO
+        from lucterios.framework.tools import FORMTYPE_MODAL, CLOSE_NO, ActionsManage
         xfer.tab = 0
         old_item = xfer.item
         xfer.item = self.contact.get_final_child()  # pylint: disable=no-member
@@ -145,6 +148,23 @@ class FiscalYear(LucteriosModel):
         if self.id is None and (len(FiscalYear.objects.all()) == 0):  # pylint: disable=no-member
             self.is_actif = True
         return
+
+    @classmethod
+    def get_current(cls, select_year=None):
+        if select_year is None:
+            year = FiscalYear.objects.get(is_actif=True)  # pylint: disable=no-member
+        else:
+            year = FiscalYear.objects.get(id=select_year)  # pylint: disable=no-member
+        return year
+
+    def get_account_list(self, num_cpt_txt):
+        account_list = {}
+        current_account = None
+        for account in self.chartsaccount_set.all().filter(code__startswith=num_cpt_txt):  # pylint: disable=no-member
+            account_list[account.id] = six.text_type(account)
+            if current_account is None:
+                current_account = account
+        return account_list, current_account
 
     def __str__(self):
         status = get_value_if_choices(self.status, self._meta.get_field('status'))  # pylint: disable=protected-access,no-member
@@ -230,11 +250,46 @@ class EntryAccount(LucteriosModel):
 
     @classmethod
     def get_edit_fields(cls):
-        return ['year', 'close', 'num', 'date_entry', 'date_value', 'designation']
+        return ['date_value', 'designation']
 
     @classmethod
     def get_show_fields(cls):
-        return ['year', 'close', 'num', 'date_entry', 'date_value', 'designation']
+        return ['num', 'date_entry', 'date_value', 'designation']
+
+    def can_delete(self):
+        if self.close:
+            return _('entries of account closed!')
+        else:
+            return ''
+
+    def show(self, xfer):
+        from lucterios.framework.xfercomponents import XferCompLabelForm
+        last_row = xfer.get_max_row() + 10
+
+        lbl = XferCompLabelForm('sep3')
+        lbl.set_location(0, last_row + 1, 6)
+        lbl.set_value("{[center]}{[hr/]}{[/center]}")
+        xfer.add_component(lbl)
+        xfer.filltab_from_model(1, last_row + 2, True, ['entrylineaccount_set'])
+        grid_lines = xfer.get_components('entrylineaccount_set')
+        grid_lines.actions = []
+
+    def get_serial(self):
+        serial_val = ''
+        for line in self.entrylineaccount_set.all():  # pylint: disable=no-member
+            serial_val += line.get_serial()
+            serial_val += '\n'
+        return serial_val
+
+    def get_entrylineaccounts(self, serial_vals):
+        res = QuerySet(model=EntryLineAccount)
+        res._result_cache = []  # pylint: disable=protected-access
+        for serial_val in serial_vals.split('\n'):
+            if serial_val != '':
+                new_line = EntryLineAccount.get_entrylineaccount(serial_val)
+                new_line.entry = self
+                res._result_cache.append(new_line)  # pylint: disable=protected-access
+        return res
 
     class Meta(object):
         # pylint: disable=no-init
@@ -251,8 +306,7 @@ class EntryLineAccount(LucteriosModel):
 
     @classmethod
     def get_default_fields(cls):
-        return ['entry.num', 'entry.date_entry', 'entry.date_value', 'entry.designation', \
-                    (_('account'), 'entry_account'), (_('debit'), 'debit'), (_('credit'), 'credit')]
+        return [(_('account'), 'entry_account'), (_('debit'), 'debit'), (_('credit'), 'credit'), 'reference']
 
     @classmethod
     def get_edit_fields(cls):
@@ -271,13 +325,122 @@ class EntryLineAccount(LucteriosModel):
         else:
             return "[%s %s]" % (self.account.code, six.text_type(self.third))  # pylint: disable=no-member
 
+    def get_debit(self):
+        try:
+            return max((0, self.account.credit_debit_way() * self.amount))  # pylint: disable=no-member
+        except ObjectDoesNotExist:
+            return 0
+
     @property
     def debit(self):
-        return format_devise(self.account.credit_debit_way() * self.amount, 0)  # pylint: disable=no-member
+        return format_devise(self.get_debit(), 0)
+
+    def get_credit(self):
+        try:
+            return max((0, -1 * self.account.credit_debit_way() * self.amount))  # pylint: disable=no-member
+        except ObjectDoesNotExist:
+            return 0
 
     @property
     def credit(self):
-        return format_devise(-1 * self.account.credit_debit_way() * self.amount, 0)  # pylint: disable=no-member
+        return format_devise(self.get_credit(), 0)
+
+    def set_montant(self, debit_val, credit_val):
+        if debit_val > 0:
+            self.amount = debit_val * self.account.credit_debit_way()
+        elif credit_val > 0:
+            self.amount = -1 * credit_val * self.account.credit_debit_way()
+        else:
+            self.amount = 0
+
+    def get_serial(self):
+        if self.third is None:
+            third_id = 0
+        else:
+            third_id = self.third.id
+        if self.reference is None:
+            reference = ''
+        else:
+            reference = self.reference
+        return "%d %d %d %f %s" % (self.id, self.account.id, third_id, self.amount, reference)
+
+    @classmethod
+    def get_entrylineaccount(cls, serial_val):
+        serial_vals = serial_val.split(' ')
+        new_entry_line = cls()
+        new_entry_line.id = int(serial_vals[0])  # pylint: disable=invalid-name,attribute-defined-outside-init
+        new_entry_line.account = ChartsAccount.objects.get(id=int(serial_vals[1]))  # pylint: disable=no-member
+        if int(serial_vals[2]) == 0:
+            new_entry_line.third = None
+        else:
+            new_entry_line.third = Third.objects.get(id=int(serial_vals[2]))  # pylint: disable=no-member
+        new_entry_line.amount = float(serial_vals[3])
+        new_entry_line.reference = " ".join(serial_vals[4:])
+        return new_entry_line
+
+    def _editaccount_for_line(self, xfer, init_col, init_row):
+        # pylint: disable=too-many-locals
+        from lucterios.framework.tools import CLOSE_NO, FORMTYPE_REFRESH
+        from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompEdit, XferCompSelect
+        num_cpt_txt = xfer.getparam('num_cpt_txt', '')
+        num_cpt = xfer.getparam('num_cpt', 0)
+
+        lbl = XferCompLabelForm('numCptlbl')
+        lbl.set_location(init_col, init_row, 2)
+        lbl.set_value_as_headername(_('account'))
+        xfer.add_component(lbl)
+        edt = XferCompEdit('num_cpt_txt')
+        edt.set_location(init_col, init_row + 1, 2)
+        edt.set_value(num_cpt_txt)
+        edt.set_size(20, 25)
+        edt.set_action(xfer.request, xfer.get_action(), {'close':CLOSE_NO, 'modal':FORMTYPE_REFRESH})
+        xfer.add_component(edt)
+        sel_val = {}
+        current_account = None
+        if num_cpt_txt != '':
+            year = FiscalYear.get_current(xfer.getparam('year'))
+            sel_val, current_account = year.get_account_list(num_cpt_txt)
+        if num_cpt > 0:
+            current_account = ChartsAccount.objects.get(id=num_cpt)  # pylint: disable=no-member
+        sel = XferCompSelect('num_cpt')
+        sel.set_location(init_col, init_row + 2, 2)
+        sel.set_select(sel_val)
+        sel.set_size(20, 150)
+        sel.set_action(xfer.request, xfer.get_action(), {'close':CLOSE_NO, 'modal':FORMTYPE_REFRESH})
+        if current_account is not None:
+            sel.set_value(current_account.id)
+            self.account = current_account
+            self.set_montant(float(xfer.getparam('debitVal', 0.0)), float(xfer.getparam('creditVal', 0.0)))
+        xfer.add_component(sel)
+        return lbl, edt
+
+    def edit_line(self, xfer):
+        from lucterios.framework.xfercomponents import XferCompFloat, XferCompLabelForm
+        currency_decimal = Params.getvalue("accounting-devise-prec")
+        init_col = 0
+        init_row = xfer.get_max_row() + 1
+
+        self._editaccount_for_line(xfer, init_col, init_row)
+
+        lbl = XferCompLabelForm('debitlbl')
+        lbl.set_location(init_col + 2, init_row)
+        lbl.set_value_as_name(_('debit'))
+        xfer.add_component(lbl)
+        edt = XferCompFloat('debitVal', -10000000, 10000000, currency_decimal)
+        edt.set_location(init_col + 2, init_row + 1)
+        edt.set_value(self.get_debit())
+        edt.set_size(20, 75)
+        xfer.add_component(edt)
+
+        lbl = XferCompLabelForm('creditlbl')
+        lbl.set_location(init_col + 3, init_row)
+        lbl.set_value_as_name(_('credit'))
+        xfer.add_component(lbl)
+        edt = XferCompFloat('creditVal', -10000000, 10000000, currency_decimal)
+        edt.set_location(init_col + 3, init_row + 1)
+        edt.set_value(self.get_credit())
+        edt.set_size(20, 75)
+        xfer.add_component(edt)
 
     class Meta(object):
         # pylint: disable=no-init
