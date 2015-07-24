@@ -11,7 +11,7 @@ from lucterios.framework.xferadvance import XferAddEditor
 from lucterios.framework.xferadvance import XferShowEditor
 from lucterios.framework.xferadvance import XferDelete
 from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage, \
-    FORMTYPE_REFRESH, CLOSE_NO
+    FORMTYPE_REFRESH, CLOSE_NO, SELECT_SINGLE, FORMTYPE_MODAL
 from lucterios.framework.xfercomponents import XferCompLabelForm
 
 MenuManage.add_sub("bookkeeping", "financial", "diacamma.accounting/images/accounting.png", _("Bookkeeping"), _("Manage of Bookkeeping"), 30)
@@ -35,6 +35,10 @@ class ChartsAccountList(XferListEditor):
 
     def fillresponse(self):
         XferListEditor.fillresponse(self)
+        if self.item.year.status == 2:
+            grid_charts = self.get_components('chartsaccount')
+            grid_charts.actions = []
+            grid_charts.add_action(self.request, ActionsManage.get_act_changed('ChartsAccount', 'show', _("Edit"), "images/edit.png"), {'modal':FORMTYPE_MODAL, 'unique':SELECT_SINGLE})
         lbl = XferCompLabelForm("result")
         lbl.set_value_center(self.item.year.total_result_text)
         lbl.set_location(0, 10, 2)

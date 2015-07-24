@@ -27,7 +27,7 @@ from __future__ import unicode_literals
 from django.utils.translation import ugettext_lazy as _
 from django.db.models import Q
 
-from diacamma.accounting.models import Third, AccountThird
+from diacamma.accounting.models import Third, AccountThird, FiscalYear
 
 from lucterios.framework.xferadvance import XferListEditor, XferAddEditor, XferShowEditor, XferDelete
 from lucterios.framework.xfersearch import XferSearchEditor
@@ -39,6 +39,7 @@ from lucterios.contacts.tools import ContactSelection  # pylint: disable=no-name
 from lucterios.contacts.models import AbstractContact  # pylint: disable=no-name-in-module,import-error
 from lucterios.framework import signal_and_lock
 from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompEdit
+from django.utils import six
 
 MenuManage.add_sub("financial", None, "diacamma.accounting/images/financial.png", _("Financial"), _("Financial tools"), 50)
 
@@ -162,6 +163,17 @@ def summary_accounting(xfer):
     lab.set_value_as_infocenter(_("Financial"))
     lab.set_location(0, row, 4)
     xfer.add_component(lab)
+
+    year = FiscalYear.get_current()
+    lbl = XferCompLabelForm("accounting_year")
+    lbl.set_value_center(six.text_type(year))
+    lbl.set_location(0, row + 1, 4)
+    xfer.add_component(lbl)
+    lbl = XferCompLabelForm("accounting_result")
+    lbl.set_value_center(year.total_result_text)
+    lbl.set_location(0, row + 2, 4)
+    xfer.add_component(lbl)
+
     lab = XferCompLabelForm('accountingend')
     lab.set_value_center('{[hr/]}')
     lab.set_location(0, row + 3, 4)
