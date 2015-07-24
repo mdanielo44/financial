@@ -206,7 +206,10 @@ class FiscalYear(LucteriosModel):
     @classmethod
     def get_current(cls, select_year=None):
         if select_year is None:
-            year = FiscalYear.objects.get(is_actif=True)  # pylint: disable=no-member
+            try:
+                year = FiscalYear.objects.get(is_actif=True)  # pylint: disable=no-member
+            except ObjectDoesNotExist:
+                raise LucteriosException(IMPORTANT, _('No fiscal year define!'))
         else:
             year = FiscalYear.objects.get(id=select_year)  # pylint: disable=no-member
         return year
@@ -396,11 +399,11 @@ class EntryAccount(LucteriosModel):
         return self.get_serial(lines)
 
     def serial_control(self, serial_vals):
-        no_change = True
         total_credit = 0
         total_debit = 0
         serial = self.get_entrylineaccounts(serial_vals)
         current = self.entrylineaccount_set.all()  # pylint: disable=no-member
+        no_change = len(serial) > 0
         if len(serial) == len(current):
             for idx in range(len(serial)):
                 total_credit += serial[idx].get_credit()
@@ -540,6 +543,13 @@ class EntryLineAccount(LucteriosModel):
             new_entry_line.reference = None
         return new_entry_line
 
+    @property
+    def has_account(self):
+        try:
+            return self.account is not None
+        except ObjectDoesNotExist:
+            return False
+
     def edit_account_for_line(self, xfer, column, row, debit_rest, credit_rest):
         # pylint: disable=too-many-locals
         from lucterios.framework.tools import CLOSE_NO, FORMTYPE_REFRESH
@@ -580,7 +590,7 @@ class EntryLineAccount(LucteriosModel):
     def edit_extra_for_line(self, xfer, column, row, vertical=True):
         from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompEdit, XferCompSelect
         try:
-            if self.account.is_third:
+            if self.has_account and self.account.is_third:
                 lbl = XferCompLabelForm('thirdlbl')
                 lbl.set_value_as_name(_('third'))
                 sel_thirds = []

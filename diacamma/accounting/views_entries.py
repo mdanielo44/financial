@@ -186,10 +186,11 @@ class EntryAccountEdit(XferAddEditor):
             self.add_component(lbl)
             entry_line = EntryLineAccount()
             entry_line.edit_line(self, 0, last_row + 2, debit_rest, credit_rest)
-            btn = XferCompButton('entrybtn')
-            btn.set_location(3, last_row + 5)
-            btn.set_action(self.request, EntryLineAccountAddModify.get_action(_("Add"), "images/add.png"), {'close':CLOSE_YES})
-            self.add_component(btn)
+            if entry_line.has_account:
+                btn = XferCompButton('entrybtn')
+                btn.set_location(3, last_row + 5)
+                btn.set_action(self.request, EntryLineAccountAddModify.get_action(_("Add"), "images/add.png"), {'close':CLOSE_YES})
+                self.add_component(btn)
 
             self.item.show(self)
             grid_lines = self.get_components('entrylineaccount_set')
@@ -199,13 +200,16 @@ class EntryAccountEdit(XferAddEditor):
             new_grid_lines.set_location(grid_lines.col, grid_lines.row, grid_lines.colspan + 2, grid_lines.rowspan)
             new_grid_lines.add_action(self.request, EntryLineAccountEdit.get_action(_("Edit"), "images/edit.png"), {'close':CLOSE_YES, 'modal':FORMTYPE_MODAL, 'unique':SELECT_SINGLE})
             new_grid_lines.add_action(self.request, EntryLineAccountDel.get_action(_("Delete"), "images/delete.png"), {'close':CLOSE_YES})
-            self.add_component(new_grid_lines)
+            self.add_component(new_grid_lines)            
+            nb_lines = len(new_grid_lines.record_ids)
+        else:
+            nb_lines = 0
         self.actions = []
         if no_change:
             self.add_action(EntryAccountReverse.get_action(_('Reverse'), 'images/edit.png'), {'close':CLOSE_YES})
             self.add_action(WrapAction(_('Close'), 'images/close.png'), {})
         else:
-            if (debit_rest < 0.0001) and (credit_rest < 0.0001):
+            if (debit_rest < 0.0001) and (credit_rest < 0.0001) and (nb_lines>0):
                 self.add_action(EntryAccountValidate.get_action(_('Ok'), 'images/ok.png'), {})
             self.add_action(WrapAction(_('Cancel'), 'images/cancel.png'), {})
 
@@ -230,14 +234,15 @@ class EntryLineAccountAddModify(XferContainerAcknowledge):
     caption = _("Save entry line of account")
 
     def fillresponse(self, entrylineaccount_set=0, serial_entry='', num_cpt=0, credit_val=0.0, debit_val=0.0, third=0, reference='None'):
-        for old_key in ['num_cpt_txt', 'num_cpt', 'credit_val', 'debit_val', 'third', 'reference']:
-            if old_key in self.params.keys():
-                del self.params[old_key]
-        if entrylineaccount_set != 0:
-            serial_entry = self.item.remove_entrylineaccounts(serial_entry, entrylineaccount_set)
-        if serial_entry != '':
-            serial_entry += '\n'
-        serial_entry += EntryLineAccount.add_serial(num_cpt, debit_val, credit_val, third, reference)
+        if (credit_val>0.0001) or (debit_val>0.0001):
+            for old_key in ['num_cpt_txt', 'num_cpt', 'credit_val', 'debit_val', 'third', 'reference']:
+                if old_key in self.params.keys():
+                    del self.params[old_key]
+            if entrylineaccount_set != 0:
+                serial_entry = self.item.remove_entrylineaccounts(serial_entry, entrylineaccount_set)
+            if serial_entry != '':
+                serial_entry += '\n'
+            serial_entry += EntryLineAccount.add_serial(num_cpt, debit_val, credit_val, third, reference)
         self.redirect_action(EntryAccountEdit.get_action(), {'params':{"serial_entry":serial_entry}})
 
 @MenuManage.describ('accounting.add_entryaccount')
