@@ -40,7 +40,7 @@ class ChartsAccountList(XferListEditor):
         lbl.set_location(0, 10, 2)
         self.add_component(lbl)
 
-@ActionsManage.affect('ChartsAccount', 'edit', 'modify', 'add')
+@ActionsManage.affect('ChartsAccount', 'modify', 'add')
 @MenuManage.describ('accounting.add_chartsaccount')
 class ChartsAccountAddModify(XferAddEditor):
     icon = "account.png"

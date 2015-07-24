@@ -30,7 +30,8 @@ from diacamma.accounting.models import EntryLineAccount, EntryAccount, FiscalYea
 
 from lucterios.framework.xferadvance import XferShowEditor, XferDelete
 from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage, \
-    WrapAction, CLOSE_NO, FORMTYPE_REFRESH, CLOSE_YES
+    WrapAction, CLOSE_NO, FORMTYPE_REFRESH, CLOSE_YES, SELECT_SINGLE,\
+    FORMTYPE_MODAL, SELECT_MULTI, SELECT_NONE
 from lucterios.framework.xferadvance import XferListEditor, XferAddEditor
 from lucterios.framework.xfergraphic import XferContainerAcknowledge
 from lucterios.framework.xfercomponents import XferCompButton, XferCompSelect, \
@@ -84,15 +85,16 @@ class EntryLineAccountList(XferListEditor):
     def fillresponse(self):
         XferListEditor.fillresponse(self)
         grid_entries = self.get_components('entrylineaccount')
-        for action_idx in range(len(grid_entries.actions)):
-            grid_entries.actions[action_idx][1]['modal'] = FORMTYPE_NOMODAL
+        grid_entries.actions = []
+        grid_entries.add_action(self.request, EntryAccountOpenFromLine.get_action(_("Edit"), "images/edit.png"), {'modal':FORMTYPE_NOMODAL, 'unique':SELECT_SINGLE})
+        grid_entries.add_action(self.request, EntryAccountDel.get_action(_("Delete"), "images/delete.png"), {'modal':FORMTYPE_NOMODAL, 'unique':SELECT_MULTI})
+        grid_entries.add_action(self.request, EntryAccountAddModify.get_action(_("Add"), "images/add.png"), {'modal':FORMTYPE_MODAL, 'unique':SELECT_NONE})
 
         lbl = XferCompLabelForm("result")
         lbl.set_value_center(self.item.year.total_result_text)
         lbl.set_location(0, 10, 2)
         self.add_component(lbl)
 
-@ActionsManage.affect('EntryLineAccount', 'delete')
 @MenuManage.describ('accounting.delete_entryaccount')
 class EntryAccountDel(XferDelete):
     icon = "entry.png"
@@ -107,7 +109,6 @@ class EntryAccountDel(XferDelete):
         ids = ids.split(';') # pylint: disable=no-member
         self.items = self.model.objects.filter(entrylineaccount__in=ids) # pylint: disable=no-member
 
-@ActionsManage.affect('EntryLineAccount', 'show')
 @MenuManage.describ('accounting.add_entryaccount')
 class EntryAccountOpenFromLine(XferContainerAcknowledge):
     icon = "entry.png"
@@ -132,7 +133,6 @@ class EntryAccountShow(XferShowEditor):
     field_id = 'entryaccount'
     caption = _("Show accounting entry")
 
-@ActionsManage.affect('EntryLineAccount', 'add')
 @MenuManage.describ('accounting.add_entryaccount')
 class EntryAccountAddModify(XferAddEditor):
     icon = "entry.png"

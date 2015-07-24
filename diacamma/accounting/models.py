@@ -37,6 +37,16 @@ from lucterios.CORE.parameters import Params
 from lucterios.contacts.models import AbstractContact  # pylint: disable=no-name-in-module,import-error
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models.aggregates import Sum
+from re import match
+
+# TODO: account code mask
+CASH_MASK = r'5[0-9]*'
+
+PROVIDER_MASK = r'40[0-9]*'
+CUSTOMER_MASK = r'41[0-9]*'
+EMPLOYED_MASK = r'42[0-9]*'
+SOCIETARY_MASK = r'45[0-9]*'
+THIRD_MASK = "%s|%s|%s|%s" % (PROVIDER_MASK, CUSTOMER_MASK, EMPLOYED_MASK, SOCIETARY_MASK)
 
 class Third(LucteriosModel):
     contact = models.ForeignKey('contacts.AbstractContact', verbose_name=_('contact'), null=False)
@@ -167,7 +177,7 @@ class FiscalYear(LucteriosModel):
 
     @property
     def total_cash(self):
-        val = EntryLineAccount.objects.filter(account__code__startswith='5', account__year=self).aggregate(Sum('amount'))  # pylint: disable=no-member
+        val = EntryLineAccount.objects.filter(account__code__regex=CASH_MASK, account__year=self).aggregate(Sum('amount'))  # pylint: disable=no-member
         if val['amount__sum'] is None:
             return 0
         else:
@@ -175,7 +185,7 @@ class FiscalYear(LucteriosModel):
 
     @property
     def total_cash_close(self):
-        val = EntryLineAccount.objects.filter(entry__close=True, account__code__startswith='5', account__year=self).aggregate(Sum('amount'))  # pylint: disable=no-member
+        val = EntryLineAccount.objects.filter(entry__close=True, account__code__regex=CASH_MASK, account__year=self).aggregate(Sum('amount'))  # pylint: disable=no-member
         if val['amount__sum'] is None:
             return 0
         else:
@@ -278,6 +288,33 @@ class ChartsAccount(LucteriosModel):
     def current_validated(self):
         return format_devise(self.credit_debit_way() * self.get_current_validated(), 2)
 
+    @property
+    def is_third(self):
+        return match(THIRD_MASK, self.code) is not None
+
+    @property
+    def is_cash(self):
+        return match(CASH_MASK, self.code) is not None
+
+    def show(self, xfer):
+        from lucterios.framework.xfercomponents import XferCompGrid, XferCompLabelForm
+        if self.is_third:
+            fieldnames = ['entry.num', 'entry.date_entry', 'entry.date_value', 'third', 'entry.designation', (_('debit'), 'debit'), (_('credit'), 'credit')]
+        elif self.is_cash:
+            fieldnames = ['entry.num', 'entry.date_entry', 'entry.date_value', 'reference', 'entry.designation', (_('debit'), 'debit'), (_('credit'), 'credit')]
+        else:
+            fieldnames = ['entry.num', 'entry.date_entry', 'entry.date_value', 'entry.designation', (_('debit'), 'debit'), (_('credit'), 'credit')]
+        row = xfer.get_max_row() + 1
+        lbl = XferCompLabelForm('lbl_entrylineaccount')
+        lbl.set_location(1, row)
+        lbl.set_value_as_name(EntryLineAccount._meta.verbose_name)  # pylint: disable=protected-access,no-member
+        xfer.add_component(lbl)
+        comp = XferCompGrid('entrylineaccount')
+        comp.set_model(self.entrylineaccount_set.all(), fieldnames, xfer) # pylint: disable=no-member
+        comp.add_actions(xfer, model=EntryLineAccount)
+        comp.set_location(2, row)
+        xfer.add_component(comp)
+
     class Meta(object):
         # pylint: disable=no-init
         verbose_name = _('charts of account')
@@ -374,7 +411,7 @@ class EntryLineAccount(LucteriosModel):
     entry = models.ForeignKey('EntryAccount', verbose_name=_('entry'), null=False, on_delete=models.CASCADE)
     amount = models.FloatField(_('amount'))
     reference = models.CharField(_('reference'), max_length=100, null=True)
-    third = models.ForeignKey('Third', verbose_name=_('entry'), null=True, on_delete=models.CASCADE)
+    third = models.ForeignKey('Third', verbose_name=_('third'), null=True, on_delete=models.CASCADE)
 
     @classmethod
     def get_default_fields(cls):
