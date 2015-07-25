@@ -41,7 +41,6 @@ from lucterios.framework import signal_and_lock
 from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompEdit, \
     XferCompButton
 from django.utils import six
-from django.core.exceptions import ObjectDoesNotExist
 from lucterios.framework.error import LucteriosException
 from diacamma.accounting.views_admin import Configuration
 

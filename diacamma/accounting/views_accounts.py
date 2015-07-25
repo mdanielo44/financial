@@ -30,8 +30,13 @@ class ChartsAccountList(XferListEditor):
         self.item.year = FiscalYear.get_current(select_year)
         self.fill_from_model(0, 1, False, ['year', 'type_of_account'])
         self.get_components('year').set_action(self.request, ChartsAccountList.get_action(), {'close':CLOSE_NO, 'modal':FORMTYPE_REFRESH})
-        self.get_components('type_of_account').set_action(self.request, ChartsAccountList.get_action(modal=FORMTYPE_REFRESH), {'close':CLOSE_NO, 'modal':FORMTYPE_REFRESH})
-        self.filter = [Q(year=self.item.year) & Q(type_of_account=select_type)]
+        type_of_account = self.get_components('type_of_account')
+        type_of_account.select_list.append((-1, '---'))
+        type_of_account.set_action(self.request, ChartsAccountList.get_action(modal=FORMTYPE_REFRESH), {'close':CLOSE_NO, 'modal':FORMTYPE_REFRESH})
+        q_filter = Q(year=self.item.year)
+        if select_type != -1:
+            q_filter &= Q(type_of_account=select_type)
+        self.filter = [q_filter]
 
     def fillresponse(self):
         XferListEditor.fillresponse(self)

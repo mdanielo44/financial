@@ -262,8 +262,11 @@ class ChartsAccount(LucteriosModel):
         return "[%s] %s" % (self.code, self.name)
 
     def get_last_year_total(self):
-        # pylint: disable=no-self-use
-        return -24.98
+        val = self.entrylineaccount_set.filter(entry__journal__id=1).aggregate(Sum('amount'))  # pylint: disable=no-member
+        if val['amount__sum'] is None:
+            return 0
+        else:
+            return val['amount__sum']
 
     def get_current_total(self):
         val = self.entrylineaccount_set.all().aggregate(Sum('amount'))  # pylint: disable=no-member
@@ -330,10 +333,32 @@ class ChartsAccount(LucteriosModel):
         verbose_name_plural = _('charts of accounts')
         ordering = ['year', 'code']
 
+class Journal(LucteriosModel):
+    name = models.CharField(_('name'), max_length=50, unique=True)
+
+    def __str__(self):
+        return self.name
+
+    def can_delete(self):
+        if self.id in [1, 2, 3, 4, 5]: # pylint: disable=no-member
+            return _('journal reserved!')
+        else:
+            return ''
+
+    @classmethod
+    def get_default_fields(cls):
+        return ["name"]
+
+    class Meta(object):
+        # pylint: disable=no-init
+        verbose_name = _('accounting journal')
+        verbose_name_plural = _('accounting journals')
+        default_permissions = []
+
 class EntryAccount(LucteriosModel):
     year = models.ForeignKey('FiscalYear', verbose_name=_('fiscal year'), null=False, on_delete=models.CASCADE)
     num = models.IntegerField(verbose_name=_('numeros'), null=True)
-
+    journal = models.ForeignKey('Journal', verbose_name=_('journal'), null=False, default=0, on_delete=models.PROTECT)
     date_entry = models.DateField(verbose_name=_('date entry'), null=True)
     date_value = models.DateField(verbose_name=_('date value'), null=True)
     designation = models.CharField(_('name'), max_length=200)
@@ -341,15 +366,15 @@ class EntryAccount(LucteriosModel):
 
     @classmethod
     def get_default_fields(cls):
-        return ['year', 'close', 'num', 'date_entry', 'date_value', 'designation']
+        return ['year', 'close', 'num', 'journal', 'date_entry', 'date_value', 'designation']
 
     @classmethod
     def get_edit_fields(cls):
-        return ['date_value', 'designation']
+        return ['journal', 'date_value', 'designation']
 
     @classmethod
     def get_show_fields(cls):
-        return ['num', 'date_entry', 'date_value', 'designation']
+        return ['num', 'journal', 'date_entry', 'date_value', 'designation']
 
     def can_delete(self):
         if self.close:

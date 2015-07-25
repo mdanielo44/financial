@@ -26,7 +26,8 @@ from __future__ import unicode_literals
 from django.utils.translation import ugettext_lazy as _
 from django.db.models import Q
 
-from diacamma.accounting.models import EntryLineAccount, EntryAccount, FiscalYear
+from diacamma.accounting.models import EntryLineAccount, EntryAccount, FiscalYear, \
+    Journal
 
 from lucterios.framework.xferadvance import XferShowEditor, XferDelete
 from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage, \
@@ -54,29 +55,37 @@ class EntryLineAccountList(XferListEditor):
         self.item = EntryAccount()
 
         select_year = self.getparam('year')
+        select_journal = self.getparam('journal', 4)
         select_filter = self.getparam('filter', 1)
 
         self.item.year = FiscalYear.get_current(select_year)
-        self.fill_from_model(0, 1, False, ['year'])
+        self.item.journal = Journal.objects.get(id=1) # pylint: disable=no-member
+        self.fill_from_model(0, 1, False, ['year', 'journal'])
         self.get_components('year').set_action(self.request, EntryLineAccountList.get_action(), {'close':CLOSE_NO, 'modal':FORMTYPE_REFRESH})
+        journal = self.get_components('journal')
+        journal.select_list.append((-1, '---'))
+        journal.set_value(select_journal)
+        journal.set_action(self.request, EntryLineAccountList.get_action(), {'close':CLOSE_NO, 'modal':FORMTYPE_REFRESH})
 
         lbl = XferCompLabelForm("filterLbl")
-        lbl.set_location(0, 2)
+        lbl.set_location(0, 3)
         lbl.set_value_as_name(_("Filter"))
         self.add_component(lbl)
         sel = XferCompSelect("filter")
         sel.set_select({0:_('All'), 1:_('In progress'), 2:_('Valid'), 3:_('Lettered'), 4:_('Not lettered')})
         sel.set_value(select_filter)
-        sel.set_location(1, 2)
+        sel.set_location(1, 3)
         sel.set_size(20, 200)
         sel.set_action(self.request, EntryLineAccountList.get_action(modal=FORMTYPE_REFRESH), {'close':CLOSE_NO, 'modal':FORMTYPE_REFRESH})
         self.add_component(sel)
 
         current_filter = Q(entry__year=self.item.year)
         if select_filter == 1:
-            current_filter = current_filter & Q(entry__close=False)
+            current_filter &= Q(entry__close=False)
         elif select_filter == 2:
-            current_filter = current_filter & Q(entry__close=True)
+            current_filter &= Q(entry__close=True)
+        if select_journal != -1:
+            current_filter &= Q(entry__journal__id=select_journal)
         self.filter = [current_filter]
 
     def fillresponse(self):
@@ -200,7 +209,8 @@ class EntryAccountEdit(XferAddEditor):
             new_grid_lines.set_location(grid_lines.col, grid_lines.row, grid_lines.colspan + 2, grid_lines.rowspan)
             new_grid_lines.add_action(self.request, EntryLineAccountEdit.get_action(_("Edit"), "images/edit.png"), {'close':CLOSE_YES, 'modal':FORMTYPE_MODAL, 'unique':SELECT_SINGLE})
             new_grid_lines.add_action(self.request, EntryLineAccountDel.get_action(_("Delete"), "images/delete.png"), {'close':CLOSE_YES})
-            self.add_component(new_grid_lines)            
+            self.add_component(new_grid_lines)
+
             nb_lines = len(new_grid_lines.record_ids)
         else:
             nb_lines = 0
@@ -209,7 +219,7 @@ class EntryAccountEdit(XferAddEditor):
             self.add_action(EntryAccountReverse.get_action(_('Reverse'), 'images/edit.png'), {'close':CLOSE_YES})
             self.add_action(WrapAction(_('Close'), 'images/close.png'), {})
         else:
-            if (debit_rest < 0.0001) and (credit_rest < 0.0001) and (nb_lines>0):
+            if (debit_rest < 0.0001) and (credit_rest < 0.0001) and (nb_lines > 0):
                 self.add_action(EntryAccountValidate.get_action(_('Ok'), 'images/ok.png'), {})
             self.add_action(WrapAction(_('Cancel'), 'images/cancel.png'), {})
 
@@ -234,7 +244,7 @@ class EntryLineAccountAddModify(XferContainerAcknowledge):
     caption = _("Save entry line of account")
 
     def fillresponse(self, entrylineaccount_set=0, serial_entry='', num_cpt=0, credit_val=0.0, debit_val=0.0, third=0, reference='None'):
-        if (credit_val>0.0001) or (debit_val>0.0001):
+        if (credit_val > 0.0001) or (debit_val > 0.0001):
             for old_key in ['num_cpt_txt', 'num_cpt', 'credit_val', 'debit_val', 'third', 'reference']:
                 if old_key in self.params.keys():
                     del self.params[old_key]
@@ -252,7 +262,7 @@ class EntryLineAccountEdit(XferContainerCustom):
     caption = _("Modify entry line of account")
 
     def fillresponse(self, entryaccount, entrylineaccount_set=0, serial_entry=''):
-        entry = EntryAccount.objects.get(id=entryaccount) # pylint: disable=no-member
+        entry = EntryAccount.objects.get(id=entryaccount)  # pylint: disable=no-member
         for line in entry.get_entrylineaccounts(serial_entry):
             if line.id == entrylineaccount_set:
                 self.item = line

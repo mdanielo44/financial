@@ -28,6 +28,8 @@ from django.utils.translation import ugettext_lazy as _
 
 from django.db import models, migrations
 from lucterios.CORE.models import Parameter
+from diacamma.accounting.models import Journal
+from django.db.models.deletion import PROTECT
 
 def initial_values(*args):
     # pylint: disable=unused-argument, no-member, expression-not-assigned
@@ -48,6 +50,12 @@ def initial_values(*args):
     param.args = "{'Min':0, 'Max':4}"
     param.value = '2'
     param.save()
+
+    Journal.objects.create(name=_("Last year report"))
+    Journal.objects.create(name=_("Buying"))
+    Journal.objects.create(name=_("Selling"))
+    Journal.objects.create(name=_("Payment"))
+    Journal.objects.create(name=_("Other"))
 
 class Migration(migrations.Migration):
 
@@ -122,10 +130,23 @@ class Migration(migrations.Migration):
             bases=(models.Model,),
         ),
         migrations.CreateModel(
+            name='Journal',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', auto_created=True, serialize=False, primary_key=True)),
+                ('name', models.CharField(max_length=50, verbose_name='name', unique=True)),
+            ],
+            options={
+                'default_permissions': [],
+                'verbose_name': 'accounting journal',
+                'verbose_name_plural': 'accounting journals',
+            },
+        ),
+        migrations.CreateModel(
             name='EntryAccount',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
                 ('num', models.IntegerField(verbose_name='numeros', null=True)),
+                ('journal', models.ForeignKey(verbose_name='journal', to='accounting.Journal', default=0, on_delete=PROTECT)),
                 ('date_entry', models.DateField(verbose_name='date entry', null=True)),
                 ('date_value', models.DateField(verbose_name='date value', null=True)),
                 ('designation', models.CharField(verbose_name='name', max_length=200)),
@@ -146,7 +167,7 @@ class Migration(migrations.Migration):
                 ('reference', models.CharField(verbose_name='reference', max_length=100, null=True)),
                 ('account', models.ForeignKey(verbose_name='account', to='accounting.ChartsAccount')),
                 ('entry', models.ForeignKey(verbose_name='entry', to='accounting.EntryAccount')),
-                ('third', models.ForeignKey(verbose_name='entry', null=True, to='accounting.Third')),
+                ('third', models.ForeignKey(null=True, verbose_name='third', to='accounting.Third')),
             ],
             options={
                 'default_permissions': [],
