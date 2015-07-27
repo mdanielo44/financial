@@ -23,6 +23,7 @@ class ChartsAccountList(XferListEditor):
     model = ChartsAccount
     field_id = 'chartsaccount'
     caption = _("charts of account")
+    multi_page = False
 
     def fillresponse_header(self):
         select_year = self.getparam('year')

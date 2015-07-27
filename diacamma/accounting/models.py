@@ -41,6 +41,7 @@ from re import match
 
 # TODO: account code mask
 CASH_MASK = r'5[0-9]*'
+CASH_MASK_BEGIN = '5'
 
 PROVIDER_MASK = r'40[0-9]*'
 CUSTOMER_MASK = r'41[0-9]*'
@@ -65,7 +66,7 @@ class Third(LucteriosModel):
 
     @classmethod
     def get_show_fields(cls):
-        return {'':['contact'], _('001@AccountThird information'):["status", "accountthird_set"]}
+        return {'':['contact'], _('001@AccountThird information'):["status", "accountthird_set", ((_('total'), 'total'),)]}
 
     @classmethod
     def get_search_fields(cls):
@@ -73,13 +74,21 @@ class Third(LucteriosModel):
         for field_name in AbstractContact.get_search_fields():
             if not isinstance(field_name, tuple):
                 result.append("contact." + field_name)
-
         result.extend(["status", "accountthird_set.code"])
         return result
 
+    @property
+    def total(self):
+        res = 0
+        val = EntryLineAccount.objects.filter(third=self).aggregate(Sum('amount'))  # pylint: disable=no-member
+        if val['amount__sum'] is not None:
+            res = val['amount__sum']
+
+        return format_devise(res, 5)
+
     def show(self, xfer):
-        from lucterios.framework.xfercomponents import XferCompButton
-        from lucterios.framework.tools import FORMTYPE_MODAL, CLOSE_NO, ActionsManage
+        from lucterios.framework.xfercomponents import XferCompButton, XferCompGrid
+        from lucterios.framework.tools import FORMTYPE_MODAL, CLOSE_NO, ActionsManage, SELECT_SINGLE
         xfer.tab = 0
         old_item = xfer.item
         xfer.item = self.contact.get_final_child()  # pylint: disable=no-member
@@ -91,6 +100,16 @@ class Third(LucteriosModel):
                 {'modal':FORMTYPE_MODAL, 'close':CLOSE_NO, 'params':{modal_name.lower():six.text_type(xfer.item.id)}})
         xfer.add_component(btn)
         xfer.item = old_item
+        try:
+            xfer.new_tab(_('entry of account'))
+            link_grid_lines = XferCompGrid('entrylineaccount')
+            link_grid_lines.set_model(self.entrylineaccount_set.filter(entry__year=FiscalYear.get_current()), EntryLineAccount.get_other_fields(), xfer)  # pylint: disable=no-member
+            link_grid_lines.set_location(0, 1, 2)
+            link_grid_lines.add_action(xfer.request, ActionsManage.get_act_changed('EntryLineAccount', 'open', _('Edit'), 'images/edit.png'), \
+                                    {'modal':FORMTYPE_MODAL, 'unique':SELECT_SINGLE, 'close':CLOSE_NO})
+            xfer.add_component(link_grid_lines)
+        except LucteriosException:
+            pass
 
     class Meta(object):
         # pylint: disable=no-init
@@ -106,7 +125,34 @@ class AccountThird(LucteriosModel):
 
     @classmethod
     def get_default_fields(cls):
+        return ["code", (_('total'), 'total_txt')]
+
+    @classmethod
+    def get_edit_fields(cls):
         return ["code"]
+
+    @property
+    def current_charts(self):
+        try:
+            return ChartsAccount.objects.get(code=self.code, year=FiscalYear.get_current())  # pylint: disable=no-member
+        except ObjectDoesNotExist:
+            return None
+
+    @property
+    def total_txt(self):
+        chart = self.current_charts
+        if chart is not None:
+            return format_devise(chart.credit_debit_way() * self.total, 2)
+        else:
+            return format_devise(0, 2)
+
+    @property
+    def total(self):
+        val = EntryLineAccount.objects.filter(third=self.third, account__code=self.code).aggregate(Sum('amount'))  # pylint: disable=no-member
+        if val['amount__sum'] is None:
+            return 0
+        else:
+            return val['amount__sum']
 
     class Meta(object):
         # pylint: disable=no-init
@@ -195,7 +241,6 @@ class FiscalYear(LucteriosModel):
     def total_result_text(self):
         value = {}
         value['revenue'] = format_devise(self.total_revenue, 5)
-
         value['expense'] = format_devise(self.total_expense, 5)
         value['result'] = format_devise(self.total_revenue - self.total_expense, 5)
         value['cash'] = format_devise(self.total_cash, 5)
@@ -340,7 +385,7 @@ class Journal(LucteriosModel):
         return self.name
 
     def can_delete(self):
-        if self.id in [1, 2, 3, 4, 5]: # pylint: disable=no-member
+        if self.id in [1, 2, 3, 4, 5]:  # pylint: disable=no-member
             return _('journal reserved!')
         else:
             return ''
@@ -355,10 +400,43 @@ class Journal(LucteriosModel):
         verbose_name_plural = _('accounting journals')
         default_permissions = []
 
+class AccountLink(LucteriosModel):
+
+    def __str__(self):
+        return self.letter
+
+    @property
+    def letter(self):
+        year = self.entryaccount_set.all()[0].year  # pylint: disable=no-member
+        nb_link = AccountLink.objects.filter(entryaccount__year=year, id__lt=self.id).count()  # pylint: disable=no-member
+        letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+        res = ''
+        while nb_link >= 26:
+            div, mod = divmod(nb_link, 26)
+            res = letters[mod] + res
+            nb_link = int(div) - 1
+        return letters[nb_link] + res
+
+    @classmethod
+    def create_link(cls, entries):
+        for entry in entries:
+            entry.unlink()
+        new_link = AccountLink.objects.create()  # pylint: disable=no-member
+        for entry in entries:
+            entry.link = new_link
+            entry.save()
+
+    class Meta(object):
+        # pylint: disable=no-init
+        verbose_name = _('letter')
+        verbose_name_plural = _('letters')
+        default_permissions = []
+
 class EntryAccount(LucteriosModel):
     year = models.ForeignKey('FiscalYear', verbose_name=_('fiscal year'), null=False, on_delete=models.CASCADE)
     num = models.IntegerField(verbose_name=_('numeros'), null=True)
     journal = models.ForeignKey('Journal', verbose_name=_('journal'), null=False, default=0, on_delete=models.PROTECT)
+    link = models.ForeignKey('AccountLink', verbose_name=_('link'), null=True, on_delete=models.SET_NULL)
     date_entry = models.DateField(verbose_name=_('date entry'), null=True)
     date_value = models.DateField(verbose_name=_('date value'), null=True)
     designation = models.CharField(_('name'), max_length=200)
@@ -384,15 +462,43 @@ class EntryAccount(LucteriosModel):
 
     def show(self, xfer):
         from lucterios.framework.xfercomponents import XferCompLabelForm
+        from lucterios.framework.xfercomponents import XferCompGrid
+        from lucterios.framework.tools import SELECT_SINGLE, FORMTYPE_MODAL, CLOSE_YES, \
+            ActionsManage
         last_row = xfer.get_max_row() + 10
 
         lbl = XferCompLabelForm('sep3')
         lbl.set_location(0, last_row + 1, 6)
-        lbl.set_value("{[center]}{[hr/]}{[/center]}")
+        lbl.set_value_center("{[hr/]}")
         xfer.add_component(lbl)
         xfer.filltab_from_model(1, last_row + 2, True, ['entrylineaccount_set'])
         grid_lines = xfer.get_components('entrylineaccount_set')
         grid_lines.actions = []
+
+        if self.has_third:
+            sum_customer = self.entrylineaccount_set.filter(account__code__regex=THIRD_MASK).aggregate(Sum('amount'))  # pylint: disable=no-member
+            if (sum_customer['amount__sum'] is not None) and (sum_customer['amount__sum'] < 0):
+                lbl = XferCompLabelForm('asset_warning')
+                lbl.set_location(0, last_row + 3, 6)
+                lbl.set_value_as_header(_("entry of accounting for an asset"))
+                xfer.add_component(lbl)
+
+        if self.link is not None:
+            entrylines = EntryLineAccount.objects.filter(entry__link=self.link).exclude(entry__id=self.id)  # pylint: disable=no-member
+            lbl = XferCompLabelForm('sep4')
+            lbl.set_location(0, last_row + 4, 6)
+            lbl.set_value_center("{[hr/]}")
+            xfer.add_component(lbl)
+            lbl = XferCompLabelForm('entrylinklab')
+            lbl.set_location(1, last_row + 5, 5)
+            lbl.set_value_center(_("Linked entries"))
+            xfer.add_component(lbl)
+            link_grid_lines = XferCompGrid('entrylineaccount')
+            link_grid_lines.set_model(entrylines, EntryLineAccount.get_other_fields(), xfer)
+            link_grid_lines.set_location(1, last_row + 6, 5)
+            link_grid_lines.add_action(xfer.request, ActionsManage.get_act_changed('EntryLineAccount', 'open', _('Edit'), 'images/edit.png'), \
+                            {'modal':FORMTYPE_MODAL, 'unique':SELECT_SINGLE, 'close':CLOSE_YES})
+            xfer.add_component(link_grid_lines)
 
     def get_serial(self, entrylines=None):
         if entrylines is None:
@@ -448,8 +554,41 @@ class EntryAccount(LucteriosModel):
             self.num = 1
         else:
             self.num = val['num__max'] + 1
-
         self.date_entry = date.today()
+
+    def unlink(self):
+        if self.link is not None:
+            for entry in self.link.entryaccount_set.all():
+                entry.link = None
+                entry.save()
+            self.link.delete()
+            self.link = None
+
+    def create_linked(self):
+        paym_journ = Journal.objects.get(id=4)  # pylint: disable=no-member
+        paym_desig = _('payment of %s') % self.designation
+        new_entry = EntryAccount.objects.create(year=self.year, journal=paym_journ, designation=paym_desig, date_value=date.today())  # pylint: disable=no-member
+        serial_val = ''
+        for line in self.entrylineaccount_set.all():  # pylint: disable=no-member
+            if line.account.is_third:
+                if serial_val != '':
+                    serial_val += '\n'
+                serial_val += line.create_clone_inverse()
+        AccountLink.create_link([self, new_entry])
+
+        return new_entry, serial_val
+
+    @property
+    def has_third(self):
+        return self.entrylineaccount_set.filter(account__code__regex=THIRD_MASK).count() > 0  # pylint: disable=no-member
+
+    @property
+    def has_customer(self):
+        return self.entrylineaccount_set.filter(account__code__regex=CUSTOMER_MASK).count() > 0  # pylint: disable=no-member
+
+    @property
+    def has_cash(self):
+        return self.entrylineaccount_set.filter(account__code__regex=CASH_MASK).count() > 0  # pylint: disable=no-member
 
     class Meta(object):
         # pylint: disable=no-init
@@ -467,6 +606,11 @@ class EntryLineAccount(LucteriosModel):
     @classmethod
     def get_default_fields(cls):
         return [(_('account'), 'entry_account'), (_('debit'), 'debit'), (_('credit'), 'credit'), 'reference']
+
+    @classmethod
+    def get_other_fields(cls):
+        return ['entry.num', 'entry.date_entry', 'entry.date_value', (_('account'), 'entry_account'), \
+                    'entry.designation', (_('debit'), 'debit'), (_('credit'), 'credit'), 'entry.link']
 
     @classmethod
     def get_edit_fields(cls):
@@ -487,7 +631,7 @@ class EntryLineAccount(LucteriosModel):
 
     def get_debit(self):
         try:
-            return max((0, self.account.credit_debit_way() * self.amount))  # pylint: disable=no-member
+            return max((0, -1 * self.account.credit_debit_way() * self.amount))  # pylint: disable=no-member
         except ObjectDoesNotExist:
             return 0.0
 
@@ -497,7 +641,7 @@ class EntryLineAccount(LucteriosModel):
 
     def get_credit(self):
         try:
-            return max((0, -1 * self.account.credit_debit_way() * self.amount))  # pylint: disable=no-member
+            return max((0, self.account.credit_debit_way() * self.amount))  # pylint: disable=no-member
         except ObjectDoesNotExist:
             return 0.0
 
@@ -507,9 +651,9 @@ class EntryLineAccount(LucteriosModel):
 
     def set_montant(self, debit_val, credit_val):
         if debit_val > 0:
-            self.amount = debit_val * self.account.credit_debit_way()
+            self.amount = -1 * debit_val * self.account.credit_debit_way()
         elif credit_val > 0:
-            self.amount = -1 * credit_val * self.account.credit_debit_way()
+            self.amount = credit_val * self.account.credit_debit_way()
         else:
             self.amount = 0
 
@@ -567,6 +711,19 @@ class EntryLineAccount(LucteriosModel):
         if new_entry_line.reference == "None":
             new_entry_line.reference = None
         return new_entry_line
+
+    def create_clone_inverse(self):
+        import time
+        new_entry_line = EntryLineAccount()
+        new_entry_line.id = -1 * int(time.time() * 60)  # pylint: disable=invalid-name,attribute-defined-outside-init
+        new_entry_line.account = self.account
+        if self.third:
+            new_entry_line.third = self.third
+        else:
+            new_entry_line.third = None
+        new_entry_line.amount = -1 * self.amount
+        new_entry_line.reference = self.reference
+        return new_entry_line.get_serial()
 
     @property
     def has_account(self):

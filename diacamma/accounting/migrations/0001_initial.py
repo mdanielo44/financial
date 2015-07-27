@@ -29,7 +29,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.db import models, migrations
 from lucterios.CORE.models import Parameter
 from diacamma.accounting.models import Journal
-from django.db.models.deletion import PROTECT
+from django.db.models.deletion import PROTECT, SET_NULL
 
 def initial_values(*args):
     # pylint: disable=unused-argument, no-member, expression-not-assigned
@@ -51,11 +51,11 @@ def initial_values(*args):
     param.value = '2'
     param.save()
 
-    Journal.objects.create(name=_("Last year report"))
-    Journal.objects.create(name=_("Buying"))
-    Journal.objects.create(name=_("Selling"))
-    Journal.objects.create(name=_("Payment"))
-    Journal.objects.create(name=_("Other"))
+    Journal.objects.create(name=_("Last year report"), id=1)
+    Journal.objects.create(name=_("Buying"), id=2)
+    Journal.objects.create(name=_("Selling"), id=3)
+    Journal.objects.create(name=_("Payment"), id=4)
+    Journal.objects.create(name=_("Other"), id=5)
 
 class Migration(migrations.Migration):
 
@@ -142,11 +142,23 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.CreateModel(
+            name='AccountLink',
+            fields=[
+                ('id', models.AutoField(serialize=False, auto_created=True, verbose_name='ID', primary_key=True)),
+            ],
+            options={
+                'verbose_name_plural': 'letters',
+                'verbose_name': 'letter',
+                'default_permissions': [],
+            },
+        ),
+        migrations.CreateModel(
             name='EntryAccount',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
                 ('num', models.IntegerField(verbose_name='numeros', null=True)),
                 ('journal', models.ForeignKey(verbose_name='journal', to='accounting.Journal', default=0, on_delete=PROTECT)),
+                ('link', models.ForeignKey(verbose_name='link', to='accounting.AccountLink', null=True, on_delete=SET_NULL)),
                 ('date_entry', models.DateField(verbose_name='date entry', null=True)),
                 ('date_value', models.DateField(verbose_name='date value', null=True)),
                 ('designation', models.CharField(verbose_name='name', max_length=200)),

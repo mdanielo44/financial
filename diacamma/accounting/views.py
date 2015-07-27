@@ -43,6 +43,7 @@ from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompEdit, 
 from django.utils import six
 from lucterios.framework.error import LucteriosException
 from diacamma.accounting.views_admin import Configuration
+from django.db.models.query import QuerySet
 
 MenuManage.add_sub("financial", None, "diacamma.accounting/images/financial.png", _("Financial"), _("Financial tools"), 50)
 
@@ -54,6 +55,12 @@ class ThirdList(XferListEditor):
     field_id = 'third'
     caption = _("Thirds")
     action_list = [('search', _("Search"), "diacamma.accounting/images/thirds.png"), ('listing', _("Listing"), "images/print.png")]
+
+    def get_items_from_filter(self):
+        items = XferListEditor.get_items_from_filter(self)
+        res = QuerySet(model=Third)
+        res._result_cache = sorted(items, key=lambda t: six.text_type(t))  # pylint: disable=protected-access,unnecessary-lambda
+        return res
 
     def fillresponse_header(self):
         contact_filter = self.getparam('filter')

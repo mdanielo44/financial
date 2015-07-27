@@ -27,7 +27,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.db.models import Q
 
 from diacamma.accounting.models import EntryLineAccount, EntryAccount, FiscalYear, \
-    Journal
+    Journal, AccountLink, CASH_MASK_BEGIN
 
 from lucterios.framework.xferadvance import XferShowEditor, XferDelete
 from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage, \
@@ -48,8 +48,7 @@ class EntryLineAccountList(XferListEditor):
     model = EntryLineAccount
     field_id = 'entrylineaccount'
     caption = _("accounting entries")
-    fieldnames = ['entry.num', 'entry.date_entry', 'entry.date_value', (_('account'), 'entry_account'), \
-                    'entry.designation', (_('debit'), 'debit'), (_('credit'), 'credit')]
+    fieldnames = EntryLineAccount.get_other_fields()
 
     def fillresponse_header(self):
         self.item = EntryAccount()
@@ -59,7 +58,7 @@ class EntryLineAccountList(XferListEditor):
         select_filter = self.getparam('filter', 1)
 
         self.item.year = FiscalYear.get_current(select_year)
-        self.item.journal = Journal.objects.get(id=1) # pylint: disable=no-member
+        self.item.journal = Journal.objects.get(id=1)  # pylint: disable=no-member
         self.fill_from_model(0, 1, False, ['year', 'journal'])
         self.get_components('year').set_action(self.request, EntryLineAccountList.get_action(), {'close':CLOSE_NO, 'modal':FORMTYPE_REFRESH})
         journal = self.get_components('journal')
@@ -84,6 +83,10 @@ class EntryLineAccountList(XferListEditor):
             current_filter &= Q(entry__close=False)
         elif select_filter == 2:
             current_filter &= Q(entry__close=True)
+        elif select_filter == 3:
+            current_filter &= Q(entry__link__id__gt=0)
+        elif select_filter == 4:
+            current_filter &= Q(entry__link=None)
         if select_journal != -1:
             current_filter &= Q(entry__journal__id=select_journal)
         self.filter = [current_filter]
@@ -98,6 +101,9 @@ class EntryLineAccountList(XferListEditor):
             grid_entries.add_action(self.request, EntryAccountDel.get_action(_("Delete"), "images/delete.png"), {'modal':FORMTYPE_NOMODAL, 'unique':SELECT_MULTI})
             grid_entries.add_action(self.request, EntryAccountEdit.get_action(_("Add"), "images/add.png"), {'modal':FORMTYPE_MODAL, 'unique':SELECT_NONE})
             grid_entries.add_action(self.request, EntryAccountClose.get_action(_("Closed"), "images/ok.png"), {'modal':FORMTYPE_MODAL, 'unique':SELECT_MULTI})
+        if self.item.year.status in [0, 1]:
+            grid_entries.add_action(self.request, EntryAccountLink.get_action(_("Link/Unlink"), ""), {'modal':FORMTYPE_MODAL, 'unique':SELECT_MULTI})
+
         lbl = XferCompLabelForm("result")
         lbl.set_value_center(self.item.year.total_result_text)
         lbl.set_location(0, 10, 2)
@@ -139,6 +145,26 @@ class EntryAccountClose(XferContainerAcknowledge):
                 item.save()
 
 @MenuManage.describ('accounting.add_entryaccount')
+class EntryAccountLink(XferContainerAcknowledge):
+    icon = "entry.png"
+    model = EntryAccount
+    field_id = 'entryaccount'
+    caption = _("Delete accounting entry")
+
+    def fillresponse(self):
+        ids = self.getparam('entrylineaccount')
+        if ids is None:
+            raise LucteriosException(GRAVE, _("No selection"))
+        ids = ids.split(';')  # pylint: disable=no-member
+        self.items = self.model.objects.filter(entrylineaccount__in=ids)  # pylint: disable=no-member
+        if len(self.items) == 1:
+            if self.confirme(_('Do you want unlink this entry?')):
+                self.items[0].unlink()
+        else:
+            AccountLink.create_link(self.items)
+
+@ActionsManage.affect('EntryLineAccount', 'open')
+@MenuManage.describ('accounting.add_entryaccount')
 class EntryAccountOpenFromLine(XferContainerAcknowledge):
     icon = "entry.png"
     model = EntryLineAccount
@@ -146,8 +172,9 @@ class EntryAccountOpenFromLine(XferContainerAcknowledge):
     caption = _("accounting entries")
 
     def fillresponse(self):
-        if "SAVE" in self.params.keys():
-            del self.params["SAVE"]
+        for old_key in ["SAVE", 'entrylineaccount']:
+            if old_key in self.params.keys():
+                del self.params[old_key]
         entry_account = self.item.entry
         option = {'params':{'entryaccount':entry_account.id}}
         if entry_account.close:
@@ -170,6 +197,35 @@ class EntryAccountEdit(XferAddEditor):
     caption_add = _("Add entry of account")
     caption_modify = _("Modify accounting entry")
 
+    def _entryline_editor(self, serial_vals, debit_rest, credit_rest):
+        last_row = self.get_max_row() + 5
+        lbl = XferCompLabelForm('sep1')
+        lbl.set_location(0, last_row, 6)
+        lbl.set_value("{[center]}{[hr/]}{[/center]}")
+        self.add_component(lbl)
+        lbl = XferCompLabelForm('sep2')
+        lbl.set_location(1, last_row + 1, 5)
+        lbl.set_value_center(_("Add a entry line"))
+        self.add_component(lbl)
+        entry_line = EntryLineAccount()
+        entry_line.edit_line(self, 0, last_row + 2, debit_rest, credit_rest)
+        if entry_line.has_account:
+            btn = XferCompButton('entrybtn')
+            btn.set_location(3, last_row + 5)
+            btn.set_action(self.request, EntryLineAccountAddModify.get_action(_("Add"), "images/add.png"), {'close':CLOSE_YES})
+            self.add_component(btn)
+        self.item.show(self)
+        grid_lines = self.get_components('entrylineaccount_set')
+        self.remove_component('entrylineaccount_set')
+        new_grid_lines = XferCompGrid('entrylineaccount_set')
+        new_grid_lines.set_model(self.item.get_entrylineaccounts(serial_vals), None, self)
+        new_grid_lines.set_location(grid_lines.col, grid_lines.row, grid_lines.colspan + 2, grid_lines.rowspan)
+        new_grid_lines.add_action(self.request, EntryLineAccountEdit.get_action(_("Edit"), "images/edit.png"), {'close':CLOSE_YES, 'modal':FORMTYPE_MODAL, 'unique':SELECT_SINGLE})
+        new_grid_lines.add_action(self.request, EntryLineAccountDel.get_action(_("Delete"), "images/delete.png"), {'close':CLOSE_YES})
+        self.add_component(new_grid_lines)
+        nb_lines = len(new_grid_lines.record_ids)
+        return nb_lines
+
     def fillresponse(self):
         XferAddEditor.fillresponse(self)
         serial_vals = self.getparam('serial_entry')
@@ -178,44 +234,18 @@ class EntryAccountEdit(XferAddEditor):
             serial_vals = self.getparam('serial_entry')
             six.print_(serial_vals)
         no_change, debit_rest, credit_rest = self.item.serial_control(serial_vals)
-        six.print_("%s - D=%f/C=%f" % (no_change, debit_rest, credit_rest))
         btn = XferCompButton('save_modif')
         btn.set_location(3, 0, 1, 2)
         btn.set_action(self.request, self.get_action(_("Modify"), "images/edit.png"), {'params':{"SAVE":"YES"}})
         self.add_component(btn)
         if self.item.id:
-            last_row = self.get_max_row() + 5
-            lbl = XferCompLabelForm('sep1')
-            lbl.set_location(0, last_row, 6)
-            lbl.set_value("{[center]}{[hr/]}{[/center]}")
-            self.add_component(lbl)
-            lbl = XferCompLabelForm('sep2')
-            lbl.set_location(1, last_row + 1, 5)
-            lbl.set_value_center(_("Add a entry line"))
-            self.add_component(lbl)
-            entry_line = EntryLineAccount()
-            entry_line.edit_line(self, 0, last_row + 2, debit_rest, credit_rest)
-            if entry_line.has_account:
-                btn = XferCompButton('entrybtn')
-                btn.set_location(3, last_row + 5)
-                btn.set_action(self.request, EntryLineAccountAddModify.get_action(_("Add"), "images/add.png"), {'close':CLOSE_YES})
-                self.add_component(btn)
-
-            self.item.show(self)
-            grid_lines = self.get_components('entrylineaccount_set')
-            self.remove_component('entrylineaccount_set')
-            new_grid_lines = XferCompGrid('entrylineaccount_set')
-            new_grid_lines.set_model(self.item.get_entrylineaccounts(serial_vals), None, self)
-            new_grid_lines.set_location(grid_lines.col, grid_lines.row, grid_lines.colspan + 2, grid_lines.rowspan)
-            new_grid_lines.add_action(self.request, EntryLineAccountEdit.get_action(_("Edit"), "images/edit.png"), {'close':CLOSE_YES, 'modal':FORMTYPE_MODAL, 'unique':SELECT_SINGLE})
-            new_grid_lines.add_action(self.request, EntryLineAccountDel.get_action(_("Delete"), "images/delete.png"), {'close':CLOSE_YES})
-            self.add_component(new_grid_lines)
-
-            nb_lines = len(new_grid_lines.record_ids)
+            nb_lines = self._entryline_editor(serial_vals, debit_rest, credit_rest)
         else:
             nb_lines = 0
         self.actions = []
         if no_change:
+            if (self.item.link is None) and self.item.has_third and not self.item.has_cash:
+                self.add_action(EntryAccountCreateLinked.get_action(_('Payment'), ''), {'close':CLOSE_YES})
             self.add_action(EntryAccountReverse.get_action(_('Reverse'), 'images/edit.png'), {'close':CLOSE_YES})
             self.add_action(WrapAction(_('Close'), 'images/close.png'), {})
         else:
@@ -319,3 +349,14 @@ class EntryAccountReverse(XferContainerAcknowledge):
             line.amount = -1 * line.amount
             line.save()
         self.redirect_action(EntryAccountEdit.get_action(), {})
+
+@MenuManage.describ('accounting.add_entryaccount')
+class EntryAccountCreateLinked(XferContainerAcknowledge):
+    icon = "entry.png"
+    model = EntryAccount
+    field_id = 'entryaccount'
+    caption = _("Add payment entry of account")
+
+    def fillresponse(self):
+        new_entry, serial_entry = self.item.create_linked()
+        self.redirect_action(EntryAccountEdit.get_action(), {'params':{"serial_entry":serial_entry, 'entryaccount':new_entry.id, 'num_cpt_txt':CASH_MASK_BEGIN}})
