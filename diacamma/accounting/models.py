@@ -23,7 +23,7 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
 
-from datetime import date
+from datetime import date, timedelta
 
 from django.db import models
 from django.db.models.query import QuerySet
@@ -173,8 +173,8 @@ class FiscalYear(LucteriosModel):
             self.begin = date.today()
         else:
             last_fiscal_year = fiscal_years[len(fiscal_years) - 1]
-            self.begin = date(last_fiscal_year.end.year, last_fiscal_year.end.month, last_fiscal_year.end.day + 1)
-        self.end = date(self.begin.year + 1, self.begin.month, self.begin.day - 1)
+            self.begin = last_fiscal_year.end + timedelta(days=1)
+        self.end = date(self.begin.year + 1, self.begin.month, self.begin.day) - timedelta(days=1)
 
     def can_delete(self):
         if self.status == 2:

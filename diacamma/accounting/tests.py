@@ -36,6 +36,9 @@ from lucterios.contacts.models import Individual, LegalEntity, AbstractContact
 from diacamma.accounting.views import ThirdList, ThirdAdd, ThirdSave, ThirdShow, \
     AccountThirdAddModify, AccountThirdDel
 from diacamma.accounting.models import Third, AccountThird
+from diacamma.accounting.views_admin import Configuration, JournalAddModify, \
+    JournalDel, FiscalYearAddModify, FiscalYearActive
+from datetime import date, timedelta
 
 def create_individual(firstname, lastname):
     empty_contact = Individual()
@@ -73,10 +76,10 @@ def initial_contacts():
 
 def create_third(abstractids, codes=None):
     for abstractid in abstractids:
-        new_third = Third.objects.create(contact=AbstractContact.objects.get(id=abstractid), status=0) # pylint: disable=no-member
+        new_third = Third.objects.create(contact=AbstractContact.objects.get(id=abstractid), status=0)  # pylint: disable=no-member
         if codes is not None:
             for code in codes:
-                AccountThird.objects.create(third=new_third, code=code) # pylint: disable=no-member
+                AccountThird.objects.create(third=new_third, code=code)  # pylint: disable=no-member
 
 class ThirdTest(LucteriosTest):
     # pylint: disable=too-many-public-methods,too-many-statements
@@ -279,9 +282,147 @@ class ThirdTest(LucteriosTest):
         self.assert_xml_equal('COMPONENTS/GRID[@name="third"]/RECORD[7]/VALUE[@name="contact"]', 'Minimum')
         self.assert_xml_equal('COMPONENTS/GRID[@name="third"]/RECORD[7]/VALUE[@name="accountthird_set"]', '411000{[br/]}401000')
 
+class AdminTest(LucteriosTest):
+    # pylint: disable=too-many-public-methods,too-many-statements
+
+    def setUp(self):
+        self.xfer_class = XferContainerAcknowledge
+        LucteriosTest.setUp(self)
+        rmtree(get_user_dir(), True)
+
+    def test_default_configuration(self):
+        self.factory.xfer = Configuration()
+        self.call('/diacamma.accounting/configuration', {}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'configuration')
+        self.assert_count_equal('COMPONENTS/TAB', 3)
+        self.assert_count_equal('COMPONENTS/*', 2 + 3 + 2 + 1 + 7)
+
+        self.assert_count_equal('COMPONENTS/GRID[@name="fiscalyear"]/HEADER', 4)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="fiscalyear"]/HEADER[@name="begin"]', "début")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="fiscalyear"]/HEADER[@name="end"]', "fin")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="fiscalyear"]/HEADER[@name="status"]', "status")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="fiscalyear"]/HEADER[@name="is_actif"]', "actif")
+        self.assert_count_equal('COMPONENTS/GRID[@name="fiscalyear"]/RECORD', 0)
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="nb"]', 'Nombre total de exercices: 0')
+
+        self.assert_count_equal('COMPONENTS/GRID[@name="journal"]/HEADER', 1)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="journal"]/HEADER[@name="name"]', "nom")
+        self.assert_count_equal('COMPONENTS/GRID[@name="journal"]/RECORD', 5)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="journal"]/RECORD[@id="1"]/VALUE[@name="name"]', 'Report à nouveau')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="journal"]/RECORD[@id="2"]/VALUE[@name="name"]', 'Achat')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="journal"]/RECORD[@id="3"]/VALUE[@name="name"]', 'Vente')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="journal"]/RECORD[@id="4"]/VALUE[@name="name"]', 'Règlement')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="journal"]/RECORD[@id="5"]/VALUE[@name="name"]', 'Autre')
+
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="accounting-devise"]', '€')
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="accounting-devise-iso"]', 'EUR')
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="accounting-devise-prec"]', '2')
+
+    def test_configuration_journal(self):
+        self.factory.xfer = JournalAddModify()
+        self.call('/diacamma.accounting/journalAddModify', {'journal':'2'}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'journalAddModify')
+        self.assert_count_equal('COMPONENTS/*', 3)
+        self.assert_xml_equal('COMPONENTS/EDIT[@name="name"]', 'Achat')
+
+        self.factory.xfer = JournalAddModify()
+        self.call('/diacamma.accounting/journalAddModify', {'SAVE':'YES', 'journal':'2', 'name':'Dépense'}, False)
+        self.assert_observer('Core.Acknowledge', 'diacamma.accounting', 'journalAddModify')
+
+        self.factory.xfer = Configuration()
+        self.call('/diacamma.accounting/configuration', {}, False)
+        self.assert_count_equal('COMPONENTS/GRID[@name="journal"]/RECORD', 5)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="journal"]/RECORD[@id="2"]/VALUE[@name="name"]', 'Dépense')
+
+        self.factory.xfer = JournalAddModify()
+        self.call('/diacamma.accounting/journalAddModify', {'SAVE':'YES', 'name':'Caisse'}, False)
+        self.assert_observer('Core.Acknowledge', 'diacamma.accounting', 'journalAddModify')
+
+        self.factory.xfer = Configuration()
+        self.call('/diacamma.accounting/configuration', {}, False)
+        self.assert_count_equal('COMPONENTS/GRID[@name="journal"]/RECORD', 6)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="journal"]/RECORD[@id="6"]/VALUE[@name="name"]', 'Caisse')
+
+        self.factory.xfer = JournalDel()
+        self.call('/diacamma.accounting/journalAddModify', {'journal':'2'}, False)
+        self.assert_observer('CORE.Exception', 'diacamma.accounting', 'journalAddModify')
+        self.assert_xml_equal('EXCEPTION/MESSAGE', 'journal réservé!')
+
+        self.factory.xfer = JournalDel()
+        self.call('/diacamma.accounting/journalAddModify', {'CONFIRME':'YES', 'journal':'6'}, False)
+        self.assert_observer('Core.Acknowledge', 'diacamma.accounting', 'journalAddModify')
+
+        self.factory.xfer = Configuration()
+        self.call('/diacamma.accounting/configuration', {}, False)
+        self.assert_count_equal('COMPONENTS/GRID[@name="journal"]/RECORD', 5)
+
+    def test_configuration_fiscalyear(self):
+        to_day = date.today()
+        to_day_plus_1 = date(to_day.year + 1, to_day.month, to_day.day) - timedelta(days=1)
+
+        self.factory.xfer = FiscalYearAddModify()
+        self.call('/diacamma.accounting/fiscalYearAddModify', {}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'fiscalYearAddModify')
+        self.assert_count_equal('COMPONENTS/*', 7)
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="status"]', 'en création')
+
+        self.assert_xml_equal('COMPONENTS/DATE[@name="begin"]', to_day.isoformat())
+        self.assert_xml_equal('COMPONENTS/DATE[@name="end"]', to_day_plus_1.isoformat())
+
+        self.factory.xfer = FiscalYearAddModify()
+        self.call('/diacamma.accounting/fiscalYearAddModify', {'SAVE':'YES', 'begin':'2015-07-01', 'end':'2016-06-30'}, False)
+        self.assert_observer('Core.Acknowledge', 'diacamma.accounting', 'fiscalYearAddModify')
+
+        self.factory.xfer = Configuration()
+        self.call('/diacamma.accounting/configuration', {}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'configuration')
+        self.assert_count_equal('COMPONENTS/GRID[@name="fiscalyear"]/HEADER', 4)
+        self.assert_count_equal('COMPONENTS/GRID[@name="fiscalyear"]/RECORD', 1)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="fiscalyear"]/RECORD[1]/VALUE[@name="begin"]', '1 juillet 2015')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="fiscalyear"]/RECORD[1]/VALUE[@name="end"]', '30 juin 2016')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="fiscalyear"]/RECORD[1]/VALUE[@name="status"]', "en création")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="fiscalyear"]/RECORD[1]/VALUE[@name="is_actif"]', "1")
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="nb"]', 'Nombre total de exercices: 1')
+
+        self.factory.xfer = FiscalYearAddModify()
+        self.call('/diacamma.accounting/fiscalYearAddModify', {}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'fiscalYearAddModify')
+        self.assert_count_equal('COMPONENTS/*', 7)
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="status"]', 'en création')
+
+        self.assert_xml_equal('COMPONENTS/DATE[@name="begin"]', '2016-07-01')
+        self.assert_xml_equal('COMPONENTS/DATE[@name="end"]', '2017-06-30')
+
+        self.factory.xfer = FiscalYearAddModify()
+        self.call('/diacamma.accounting/fiscalYearAddModify', {'SAVE':'YES', 'begin':'2016-07-01', 'end':'2017-06-30'}, False)
+        self.assert_observer('Core.Acknowledge', 'diacamma.accounting', 'fiscalYearAddModify')
+
+        self.factory.xfer = Configuration()
+        self.call('/diacamma.accounting/configuration', {}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'configuration')
+        self.assert_count_equal('COMPONENTS/GRID[@name="fiscalyear"]/HEADER', 4)
+        self.assert_count_equal('COMPONENTS/GRID[@name="fiscalyear"]/RECORD', 2)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="fiscalyear"]/RECORD[2]/VALUE[@name="begin"]', '1 juillet 2016')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="fiscalyear"]/RECORD[2]/VALUE[@name="end"]', '30 juin 2017')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="fiscalyear"]/RECORD[2]/VALUE[@name="status"]', "en création")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="fiscalyear"]/RECORD[2]/VALUE[@name="is_actif"]', "0")
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="nb"]', 'Nombre total de exercices: 2')
+
+        self.factory.xfer = FiscalYearActive()
+        self.call('/diacamma.accounting/fiscalYearActive', {'fiscalyear':'2'}, False)
+        self.assert_observer('Core.Acknowledge', 'diacamma.accounting', 'fiscalYearActive')
+
+        self.factory.xfer = Configuration()
+        self.call('/diacamma.accounting/configuration', {}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'configuration')
+        self.assert_count_equal('COMPONENTS/GRID[@name="fiscalyear"]/RECORD', 2)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="fiscalyear"]/RECORD[1]/VALUE[@name="is_actif"]', "0")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="fiscalyear"]/RECORD[2]/VALUE[@name="is_actif"]', "1")
+
 def suite():
     # pylint: disable=redefined-outer-name
     suite = TestSuite()
     loader = TestLoader()
-    suite.addTest(loader.loadTestsFromTestCase(ThirdTest))
+    # suite.addTest(loader.loadTestsFromTestCase(ThirdTest))
+    suite.addTest(loader.loadTestsFromTestCase(AdminTest))
     return suite
