@@ -31,9 +31,11 @@ from lucterios.framework.xfergraphic import XferContainerAcknowledge
 from lucterios.framework.test import LucteriosTest
 from lucterios.framework.filetools import get_user_dir
 from lucterios.contacts.tests_contacts import change_ourdetail
-from lucterios.contacts.models import Individual, LegalEntity
+from lucterios.contacts.models import Individual, LegalEntity, AbstractContact
 
-from diacamma.accounting.views import ThirdList, ThirdAdd, ThirdSave, ThirdShow
+from diacamma.accounting.views import ThirdList, ThirdAdd, ThirdSave, ThirdShow, \
+    AccountThirdAddModify, AccountThirdDel
+from diacamma.accounting.models import Third, AccountThird
 
 def create_individual(firstname, lastname):
     empty_contact = Individual()
@@ -59,29 +61,36 @@ def change_legal(name):
     ourdetails.email = "%s@worldcompany.com" % name
     ourdetails.save()
 
+def initial_contacts():
+    change_ourdetail()  # contact 1
+    create_individual('Avrel', 'Dalton')  # contact 2
+    create_individual('William', 'Dalton')  # contact 3
+    create_individual('Jack', 'Dalton')  # contact 4
+    create_individual('Joe', 'Dalton')  # contact 5
+    create_individual('Lucky', 'Luke')  # contact 6
+    change_legal("Minimum")  # contact 7
+    change_legal("Maximum")  # contact 8
+
+def create_third(abstractids, codes=None):
+    for abstractid in abstractids:
+        new_third = Third.objects.create(contact=AbstractContact.objects.get(id=abstractid), status=0) # pylint: disable=no-member
+        if codes is not None:
+            for code in codes:
+                AccountThird.objects.create(third=new_third, code=code) # pylint: disable=no-member
+
 class ThirdTest(LucteriosTest):
     # pylint: disable=too-many-public-methods,too-many-statements
 
     def setUp(self):
         self.xfer_class = XferContainerAcknowledge
         LucteriosTest.setUp(self)
-        change_ourdetail()  # contact 1
-        create_individual('Avrel', 'Dalton')  # contact 2
-        create_individual('William', 'Dalton')  # contact 3
-        create_individual('Jack', 'Dalton')  # contact 4
-        create_individual('Joe', 'Dalton')  # contact 5
-        create_individual('Lucky', 'Luke')  # contact 6
-        change_legal("Minimum")  # contact 7
-        change_legal("Maximum")  # contact 8
+        initial_contacts()
         rmtree(get_user_dir(), True)
 
     def test_add_abstract(self):
         self.factory.xfer = ThirdList()
         self.call('/diacamma.accounting/thirdListing', {}, False)
         self.assert_observer('Core.Custom', 'diacamma.accounting', 'thirdListing')
-        self.assert_count_equal('COMPONENTS/GRID[@name="third"]/HEADER', 2)
-        self.assert_xml_equal('COMPONENTS/GRID[@name="third"]/HEADER[@name="contact"]', "contact")
-        self.assert_xml_equal('COMPONENTS/GRID[@name="third"]/HEADER[@name="accountthird_set"]', "compte")
         self.assert_count_equal('COMPONENTS/GRID[@name="third"]/RECORD', 0)
 
         self.factory.xfer = ThirdAdd()
@@ -102,7 +111,7 @@ class ThirdTest(LucteriosTest):
         self.call('/diacamma.accounting/thirdListing', {}, False)
         self.assert_observer('Core.Custom', 'diacamma.accounting', 'thirdListing')
         self.assert_count_equal('COMPONENTS/GRID[@name="third"]/RECORD', 1)
-        self.assert_xml_equal('COMPONENTS/GRID[@name="third"]/RECORD[1]/VALUE[@name="contact"]', 'Joe Dalton')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="third"]/RECORD[1]/VALUE[@name="contact"]', 'Dalton Joe')
 
     def test_add_legalentity(self):
         self.factory.xfer = ThirdList()
@@ -160,12 +169,12 @@ class ThirdTest(LucteriosTest):
         self.call('/diacamma.accounting/thirdListing', {}, False)
         self.assert_observer('Core.Custom', 'diacamma.accounting', 'thirdListing')
         self.assert_count_equal('COMPONENTS/GRID[@name="third"]/RECORD', 1)
-        self.assert_xml_equal('COMPONENTS/GRID[@name="third"]/RECORD[1]/VALUE[@name="contact"]', 'William Dalton')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="third"]/RECORD[1]/VALUE[@name="contact"]', 'Dalton William')
 
         self.factory.xfer = ThirdShow()
         self.call('/diacamma.accounting/thirdShow', {"third":1}, False)
         self.assert_observer('Core.Custom', 'diacamma.accounting', 'thirdShow')
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="contact"]', 'William Dalton')
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="contact"]', 'Dalton William')
         self.assert_attrib_equal('COMPONENTS/BUTTON[@name="show"]/ACTIONS/ACTION', 'extension', 'lucterios.contacts')
         self.assert_attrib_equal('COMPONENTS/BUTTON[@name="show"]/ACTIONS/ACTION', 'action', 'individualShow')
         self.assert_xml_equal('COMPONENTS/BUTTON[@name="show"]/ACTIONS/ACTION/PARAM[@name="individual"]', '3')
@@ -198,6 +207,77 @@ class ThirdTest(LucteriosTest):
         self.call('/diacamma.accounting/thirdListing', {}, False)
         self.assert_observer('Core.Custom', 'diacamma.accounting', 'thirdListing')
         self.assert_count_equal('COMPONENTS/GRID[@name="third"]/RECORD', 1)
+
+    def test_show(self):
+        create_third([3])
+        self.factory.xfer = ThirdShow()
+        self.call('/diacamma.accounting/thirdShow', {"third":1}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'thirdShow')
+        self.assert_count_equal('COMPONENTS/TAB', 1)
+        self.assert_count_equal('COMPONENTS/*', 16 + 7)
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="contact"]', 'Dalton William')
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="status"]', 'Actif')
+        self.assert_count_equal('COMPONENTS/GRID[@name="accountthird"]/HEADER', 2)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="accountthird"]/HEADER[@name="code"]', "code")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="accountthird"]/HEADER[@name="total_txt"]', "total")
+        self.assert_count_equal('COMPONENTS/GRID[@name="accountthird"]/RECORD', 0)
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="total"]', '0.00€')
+
+        self.factory.xfer = AccountThirdAddModify()
+        self.call('/diacamma.accounting/accountThirdAddModify', {"third":1}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'accountThirdAddModify')
+        self.assert_count_equal('COMPONENTS/*', 3)
+        self.assert_xml_equal('COMPONENTS/EDIT[@name="code"]', None)
+
+        self.factory.xfer = AccountThirdAddModify()
+        self.call('/diacamma.accounting/accountThirdAddModify', {'SAVE':'YES', "third":1, 'code':'411000'}, False)
+        self.assert_observer('Core.Acknowledge', 'diacamma.accounting', 'accountThirdAddModify')
+
+        self.factory.xfer = ThirdShow()
+        self.call('/diacamma.accounting/thirdShow', {"third":1}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'thirdShow')
+        self.assert_count_equal('COMPONENTS/GRID[@name="accountthird"]/HEADER', 2)
+        self.assert_count_equal('COMPONENTS/GRID[@name="accountthird"]/RECORD', 1)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="accountthird"]/RECORD[1]/VALUE[@name="code"]', '411000')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="accountthird"]/RECORD[1]/VALUE[@name="total_txt"]', '{[font color="green"]}Crédit: 0.00€{[/font]}')
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="total"]', '0.00€')
+
+        self.factory.xfer = AccountThirdDel()
+        self.call('/diacamma.accounting/accountThirdDel', {'CONFIRME':'YES', "accountthird":1}, False)
+        self.assert_observer('Core.Acknowledge', 'diacamma.accounting', 'accountThirdDel')
+
+        self.factory.xfer = ThirdShow()
+        self.call('/diacamma.accounting/thirdShow', {"third":1}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'thirdShow')
+        self.assert_count_equal('COMPONENTS/GRID[@name="accountthird"]/HEADER', 2)
+        self.assert_count_equal('COMPONENTS/GRID[@name="accountthird"]/RECORD', 0)
+
+    def test_list(self):
+        create_third([2, 8], ['401000'])
+        create_third([6, 7], ['411000', '401000'])
+        create_third([3, 4, 5], ['411000'])
+
+        self.factory.xfer = ThirdList()
+        self.call('/diacamma.accounting/thirdListing', {}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'thirdListing')
+        self.assert_count_equal('COMPONENTS/GRID[@name="third"]/HEADER', 2)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="third"]/HEADER[@name="contact"]', "contact")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="third"]/HEADER[@name="accountthird_set"]', "compte")
+        self.assert_count_equal('COMPONENTS/GRID[@name="third"]/RECORD', 7)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="third"]/RECORD[1]/VALUE[@name="contact"]', 'Dalton Avrel')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="third"]/RECORD[1]/VALUE[@name="accountthird_set"]', '401000')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="third"]/RECORD[2]/VALUE[@name="contact"]', 'Dalton Jack')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="third"]/RECORD[2]/VALUE[@name="accountthird_set"]', '411000')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="third"]/RECORD[3]/VALUE[@name="contact"]', 'Dalton Joe')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="third"]/RECORD[3]/VALUE[@name="accountthird_set"]', '411000')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="third"]/RECORD[4]/VALUE[@name="contact"]', 'Dalton William')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="third"]/RECORD[4]/VALUE[@name="accountthird_set"]', '411000')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="third"]/RECORD[5]/VALUE[@name="contact"]', 'Luke Lucky')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="third"]/RECORD[5]/VALUE[@name="accountthird_set"]', '411000{[br/]}401000')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="third"]/RECORD[6]/VALUE[@name="contact"]', 'Maximum')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="third"]/RECORD[6]/VALUE[@name="accountthird_set"]', '401000')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="third"]/RECORD[7]/VALUE[@name="contact"]', 'Minimum')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="third"]/RECORD[7]/VALUE[@name="accountthird_set"]', '411000{[br/]}401000')
 
 def suite():
     # pylint: disable=redefined-outer-name

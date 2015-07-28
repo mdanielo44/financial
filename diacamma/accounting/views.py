@@ -149,21 +149,21 @@ class ThirdListing(XferPrintListing):
     field_id = 'third'
     caption = _("Listing third")
 
-@ActionsManage.affect('AccountThird', 'modify', 'add')
+@ActionsManage.affect('AccountThird', 'add')
 @MenuManage.describ('accounting.add_third')
-class AccountAddModify(XferAddEditor):
+class AccountThirdAddModify(XferAddEditor):
     icon = "account.png"
     model = AccountThird
-    field_id = 'account'
+    field_id = 'accountthird'
     caption_add = _("Add account")
     caption_modify = _("Modify account")
 
 @ActionsManage.affect('AccountThird', 'delete')
-@MenuManage.describ('accounting.delete_third')
-class AccountDel(XferDelete):
+@MenuManage.describ('accounting.add_third')
+class AccountThirdDel(XferDelete):
     icon = "account.png"
     model = AccountThird
-    field_id = 'account'
+    field_id = 'accountthird'
     caption = _("Delete account")
 
 @signal_and_lock.Signal.decorate('summary')

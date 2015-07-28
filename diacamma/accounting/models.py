@@ -83,7 +83,6 @@ class Third(LucteriosModel):
         val = EntryLineAccount.objects.filter(third=self).aggregate(Sum('amount'))  # pylint: disable=no-member
         if val['amount__sum'] is not None:
             res = val['amount__sum']
-
         return format_devise(res, 5)
 
     def show(self, xfer):
@@ -101,9 +100,10 @@ class Third(LucteriosModel):
         xfer.add_component(btn)
         xfer.item = old_item
         try:
+            entry_lines = self.entrylineaccount_set.filter(entry__year=FiscalYear.get_current())  # pylint: disable=no-member
             xfer.new_tab(_('entry of account'))
             link_grid_lines = XferCompGrid('entrylineaccount')
-            link_grid_lines.set_model(self.entrylineaccount_set.filter(entry__year=FiscalYear.get_current()), EntryLineAccount.get_other_fields(), xfer)  # pylint: disable=no-member
+            link_grid_lines.set_model(entry_lines, EntryLineAccount.get_other_fields(), xfer)
             link_grid_lines.set_location(0, 1, 2)
             link_grid_lines.add_action(xfer.request, ActionsManage.get_act_changed('EntryLineAccount', 'open', _('Edit'), 'images/edit.png'), \
                                     {'modal':FORMTYPE_MODAL, 'unique':SELECT_SINGLE, 'close':CLOSE_NO})
@@ -135,7 +135,7 @@ class AccountThird(LucteriosModel):
     def current_charts(self):
         try:
             return ChartsAccount.objects.get(code=self.code, year=FiscalYear.get_current())  # pylint: disable=no-member
-        except ObjectDoesNotExist:
+        except (ObjectDoesNotExist, LucteriosException):
             return None
 
     @property
