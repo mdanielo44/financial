@@ -472,7 +472,7 @@ class EntryAccount(LucteriosModel):
         lbl.set_value_center("{[hr/]}")
         xfer.add_component(lbl)
         xfer.filltab_from_model(1, last_row + 2, True, ['entrylineaccount_set'])
-        grid_lines = xfer.get_components('entrylineaccount_set')
+        grid_lines = xfer.get_components('entrylineaccount')
         grid_lines.actions = []
 
         if self.has_third:
@@ -775,12 +775,15 @@ class EntryLineAccount(LucteriosModel):
             if self.has_account and self.account.is_third:
                 lbl = XferCompLabelForm('thirdlbl')
                 lbl.set_value_as_name(_('third'))
-                sel_thirds = []
+                sel_thirds = [(0, '---')]
                 for third in Third.objects.filter(accountthird__code=self.account.code):  # pylint: disable=no-member
                     sel_thirds.append((third.id, six.text_type(third)))
                 cb_third = XferCompSelect('third')
                 cb_third.set_select(sel_thirds)
-                cb_third.set_value(xfer.getparam('third', 0))
+                if self.third is None:
+                    cb_third.set_value(xfer.getparam('third', 0))
+                else:
+                    cb_third.set_value(xfer.getparam('third', self.third.id))
                 if vertical:
                     cb_third.set_location(column, row + 1)
                     lbl.set_location(column, row)

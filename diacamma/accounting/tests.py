@@ -26,60 +26,18 @@ from __future__ import unicode_literals
 from unittest.suite import TestSuite
 from unittest.loader import TestLoader
 from shutil import rmtree
+from datetime import date, timedelta
 
 from lucterios.framework.xfergraphic import XferContainerAcknowledge
 from lucterios.framework.test import LucteriosTest
 from lucterios.framework.filetools import get_user_dir
-from lucterios.contacts.tests_contacts import change_ourdetail
-from lucterios.contacts.models import Individual, LegalEntity, AbstractContact
 
 from diacamma.accounting.views import ThirdList, ThirdAdd, ThirdSave, ThirdShow, \
     AccountThirdAddModify, AccountThirdDel
-from diacamma.accounting.models import Third, AccountThird
 from diacamma.accounting.views_admin import Configuration, JournalAddModify, \
     JournalDel, FiscalYearAddModify, FiscalYearActive
-from datetime import date, timedelta
-
-def create_individual(firstname, lastname):
-    empty_contact = Individual()
-    empty_contact.firstname = firstname
-    empty_contact.lastname = lastname
-    empty_contact.address = "rue de la liberté"
-    empty_contact.postal_code = "97250"
-    empty_contact.city = "LE PRECHEUR"
-    empty_contact.country = "MARTINIQUE"
-    empty_contact.tel2 = "02-78-45-12-95"
-    empty_contact.email = "%s.%s@worldcompany.com" % (firstname, lastname)
-    empty_contact.save()
-    return empty_contact
-
-def change_legal(name):
-    ourdetails = LegalEntity()
-    ourdetails.name = name
-    ourdetails.address = "Place des cocotiers"
-    ourdetails.postal_code = "97200"
-    ourdetails.city = "FORT DE FRANCE"
-    ourdetails.country = "MARTINIQUE"
-    ourdetails.tel1 = "01-23-45-67-89"
-    ourdetails.email = "%s@worldcompany.com" % name
-    ourdetails.save()
-
-def initial_contacts():
-    change_ourdetail()  # contact 1
-    create_individual('Avrel', 'Dalton')  # contact 2
-    create_individual('William', 'Dalton')  # contact 3
-    create_individual('Jack', 'Dalton')  # contact 4
-    create_individual('Joe', 'Dalton')  # contact 5
-    create_individual('Lucky', 'Luke')  # contact 6
-    change_legal("Minimum")  # contact 7
-    change_legal("Maximum")  # contact 8
-
-def create_third(abstractids, codes=None):
-    for abstractid in abstractids:
-        new_third = Third.objects.create(contact=AbstractContact.objects.get(id=abstractid), status=0)  # pylint: disable=no-member
-        if codes is not None:
-            for code in codes:
-                AccountThird.objects.create(third=new_third, code=code)  # pylint: disable=no-member
+from diacamma.accounting.tests_entries import EntryTest
+from diacamma.accounting.test_tools import initial_contacts, create_third
 
 class ThirdTest(LucteriosTest):
     # pylint: disable=too-many-public-methods,too-many-statements
@@ -423,6 +381,7 @@ def suite():
     # pylint: disable=redefined-outer-name
     suite = TestSuite()
     loader = TestLoader()
-    # suite.addTest(loader.loadTestsFromTestCase(ThirdTest))
+    suite.addTest(loader.loadTestsFromTestCase(ThirdTest))
     suite.addTest(loader.loadTestsFromTestCase(AdminTest))
+    suite.addTest(loader.loadTestsFromTestCase(EntryTest))
     return suite

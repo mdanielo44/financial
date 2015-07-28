@@ -128,7 +128,7 @@ class EntryAccountClose(XferContainerAcknowledge):
     icon = "entry.png"
     model = EntryAccount
     field_id = 'entryaccount'
-    caption = _("Delete accounting entry")
+    caption = _("Close accounting entry")
 
     def fillresponse(self):
         if self.item.id is None:
@@ -136,13 +136,17 @@ class EntryAccountClose(XferContainerAcknowledge):
             if ids is None:
                 raise LucteriosException(GRAVE, _("No selection"))
             ids = ids.split(';')  # pylint: disable=no-member
-            self.items = self.model.objects.filter(entrylineaccount__in=ids)  # pylint: disable=no-member
+            self.items = []
+            for item in self.model.objects.filter(entrylineaccount__in=ids):  # pylint: disable=no-member
+                if not item.close:
+                    self.items.append(item)
         else:
             self.items = [self.item]
-        for item in self.items:
-            if not item.close:
-                item.closed()
-                item.save()
+        if (len(self.items) > 0) and self.confirme(_("Do you want to close this entry?")):
+            for item in self.items:
+                if not item.close:
+                    item.closed()
+                    item.save()
 
 @MenuManage.describ('accounting.add_entryaccount')
 class EntryAccountLink(XferContainerAcknowledge):
@@ -215,9 +219,9 @@ class EntryAccountEdit(XferAddEditor):
             btn.set_action(self.request, EntryLineAccountAddModify.get_action(_("Add"), "images/add.png"), {'close':CLOSE_YES})
             self.add_component(btn)
         self.item.show(self)
-        grid_lines = self.get_components('entrylineaccount_set')
-        self.remove_component('entrylineaccount_set')
-        new_grid_lines = XferCompGrid('entrylineaccount_set')
+        grid_lines = self.get_components('entrylineaccount')
+        self.remove_component('entrylineaccount')
+        new_grid_lines = XferCompGrid('entrylineaccount')
         new_grid_lines.set_model(self.item.get_entrylineaccounts(serial_vals), None, self)
         new_grid_lines.set_location(grid_lines.col, grid_lines.row, grid_lines.colspan + 2, grid_lines.rowspan)
         new_grid_lines.add_action(self.request, EntryLineAccountEdit.get_action(_("Edit"), "images/edit.png"), {'close':CLOSE_YES, 'modal':FORMTYPE_MODAL, 'unique':SELECT_SINGLE})
@@ -262,8 +266,9 @@ class EntryAccountAfterSave(XferContainerAcknowledge):
     caption = _("Modify accounting entry")
 
     def fillresponse(self):
-        if 'SAVE' in self.params.keys():
-            del self.params['SAVE']
+        for old_key in ['date_value', 'designation', 'SAVE']:
+            if old_key in self.params.keys():
+                del self.params[old_key]
         self.redirect_action(EntryAccountEdit.get_action(), {})
 
 @MenuManage.describ('accounting.add_entryaccount')
@@ -273,13 +278,13 @@ class EntryLineAccountAddModify(XferContainerAcknowledge):
     field_id = 'entryaccount'
     caption = _("Save entry line of account")
 
-    def fillresponse(self, entrylineaccount_set=0, serial_entry='', num_cpt=0, credit_val=0.0, debit_val=0.0, third=0, reference='None'):
+    def fillresponse(self, entrylineaccount=0, serial_entry='', num_cpt=0, credit_val=0.0, debit_val=0.0, third=0, reference='None'):
         if (credit_val > 0.0001) or (debit_val > 0.0001):
-            for old_key in ['num_cpt_txt', 'num_cpt', 'credit_val', 'debit_val', 'third', 'reference']:
+            for old_key in ['num_cpt_txt', 'num_cpt', 'credit_val', 'debit_val', 'third', 'reference', 'entrylineaccount', 'serial_entry']:
                 if old_key in self.params.keys():
                     del self.params[old_key]
-            if entrylineaccount_set != 0:
-                serial_entry = self.item.remove_entrylineaccounts(serial_entry, entrylineaccount_set)
+            if entrylineaccount != 0:
+                serial_entry = self.item.remove_entrylineaccounts(serial_entry, entrylineaccount)
             if serial_entry != '':
                 serial_entry += '\n'
             serial_entry += EntryLineAccount.add_serial(num_cpt, debit_val, credit_val, third, reference)
@@ -291,10 +296,10 @@ class EntryLineAccountEdit(XferContainerCustom):
     model = EntryLineAccount
     caption = _("Modify entry line of account")
 
-    def fillresponse(self, entryaccount, entrylineaccount_set=0, serial_entry=''):
+    def fillresponse(self, entryaccount, entrylineaccount=0, serial_entry=''):
         entry = EntryAccount.objects.get(id=entryaccount)  # pylint: disable=no-member
         for line in entry.get_entrylineaccounts(serial_entry):
-            if line.id == entrylineaccount_set:
+            if line.id == entrylineaccount:
                 self.item = line
         img = XferCompImage('img')
         img.set_value(self.icon_path())
@@ -316,8 +321,8 @@ class EntryLineAccountDel(XferContainerAcknowledge):
     field_id = 'entryaccount'
     caption = _("Delete entry line of account")
 
-    def fillresponse(self, entrylineaccount_set=0, serial_entry=''):
-        serial_entry = self.item.remove_entrylineaccounts(serial_entry, entrylineaccount_set)
+    def fillresponse(self, entrylineaccount=0, serial_entry=''):
+        serial_entry = self.item.remove_entrylineaccounts(serial_entry, entrylineaccount)
         self.redirect_action(EntryAccountEdit.get_action(), {'params':{"serial_entry":serial_entry}})
 
 @MenuManage.describ('accounting.add_entryaccount')
