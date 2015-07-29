@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 '''
-lucterios.contacts package
+Describe test for Django
 
 @author: Laurent GAY
 @organization: sd-libre.fr
@@ -84,13 +84,16 @@ def initial_thirds():
     create_third([6, 7], ['411000', '401000'])  # 3 4
     create_third([3, 4, 5], ['411000'])  # 5 6 7
 
+def fill_accounts():
+    create_account(['411000', '512000', '531000'], 0) # 1 2 3
+    create_account(['401000'], 1) # 4
+    create_account(['106000', '110000', '119000'], 2) # 5 6 7
+    create_account(['701000', '706000', '707000'], 3) # 8 9 10
+    create_account(['601000', '602000', '604000', '607000', '627000'], 4) # 11 12 13 14 15
+
 def default_compta(status=0):
     create_year(status)
-    create_account(['411000', '512000', '531000'], 0)  # 1 2 3
-    create_account(['401000'], 1)  # 4
-    create_account(['106000', '110000', '119000'], 2)  # 5 6 7
-    create_account(['701000', '706000', '707000'], 3)  # 8 9 10
-    create_account(['601000', '602000', '604000', '607000', '627000'], 4)  # 11 12 13 14 15
+    fill_accounts()
 
 def add_entry(yearid, journalid, date_value, designation, serial_entry, closed=False):
     year = FiscalYear.objects.get(id=yearid)  # pylint: disable=no-member

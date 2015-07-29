@@ -37,8 +37,10 @@ from diacamma.accounting.views import ThirdList, ThirdAdd, ThirdSave, ThirdShow,
 from diacamma.accounting.views_admin import Configuration, JournalAddModify, \
     JournalDel, FiscalYearAddModify, FiscalYearActive, FiscalYearDel
 from diacamma.accounting.tests_entries import EntryTest, CompletedEntryTest
-from diacamma.accounting.test_tools import initial_contacts, create_third
+from diacamma.accounting.test_tools import initial_contacts, fill_entries, initial_thirds,\
+    create_third, fill_accounts
 from diacamma.accounting.models import FiscalYear
+from diacamma.accounting.tests_accounts import ChartsAccountTest
 
 class ThirdTest(LucteriosTest):
     # pylint: disable=too-many-public-methods,too-many-statements
@@ -386,10 +388,13 @@ class AdminTest(LucteriosTest):
         self.assert_xml_equal('COMPONENTS/DATE[@name="begin"]', '2015-07-01')
         self.assert_xml_equal('COMPONENTS/DATE[@name="end"]', '2016-06-30')
 
-    def test_confi_delete_fiscalyear(self):
-        year1 = FiscalYear.objects.create(begin='2014-07-01', end='2015-06-30', status=2, is_actif=False, last_fiscalyear=None) # pylint: disable=no-member
-        year2 = FiscalYear.objects.create(begin='2015-07-01', end='2016-06-30', status=1, is_actif=False, last_fiscalyear=year1) # pylint: disable=no-member
-        FiscalYear.objects.create(begin='2016-07-01', end='2017-06-30', status=0, is_actif=True, last_fiscalyear=year2) # pylint: disable=no-member
+    def test_confi_delete(self):
+        year1 = FiscalYear.objects.create(begin='2014-07-01', end='2015-06-30', status=2, is_actif=False, last_fiscalyear=None)  # pylint: disable=no-member
+        year2 = FiscalYear.objects.create(begin='2015-07-01', end='2016-06-30', status=1, is_actif=False, last_fiscalyear=year1)  # pylint: disable=no-member
+        FiscalYear.objects.create(begin='2016-07-01', end='2017-06-30', status=0, is_actif=True, last_fiscalyear=year2)  # pylint: disable=no-member
+        initial_thirds()
+        fill_accounts()
+        fill_entries(3)
 
         self.factory.xfer = Configuration()
         self.call('/diacamma.accounting/configuration', {}, False)
@@ -432,4 +437,5 @@ def suite():
     suite.addTest(loader.loadTestsFromTestCase(AdminTest))
     suite.addTest(loader.loadTestsFromTestCase(EntryTest))
     suite.addTest(loader.loadTestsFromTestCase(CompletedEntryTest))
+    suite.addTest(loader.loadTestsFromTestCase(ChartsAccountTest))
     return suite

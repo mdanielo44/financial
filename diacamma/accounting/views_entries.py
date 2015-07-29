@@ -26,9 +26,6 @@ from __future__ import unicode_literals
 from django.utils.translation import ugettext_lazy as _
 from django.db.models import Q
 
-from diacamma.accounting.models import EntryLineAccount, EntryAccount, FiscalYear, \
-    Journal, AccountLink, CASH_MASK_BEGIN
-
 from lucterios.framework.xferadvance import XferShowEditor, XferDelete
 from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage, \
     WrapAction, CLOSE_NO, FORMTYPE_REFRESH, CLOSE_YES, SELECT_SINGLE, \
@@ -40,6 +37,9 @@ from lucterios.framework.xfercomponents import XferCompButton, XferCompSelect, \
     XferCompLabelForm, XferCompGrid, XferCompImage
 from lucterios.framework.error import LucteriosException, GRAVE
 from lucterios.CORE.views import Unlock
+
+from diacamma.accounting.models import EntryLineAccount, EntryAccount, FiscalYear, \
+    Journal, AccountLink, CASH_MASK_BEGIN
 
 @ActionsManage.affect('EntryLineAccount', 'list')
 @MenuManage.describ('accounting.change_entryaccount', FORMTYPE_NOMODAL, 'bookkeeping', _('Edition of accounting entry for current fiscal year'),)
@@ -148,6 +148,7 @@ class EntryAccountClose(XferContainerAcknowledge):
                     item.closed()
                     item.save()
 
+@ActionsManage.affect('EntryLineAccount', 'link')
 @MenuManage.describ('accounting.add_entryaccount')
 class EntryAccountLink(XferContainerAcknowledge):
     icon = "entry.png"

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 '''
-lucterios.contacts package
+Describe test for Django
 
 @author: Laurent GAY
 @organization: sd-libre.fr
@@ -24,6 +24,9 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
 from shutil import rmtree
+from datetime import date
+
+from django.utils import formats
 
 from lucterios.framework.test import LucteriosTest
 from lucterios.framework.xfergraphic import XferContainerAcknowledge
@@ -37,16 +40,14 @@ from diacamma.accounting.views_entries import EntryLineAccountList, \
     EntryLineAccountDel
 from diacamma.accounting.test_tools import default_compta, initial_thirds, \
     fill_entries
-from datetime import date
-from django.utils import formats
 
 class EntryTest(LucteriosTest):
     # pylint: disable=too-many-public-methods,too-many-statements
 
     def setUp(self):
+        initial_thirds()
         self.xfer_class = XferContainerAcknowledge
         LucteriosTest.setUp(self)
-        initial_thirds()
         default_compta()
         rmtree(get_user_dir(), True)
 
@@ -727,11 +728,11 @@ class CompletedEntryTest(LucteriosTest):
 
     def setUp(self):
         self.xfer_class = XferContainerAcknowledge
-        LucteriosTest.setUp(self)
         initial_thirds()
+        LucteriosTest.setUp(self)
         default_compta()
-        fill_entries(1)
         rmtree(get_user_dir(), True)
+        fill_entries(1)
 
     def test_lastyear(self):
         self.factory.xfer = EntryLineAccountList()

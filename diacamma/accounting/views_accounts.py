@@ -1,10 +1,30 @@
 # -*- coding: utf-8 -*-
+'''
+Describe entries account viewer for Django
+
+@author: Laurent GAY
+@organization: sd-libre.fr
+@contact: info@sd-libre.fr
+@license: This file is part of Lucterios.
+
+Lucterios is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Lucterios is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
+'''
+
 from __future__ import unicode_literals
 
 from django.utils.translation import ugettext_lazy as _
 from django.db.models import Q
-
-from diacamma.accounting.models import ChartsAccount, FiscalYear
 
 from lucterios.framework.xferadvance import XferListEditor
 from lucterios.framework.xferadvance import XferAddEditor
@@ -13,6 +33,8 @@ from lucterios.framework.xferadvance import XferDelete
 from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage, \
     FORMTYPE_REFRESH, CLOSE_NO, SELECT_SINGLE, FORMTYPE_MODAL
 from lucterios.framework.xfercomponents import XferCompLabelForm
+
+from diacamma.accounting.models import ChartsAccount, FiscalYear
 
 MenuManage.add_sub("bookkeeping", "financial", "diacamma.accounting/images/accounting.png", _("Bookkeeping"), _("Manage of Bookkeeping"), 30)
 
@@ -66,6 +88,12 @@ class ChartsAccountShow(XferShowEditor):
     model = ChartsAccount
     field_id = 'chartsaccount'
     caption = _("Show an account")
+
+    def fill_simple_fields(self):
+        for old_key in ['year', 'type_of_account']:
+            if old_key in self.params.keys():
+                del self.params[old_key]
+        return XferShowEditor.fill_simple_fields(self)
 
 @ActionsManage.affect('ChartsAccount', 'delete')
 @MenuManage.describ('accounting.delete_chartsaccount')

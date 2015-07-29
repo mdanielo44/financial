@@ -65,19 +65,6 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='AccountThird',
-            fields=[
-                ('id', models.AutoField(auto_created=True, verbose_name='ID', serialize=False, primary_key=True)),
-                ('code', models.CharField(max_length=50, verbose_name='code')),
-            ],
-            options={
-                'verbose_name': 'account',
-                'default_permissions': [],
-                'verbose_name_plural': 'accounts',
-            },
-            bases=(models.Model,),
-        ),
-        migrations.CreateModel(
             name='Third',
             fields=[
                 ('id', models.AutoField(auto_created=True, verbose_name='ID', serialize=False, primary_key=True)),
@@ -90,11 +77,19 @@ class Migration(migrations.Migration):
             },
             bases=(models.Model,),
         ),
-        migrations.AddField(
-            model_name='accountthird',
-            name='third',
-            field=models.ForeignKey(verbose_name='third', to='accounting.Third'),
-            preserve_default=True,
+        migrations.CreateModel(
+            name='AccountThird',
+            fields=[
+                ('id', models.AutoField(auto_created=True, verbose_name='ID', serialize=False, primary_key=True)),
+                ('code', models.CharField(max_length=50, verbose_name='code')),
+                ('third', models.ForeignKey(verbose_name='third', to='accounting.Third', on_delete=models.CASCADE)),
+            ],
+            options={
+                'verbose_name': 'account',
+                'default_permissions': [],
+                'verbose_name_plural': 'accounts',
+            },
+            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='FiscalYear',
@@ -104,7 +99,7 @@ class Migration(migrations.Migration):
                 ('end', models.DateField(verbose_name='end')),
                 ('status', models.IntegerField(verbose_name='status', choices=[(0, 'building'), (1, 'running'), (2, 'finished')], default=0)),
                 ('is_actif', models.BooleanField(verbose_name='actif', default=False)),
-                ('last_fiscalyear', models.ForeignKey(to='accounting.FiscalYear', verbose_name='last fiscal year', null=True)),
+                ('last_fiscalyear', models.ForeignKey(to='accounting.FiscalYear', verbose_name='last fiscal year', null=True, on_delete=models.SET_NULL)),
             ],
             options={
                 'verbose_name_plural': 'fiscal years',
@@ -120,7 +115,7 @@ class Migration(migrations.Migration):
                 ('name', models.CharField(verbose_name='name', max_length=200)),
                 ('type_of_account', models.IntegerField(verbose_name='type of account', \
                     choices=[(0, 'Asset'), (1, 'Liability'), (2, 'Equity'), (3, 'Revenue'), (4, 'Expense'), (5, 'Contra-accounts')], null=True)),
-                ('year', models.ForeignKey(verbose_name='fiscal year', to='accounting.FiscalYear')),
+                ('year', models.ForeignKey(verbose_name='fiscal year', to='accounting.FiscalYear', on_delete=models.CASCADE)),
             ],
             options={
                 'verbose_name': 'charts of account',
@@ -163,7 +158,7 @@ class Migration(migrations.Migration):
                 ('date_value', models.DateField(verbose_name='date value', null=True)),
                 ('designation', models.CharField(verbose_name='name', max_length=200)),
                 ('close', models.BooleanField(verbose_name='close', default=False)),
-                ('year', models.ForeignKey(verbose_name='fiscal year', to='accounting.FiscalYear')),
+                ('year', models.ForeignKey(verbose_name='fiscal year', to='accounting.FiscalYear', on_delete=models.CASCADE)),
             ],
             options={
                 'verbose_name': 'entry of account',
@@ -177,9 +172,9 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
                 ('amount', models.FloatField(verbose_name='amount')),
                 ('reference', models.CharField(verbose_name='reference', max_length=100, null=True)),
-                ('account', models.ForeignKey(verbose_name='account', to='accounting.ChartsAccount')),
-                ('entry', models.ForeignKey(verbose_name='entry', to='accounting.EntryAccount')),
-                ('third', models.ForeignKey(null=True, verbose_name='third', to='accounting.Third')),
+                ('account', models.ForeignKey(verbose_name='account', to='accounting.ChartsAccount', on_delete=models.PROTECT)),
+                ('entry', models.ForeignKey(verbose_name='entry', to='accounting.EntryAccount', on_delete=models.CASCADE)),
+                ('third', models.ForeignKey(null=True, verbose_name='third', to='accounting.Third', on_delete=models.PROTECT)),
             ],
             options={
                 'default_permissions': [],

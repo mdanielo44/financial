@@ -25,9 +25,9 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import unicode_literals
 
 from django.utils.translation import ugettext_lazy as _
+from django.db.models.query import QuerySet
 from django.db.models import Q
-
-from diacamma.accounting.models import Third, AccountThird, FiscalYear
+from django.utils import six
 
 from lucterios.framework.xferadvance import XferListEditor, XferAddEditor, XferShowEditor, XferDelete
 from lucterios.framework.xfersearch import XferSearchEditor
@@ -38,12 +38,11 @@ from lucterios.CORE.xferprint import XferPrintListing
 from lucterios.contacts.tools import ContactSelection  # pylint: disable=no-name-in-module,import-error
 from lucterios.contacts.models import AbstractContact  # pylint: disable=no-name-in-module,import-error
 from lucterios.framework import signal_and_lock
-from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompEdit, \
-    XferCompButton
-from django.utils import six
+from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompEdit, XferCompButton
 from lucterios.framework.error import LucteriosException
+
+from diacamma.accounting.models import Third, AccountThird, FiscalYear
 from diacamma.accounting.views_admin import Configuration
-from django.db.models.query import QuerySet
 
 MenuManage.add_sub("financial", None, "diacamma.accounting/images/financial.png", _("Financial"), _("Financial tools"), 50)
 

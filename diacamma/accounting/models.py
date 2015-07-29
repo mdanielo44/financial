@@ -117,7 +117,7 @@ class Third(LucteriosModel):
         verbose_name_plural = _('thirds')
 
 class AccountThird(LucteriosModel):
-    third = models.ForeignKey(Third, verbose_name=_('third'), null=False)
+    third = models.ForeignKey(Third, verbose_name=_('third'), null=False, on_delete=models.CASCADE)
     code = models.CharField(_('code'), max_length=50)
 
     def __str__(self):
@@ -165,7 +165,7 @@ class FiscalYear(LucteriosModel):
     end = models.DateField(verbose_name=_('end'))
     status = models.IntegerField(verbose_name=_('status'), choices=((0, _('building')), (1, _('running')), (2, _('finished'))), default=0)
     is_actif = models.BooleanField(verbose_name=_('actif'), default=False)
-    last_fiscalyear = models.ForeignKey('FiscalYear', verbose_name=_('last fiscal year'), null=True, on_delete=models.CASCADE)
+    last_fiscalyear = models.ForeignKey('FiscalYear', verbose_name=_('last fiscal year'), null=True, on_delete=models.SET_NULL)
 
     def init_dates(self):
         fiscal_years = FiscalYear.objects.order_by('end')  # pylint: disable=no-member
@@ -178,12 +178,16 @@ class FiscalYear(LucteriosModel):
 
     def can_delete(self):
         fiscal_years = FiscalYear.objects.order_by('end')  # pylint: disable=no-member
-        if (len(fiscal_years) != 0) and (fiscal_years[len(fiscal_years) - 1].id != self.id): # pylint: disable=no-member
+        if (len(fiscal_years) != 0) and (fiscal_years[len(fiscal_years) - 1].id != self.id):  # pylint: disable=no-member
             return _('This fiscal year is not the last!')
         elif self.status == 2:
             return _('Fiscal year finished!')
         else:
             return ''
+
+    def delete(self, using=None):
+        self.entryaccount_set.all().delete() # pylint: disable=no-member
+        LucteriosModel.delete(self, using=using)
 
     @classmethod
     def get_default_fields(cls):
@@ -357,13 +361,14 @@ class ChartsAccount(LucteriosModel):
         return match(CASH_MASK, self.code) is not None
 
     def show(self, xfer):
+        from lucterios.framework.tools import FORMTYPE_MODAL, CLOSE_NO, ActionsManage, SELECT_SINGLE, SELECT_MULTI
         from lucterios.framework.xfercomponents import XferCompGrid, XferCompLabelForm
         if self.is_third:
-            fieldnames = ['entry.num', 'entry.date_entry', 'entry.date_value', 'third', 'entry.designation', (_('debit'), 'debit'), (_('credit'), 'credit')]
+            fieldnames = ['entry.num', 'entry.date_entry', 'entry.date_value', 'third', 'entry.designation', (_('debit'), 'debit'), (_('credit'), 'credit'), 'entry.link']
         elif self.is_cash:
-            fieldnames = ['entry.num', 'entry.date_entry', 'entry.date_value', 'reference', 'entry.designation', (_('debit'), 'debit'), (_('credit'), 'credit')]
+            fieldnames = ['entry.num', 'entry.date_entry', 'entry.date_value', 'reference', 'entry.designation', (_('debit'), 'debit'), (_('credit'), 'credit'), 'entry.link']
         else:
-            fieldnames = ['entry.num', 'entry.date_entry', 'entry.date_value', 'entry.designation', (_('debit'), 'debit'), (_('credit'), 'credit')]
+            fieldnames = ['entry.num', 'entry.date_entry', 'entry.date_value', 'entry.designation', (_('debit'), 'debit'), (_('credit'), 'credit'), 'entry.link']
         row = xfer.get_max_row() + 1
         lbl = XferCompLabelForm('lbl_entrylineaccount')
         lbl.set_location(1, row)
@@ -371,7 +376,11 @@ class ChartsAccount(LucteriosModel):
         xfer.add_component(lbl)
         comp = XferCompGrid('entrylineaccount')
         comp.set_model(self.entrylineaccount_set.all(), fieldnames, xfer)  # pylint: disable=no-member
-        comp.add_actions(xfer, model=EntryLineAccount)
+        comp.add_action(xfer.request, ActionsManage.get_act_changed('EntryLineAccount', 'open', _('Edit'), 'images/edit.png'), \
+                                    {'modal':FORMTYPE_MODAL, 'unique':SELECT_SINGLE, 'close':CLOSE_NO})
+        if self.is_third:
+            comp.add_action(xfer.request, ActionsManage.get_act_changed('EntryLineAccount', 'link', _('Link/Unlink'), ''), \
+                                        {'modal':FORMTYPE_MODAL, 'unique':SELECT_MULTI, 'close':CLOSE_NO})
         comp.set_location(2, row)
         xfer.add_component(comp)
 
@@ -528,7 +537,7 @@ class EntryAccount(LucteriosModel):
         return res
 
     def save_entrylineaccounts(self, serial_vals):
-        self.entrylineaccount_set.all().delete() # pylint: disable=no-member
+        self.entrylineaccount_set.all().delete()  # pylint: disable=no-member
         for line in self.get_entrylineaccounts(serial_vals):
             if line.id < 0:
                 line.id = None
@@ -611,11 +620,11 @@ class EntryAccount(LucteriosModel):
 
 class EntryLineAccount(LucteriosModel):
 
-    account = models.ForeignKey('ChartsAccount', verbose_name=_('account'), null=False, on_delete=models.CASCADE)
+    account = models.ForeignKey('ChartsAccount', verbose_name=_('account'), null=False, on_delete=models.PROTECT)
     entry = models.ForeignKey('EntryAccount', verbose_name=_('entry'), null=False, on_delete=models.CASCADE)
     amount = models.FloatField(_('amount'))
     reference = models.CharField(_('reference'), max_length=100, null=True)
-    third = models.ForeignKey('Third', verbose_name=_('third'), null=True, on_delete=models.CASCADE)
+    third = models.ForeignKey('Third', verbose_name=_('third'), null=True, on_delete=models.PROTECT)
 
     @classmethod
     def get_default_fields(cls):
