@@ -456,9 +456,13 @@ class EntryAccount(LucteriosModel):
 
     def can_delete(self):
         if self.close:
-            return _('entries of account closed!')
+            return _('entry of account closed!')
         else:
             return ''
+
+    def delete(self):
+        self.unlink()
+        LucteriosModel.delete(self)
 
     def show(self, xfer):
         from lucterios.framework.xfercomponents import XferCompLabelForm
@@ -493,7 +497,7 @@ class EntryAccount(LucteriosModel):
             lbl.set_location(1, last_row + 5, 5)
             lbl.set_value_center(_("Linked entries"))
             xfer.add_component(lbl)
-            link_grid_lines = XferCompGrid('entrylineaccount')
+            link_grid_lines = XferCompGrid('entrylineaccount_link')
             link_grid_lines.set_model(entrylines, EntryLineAccount.get_other_fields(), xfer)
             link_grid_lines.set_location(1, last_row + 6, 5)
             link_grid_lines.add_action(xfer.request, ActionsManage.get_act_changed('EntryLineAccount', 'open', _('Edit'), 'images/edit.png'), \

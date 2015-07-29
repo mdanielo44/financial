@@ -38,7 +38,6 @@ from lucterios.framework.xfergraphic import XferContainerAcknowledge, \
     XferContainerCustom
 from lucterios.framework.xfercomponents import XferCompButton, XferCompSelect, \
     XferCompLabelForm, XferCompGrid, XferCompImage
-from django.utils import six
 from lucterios.framework.error import LucteriosException, GRAVE
 
 @ActionsManage.affect('EntryLineAccount', 'list')
@@ -175,10 +174,12 @@ class EntryAccountOpenFromLine(XferContainerAcknowledge):
     field_id = 'entrylineaccount'
     caption = _("accounting entries")
 
-    def fillresponse(self):
-        for old_key in ["SAVE", 'entrylineaccount']:
+    def fillresponse(self, entrylineaccount_link=0):
+        for old_key in ["SAVE", 'entrylineaccount', 'entrylineaccount_link']:
             if old_key in self.params.keys():
                 del self.params[old_key]
+        if (self.item.id is None) and (entrylineaccount_link != 0):
+            self.item = EntryLineAccount.objects.get(id=entrylineaccount_link) # pylint: disable=no-member
         entry_account = self.item.entry
         option = {'params':{'entryaccount':entry_account.id}}
         if entry_account.close:
@@ -236,7 +237,6 @@ class EntryAccountEdit(XferAddEditor):
         if serial_vals is None:
             self.params['serial_entry'] = self.item.get_serial()
             serial_vals = self.getparam('serial_entry')
-            six.print_(serial_vals)
         no_change, debit_rest, credit_rest = self.item.serial_control(serial_vals)
         btn = XferCompButton('save_modif')
         btn.set_location(3, 0, 1, 2)
@@ -364,4 +364,4 @@ class EntryAccountCreateLinked(XferContainerAcknowledge):
 
     def fillresponse(self):
         new_entry, serial_entry = self.item.create_linked()
-        self.redirect_action(EntryAccountEdit.get_action(), {'params':{"serial_entry":serial_entry, 'entryaccount':new_entry.id, 'num_cpt_txt':CASH_MASK_BEGIN}})
+        self.redirect_action(EntryAccountEdit.get_action(), {'params':{"serial_entry":serial_entry, 'journal':'4', 'entryaccount':new_entry.id, 'num_cpt_txt':CASH_MASK_BEGIN}})
