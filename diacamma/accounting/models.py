@@ -177,7 +177,10 @@ class FiscalYear(LucteriosModel):
         self.end = date(self.begin.year + 1, self.begin.month, self.begin.day) - timedelta(days=1)
 
     def can_delete(self):
-        if self.status == 2:
+        fiscal_years = FiscalYear.objects.order_by('end')  # pylint: disable=no-member
+        if (len(fiscal_years) != 0) and (fiscal_years[len(fiscal_years) - 1].id != self.id): # pylint: disable=no-member
+            return _('This fiscal year is not the last!')
+        elif self.status == 2:
             return _('Fiscal year finished!')
         else:
             return ''
@@ -481,7 +484,7 @@ class EntryAccount(LucteriosModel):
 
         if self.has_third:
             sum_customer = self.entrylineaccount_set.filter(account__code__regex=THIRD_MASK).aggregate(Sum('amount'))  # pylint: disable=no-member
-            if (sum_customer['amount__sum'] is not None) and (sum_customer['amount__sum'] < 0):
+            if (sum_customer['amount__sum'] is not None) and (((sum_customer['amount__sum'] < 0) and not self.has_cash) or ((sum_customer['amount__sum'] > 0) and self.has_cash)):
                 lbl = XferCompLabelForm('asset_warning')
                 lbl.set_location(0, last_row + 3, 6)
                 lbl.set_value_as_header(_("entry of accounting for an asset"))
@@ -523,6 +526,13 @@ class EntryAccount(LucteriosModel):
                 new_line.entry = self
                 res._result_cache.append(new_line)  # pylint: disable=protected-access
         return res
+
+    def save_entrylineaccounts(self, serial_vals):
+        self.entrylineaccount_set.all().delete() # pylint: disable=no-member
+        for line in self.get_entrylineaccounts(serial_vals):
+            if line.id < 0:
+                line.id = None
+            line.save()
 
     def remove_entrylineaccounts(self, serial_vals, entrylineid):
         lines = self.get_entrylineaccounts(serial_vals)

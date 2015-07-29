@@ -39,6 +39,7 @@ from lucterios.framework.xfergraphic import XferContainerAcknowledge, \
 from lucterios.framework.xfercomponents import XferCompButton, XferCompSelect, \
     XferCompLabelForm, XferCompGrid, XferCompImage
 from lucterios.framework.error import LucteriosException, GRAVE
+from lucterios.CORE.views import Unlock
 
 @ActionsManage.affect('EntryLineAccount', 'list')
 @MenuManage.describ('accounting.change_entryaccount', FORMTYPE_NOMODAL, 'bookkeeping', _('Edition of accounting entry for current fiscal year'),)
@@ -179,7 +180,7 @@ class EntryAccountOpenFromLine(XferContainerAcknowledge):
             if old_key in self.params.keys():
                 del self.params[old_key]
         if (self.item.id is None) and (entrylineaccount_link != 0):
-            self.item = EntryLineAccount.objects.get(id=entrylineaccount_link) # pylint: disable=no-member
+            self.item = EntryLineAccount.objects.get(id=entrylineaccount_link)  # pylint: disable=no-member
         entry_account = self.item.entry
         option = {'params':{'entryaccount':entry_account.id}}
         if entry_account.close:
@@ -193,6 +194,13 @@ class EntryAccountShow(XferShowEditor):
     model = EntryAccount
     field_id = 'entryaccount'
     caption = _("Show accounting entry")
+
+    def fillresponse(self):
+        XferShowEditor.fillresponse(self)
+        self.actions = []
+        if (self.item.link is None) and self.item.has_third and not self.item.has_cash:
+            self.add_action(EntryAccountCreateLinked.get_action(_('Payment'), ''), {'close':CLOSE_YES})
+        self.add_action(WrapAction(_('Close'), 'images/close.png'), {})
 
 @MenuManage.describ('accounting.add_entryaccount')
 class EntryAccountEdit(XferAddEditor):
@@ -256,6 +264,17 @@ class EntryAccountEdit(XferAddEditor):
             if (debit_rest < 0.0001) and (credit_rest < 0.0001) and (nb_lines > 0):
                 self.add_action(EntryAccountValidate.get_action(_('Ok'), 'images/ok.png'), {})
             self.add_action(WrapAction(_('Cancel'), 'images/cancel.png'), {})
+        self.set_close_action(EntryAccountUnlock.get_action())
+
+@MenuManage.describ('')
+class EntryAccountUnlock(Unlock):
+    model = EntryAccount
+    field_id = 'entryaccount'
+
+    def fillresponse(self):
+        Unlock.fillresponse(self)
+        if len(self.item.entrylineaccount_set.all()) == 0:
+            self.item.delete()
 
 @ActionsManage.affect('EntryAccount', 'show')
 @MenuManage.describ('accounting.add_entryaccount')
@@ -322,6 +341,9 @@ class EntryLineAccountDel(XferContainerAcknowledge):
     caption = _("Delete entry line of account")
 
     def fillresponse(self, entrylineaccount=0, serial_entry=''):
+        for old_key in ['serial_entry', 'entrylineaccount']:
+            if old_key in self.params.keys():
+                del self.params[old_key]
         serial_entry = self.item.remove_entrylineaccounts(serial_entry, entrylineaccount)
         self.redirect_action(EntryAccountEdit.get_action(), {'params':{"serial_entry":serial_entry}})
 
@@ -333,11 +355,7 @@ class EntryAccountValidate(XferContainerAcknowledge):
     caption = _("Validate entry line of account")
 
     def fillresponse(self, serial_entry=''):
-        self.item.entrylineaccount_set.all().delete()
-        for line in self.item.get_entrylineaccounts(serial_entry):
-            if line.id < 0:
-                line.id = None
-            line.save()
+        self.item.save_entrylineaccounts(serial_entry)
 
 @MenuManage.describ('accounting.add_entryaccount')
 class EntryAccountReverse(XferContainerAcknowledge):

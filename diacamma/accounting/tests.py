@@ -35,9 +35,10 @@ from lucterios.framework.filetools import get_user_dir
 from diacamma.accounting.views import ThirdList, ThirdAdd, ThirdSave, ThirdShow, \
     AccountThirdAddModify, AccountThirdDel
 from diacamma.accounting.views_admin import Configuration, JournalAddModify, \
-    JournalDel, FiscalYearAddModify, FiscalYearActive
-from diacamma.accounting.tests_entries import EntryTest
+    JournalDel, FiscalYearAddModify, FiscalYearActive, FiscalYearDel
+from diacamma.accounting.tests_entries import EntryTest, CompletedEntryTest
 from diacamma.accounting.test_tools import initial_contacts, create_third
+from diacamma.accounting.models import FiscalYear
 
 class ThirdTest(LucteriosTest):
     # pylint: disable=too-many-public-methods,too-many-statements
@@ -377,6 +378,52 @@ class AdminTest(LucteriosTest):
         self.assert_xml_equal('COMPONENTS/GRID[@name="fiscalyear"]/RECORD[1]/VALUE[@name="is_actif"]', "0")
         self.assert_xml_equal('COMPONENTS/GRID[@name="fiscalyear"]/RECORD[2]/VALUE[@name="is_actif"]', "1")
 
+        self.factory.xfer = FiscalYearAddModify()
+        self.call('/diacamma.accounting/fiscalYearAddModify', {'fiscalyear':'1'}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'fiscalYearAddModify')
+        self.assert_count_equal('COMPONENTS/*', 7)
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="status"]', 'en création')
+        self.assert_xml_equal('COMPONENTS/DATE[@name="begin"]', '2015-07-01')
+        self.assert_xml_equal('COMPONENTS/DATE[@name="end"]', '2016-06-30')
+
+    def test_confi_delete_fiscalyear(self):
+        year1 = FiscalYear.objects.create(begin='2014-07-01', end='2015-06-30', status=2, is_actif=False, last_fiscalyear=None) # pylint: disable=no-member
+        year2 = FiscalYear.objects.create(begin='2015-07-01', end='2016-06-30', status=1, is_actif=False, last_fiscalyear=year1) # pylint: disable=no-member
+        FiscalYear.objects.create(begin='2016-07-01', end='2017-06-30', status=0, is_actif=True, last_fiscalyear=year2) # pylint: disable=no-member
+
+        self.factory.xfer = Configuration()
+        self.call('/diacamma.accounting/configuration', {}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'configuration')
+        self.assert_count_equal('COMPONENTS/GRID[@name="fiscalyear"]/RECORD', 3)
+
+        self.factory.xfer = FiscalYearDel()
+        self.call('/diacamma.accounting/fiscalYearDel', {'fiscalyear':'1'}, False)
+        self.assert_observer('CORE.Exception', 'diacamma.accounting', 'fiscalYearDel')
+        self.assert_xml_equal('EXCEPTION/MESSAGE', "Cet exercice n'est pas le dernier!")
+
+        self.factory.xfer = FiscalYearDel()
+        self.call('/diacamma.accounting/fiscalYearDel', {'fiscalyear':'2'}, False)
+        self.assert_observer('CORE.Exception', 'diacamma.accounting', 'fiscalYearDel')
+        self.assert_xml_equal('EXCEPTION/MESSAGE', "Cet exercice n'est pas le dernier!")
+
+        self.factory.xfer = FiscalYearDel()
+        self.call('/diacamma.accounting/fiscalYearDel', {'CONFIRME':'YES', 'fiscalyear':'3'}, False)
+        self.assert_observer('Core.Acknowledge', 'diacamma.accounting', 'fiscalYearDel')
+
+        self.factory.xfer = Configuration()
+        self.call('/diacamma.accounting/configuration', {}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'configuration')
+        self.assert_count_equal('COMPONENTS/GRID[@name="fiscalyear"]/RECORD', 2)
+
+        self.factory.xfer = FiscalYearDel()
+        self.call('/diacamma.accounting/fiscalYearDel', {'CONFIRME':'YES', 'fiscalyear':'2'}, False)
+        self.assert_observer('Core.Acknowledge', 'diacamma.accounting', 'fiscalYearDel')
+
+        self.factory.xfer = FiscalYearDel()
+        self.call('/diacamma.accounting/fiscalYearDel', {'fiscalyear':'1'}, False)
+        self.assert_observer('CORE.Exception', 'diacamma.accounting', 'fiscalYearDel')
+        self.assert_xml_equal('EXCEPTION/MESSAGE', "Cet exercice est terminé!")
+
 def suite():
     # pylint: disable=redefined-outer-name
     suite = TestSuite()
@@ -384,4 +431,5 @@ def suite():
     suite.addTest(loader.loadTestsFromTestCase(ThirdTest))
     suite.addTest(loader.loadTestsFromTestCase(AdminTest))
     suite.addTest(loader.loadTestsFromTestCase(EntryTest))
+    suite.addTest(loader.loadTestsFromTestCase(CompletedEntryTest))
     return suite

@@ -33,8 +33,10 @@ from diacamma.accounting.views_entries import EntryLineAccountList, \
     EntryAccountEdit, EntryAccountAfterSave, EntryLineAccountAddModify, \
     EntryLineAccountEdit, EntryAccountValidate, EntryAccountClose, \
     EntryAccountReverse, EntryAccountCreateLinked, EntryAccountLink, \
-    EntryAccountDel
-from diacamma.accounting.test_tools import default_compta, initial_contacts, create_third
+    EntryAccountDel, EntryAccountOpenFromLine, EntryAccountShow, \
+    EntryLineAccountDel
+from diacamma.accounting.test_tools import default_compta, initial_thirds, \
+    fill_entries
 from datetime import date
 from django.utils import formats
 
@@ -44,10 +46,7 @@ class EntryTest(LucteriosTest):
     def setUp(self):
         self.xfer_class = XferContainerAcknowledge
         LucteriosTest.setUp(self)
-        initial_contacts()
-        create_third([2, 8], ['401000'])
-        create_third([6, 7], ['411000', '401000'])
-        create_third([3, 4, 5], ['411000'])
+        initial_thirds()
         default_compta()
         rmtree(get_user_dir(), True)
 
@@ -316,6 +315,17 @@ class EntryTest(LucteriosTest):
         self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="entry.link"]', '---')
         self.assert_xml_equal("COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit:{[/b]} 0.00€ - {[b]}Charge:{[/b]} 152.34€ = {[b]}Resultat:{[/b]} -152.34€ | {[b]}Trésorie:{[/b]} 0.00€ - {[b]}Validé:{[/b]} 0.00€{[/center]}')  # pylint: disable=line-too-long
 
+        self.factory.xfer = EntryAccountOpenFromLine()
+        self.call('/diacamma.accounting/entryAccountOpenFromLine', {'year':'1', 'journal':'2', 'filter':'0', 'entrylineaccount':'2'}, False)
+        self.assert_observer('Core.Acknowledge', 'diacamma.accounting', 'entryAccountOpenFromLine')
+        self.assert_attrib_equal("ACTION", "id", "diacamma.accounting/entryAccountEdit")
+        self.assert_count_equal("ACTION/PARAM", 1)
+        self.assert_xml_equal("ACTION/PARAM[@name='entryaccount']", "1")
+        self.assert_count_equal("CONTEXT/*", 3)
+        self.assert_xml_equal("CONTEXT/PARAM[@name='filter']", "0")
+        self.assert_xml_equal("CONTEXT/PARAM[@name='year']", "1")
+        self.assert_xml_equal("CONTEXT/PARAM[@name='journal']", "2")
+
         self.factory.xfer = EntryAccountClose()
         self.call('/diacamma.accounting/entryAccountClose', {'CONFIRME':'YES', 'year':'1', 'journal':'2', "entrylineaccount":"1"}, False)
         self.assert_observer('Core.Acknowledge', 'diacamma.accounting', 'entryAccountClose')
@@ -343,6 +353,31 @@ class EntryTest(LucteriosTest):
         self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="credit"]', '152.34€')
         self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="entry.link"]', '---')
         self.assert_xml_equal("COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit:{[/b]} 0.00€ - {[b]}Charge:{[/b]} 152.34€ = {[b]}Resultat:{[/b]} -152.34€ | {[b]}Trésorie:{[/b]} 0.00€ - {[b]}Validé:{[/b]} 0.00€{[/center]}')  # pylint: disable=line-too-long
+
+        self.factory.xfer = EntryAccountOpenFromLine()
+        self.call('/diacamma.accounting/entryAccountOpenFromLine', {'year':'1', 'journal':'2', 'filter':'0', 'entrylineaccount':'2'}, False)
+        self.assert_observer('Core.Acknowledge', 'diacamma.accounting', 'entryAccountOpenFromLine')
+        self.assert_attrib_equal("ACTION", "id", "diacamma.accounting/entryAccountShow")
+        self.assert_count_equal("ACTION/PARAM", 1)
+        self.assert_xml_equal("ACTION/PARAM[@name='entryaccount']", "1")
+        self.assert_count_equal("CONTEXT/*", 3)
+        self.assert_xml_equal("CONTEXT/PARAM[@name='filter']", "0")
+        self.assert_xml_equal("CONTEXT/PARAM[@name='year']", "1")
+        self.assert_xml_equal("CONTEXT/PARAM[@name='journal']", "2")
+
+        self.factory.xfer = EntryAccountShow()
+        self.call('/diacamma.accounting/entryAccountShow', {'year':'1', 'journal':'2', 'filter':'0', 'entryaccount':'1'}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'entryAccountShow')
+        self.assert_count_equal('COMPONENTS/*', 14)
+        self.assert_xml_equal("COMPONENTS/LABELFORM[@name='num']", '1')
+        self.assert_xml_equal("COMPONENTS/LABELFORM[@name='journal']", 'Achat')
+        self.assert_xml_equal("COMPONENTS/LABELFORM[@name='date_entry']", formats.date_format(date.today(), "DATE_FORMAT"))
+        self.assert_xml_equal("COMPONENTS/LABELFORM[@name='date_value']", '13 février 2015')
+        self.assert_xml_equal("COMPONENTS/LABELFORM[@name='designation']", 'un plein cadie')
+        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount"]/HEADER', 4)
+        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD', 2)
+        self.assert_count_equal('ACTIONS/ACTION', 2)
+        self.assert_attrib_equal("ACTIONS/ACTION[1]", "id", "diacamma.accounting/entryAccountCreateLinked")
 
     def test_inverse_entry(self):
         self.factory.xfer = EntryAccountEdit()
@@ -584,6 +619,40 @@ class EntryTest(LucteriosTest):
         self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[3]/VALUE[@name="entry.link"]', '---')
         self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[4]/VALUE[@name="entry.link"]', '---')
 
+    def test_delete_lineentry(self):
+        self.factory.xfer = EntryAccountEdit()
+        self.call('/diacamma.accounting/entryAccountEdit', {'SAVE':'YES', 'year':'1', 'journal':'2', \
+                            'date_value':'2015-04-27', 'designation':'Une belle facture'}, False)
+        self.assert_observer('Core.Acknowledge', 'diacamma.accounting', 'entryAccountEdit')
+        self.factory.xfer = EntryAccountValidate()
+        self.call('/diacamma.accounting/entryAccountValidate', {'year':'1', 'journal':'2', 'entryaccount':'1', 'serial_entry':"-6|9|0|364.91|None|\n-7|1|5|364.91|None|"}, False)
+        self.assert_observer('Core.Acknowledge', 'diacamma.accounting', 'entryAccountValidate')
+
+        self.factory.xfer = EntryAccountEdit()
+        self.call('/diacamma.accounting/entryAccountEdit', {'year':'1', 'journal':'2', 'entryaccount':'1'}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'entryAccountEdit')
+        self.assert_count_equal('COMPONENTS/*', 20)
+        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD', 2)
+        self.assert_count_equal('ACTIONS/ACTION', 3)
+
+        self.factory.xfer = EntryLineAccountDel()
+        self.call('/diacamma.accounting/entryLineAccountDel', {'year':'1', 'journal':'2', 'entryaccount':'1', 'serial_entry':"1|9|0|364.91|None|\n2|1|5|364.91|None|", "entrylineaccount":'2'}, False)
+        self.assert_observer('Core.Acknowledge', 'diacamma.accounting', 'entryLineAccountDel')
+        self.assert_attrib_equal("ACTION", "id", "diacamma.accounting/entryAccountEdit")
+        self.assert_count_equal("ACTION/PARAM", 1)
+        self.assert_xml_equal("ACTION/PARAM[@name='serial_entry']", "1|9|0|364.910000|None|")
+        self.assert_count_equal("CONTEXT/*", 3)
+        self.assert_xml_equal("CONTEXT/PARAM[@name='entryaccount']", "1")
+        self.assert_xml_equal("CONTEXT/PARAM[@name='year']", "1")
+        self.assert_xml_equal("CONTEXT/PARAM[@name='journal']", "2")
+
+        self.factory.xfer = EntryAccountEdit()
+        self.call('/diacamma.accounting/entryAccountEdit', {'year':'1', 'journal':'2', 'entryaccount':'1', "entrylineaccount":'2', 'serial_entry':"1|9|0|364.91|None|"}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'entryAccountEdit')
+        self.assert_count_equal('COMPONENTS/*', 20)
+        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD', 1)
+        self.assert_count_equal('ACTIONS/ACTION', 1)
+
     def test_delete_entries(self):
         self.factory.xfer = EntryAccountEdit()
         self.call('/diacamma.accounting/entryAccountEdit', {'SAVE':'YES', 'year':'1', 'journal':'2', \
@@ -652,3 +721,187 @@ class EntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryAccountDel', {'year':'1', 'journal':'-1', 'filter':'0', 'entrylineaccount':'4'}, False)
         self.assert_observer('CORE.Exception', 'diacamma.accounting', 'entryAccountDel')
         self.assert_xml_equal('EXCEPTION/MESSAGE', 'écriture validée!')
+
+class CompletedEntryTest(LucteriosTest):
+    # pylint: disable=too-many-public-methods,too-many-statements
+
+    def setUp(self):
+        self.xfer_class = XferContainerAcknowledge
+        LucteriosTest.setUp(self)
+        initial_thirds()
+        default_compta()
+        fill_entries(1)
+        rmtree(get_user_dir(), True)
+
+    def test_lastyear(self):
+        self.factory.xfer = EntryLineAccountList()
+        self.call('/diacamma.accounting/entryLineAccountList', {'year':'1', 'journal':'1', 'filter':'0'}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'entryLineAccountList')
+        self.assert_count_equal('COMPONENTS/*', 11)
+        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount"]/HEADER', 8)
+        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD', 3)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="entry.num"]', '1')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="entry_account"]', '[106000] 106000')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="credit"]', '1250.47€')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="entry.link"]', '---')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="entry.num"]', '1')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="entry_account"]', '[512000] 512000')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="debit"]', '1135.93€')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="entry.link"]', '---')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[3]/VALUE[@name="entry.num"]', '1')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[3]/VALUE[@name="entry_account"]', '[531000] 531000')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[3]/VALUE[@name="debit"]', '114.45€')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[3]/VALUE[@name="entry.link"]', '---')
+
+    def test_buying(self):
+        self.factory.xfer = EntryLineAccountList()
+        self.call('/diacamma.accounting/entryLineAccountList', {'year':'1', 'journal':'2', 'filter':'0'}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'entryLineAccountList')
+        self.assert_count_equal('COMPONENTS/*', 11)
+        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount"]/HEADER', 8)
+        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD', 6)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="entry.num"]', '2')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="entry_account"]', '[602000] 602000')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="debit"]', '63.94€')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="entry.link"]', 'A')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="entry.num"]', '2')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="entry_account"]', '[401000 Minimum]')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="credit"]', '63.94€')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="entry.link"]', 'A')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[3]/VALUE[@name="entry.num"]', '---')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[3]/VALUE[@name="entry_account"]', '[607000] 607000')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[3]/VALUE[@name="debit"]', '194.08€')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[3]/VALUE[@name="entry.link"]', 'C')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[4]/VALUE[@name="entry.num"]', '---')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[4]/VALUE[@name="entry_account"]', '[401000 Dalton Avrel]')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[4]/VALUE[@name="credit"]', '194.08€')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[4]/VALUE[@name="entry.link"]', 'C')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[5]/VALUE[@name="entry.num"]', '---')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[5]/VALUE[@name="entry_account"]', '[601000] 601000')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[5]/VALUE[@name="debit"]', '78.24€')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[5]/VALUE[@name="entry.link"]', '---')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[6]/VALUE[@name="entry.num"]', '---')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[6]/VALUE[@name="entry_account"]', '[401000 Maximum]')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[6]/VALUE[@name="credit"]', '78.24€')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[6]/VALUE[@name="entry.link"]', '---')
+
+    def test_selling(self):
+        self.factory.xfer = EntryLineAccountList()
+        self.call('/diacamma.accounting/entryLineAccountList', {'year':'1', 'journal':'3', 'filter':'0'}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'entryLineAccountList')
+        self.assert_count_equal('COMPONENTS/*', 11)
+        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount"]/HEADER', 8)
+        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD', 6)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="entry.num"]', '4')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="entry_account"]', '[707000] 707000')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="credit"]', '70.64€')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="entry.link"]', 'E')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="entry.num"]', '4')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="entry_account"]', '[411000 Dalton Joe]')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="debit"]', '70.64€')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="entry.link"]', 'E')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[3]/VALUE[@name="entry.num"]', '---')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[3]/VALUE[@name="entry_account"]', '[707000] 707000')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[3]/VALUE[@name="credit"]', '125.97€')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[3]/VALUE[@name="entry.link"]', '---')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[4]/VALUE[@name="entry.num"]', '---')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[4]/VALUE[@name="entry_account"]', '[411000 Dalton William]')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[4]/VALUE[@name="debit"]', '125.97€')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[4]/VALUE[@name="entry.link"]', '---')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[5]/VALUE[@name="entry.num"]', '---')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[5]/VALUE[@name="entry_account"]', '[707000] 707000')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[5]/VALUE[@name="credit"]', '34.01€')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[5]/VALUE[@name="entry.link"]', '---')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[6]/VALUE[@name="entry.num"]', '---')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[6]/VALUE[@name="entry_account"]', '[411000 Minimum]')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[6]/VALUE[@name="debit"]', '34.01€')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[6]/VALUE[@name="entry.link"]', '---')
+
+    def test_payment(self):
+        self.factory.xfer = EntryLineAccountList()
+        self.call('/diacamma.accounting/entryLineAccountList', {'year':'1', 'journal':'4', 'filter':'0'}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'entryLineAccountList')
+        self.assert_count_equal('COMPONENTS/*', 11)
+        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount"]/HEADER', 8)
+        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD', 6)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="entry.num"]', '3')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="entry_account"]', '[512000] 512000')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="credit"]', '63.94€')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="entry.link"]', 'A')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="entry.num"]', '3')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="entry_account"]', '[401000 Minimum]')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="debit"]', '63.94€')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="entry.link"]', 'A')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[3]/VALUE[@name="entry.num"]', '---')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[3]/VALUE[@name="entry_account"]', '[531000] 531000')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[3]/VALUE[@name="credit"]', '194.08€')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[3]/VALUE[@name="entry.link"]', 'C')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[4]/VALUE[@name="entry.num"]', '---')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[4]/VALUE[@name="entry_account"]', '[401000 Dalton Avrel]')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[4]/VALUE[@name="debit"]', '194.08€')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[4]/VALUE[@name="entry.link"]', 'C')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[5]/VALUE[@name="entry.num"]', '5')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[5]/VALUE[@name="entry_account"]', '[512000] 512000')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[5]/VALUE[@name="debit"]', '70.64€')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[5]/VALUE[@name="entry.link"]', 'E')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[6]/VALUE[@name="entry.num"]', '5')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[6]/VALUE[@name="entry_account"]', '[411000 Dalton Joe]')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[6]/VALUE[@name="credit"]', '70.64€')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[6]/VALUE[@name="entry.link"]', 'E')
+
+    def test_other(self):
+        self.factory.xfer = EntryLineAccountList()
+        self.call('/diacamma.accounting/entryLineAccountList', {'year':'1', 'journal':'5', 'filter':'0'}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'entryLineAccountList')
+        self.assert_count_equal('COMPONENTS/*', 11)
+        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount"]/HEADER', 8)
+        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD', 2)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="entry.num"]', '6')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="entry_account"]', '[512000] 512000')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="credit"]', '12.34€')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="entry.link"]', '---')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="entry.num"]', '6')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="entry_account"]', '[627000] 627000')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="debit"]', '12.34€')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="entry.link"]', '---')
+
+    def test_all(self):
+        self.factory.xfer = EntryLineAccountList()
+        self.call('/diacamma.accounting/entryLineAccountList', {'year':'1', 'journal':'-1', 'filter':'0'}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'entryLineAccountList')
+        self.assert_count_equal('COMPONENTS/*', 11)
+        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount"]/HEADER', 8)
+        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD', 23)
+        self.assert_xml_equal("COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit:{[/b]} 230.62€ - {[b]}Charge:{[/b]} 348.60€ = {[b]}Resultat:{[/b]} -117.98€ | {[b]}Trésorie:{[/b]} 1050.66€ - {[b]}Validé:{[/b]} 1244.74€{[/center]}')  # pylint: disable=line-too-long
+
+    def test_noclose(self):
+        self.factory.xfer = EntryLineAccountList()
+        self.call('/diacamma.accounting/entryLineAccountList', {'year':'1', 'journal':'-1', 'filter':'1'}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'entryLineAccountList')
+        self.assert_count_equal('COMPONENTS/*', 11)
+        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount"]/HEADER', 8)
+        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD', 10)
+
+    def test_close(self):
+        self.factory.xfer = EntryLineAccountList()
+        self.call('/diacamma.accounting/entryLineAccountList', {'year':'1', 'journal':'-1', 'filter':'2'}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'entryLineAccountList')
+        self.assert_count_equal('COMPONENTS/*', 11)
+        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount"]/HEADER', 8)
+        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD', 13)
+
+    def test_letter(self):
+        self.factory.xfer = EntryLineAccountList()
+        self.call('/diacamma.accounting/entryLineAccountList', {'year':'1', 'journal':'-1', 'filter':'3'}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'entryLineAccountList')
+        self.assert_count_equal('COMPONENTS/*', 11)
+        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount"]/HEADER', 8)
+        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD', 12)
+
+    def test_noletter(self):
+        self.factory.xfer = EntryLineAccountList()
+        self.call('/diacamma.accounting/entryLineAccountList', {'year':'1', 'journal':'-1', 'filter':'4'}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'entryLineAccountList')
+        self.assert_count_equal('COMPONENTS/*', 11)
+        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount"]/HEADER', 8)
+        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD', 11)
