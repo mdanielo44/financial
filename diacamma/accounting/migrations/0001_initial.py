@@ -51,6 +51,12 @@ def initial_values(*args):
     param.value = '2'
     param.save()
 
+    param = Parameter.objects.create(name='accounting-system', typeparam=0)  # pylint: disable=no-member
+    param.title = _("accounting-system")
+    param.args = "{'Multi':False}"
+    param.value = ''
+    param.save()
+
     Journal.objects.create(name=_("Last year report"), id=1)
     Journal.objects.create(name=_("Buying"), id=2)
     Journal.objects.create(name=_("Selling"), id=3)

@@ -39,7 +39,7 @@ from lucterios.framework.error import LucteriosException, GRAVE
 from lucterios.CORE.views import Unlock
 
 from diacamma.accounting.models import EntryLineAccount, EntryAccount, FiscalYear, \
-    Journal, AccountLink, CASH_MASK_BEGIN
+    Journal, AccountLink, current_system_account
 
 @ActionsManage.affect('EntryLineAccount', 'list')
 @MenuManage.describ('accounting.change_entryaccount', FORMTYPE_NOMODAL, 'bookkeeping', _('Edition of accounting entry for current fiscal year'),)
@@ -383,4 +383,6 @@ class EntryAccountCreateLinked(XferContainerAcknowledge):
 
     def fillresponse(self):
         new_entry, serial_entry = self.item.create_linked()
-        self.redirect_action(EntryAccountEdit.get_action(), {'params':{"serial_entry":serial_entry, 'journal':'4', 'entryaccount':new_entry.id, 'num_cpt_txt':CASH_MASK_BEGIN}})
+        self.redirect_action(EntryAccountEdit.get_action(), {'params':{"serial_entry":serial_entry, \
+                                            'journal':'4', 'entryaccount':new_entry.id, \
+                                            'num_cpt_txt':current_system_account().get_cash_begin()}})

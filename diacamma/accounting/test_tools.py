@@ -28,7 +28,9 @@ from lucterios.contacts.models import Individual, LegalEntity, AbstractContact
 from lucterios.contacts.tests_contacts import change_ourdetail
 
 from diacamma.accounting.models import Third, AccountThird, FiscalYear, \
-    ChartsAccount, EntryAccount, Journal, AccountLink
+    ChartsAccount, EntryAccount, Journal, AccountLink, clear_system_account
+from lucterios.CORE.models import Parameter
+from lucterios.CORE.parameters import Params
 
 def create_individual(firstname, lastname):
     empty_contact = Individual()
@@ -98,7 +100,13 @@ def fill_accounts(year=None):
     create_account(['701000', '706000', '707000'], 3, year)  # 8 9 10
     create_account(['601000', '602000', '604000', '607000', '627000'], 4, year)  # 11 12 13 14 15
 
+def set_accounting_system():
+    Parameter.change_value('accounting-system', 'diacamma.accounting.system.french.FrenchSystemAcounting')
+    Params.clear()
+    clear_system_account()
+
 def default_compta(status=0):
+    set_accounting_system()
     year = create_year(status)
     fill_accounts(year)
 

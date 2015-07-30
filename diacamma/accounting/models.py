@@ -24,31 +24,37 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import unicode_literals
 
 from datetime import date, timedelta
+from re import match
 
 from django.db import models
 from django.db.models.query import QuerySet
 from django.db.models import Q
+from django.db.models.aggregates import Sum, Max
+from django.core.exceptions import ObjectDoesNotExist
 from django.utils.translation import ugettext_lazy as _
 from django.utils import six
 
 from lucterios.framework.models import LucteriosModel, get_value_converted, get_value_if_choices
 from lucterios.framework.error import LucteriosException, IMPORTANT
-
 from lucterios.CORE.parameters import Params
 from lucterios.contacts.models import AbstractContact  # pylint: disable=no-name-in-module,import-error
-from django.core.exceptions import ObjectDoesNotExist
-from django.db.models.aggregates import Sum, Max
-from re import match
 
-# TODO: account code mask
-CASH_MASK = r'5[0-9]*'
-CASH_MASK_BEGIN = '5'
+from diacamma.accounting.system import get_accounting_system
 
-PROVIDER_MASK = r'40[0-9]*'
-CUSTOMER_MASK = r'41[0-9]*'
-EMPLOYED_MASK = r'42[0-9]*'
-SOCIETARY_MASK = r'45[0-9]*'
-THIRD_MASK = "%s|%s|%s|%s" % (PROVIDER_MASK, CUSTOMER_MASK, EMPLOYED_MASK, SOCIETARY_MASK)
+def current_system_account():
+    import sys
+    current_module = sys.modules[__name__]
+
+    if not hasattr(current_module, 'SYSTEM_ACCOUNT_CACHE'):
+        setattr(current_module, 'SYSTEM_ACCOUNT_CACHE', get_accounting_system(Params.getvalue("accounting-system")))
+    return current_module.SYSTEM_ACCOUNT_CACHE
+
+def clear_system_account():
+    import sys
+    current_module = sys.modules[__name__]
+
+    if hasattr(current_module, 'SYSTEM_ACCOUNT_CACHE'):
+        del current_module.SYSTEM_ACCOUNT_CACHE
 
 class Third(LucteriosModel):
     contact = models.ForeignKey('contacts.AbstractContact', verbose_name=_('contact'), null=False)
@@ -246,6 +252,11 @@ class FiscalYear(LucteriosModel):
 
     def edit(self, xfer):
         xfer.change_to_readonly('status')
+#         nb_years = FiscalYear.objects.all().count()
+
+#         if (nb_years != 0) and ((nb_years != 1) or (self.id is None) or (self.status != 0)):
+#             if (self.id is None):
+#                 xfer.params['begin'] = self.begin.isoformat()
         if self.status != 0:
             xfer.change_to_readonly('begin')
         if self.status == 2:
@@ -277,7 +288,7 @@ class FiscalYear(LucteriosModel):
 
     @property
     def total_cash(self):
-        val = EntryLineAccount.objects.filter(account__code__regex=CASH_MASK, account__year=self).aggregate(Sum('amount'))  # pylint: disable=no-member
+        val = EntryLineAccount.objects.filter(account__code__regex=current_system_account().get_cash_mask(), account__year=self).aggregate(Sum('amount'))  # pylint: disable=no-member
         if val['amount__sum'] is None:
             return 0
         else:
@@ -285,7 +296,7 @@ class FiscalYear(LucteriosModel):
 
     @property
     def total_cash_close(self):
-        val = EntryLineAccount.objects.filter(entry__close=True, account__code__regex=CASH_MASK, account__year=self).aggregate(Sum('amount'))  # pylint: disable=no-member
+        val = EntryLineAccount.objects.filter(entry__close=True, account__code__regex=current_system_account().get_cash_mask(), account__year=self).aggregate(Sum('amount'))  # pylint: disable=no-member
         if val['amount__sum'] is None:
             return 0
         else:
@@ -401,11 +412,11 @@ class ChartsAccount(LucteriosModel):
 
     @property
     def is_third(self):
-        return match(THIRD_MASK, self.code) is not None
+        return match(current_system_account().get_third_mask(), self.code) is not None
 
     @property
     def is_cash(self):
-        return match(CASH_MASK, self.code) is not None
+        return match(current_system_account().get_cash_mask(), self.code) is not None
 
     def show(self, xfer):
         from lucterios.framework.tools import FORMTYPE_MODAL, CLOSE_NO, ActionsManage, SELECT_SINGLE, SELECT_MULTI
@@ -539,7 +550,7 @@ class EntryAccount(LucteriosModel):
         grid_lines.actions = []
 
         if self.has_third:
-            sum_customer = self.entrylineaccount_set.filter(account__code__regex=THIRD_MASK).aggregate(Sum('amount'))  # pylint: disable=no-member
+            sum_customer = self.entrylineaccount_set.filter(account__code__regex=current_system_account().get_third_mask()).aggregate(Sum('amount'))  # pylint: disable=no-member
             if (sum_customer['amount__sum'] is not None) and (((sum_customer['amount__sum'] < 0) and not self.has_cash) or ((sum_customer['amount__sum'] > 0) and self.has_cash)):
                 lbl = XferCompLabelForm('asset_warning')
                 lbl.set_location(0, last_row + 3, 6)
@@ -645,20 +656,19 @@ class EntryAccount(LucteriosModel):
                     serial_val += '\n'
                 serial_val += line.create_clone_inverse()
         AccountLink.create_link([self, new_entry])
-
         return new_entry, serial_val
 
     @property
     def has_third(self):
-        return self.entrylineaccount_set.filter(account__code__regex=THIRD_MASK).count() > 0  # pylint: disable=no-member
+        return self.entrylineaccount_set.filter(account__code__regex=current_system_account().get_third_mask()).count() > 0  # pylint: disable=no-member
 
     @property
     def has_customer(self):
-        return self.entrylineaccount_set.filter(account__code__regex=CUSTOMER_MASK).count() > 0  # pylint: disable=no-member
+        return self.entrylineaccount_set.filter(account__code__regex=current_system_account().get_customer_mask()).count() > 0  # pylint: disable=no-member
 
     @property
     def has_cash(self):
-        return self.entrylineaccount_set.filter(account__code__regex=CASH_MASK).count() > 0  # pylint: disable=no-member
+        return self.entrylineaccount_set.filter(account__code__regex=current_system_account().get_cash_mask()).count() > 0  # pylint: disable=no-member
 
     class Meta(object):
         # pylint: disable=no-init

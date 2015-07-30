@@ -32,9 +32,14 @@ from lucterios.framework.tools import FORMTYPE_MODAL, ActionsManage, MenuManage,
 from lucterios.framework.xfergraphic import XferContainerAcknowledge
 from lucterios.CORE.parameters import Params
 from lucterios.CORE.views import ParamEdit
-from lucterios.framework.xfercomponents import XferCompButton, XferCompGrid
+from lucterios.framework.xfercomponents import XferCompButton, XferCompGrid, \
+    XferCompLabelForm, XferCompSelect
 
-from diacamma.accounting.models import FiscalYear, Journal
+from diacamma.accounting.models import FiscalYear, Journal, clear_system_account
+from diacamma.accounting.system import accounting_system_list, \
+    accounting_system_name
+from lucterios.CORE.models import Parameter
+from lucterios.framework.error import LucteriosException, IMPORTANT
 
 @ActionsManage.affect('FiscalYear', 'list')
 @MenuManage.describ('accounting.change_fiscalyear', FORMTYPE_MODAL, 'contact.conf', _('Management of fiscal year and financial parameters'))
@@ -46,13 +51,29 @@ class Configuration(XferListEditor):
 
     def fillresponse_header(self):
         self.new_tab(_('Fiscal year list'))
+        current_account_system = Params.getvalue("accounting-system")
+        lbl = XferCompLabelForm('lbl_account_system')
+        lbl.set_value_as_name(_('accounting system'))
+        lbl.set_location(0, 1)
+        self.add_component(lbl)
+        if current_account_system == '':
+            edt = XferCompSelect("account_system")
+            account_systems = list(accounting_system_list().items())
+            account_systems.insert(0, ('', '---'))
+            edt.set_select(account_systems)
+            edt.set_action(self.request, ConfigurationAccountingSystem.get_action(), {'modal':FORMTYPE_MODAL, 'close':CLOSE_NO})
+        else:
+            edt = XferCompLabelForm("account_system")
+        edt.set_value(accounting_system_name(current_account_system))
+        edt.set_location(1, 1)
+        self.add_component(edt)
 
     def fillresponse(self):
         XferListEditor.fillresponse(self)
         grid = self.get_components(self.field_id)
         grid.add_action(self.request, FiscalYearActive.get_action(), {'unique':SELECT_SINGLE, 'close':CLOSE_NO})
         self.new_tab(_('Journals'))
-        journals = Journal.objects.all() # pylint: disable=no-member
+        journals = Journal.objects.all()  # pylint: disable=no-member
         grid = XferCompGrid('journal')
         grid.set_model(journals, None, self)
         grid.add_actions(self, Journal)
@@ -66,6 +87,17 @@ class Configuration(XferListEditor):
         btn.set_location(1, self.get_max_row() + 1, 2, 1)
         btn.set_action(self.request, ParamEdit.get_action(_('Modify'), 'images/edit.png'), {'close':0})
         self.add_component(btn)
+
+@MenuManage.describ('accounting.add_fiscalyear')
+class ConfigurationAccountingSystem(XferContainerAcknowledge):
+
+    def fillresponse(self, account_system=''):
+        if account_system != '':
+            if self.confirme(_('Do you confirm to select "%s" like accounting system?{[br/]}{[br/]}{[i]}{[u]}Warning{[/u]}: This choose is definitive.{[/i]}') % \
+                            accounting_system_name(account_system)):
+                Parameter.change_value('accounting-system', account_system)
+                Params.clear()
+                clear_system_account()
 
 @MenuManage.describ('accounting.add_fiscalyear')
 class FiscalYearActive(XferContainerAcknowledge):
@@ -88,6 +120,8 @@ class FiscalYearAddModify(XferAddEditor):
 
     def fillresponse(self):
         if self.item.id is None:
+            if Params.getvalue("accounting-system") == '':
+                raise LucteriosException(IMPORTANT, _('Account system not defined!'))
             self.item.init_dates()
         XferAddEditor.fillresponse(self)
 

@@ -36,8 +36,11 @@ from diacamma.accounting.views import ThirdList, ThirdAdd, ThirdSave, ThirdShow,
 from diacamma.accounting.views_admin import Configuration, JournalAddModify, \
     JournalDel, FiscalYearAddModify, FiscalYearActive, FiscalYearDel
 from diacamma.accounting.test_tools import initial_contacts, fill_entries, initial_thirds, \
-    create_third, fill_accounts, fill_thirds, default_compta
-from diacamma.accounting.models import FiscalYear
+    create_third, fill_accounts, fill_thirds, default_compta, \
+    set_accounting_system
+from diacamma.accounting.models import FiscalYear, clear_system_account, \
+    current_system_account
+from diacamma.accounting.system import get_accounting_system
 
 class ThirdTest(LucteriosTest):
     # pylint: disable=too-many-public-methods,too-many-statements
@@ -47,6 +50,7 @@ class ThirdTest(LucteriosTest):
         LucteriosTest.setUp(self)
         initial_contacts()
         rmtree(get_user_dir(), True)
+        clear_system_account()
 
     def test_add_abstract(self):
         self.factory.xfer = ThirdList()
@@ -407,7 +411,7 @@ class AdminTest(LucteriosTest):
         self.call('/diacamma.accounting/configuration', {}, False)
         self.assert_observer('Core.Custom', 'diacamma.accounting', 'configuration')
         self.assert_count_equal('COMPONENTS/TAB', 3)
-        self.assert_count_equal('COMPONENTS/*', 2 + 3 + 2 + 1 + 7)
+        self.assert_count_equal('COMPONENTS/*', 2 + 3 + 4 + 1 + 7)
 
         self.assert_count_equal('COMPONENTS/GRID[@name="fiscalyear"]/HEADER', 4)
         self.assert_xml_equal('COMPONENTS/GRID[@name="fiscalyear"]/HEADER[@name="begin"]', "début")
@@ -471,6 +475,13 @@ class AdminTest(LucteriosTest):
     def test_configuration_fiscalyear(self):
         to_day = date.today()
         to_day_plus_1 = date(to_day.year + 1, to_day.month, to_day.day) - timedelta(days=1)
+
+        self.factory.xfer = FiscalYearAddModify()
+        self.call('/diacamma.accounting/fiscalYearAddModify', {}, False)
+        self.assert_observer('CORE.Exception', 'diacamma.accounting', 'fiscalYearAddModify')
+        self.assert_xml_equal('EXCEPTION/MESSAGE', "Système comptable non défini!")
+
+        set_accounting_system()
 
         self.factory.xfer = FiscalYearAddModify()
         self.call('/diacamma.accounting/fiscalYearAddModify', {}, False)
@@ -543,6 +554,7 @@ class AdminTest(LucteriosTest):
         year1 = FiscalYear.objects.create(begin='2014-07-01', end='2015-06-30', status=2, is_actif=False, last_fiscalyear=None)  # pylint: disable=no-member
         year2 = FiscalYear.objects.create(begin='2015-07-01', end='2016-06-30', status=1, is_actif=False, last_fiscalyear=year1)  # pylint: disable=no-member
         FiscalYear.objects.create(begin='2016-07-01', end='2017-06-30', status=0, is_actif=True, last_fiscalyear=year2)  # pylint: disable=no-member
+        set_accounting_system()
         initial_thirds()
         fill_accounts()
         fill_entries(3)
@@ -579,3 +591,13 @@ class AdminTest(LucteriosTest):
         self.call('/diacamma.accounting/fiscalYearDel', {'fiscalyear':'1'}, False)
         self.assert_observer('CORE.Exception', 'diacamma.accounting', 'fiscalYearDel')
         self.assert_xml_equal('EXCEPTION/MESSAGE', "Cet exercice est terminé!")
+
+    def test_system_accounting(self):
+        self.assertEqual(get_accounting_system('').__class__.__name__, "DefaultSystemAccounting")
+        self.assertEqual(get_accounting_system('accountingsystem.foo.DummySystemAcounting').__class__.__name__, "DefaultSystemAccounting")
+        self.assertEqual(get_accounting_system('diacamma.accounting.system.french.DummySystemAcounting').__class__.__name__, "DefaultSystemAccounting")
+        self.assertEqual(get_accounting_system('diacamma.accounting.system.french.FrenchSystemAcounting').__class__.__name__, "FrenchSystemAcounting")
+
+        self.assertEqual(current_system_account().__class__.__name__, "DefaultSystemAccounting")
+        set_accounting_system()
+        self.assertEqual(current_system_account().__class__.__name__, "FrenchSystemAcounting")
