@@ -37,9 +37,10 @@ from diacamma.accounting.views_entries import EntryLineAccountList, \
     EntryLineAccountEdit, EntryAccountValidate, EntryAccountClose, \
     EntryAccountReverse, EntryAccountCreateLinked, EntryAccountLink, \
     EntryAccountDel, EntryAccountOpenFromLine, EntryAccountShow, \
-    EntryLineAccountDel
-from diacamma.accounting.test_tools import default_compta, initial_thirds, \
-    fill_entries
+    EntryLineAccountDel, EntryAccountUnlock
+from diacamma.accounting.test_tools import default_compta, initial_thirds, fill_entries
+from diacamma.accounting.models import EntryAccount
+from lucterios.CORE.views import StatusMenu
 
 class EntryTest(LucteriosTest):
     # pylint: disable=too-many-public-methods,too-many-statements
@@ -535,6 +536,63 @@ class EntryTest(LucteriosTest):
         self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[4]/VALUE[@name="entry.link"]', 'A')
         self.assert_xml_equal("COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit:{[/b]} 0.00€ - {[b]}Charge:{[/b]} 152.34€ = {[b]}Resultat:{[/b]} -152.34€ | {[b]}Trésorie:{[/b]} -152.34€ - {[b]}Validé:{[/b]} 0.00€{[/center]}')  # pylint: disable=line-too-long
 
+    def test_valid_payment_canceled(self):
+        self.factory.xfer = EntryAccountEdit()
+        self.call('/diacamma.accounting/entryAccountEdit', {'SAVE':'YES', 'year':'1', 'journal':'2', \
+                            'date_value':'2015-02-13', 'designation':'un plein cadie'}, False)
+        self.assert_observer('Core.Acknowledge', 'diacamma.accounting', 'entryAccountEdit')
+        self.factory.xfer = EntryAccountValidate()
+        self.call('/diacamma.accounting/entryAccountValidate', {'year':'1', 'journal':'2', 'entryaccount':'1', 'serial_entry':"-2|12|0|152.340000|None|\n-3|4|3|152.340000|None|"}, False)
+        self.assert_observer('Core.Acknowledge', 'diacamma.accounting', 'entryAccountValidate')
+
+        self.assertEqual(1, EntryAccount.objects.all().count())  # pylint: disable=no-member
+
+        self.factory.xfer = EntryAccountCreateLinked()
+        self.call('/diacamma.accounting/entryAccountCreateLinked', {'year':'1', 'journal':'2', 'entryaccount':'1'}, False)
+        self.assert_observer('Core.Acknowledge', 'diacamma.accounting', 'entryAccountCreateLinked')
+        self.assert_attrib_equal("ACTION", "id", "diacamma.accounting/entryAccountEdit")
+        self.assert_count_equal("ACTION/PARAM", 4)
+        self.assert_xml_equal("ACTION/PARAM[@name='serial_entry']", "|4|3|-152.340000|None", (-22, -1))
+        self.assert_count_equal("CONTEXT/*", 3)
+
+        self.assertEqual(2, EntryAccount.objects.all().count())  # pylint: disable=no-member
+
+        self.factory.xfer = EntryAccountEdit()
+        self.call('/diacamma.accounting/entryAccountEdit', {'year':'1', 'journal':'4', 'entryaccount':'2', \
+                                    'serial_entry':"-3|4|3|-152.340000|None|", 'num_cpt_txt':'5'}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'entryAccountEdit')
+        self.assert_count_equal('COMPONENTS/*', 26)
+
+        self.factory.xfer = EntryAccountUnlock()
+        self.call('/diacamma.accounting/entryAccountUnlock', {'year':'1', 'journal':'4', 'entryaccount':'2', \
+                                    'serial_entry':"-3|4|3|-152.340000|None|", 'num_cpt_txt':'5'}, False)
+        self.assert_observer('Core.Acknowledge', 'diacamma.accounting', 'entryAccountUnlock')
+
+        self.assertEqual(1, EntryAccount.objects.all().count())  # pylint: disable=no-member
+
+        self.factory.xfer = EntryLineAccountList()
+        self.call('/diacamma.accounting/entryLineAccountList', {'year':'1', 'journal':'-1', 'filter':'0'}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'entryLineAccountList')
+        self.assert_count_equal('COMPONENTS/*', 11)
+        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount"]/HEADER', 8)
+        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD', 2)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="entry.num"]', '---')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="entry.date_entry"]', '---')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="entry.date_value"]', '13 février 2015')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="entry_account"]', '[602000] 602000')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="entry.designation"]', 'un plein cadie')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="debit"]', '152.34€')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="credit"]', None)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="entry.link"]', '---')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="entry.num"]', '---')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="entry.date_entry"]', '---')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="entry.date_value"]', '13 février 2015')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="entry_account"]', '[401000 Luke Lucky]')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="entry.designation"]', 'un plein cadie')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="debit"]', None)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="credit"]', '152.34€')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="entry.link"]', '---')
+
     def test_link_unlink_entries(self):
         self.factory.xfer = EntryAccountEdit()
         self.call('/diacamma.accounting/entryAccountEdit', {'SAVE':'YES', 'year':'1', 'journal':'2', \
@@ -906,3 +964,11 @@ class CompletedEntryTest(LucteriosTest):
         self.assert_count_equal('COMPONENTS/*', 11)
         self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount"]/HEADER', 8)
         self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD', 11)
+
+    def test_summary(self):
+        self.factory.xfer = StatusMenu()
+        self.call('/CORE/statusMenu', {}, False)
+        self.assert_observer('Core.Custom', 'CORE', 'statusMenu')
+        self.assert_xml_equal("COMPONENTS/LABELFORM[@name='accounting_year']", "{[center]}Exercice du 1 janvier 2015 au 31 décembre 2015 [en création]{[/center]}")
+        self.assert_xml_equal("COMPONENTS/LABELFORM[@name='accounting_result']", '{[center]}{[b]}Produit:{[/b]} 230.62€ - {[b]}Charge:{[/b]} 348.60€ = {[b]}Resultat:{[/b]} -117.98€ | {[b]}Trésorie:{[/b]} 1050.66€ - {[b]}Validé:{[/b]} 1244.74€{[/center]}')  # pylint: disable=line-too-long
+        self.assert_xml_equal("COMPONENTS/LABELFORM[@name='accountingtitle']", "{[center]}{[b]}{[u]}Financier{[/u]}{[/b]}{[/center]}")

@@ -54,7 +54,7 @@ class Configuration(XferListEditor):
         self.new_tab(_('Journals'))
         journals = Journal.objects.all() # pylint: disable=no-member
         grid = XferCompGrid('journal')
-        grid.set_model(journals, self.fieldnames, self)
+        grid.set_model(journals, None, self)
         grid.add_actions(self, Journal)
         grid.set_location(0, self.get_max_row() + 1, 2)
         grid.set_size(200, 500)
@@ -75,12 +75,7 @@ class FiscalYearActive(XferContainerAcknowledge):
     caption = _("Activate")
 
     def fillresponse(self):
-        all_year = FiscalYear.objects.all()  # pylint: disable=no-member
-        for year_item in all_year:
-            year_item.is_actif = False
-            year_item.save()
-        self.item.is_actif = True
-        self.item.save()
+        self.item.set_has_actif()
 
 @ActionsManage.affect('FiscalYear', 'edit', 'modify', 'add')
 @MenuManage.describ('accounting.add_fiscalyear')

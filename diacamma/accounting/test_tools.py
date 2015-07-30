@@ -72,33 +72,40 @@ def create_third(abstractids, codes=None):
                 AccountThird.objects.create(third=new_third, code=code)  # pylint: disable=no-member
 
 def create_year(status=0):
-    FiscalYear.objects.create(begin='2015-01-01', end='2015-12-31', status=status, is_actif=True)  # pylint: disable=no-member
+    new_year = FiscalYear.objects.create(begin='2015-01-01', end='2015-12-31', status=status)  # pylint: disable=no-member
+    new_year.set_has_actif()
+    return new_year
 
-def create_account(codes, type_of_account):
+def create_account(codes, type_of_account, year=None):
+    if year is None:
+        year = FiscalYear.get_current()
     for code in codes:
-        ChartsAccount.objects.create(code=code, name=code, type_of_account=type_of_account, year=FiscalYear.get_current())  # pylint: disable=no-member
+        ChartsAccount.objects.create(code=code, name=code, type_of_account=type_of_account, year=year)  # pylint: disable=no-member
 
-def initial_thirds():
-    initial_contacts()
+def fill_thirds():
     create_third([2, 8], ['401000'])  # 1 2
     create_third([6, 7], ['411000', '401000'])  # 3 4
     create_third([3, 4, 5], ['411000'])  # 5 6 7
 
-def fill_accounts():
-    create_account(['411000', '512000', '531000'], 0) # 1 2 3
-    create_account(['401000'], 1) # 4
-    create_account(['106000', '110000', '119000'], 2) # 5 6 7
-    create_account(['701000', '706000', '707000'], 3) # 8 9 10
-    create_account(['601000', '602000', '604000', '607000', '627000'], 4) # 11 12 13 14 15
+def initial_thirds():
+    initial_contacts()
+    fill_thirds()
+
+def fill_accounts(year=None):
+    create_account(['411000', '512000', '531000'], 0, year)  # 1 2 3
+    create_account(['401000'], 1, year)  # 4
+    create_account(['106000', '110000', '119000'], 2, year)  # 5 6 7
+    create_account(['701000', '706000', '707000'], 3, year)  # 8 9 10
+    create_account(['601000', '602000', '604000', '607000', '627000'], 4, year)  # 11 12 13 14 15
 
 def default_compta(status=0):
-    create_year(status)
-    fill_accounts()
+    year = create_year(status)
+    fill_accounts(year)
 
 def add_entry(yearid, journalid, date_value, designation, serial_entry, closed=False):
     year = FiscalYear.objects.get(id=yearid)  # pylint: disable=no-member
     journal = Journal.objects.get(id=journalid)  # pylint: disable=no-member
-    new_entry = EntryAccount.objects.create(year=year, journal=journal, date_value=date_value, designation=designation) # pylint: disable=no-member
+    new_entry = EntryAccount.objects.create(year=year, journal=journal, date_value=date_value, designation=designation)  # pylint: disable=no-member
     new_entry.save_entrylineaccounts(serial_entry)
     if closed:
         new_entry.closed()

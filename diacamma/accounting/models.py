@@ -27,6 +27,7 @@ from datetime import date, timedelta
 
 from django.db import models
 from django.db.models.query import QuerySet
+from django.db.models import Q
 from django.utils.translation import ugettext_lazy as _
 from django.utils import six
 
@@ -61,6 +62,10 @@ class Third(LucteriosModel):
         return ["contact", "accountthird_set"]
 
     @classmethod
+    def get_other_fields(cls):
+        return ["contact", "accountthird_set", (_('total'), 'total')]
+
+    @classmethod
     def get_edit_fields(cls):
         return ["status"]
 
@@ -77,13 +82,32 @@ class Third(LucteriosModel):
         result.extend(["status", "accountthird_set.code"])
         return result
 
-    @property
-    def total(self):
+    def get_total(self):
         res = 0
         val = EntryLineAccount.objects.filter(third=self).aggregate(Sum('amount'))  # pylint: disable=no-member
         if val['amount__sum'] is not None:
             res = val['amount__sum']
-        return format_devise(res, 5)
+        return res
+
+    @property
+    def total(self):
+        return format_devise(self.get_total(), 5)
+
+    def _add_filtering(self, xfer, lines_filter):
+
+        # pylint: disable=no-self-use
+        from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompSelect
+        from lucterios.framework.tools import CLOSE_NO, FORMTYPE_REFRESH
+        lbl = XferCompLabelForm('lbl_lines_filter')
+        lbl.set_value_as_name(_('Accounts filter'))
+        lbl.set_location(0, 1)
+        xfer.add_component(lbl)
+        edt = XferCompSelect("lines_filter")
+        edt.set_select([(0, _('All entries of current fiscal year')), (1, _('Only no-closed entries of current fiscal year')), (2, _('All entries for all fiscal year'))])
+        edt.set_value(lines_filter)
+        edt.set_location(1, 1)
+        edt.set_action(xfer.request, xfer.get_action(), {'modal':FORMTYPE_REFRESH, 'close':CLOSE_NO})
+        xfer.add_component(edt)
 
     def show(self, xfer):
         from lucterios.framework.xfercomponents import XferCompButton, XferCompGrid
@@ -100,11 +124,19 @@ class Third(LucteriosModel):
         xfer.add_component(btn)
         xfer.item = old_item
         try:
-            entry_lines = self.entrylineaccount_set.filter(entry__year=FiscalYear.get_current())  # pylint: disable=no-member
+            lines_filter = xfer.getparam('lines_filter', 0)
+            if lines_filter == 0:
+                entry_lines_filter = Q(entry__year=FiscalYear.get_current())
+            elif lines_filter == 1:
+                entry_lines_filter = Q(entry__year=FiscalYear.get_current()) & Q(entry__close=False)
+            else:
+                entry_lines_filter = Q()
+            entry_lines = self.entrylineaccount_set.filter(entry_lines_filter)  # pylint: disable=no-member
             xfer.new_tab(_('entry of account'))
+            self._add_filtering(xfer, lines_filter)
             link_grid_lines = XferCompGrid('entrylineaccount')
             link_grid_lines.set_model(entry_lines, EntryLineAccount.get_other_fields(), xfer)
-            link_grid_lines.set_location(0, 1, 2)
+            link_grid_lines.set_location(0, 2, 2)
             link_grid_lines.add_action(xfer.request, ActionsManage.get_act_changed('EntryLineAccount', 'open', _('Edit'), 'images/edit.png'), \
                                     {'modal':FORMTYPE_MODAL, 'unique':SELECT_SINGLE, 'close':CLOSE_NO})
             xfer.add_component(link_grid_lines)
@@ -122,6 +154,13 @@ class AccountThird(LucteriosModel):
 
     def __str__(self):
         return self.code
+
+    def can_delete(self):
+        nb_lines = EntryLineAccount.objects.filter(third=self.third, account__code=self.code).count()  # pylint: disable=no-member
+        if nb_lines != 0:
+            return _('This account has some entries!')
+        else:
+            return ''
 
     @classmethod
     def get_default_fields(cls):
@@ -186,8 +225,16 @@ class FiscalYear(LucteriosModel):
             return ''
 
     def delete(self, using=None):
-        self.entryaccount_set.all().delete() # pylint: disable=no-member
+        self.entryaccount_set.all().delete()  # pylint: disable=no-member
         LucteriosModel.delete(self, using=using)
+
+    def set_has_actif(self):
+        all_year = FiscalYear.objects.all()  # pylint: disable=no-member
+        for year_item in all_year:
+            year_item.is_actif = False
+            year_item.save()
+        self.is_actif = True
+        self.save()
 
     @classmethod
     def get_default_fields(cls):

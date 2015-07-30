@@ -48,9 +48,9 @@ class EntryLineAccountList(XferListEditor):
     model = EntryLineAccount
     field_id = 'entrylineaccount'
     caption = _("accounting entries")
-    fieldnames = EntryLineAccount.get_other_fields()
 
     def fillresponse_header(self):
+        self.fieldnames = EntryLineAccount.get_other_fields()
         self.item = EntryAccount()
 
         select_year = self.getparam('year')

@@ -38,7 +38,8 @@ from lucterios.CORE.xferprint import XferPrintListing
 from lucterios.contacts.tools import ContactSelection  # pylint: disable=no-name-in-module,import-error
 from lucterios.contacts.models import AbstractContact  # pylint: disable=no-name-in-module,import-error
 from lucterios.framework import signal_and_lock
-from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompEdit, XferCompButton
+from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompEdit, XferCompButton, \
+    XferCompSelect
 from lucterios.framework.error import LucteriosException
 
 from diacamma.accounting.models import Third, AccountThird, FiscalYear
@@ -57,14 +58,16 @@ class ThirdList(XferListEditor):
 
     def get_items_from_filter(self):
         items = XferListEditor.get_items_from_filter(self)
+        items = sorted(items, key=lambda t: six.text_type(t))  # pylint: disable=unnecessary-lambda
+        if self.getparam('show_filter', 0) == 2:
+            items = [item for item in items if abs(item.get_total()) > 0.0001]
         res = QuerySet(model=Third)
-        res._result_cache = sorted(items, key=lambda t: six.text_type(t))  # pylint: disable=protected-access,unnecessary-lambda
+        res._result_cache = items # pylint: disable=protected-access,
         return res
 
     def fillresponse_header(self):
-        contact_filter = self.getparam('filter')
-        if contact_filter is None:
-            contact_filter = ""
+        contact_filter = self.getparam('filter', '')
+        show_filter = self.getparam('show_filter', 0)
         lbl = XferCompLabelForm('lbl_filtre')
         lbl.set_value_as_name(_('Filtrer by contact'))
         lbl.set_location(0, 2)
@@ -74,6 +77,21 @@ class ThirdList(XferListEditor):
         comp.set_action(self.request, self.get_action(), {'modal':FORMTYPE_REFRESH, 'close':CLOSE_NO})
         comp.set_location(1, 2)
         self.add_component(comp)
+
+        lbl = XferCompLabelForm('lbl_showing')
+        lbl.set_value_as_name(_('Accounts displayed'))
+        lbl.set_location(0, 3)
+        self.add_component(lbl)
+        edt = XferCompSelect("show_filter")
+        edt.set_select([(0, _('Hide the account total of thirds')), (1, _('Show the account total of thirds')), \
+                         (2, _('Filter any thirds unbalanced'))])
+        edt.set_value(show_filter)
+        edt.set_location(1, 3)
+        edt.set_action(self.request, self.get_action(), {'modal':FORMTYPE_REFRESH, 'close':CLOSE_NO})
+        self.add_component(edt)
+        if show_filter != 0:
+            self.fieldnames = Third.get_other_fields()
+
         q_filter = Q(status=0)
         if contact_filter != "":
             q_legalentity = Q(contact__legalentity__name__contains=contact_filter)
