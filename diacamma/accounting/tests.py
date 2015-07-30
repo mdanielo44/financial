@@ -23,25 +23,21 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
 from __future__ import unicode_literals
-from unittest.suite import TestSuite
-from unittest.loader import TestLoader
 from shutil import rmtree
 from datetime import date, timedelta
 
 from lucterios.framework.xfergraphic import XferContainerAcknowledge
 from lucterios.framework.test import LucteriosTest
 from lucterios.framework.filetools import get_user_dir
+from lucterios.CORE.views import StatusMenu
 
 from diacamma.accounting.views import ThirdList, ThirdAdd, ThirdSave, ThirdShow, \
     AccountThirdAddModify, AccountThirdDel
 from diacamma.accounting.views_admin import Configuration, JournalAddModify, \
     JournalDel, FiscalYearAddModify, FiscalYearActive, FiscalYearDel
-from diacamma.accounting.tests_entries import EntryTest, CompletedEntryTest
 from diacamma.accounting.test_tools import initial_contacts, fill_entries, initial_thirds, \
     create_third, fill_accounts, fill_thirds, default_compta
 from diacamma.accounting.models import FiscalYear
-from diacamma.accounting.tests_accounts import ChartsAccountTest
-from lucterios.CORE.views import StatusMenu
 
 class ThirdTest(LucteriosTest):
     # pylint: disable=too-many-public-methods,too-many-statements
@@ -583,14 +579,3 @@ class AdminTest(LucteriosTest):
         self.call('/diacamma.accounting/fiscalYearDel', {'fiscalyear':'1'}, False)
         self.assert_observer('CORE.Exception', 'diacamma.accounting', 'fiscalYearDel')
         self.assert_xml_equal('EXCEPTION/MESSAGE', "Cet exercice est terminé!")
-
-def suite():
-    # pylint: disable=redefined-outer-name
-    suite = TestSuite()
-    loader = TestLoader()
-    suite.addTest(loader.loadTestsFromTestCase(ThirdTest))
-    suite.addTest(loader.loadTestsFromTestCase(AdminTest))
-    suite.addTest(loader.loadTestsFromTestCase(EntryTest))
-    suite.addTest(loader.loadTestsFromTestCase(CompletedEntryTest))
-    suite.addTest(loader.loadTestsFromTestCase(ChartsAccountTest))
-    return suite
