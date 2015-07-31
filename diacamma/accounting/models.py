@@ -199,6 +199,11 @@ class AccountThird(LucteriosModel):
         else:
             return val['amount__sum']
 
+    def edit(self, xfer):
+        code_ed = xfer.get_components('code')
+        code_ed.mask = current_system_account().get_third_mask()
+        return
+
     class Meta(object):
         # pylint: disable=no-init
         verbose_name = _('account')
@@ -417,6 +422,11 @@ class ChartsAccount(LucteriosModel):
     @property
     def is_cash(self):
         return match(current_system_account().get_cash_mask(), self.code) is not None
+
+    def edit(self, xfer):
+        code_ed = xfer.get_components('code')
+        code_ed.mask = current_system_account().get_general_mask()
+        return
 
     def show(self, xfer):
         from lucterios.framework.tools import FORMTYPE_MODAL, CLOSE_NO, ActionsManage, SELECT_SINGLE, SELECT_MULTI
@@ -826,6 +836,7 @@ class EntryLineAccount(LucteriosModel):
         edt = XferCompEdit('num_cpt_txt')
         edt.set_location(column, row + 1, 2)
         edt.set_value(num_cpt_txt)
+        edt.mask = current_system_account().get_general_mask()
         edt.set_size(20, 25)
         edt.set_action(xfer.request, xfer.get_action(), {'close':CLOSE_NO, 'modal':FORMTYPE_REFRESH})
         xfer.add_component(edt)

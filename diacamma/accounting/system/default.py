@@ -27,6 +27,9 @@ from __future__ import unicode_literals
 class DefaultSystemAccounting(object):
     # pylint: disable=no-self-use
 
+    def get_general_mask(self):
+        return ''
+
     def get_cash_mask(self):
         return ''
 
