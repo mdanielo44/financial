@@ -25,28 +25,43 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import unicode_literals
 
 class DefaultSystemAccounting(object):
-    # pylint: disable=no-self-use
 
     def get_general_mask(self):
+        # pylint: disable=no-self-use
         return ''
 
     def get_cash_mask(self):
+        # pylint: disable=no-self-use
         return ''
 
     def get_cash_begin(self):
+        # pylint: disable=no-self-use
         return ''
 
     def get_provider_mask(self):
+        # pylint: disable=no-self-use
         return ''
 
     def get_customer_mask(self):
+        # pylint: disable=no-self-use
         return ''
 
     def get_employed_mask(self):
+        # pylint: disable=no-self-use
         return ''
 
     def get_societary_mask(self):
+        # pylint: disable=no-self-use
         return ''
 
     def get_third_mask(self):
+        # pylint: disable=no-self-use
         return ''
+
+    def new_charts_account(self, code):
+        # pylint: disable=no-self-use,unused-argument
+        return ''
+
+    def check_begin(self, xfer):
+        # pylint: disable=no-self-use,unused-argument
+        return False

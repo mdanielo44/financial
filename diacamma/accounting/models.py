@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# pylint: disable=too-many-lines
 '''
 Describe database model for Django
 
@@ -256,13 +257,18 @@ class FiscalYear(LucteriosModel):
         return ['status', 'begin', 'end']
 
     def edit(self, xfer):
+        fiscal_years = FiscalYear.objects.order_by('end')  # pylint: disable=no-member
         xfer.change_to_readonly('status')
-#         nb_years = FiscalYear.objects.all().count()
-
-#         if (nb_years != 0) and ((nb_years != 1) or (self.id is None) or (self.status != 0)):
-#             if (self.id is None):
-#                 xfer.params['begin'] = self.begin.isoformat()
-        if self.status != 0:
+        # modification case
+        if self.id is not None:  # pylint: disable=no-member
+            if (len(fiscal_years) != 0) and (fiscal_years[len(fiscal_years) - 1].id != self.id):  # pylint: disable=no-member
+                raise LucteriosException(IMPORTANT, _('This fiscal year is not the last!'))
+            # modifcation and not the first in building
+            if (len(fiscal_years) != 1) or (self.status != 0):
+                xfer.change_to_readonly('begin')
+        # creation and not the first
+        elif len(fiscal_years) > 0:
+            xfer.params['begin'] = self.begin.isoformat()
             xfer.change_to_readonly('begin')
         if self.status == 2:
             xfer.change_to_readonly('end')
@@ -317,6 +323,28 @@ class FiscalYear(LucteriosModel):
         value['closed'] = format_devise(self.total_cash_close, 5)
         res_text = _('{[b]}Revenue:{[/b]} %(revenue)s - {[b]}Expense:{[/b]} %(expense)s = {[b]}Result:{[/b]} %(result)s | {[b]}Cash:{[/b]} %(cash)s - {[b]}Closed:{[/b]} %(closed)s')
         return res_text % value
+
+    @property
+    def has_no_lastyear_entry(self):
+        val = EntryLineAccount.objects.filter(entry__journal__id=1, account__year=self).aggregate(Sum('amount'))  # pylint: disable=no-member
+        if val['amount__sum'] is None:
+            return True
+        else:
+            return abs(val['amount__sum']) < 0.0001
+
+    def run_import(self, xfer):
+        pass
+
+    def run_begin(self, xfer):
+        nb_entry_noclose = EntryLineAccount.objects.filter(entry__journal__id=1, entry__close=False, account__year=self).count()  # pylint: disable=no-member
+        if nb_entry_noclose > 0:
+            raise LucteriosException(IMPORTANT, _("Some enties for last year report are not closed!"))
+        if current_system_account().check_begin(xfer):
+            self.status = 1
+            self.save()
+
+    def run_close(self, xfer):
+        pass
 
     @classmethod
     def get_current(cls, select_year=None):
@@ -424,8 +452,33 @@ class ChartsAccount(LucteriosModel):
         return match(current_system_account().get_cash_mask(), self.code) is not None
 
     def edit(self, xfer):
+        from lucterios.framework.tools import FORMTYPE_REFRESH, CLOSE_NO
+        from lucterios.framework.xfercomponents import XferCompLabelForm
+        xfer.change_to_readonly('type_of_account')
         code_ed = xfer.get_components('code')
         code_ed.mask = current_system_account().get_general_mask()
+        code_ed.set_action(xfer.request, xfer.get_action(), {'modal':FORMTYPE_REFRESH, 'close':CLOSE_NO})
+        descript, typeaccount = current_system_account().new_charts_account(self.code)
+        error_msg = ''
+        if typeaccount < 0:
+            if typeaccount == -2:
+                error_msg = _("Invalid code")
+            if self.code != '':
+                code_ed.set_value(self.code + '!')
+            if self.id is None:  # pylint: disable=no-member
+                xfer.get_components('type_of_account').set_value('---')
+        elif self.id is None:  # pylint: disable=no-member
+            field_type = self.get_field_by_name('type_of_account')
+            xfer.get_components('type_of_account').set_value(get_value_if_choices(typeaccount, field_type))
+            xfer.get_components('name').set_value(descript)
+            xfer.params['type_of_account'] = typeaccount
+        elif typeaccount != self.type_of_account:
+            error_msg = _("Changment not allowed!")
+            code_ed.set_value(self.code + '!')
+        lbl = XferCompLabelForm('error_code')
+        lbl.set_location(1, xfer.get_max_row() + 1, 2)
+        lbl.set_value_center("{[font color='red']}%s{[/font]}" % error_msg)
+        xfer.add_component(lbl)
         return
 
     def show(self, xfer):

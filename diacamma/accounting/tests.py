@@ -488,7 +488,6 @@ class AdminTest(LucteriosTest):
         self.assert_observer('Core.Custom', 'diacamma.accounting', 'fiscalYearAddModify')
         self.assert_count_equal('COMPONENTS/*', 7)
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="status"]', 'en création')
-
         self.assert_xml_equal('COMPONENTS/DATE[@name="begin"]', to_day.isoformat())
         self.assert_xml_equal('COMPONENTS/DATE[@name="end"]', to_day_plus_1.isoformat())
 
@@ -511,9 +510,9 @@ class AdminTest(LucteriosTest):
         self.call('/diacamma.accounting/fiscalYearAddModify', {}, False)
         self.assert_observer('Core.Custom', 'diacamma.accounting', 'fiscalYearAddModify')
         self.assert_count_equal('COMPONENTS/*', 7)
+        self.assert_xml_equal("CONTEXT/PARAM[@name='begin']", "2016-07-01")
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="status"]', 'en création')
-
-        self.assert_xml_equal('COMPONENTS/DATE[@name="begin"]', '2016-07-01')
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="begin"]', '1 juillet 2016')
         self.assert_xml_equal('COMPONENTS/DATE[@name="end"]', '2017-06-30')
 
         self.factory.xfer = FiscalYearAddModify()
@@ -544,11 +543,16 @@ class AdminTest(LucteriosTest):
 
         self.factory.xfer = FiscalYearAddModify()
         self.call('/diacamma.accounting/fiscalYearAddModify', {'fiscalyear':'1'}, False)
+        self.assert_observer('CORE.Exception', 'diacamma.accounting', 'fiscalYearAddModify')
+        self.assert_xml_equal('EXCEPTION/MESSAGE', "Cet exercice n'est pas le dernier!")
+
+        self.factory.xfer = FiscalYearAddModify()
+        self.call('/diacamma.accounting/fiscalYearAddModify', {'fiscalyear':'2'}, False)
         self.assert_observer('Core.Custom', 'diacamma.accounting', 'fiscalYearAddModify')
         self.assert_count_equal('COMPONENTS/*', 7)
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="status"]', 'en création')
-        self.assert_xml_equal('COMPONENTS/DATE[@name="begin"]', '2015-07-01')
-        self.assert_xml_equal('COMPONENTS/DATE[@name="end"]', '2016-06-30')
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="begin"]', '1 juillet 2016')
+        self.assert_xml_equal('COMPONENTS/DATE[@name="end"]', '2017-06-30')
 
     def test_confi_delete(self):
         year1 = FiscalYear.objects.create(begin='2014-07-01', end='2015-06-30', status=2, is_actif=False, last_fiscalyear=None)  # pylint: disable=no-member

@@ -35,6 +35,7 @@ from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManag
 from lucterios.framework.xfercomponents import XferCompLabelForm
 
 from diacamma.accounting.models import ChartsAccount, FiscalYear
+from lucterios.framework.xfergraphic import XferContainerAcknowledge
 
 MenuManage.add_sub("bookkeeping", "financial", "diacamma.accounting/images/accounting.png", _("Bookkeeping"), _("Manage of Bookkeeping"), 30)
 
@@ -71,6 +72,42 @@ class ChartsAccountList(XferListEditor):
         lbl.set_value_center(self.item.year.total_result_text)
         lbl.set_location(0, 10, 2)
         self.add_component(lbl)
+        if self.item.year.status == 0:
+            self.add_action(FiscalYearBegin.get_action(_('Begin'), 'images/ok.png'), {'modal':FORMTYPE_MODAL, 'close':CLOSE_NO}, 0)
+            if (self.item.year.last_fiscalyear is not None) and self.item.year.has_no_lastyear_entry and (self.item.year.last_fiscalyear.status == 2):
+                self.add_action(FiscalYearImport.get_action(_('Last fiscal year'), 'images/edit.png'), {'modal':FORMTYPE_MODAL, 'close':CLOSE_NO}, 0)
+        if self.item.year.status == 1:
+            self.add_action(FiscalYearClose.get_action(_('Closing'), 'images/ok.png'), {'modal':FORMTYPE_MODAL, 'close':CLOSE_NO}, 0)
+
+@MenuManage.describ('accounting.add_fiscalyear')
+class FiscalYearImport(XferContainerAcknowledge):
+    icon = "accountingYear.png"
+    model = FiscalYear
+    field_id = 'year'
+    caption = _("Last fiscal year import")
+
+    def fillresponse(self):
+        self.item.run_import(self)
+
+@MenuManage.describ('accounting.add_fiscalyear')
+class FiscalYearBegin(XferContainerAcknowledge):
+    icon = "accountingYear.png"
+    model = FiscalYear
+    field_id = 'year'
+    caption_add = _("Begin fiscal year")
+
+    def fillresponse(self):
+        self.item.run_begin(self)
+
+@MenuManage.describ('accounting.add_fiscalyear')
+class FiscalYearClose(XferContainerAcknowledge):
+    icon = "accountingYear.png"
+    model = FiscalYear
+    field_id = 'year'
+    caption_add = _("Close fiscal year")
+
+    def fillresponse(self):
+        self.item.run_close(self)
 
 @ActionsManage.affect('ChartsAccount', 'modify', 'add')
 @MenuManage.describ('accounting.add_chartsaccount')
@@ -80,6 +117,12 @@ class ChartsAccountAddModify(XferAddEditor):
     field_id = 'chartsaccount'
     caption_add = _("Add an account")
     caption_modify = _("Modify an account")
+
+    def fill_simple_fields(self):
+        for old_key in ['type_of_account']:
+            if old_key in self.params.keys():
+                del self.params[old_key]
+        return XferAddEditor.fill_simple_fields(self)
 
 @ActionsManage.affect('ChartsAccount', 'show')
 @MenuManage.describ('accounting.change_chartsaccount')

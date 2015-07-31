@@ -29,9 +29,10 @@ from lucterios.framework.test import LucteriosTest
 from lucterios.framework.xfergraphic import XferContainerAcknowledge
 from lucterios.framework.filetools import get_user_dir
 
-from diacamma.accounting.test_tools import initial_thirds, default_compta, fill_entries
+from diacamma.accounting.test_tools import initial_thirds, default_compta, fill_entries,\
+    set_accounting_system
 from diacamma.accounting.views_accounts import ChartsAccountList, \
-     ChartsAccountDel, ChartsAccountShow
+     ChartsAccountDel, ChartsAccountShow, ChartsAccountAddModify
 
 class ChartsAccountTest(LucteriosTest):
     # pylint: disable=too-many-public-methods,too-many-statements
@@ -39,6 +40,7 @@ class ChartsAccountTest(LucteriosTest):
     def setUp(self):
         self.xfer_class = XferContainerAcknowledge
         LucteriosTest.setUp(self)
+        set_accounting_system()
         initial_thirds()
         default_compta()
         fill_entries(1)
@@ -177,3 +179,86 @@ class ChartsAccountTest(LucteriosTest):
         self.factory.xfer = ChartsAccountDel()
         self.call('/diacamma.accounting/chartsAccountDel', {'CONFIRME':'YES', 'year':'1', 'type_of_account':'5', 'chartsaccount':'9'}, False)
         self.assert_observer('Core.Acknowledge', 'diacamma.accounting', 'chartsAccountDel')
+
+    def test_add(self):
+        self.factory.xfer = ChartsAccountAddModify()
+        self.call('/diacamma.accounting/chartsAccountAddModify', {'year':'1', 'type_of_account':'-1'}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'chartsAccountAddModify')
+        self.assert_count_equal('COMPONENTS/*', 8)
+        self.assert_xml_equal('COMPONENTS/EDIT[@name="code"]', None)
+        self.assert_xml_equal('COMPONENTS/EDIT[@name="name"]', None)
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="type_of_account"]', '---')
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="error_code"]', "{[center]}{[font color='red']}{[/font]}{[/center]}")
+
+        self.factory.xfer = ChartsAccountAddModify()
+        self.call('/diacamma.accounting/chartsAccountAddModify', {'year':'1', 'type_of_account':'-1', 'code':'2301'}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'chartsAccountAddModify')
+        self.assert_count_equal('COMPONENTS/*', 8)
+        self.assert_xml_equal('COMPONENTS/EDIT[@name="code"]', '2301')
+        self.assert_xml_equal('COMPONENTS/EDIT[@name="name"]', 'Immobilisations en cours')
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="type_of_account"]', 'Actif')
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="error_code"]', "{[center]}{[font color='red']}{[/font]}{[/center]}")
+
+        self.factory.xfer = ChartsAccountAddModify()
+        self.call('/diacamma.accounting/chartsAccountAddModify', {'year':'1', 'type_of_account':'-1', 'code':'3015'}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'chartsAccountAddModify')
+        self.assert_count_equal('COMPONENTS/*', 8)
+        self.assert_xml_equal('COMPONENTS/EDIT[@name="code"]', '3015!')
+        self.assert_xml_equal('COMPONENTS/EDIT[@name="name"]', None)
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="type_of_account"]', '---')
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="error_code"]', "{[center]}{[font color='red']}Code invalide!{[/font]}{[/center]}")
+
+        self.factory.xfer = ChartsAccountAddModify()
+        self.call('/diacamma.accounting/chartsAccountAddModify', {'year':'1', 'type_of_account':'-1', 'code':'abcd'}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'chartsAccountAddModify')
+        self.assert_count_equal('COMPONENTS/*', 8)
+        self.assert_xml_equal('COMPONENTS/EDIT[@name="code"]', 'abcd!')
+        self.assert_xml_equal('COMPONENTS/EDIT[@name="name"]', None)
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="type_of_account"]', '---')
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="error_code"]', "{[center]}{[font color='red']}Code invalide!{[/font]}{[/center]}")
+
+    def test_modify(self):
+        self.factory.xfer = ChartsAccountAddModify()
+        self.call('/diacamma.accounting/chartsAccountAddModify', {'year':'1', 'type_of_account':'-1', 'chartsaccount':'10'}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'chartsAccountAddModify')
+        self.assert_count_equal('COMPONENTS/*', 8)
+        self.assert_xml_equal('COMPONENTS/EDIT[@name="code"]', '707000')
+        self.assert_xml_equal('COMPONENTS/EDIT[@name="name"]', '707000')
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="type_of_account"]', 'Produit')
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="error_code"]', "{[center]}{[font color='red']}{[/font]}{[/center]}")
+
+        self.factory.xfer = ChartsAccountAddModify()
+        self.call('/diacamma.accounting/chartsAccountAddModify', {'year':'1', 'type_of_account':'-1', 'chartsaccount':'10', 'code':'7061'}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'chartsAccountAddModify')
+        self.assert_count_equal('COMPONENTS/*', 8)
+        self.assert_xml_equal('COMPONENTS/EDIT[@name="code"]', '7061')
+        self.assert_xml_equal('COMPONENTS/EDIT[@name="name"]', '707000')
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="type_of_account"]', 'Produit')
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="error_code"]', "{[center]}{[font color='red']}{[/font]}{[/center]}")
+
+        self.factory.xfer = ChartsAccountAddModify()
+        self.call('/diacamma.accounting/chartsAccountAddModify', {'year':'1', 'type_of_account':'-1', 'chartsaccount':'10', 'code':'3015'}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'chartsAccountAddModify')
+        self.assert_count_equal('COMPONENTS/*', 8)
+        self.assert_xml_equal('COMPONENTS/EDIT[@name="code"]', '3015!')
+        self.assert_xml_equal('COMPONENTS/EDIT[@name="name"]', '707000')
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="type_of_account"]', 'Produit')
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="error_code"]', "{[center]}{[font color='red']}Code invalide!{[/font]}{[/center]}")
+
+        self.factory.xfer = ChartsAccountAddModify()
+        self.call('/diacamma.accounting/chartsAccountAddModify', {'year':'1', 'type_of_account':'-1', 'chartsaccount':'10', 'code':'abcd'}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'chartsAccountAddModify')
+        self.assert_count_equal('COMPONENTS/*', 8)
+        self.assert_xml_equal('COMPONENTS/EDIT[@name="code"]', 'abcd!')
+        self.assert_xml_equal('COMPONENTS/EDIT[@name="name"]', '707000')
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="type_of_account"]', 'Produit')
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="error_code"]', "{[center]}{[font color='red']}Code invalide!{[/font]}{[/center]}")
+
+        self.factory.xfer = ChartsAccountAddModify()
+        self.call('/diacamma.accounting/chartsAccountAddModify', {'year':'1', 'type_of_account':'-1', 'chartsaccount':'10', 'code':'6125'}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'chartsAccountAddModify')
+        self.assert_count_equal('COMPONENTS/*', 8)
+        self.assert_xml_equal('COMPONENTS/EDIT[@name="code"]', '6125!')
+        self.assert_xml_equal('COMPONENTS/EDIT[@name="name"]', '707000')
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="type_of_account"]', 'Produit')
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="error_code"]', "{[center]}{[font color='red']}Changement non permis!{[/font]}{[/center]}")
