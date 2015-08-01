@@ -2,40 +2,45 @@
 # pylint: disable=bad-continuation
 '''
 lucterios.contacts package
-
 @author: Laurent GAY
 @organization: sd-libre.fr
 @contact: info@sd-libre.fr
 @copyright: 2015 sd-libre.fr
 @license: This file is part of Lucterios.
-
 Lucterios is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
-
 Lucterios is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
-
 You should have received a copy of the GNU General Public License
 along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 '''
-
 from __future__ import unicode_literals
+from datetime import date
 import re
+
+from django.utils.translation import ugettext_lazy as _
+from django.utils import six
 
 from diacamma.accounting.system.default import DefaultSystemAccounting
 
 GENERAL_MASK = r'^[0-8][0-9]{2}[0-9]*$'
+
 CASH_MASK = r'^5[0-9][0-9]+$'
+
 CASH_MASK_BEGIN = '5'
 
 PROVIDER_MASK = r'^40[0-9]+$'
+
 CUSTOMER_MASK = r'^41[0-9]+$'
+
 EMPLOYED_MASK = r'^42[0-9]+$'
+
 SOCIETARY_MASK = r'^45[0-9]+$'
+
 THIRD_MASK = "%s|%s|%s|%s" % (PROVIDER_MASK, CUSTOMER_MASK, EMPLOYED_MASK, SOCIETARY_MASK)
 
 GENERAL_CHARTS_ACCOUNT = [
@@ -191,5 +196,86 @@ class FrenchSystemAcounting(DefaultSystemAccounting):
                 return current_charts[2], current_charts[3]
         return '', -2
 
-    def check_begin(self, xfer):
+    def _create_custom_for_profit(self, year, xfer, val_profit):
+        # pylint: disable=no-self-use,too-many-locals
+        from lucterios.framework.xfergraphic import XferContainerCustom
+        from lucterios.framework.xfercomponents import XferCompImage, XferCompLabelForm, XferCompSelect
+        from lucterios.framework.tools import WrapAction, CLOSE_YES, FORMTYPE_MODAL
+        from diacamma.accounting.models import format_devise
+        if val_profit > 0.0001:
+            type_profit = 'bénéfice'
+        else:
+            type_profit = 'déficite'
+        custom = XferContainerCustom()
+        custom.request = xfer.request
+        img = XferCompImage("img")
+        img.set_location(0, 0)
+        img.set_value("diacamma.accounting/images/account.png")
+        custom.add_component(img)
+        lbl = XferCompLabelForm("title")
+        lbl.set_value_as_headername("Bénéfices et Pertes")
+        lbl.set_location(1, 0)
+        custom.add_component(lbl)
+        text = "{[i]}Vous avez un %s de %s.{[br/]}Vous devez definir sur quel compte l'affecter.{[br/]}{[/i]}" % (type_profit, format_devise(val_profit, 4))
+        text += "{[br/]}En validant, vous commencerez '%s'{[br/]}{[br/]}{[i]}{[u]}Attention:{[/u]} Votre report à nouveau doit être totalement fait.{[/i]}" % six.text_type(year)
+        lbl = XferCompLabelForm("info")
+        lbl.set_value(text)
+        lbl.set_location(0, 1, 2)
+        custom.add_component(lbl)
+        sel_cmpt = []
+        for account in year.chartsaccount_set.all().filter(code__startswith='10').order_by('code'):  # pylint: disable=no-member
+            sel_cmpt.append((account.id, six.text_type(account)))
+        sel = XferCompSelect("profit_account")
+        sel.set_select(sel_cmpt)
+        sel.set_location(1, 2)
+        custom.add_component(sel)
+        custom.add_action(xfer.get_action(_("Ok"), "images/ok.png"), {'modal':FORMTYPE_MODAL, 'close':CLOSE_YES})
+        custom.add_action(WrapAction(_("Cancel"), "images/cancel.png"), {})
+        return custom
+
+    def _get_profit(self, year):
+        # pylint: disable=no-self-use
+        from diacamma.accounting.models import EntryLineAccount, get_amount_sum
+        from django.db.models.aggregates import Sum
+        from django.db.models import Q
+        query = Q(account__code__startswith='110') | Q(account__code__startswith='119')
+        query &= Q(account__year=year)
+        val_profit = get_amount_sum(EntryLineAccount.objects.filter(query).aggregate(Sum('amount')))  # pylint: disable=no-member
+        return val_profit
+
+    def _create_profit_entry(self, year, profit_account):
+        # pylint: disable=no-self-use
+        from diacamma.accounting.models import Journal, EntryAccount, EntryLineAccount, ChartsAccount
+        from django.db.models import Q
+        paym_journ = Journal.objects.get(id=1)  # pylint: disable=no-member
+        paym_desig = 'Affectation des bénéfices/pertes'
+        new_entry = EntryAccount.objects.create(year=year, journal=paym_journ, designation=paym_desig, date_value=date.today())  # pylint: disable=no-member
+        query = Q(account__code__startswith='110') | Q(account__code__startswith='119')
+        query &= Q(account__year=year)
+        sum_profit = 0
+        for new_line in EntryLineAccount.objects.filter(query):  # pylint: disable=no-member
+            sum_profit += new_line.amount
+            new_line.id = None
+            new_line.entry = new_entry
+            new_line.amount = -1 * new_line.amount
+            new_line.save()
+        new_line = EntryLineAccount()
+        new_line.entry = new_entry
+        new_line.amount = sum_profit
+        new_line.account = ChartsAccount.objects.get(id=profit_account)  # pylint: disable=no-member
+        new_line.save()
+        new_entry.closed()
         return True
+
+    def check_begin(self, year, xfer):
+        profit_account = xfer.getparam('profit_account', 0)
+        if profit_account > 0:
+            return self._create_profit_entry(year, profit_account)
+        val_profit = self._get_profit(year)
+        if abs(val_profit) > 0.0001:
+            custom = self._create_custom_for_profit(year, xfer, val_profit)
+            xfer.set_custom(custom)
+            return False
+        else:
+            text = "Voulez-vous commencer '%s'? {[br/]}{[br/]}{[i]}{[u]}Attention:{[/u]} Votre report à nouveau doit être totalement fait.{[/i]}" % six.text_type(year)
+            return xfer.confirme(text)

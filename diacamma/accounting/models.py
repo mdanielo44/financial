@@ -90,11 +90,7 @@ class Third(LucteriosModel):
         return result
 
     def get_total(self):
-        res = 0
-        val = EntryLineAccount.objects.filter(third=self).aggregate(Sum('amount'))  # pylint: disable=no-member
-        if val['amount__sum'] is not None:
-            res = val['amount__sum']
-        return res
+        return get_amount_sum(EntryLineAccount.objects.filter(third=self).aggregate(Sum('amount')))  # pylint: disable=no-member
 
     @property
     def total(self):
@@ -194,11 +190,7 @@ class AccountThird(LucteriosModel):
 
     @property
     def total(self):
-        val = EntryLineAccount.objects.filter(third=self.third, account__code=self.code).aggregate(Sum('amount'))  # pylint: disable=no-member
-        if val['amount__sum'] is None:
-            return 0
-        else:
-            return val['amount__sum']
+        return get_amount_sum(EntryLineAccount.objects.filter(third=self.third, account__code=self.code).aggregate(Sum('amount')))  # pylint: disable=no-member
 
     def edit(self, xfer):
         code_ed = xfer.get_components('code')
@@ -283,35 +275,19 @@ class FiscalYear(LucteriosModel):
 
     @property
     def total_revenue(self):
-        val = EntryLineAccount.objects.filter(account__type_of_account=3, account__year=self).aggregate(Sum('amount'))  # pylint: disable=no-member
-        if val['amount__sum'] is None:
-            return 0
-        else:
-            return val['amount__sum']
+        return get_amount_sum(EntryLineAccount.objects.filter(account__type_of_account=3, account__year=self).aggregate(Sum('amount')))  # pylint: disable=no-member
 
     @property
     def total_expense(self):
-        val = EntryLineAccount.objects.filter(account__type_of_account=4, account__year=self).aggregate(Sum('amount'))  # pylint: disable=no-member
-        if val['amount__sum'] is None:
-            return 0
-        else:
-            return val['amount__sum']
+        return get_amount_sum(EntryLineAccount.objects.filter(account__type_of_account=4, account__year=self).aggregate(Sum('amount')))  # pylint: disable=no-member
 
     @property
     def total_cash(self):
-        val = EntryLineAccount.objects.filter(account__code__regex=current_system_account().get_cash_mask(), account__year=self).aggregate(Sum('amount'))  # pylint: disable=no-member
-        if val['amount__sum'] is None:
-            return 0
-        else:
-            return val['amount__sum']
+        return get_amount_sum(EntryLineAccount.objects.filter(account__code__regex=current_system_account().get_cash_mask(), account__year=self).aggregate(Sum('amount')))  # pylint: disable=no-member
 
     @property
     def total_cash_close(self):
-        val = EntryLineAccount.objects.filter(entry__close=True, account__code__regex=current_system_account().get_cash_mask(), account__year=self).aggregate(Sum('amount'))  # pylint: disable=no-member
-        if val['amount__sum'] is None:
-            return 0
-        else:
-            return val['amount__sum']
+        return get_amount_sum(EntryLineAccount.objects.filter(entry__close=True, account__code__regex=current_system_account().get_cash_mask(), account__year=self).aggregate(Sum('amount')))  # pylint: disable=no-member
 
     @property
     def total_result_text(self):
@@ -326,22 +302,20 @@ class FiscalYear(LucteriosModel):
 
     @property
     def has_no_lastyear_entry(self):
-        val = EntryLineAccount.objects.filter(entry__journal__id=1, account__year=self).aggregate(Sum('amount'))  # pylint: disable=no-member
-        if val['amount__sum'] is None:
-            return True
-        else:
-            return abs(val['amount__sum']) < 0.0001
+        val = get_amount_sum(EntryLineAccount.objects.filter(entry__journal__id=1, account__year=self).aggregate(Sum('amount')))  # pylint: disable=no-member
+        return abs(val) < 0.0001
 
     def run_import(self, xfer):
         pass
 
     def run_begin(self, xfer):
-        nb_entry_noclose = EntryLineAccount.objects.filter(entry__journal__id=1, entry__close=False, account__year=self).count()  # pylint: disable=no-member
-        if nb_entry_noclose > 0:
-            raise LucteriosException(IMPORTANT, _("Some enties for last year report are not closed!"))
-        if current_system_account().check_begin(xfer):
-            self.status = 1
-            self.save()
+        if self.status == 0:
+            nb_entry_noclose = EntryLineAccount.objects.filter(entry__journal__id=1, entry__close=False, account__year=self).count()  # pylint: disable=no-member
+            if nb_entry_noclose > 0:
+                raise LucteriosException(IMPORTANT, _("Some enties for last year report are not closed!"))
+            if current_system_account().check_begin(self, xfer):
+                self.status = 1
+                self.save()
 
     def run_close(self, xfer):
         pass
@@ -405,25 +379,13 @@ class ChartsAccount(LucteriosModel):
         return "[%s] %s" % (self.code, self.name)
 
     def get_last_year_total(self):
-        val = self.entrylineaccount_set.filter(entry__journal__id=1).aggregate(Sum('amount'))  # pylint: disable=no-member
-        if val['amount__sum'] is None:
-            return 0
-        else:
-            return val['amount__sum']
+        return get_amount_sum(self.entrylineaccount_set.filter(entry__journal__id=1).aggregate(Sum('amount')))  # pylint: disable=no-member
 
     def get_current_total(self):
-        val = self.entrylineaccount_set.all().aggregate(Sum('amount'))  # pylint: disable=no-member
-        if val['amount__sum'] is None:
-            return 0
-        else:
-            return val['amount__sum']
+        return get_amount_sum(self.entrylineaccount_set.all().aggregate(Sum('amount')))  # pylint: disable=no-member
 
     def get_current_validated(self):
-        val = self.entrylineaccount_set.filter(entry__close=True).aggregate(Sum('amount'))  # pylint: disable=no-member
-        if val['amount__sum'] is None:
-            return 0
-        else:
-            return val['amount__sum']
+        return get_amount_sum(self.entrylineaccount_set.filter(entry__close=True).aggregate(Sum('amount')))  # pylint: disable=no-member
 
     def credit_debit_way(self):
         if self.type_of_account in [0, 4]:
@@ -613,8 +575,8 @@ class EntryAccount(LucteriosModel):
         grid_lines.actions = []
 
         if self.has_third:
-            sum_customer = self.entrylineaccount_set.filter(account__code__regex=current_system_account().get_third_mask()).aggregate(Sum('amount'))  # pylint: disable=no-member
-            if (sum_customer['amount__sum'] is not None) and (((sum_customer['amount__sum'] < 0) and not self.has_cash) or ((sum_customer['amount__sum'] > 0) and self.has_cash)):
+            sum_customer = get_amount_sum(self.entrylineaccount_set.filter(account__code__regex=current_system_account().get_third_mask()).aggregate(Sum('amount')))  # pylint: disable=no-member
+            if ((sum_customer < 0) and not self.has_cash) or ((sum_customer > 0) and self.has_cash):
                 lbl = XferCompLabelForm('asset_warning')
                 lbl.set_location(0, last_row + 3, 6)
                 lbl.set_value_as_header(_("entry of accounting for an asset"))
@@ -658,11 +620,12 @@ class EntryAccount(LucteriosModel):
         return res
 
     def save_entrylineaccounts(self, serial_vals):
-        self.entrylineaccount_set.all().delete()  # pylint: disable=no-member
-        for line in self.get_entrylineaccounts(serial_vals):
-            if line.id < 0:
-                line.id = None
-            line.save()
+        if self.close == False:
+            self.entrylineaccount_set.all().delete()  # pylint: disable=no-member
+            for line in self.get_entrylineaccounts(serial_vals):
+                if line.id < 0:
+                    line.id = None
+                line.save()
 
     def remove_entrylineaccounts(self, serial_vals, entrylineid):
         lines = self.get_entrylineaccounts(serial_vals)
@@ -692,13 +655,15 @@ class EntryAccount(LucteriosModel):
         return no_change, max(0, total_credit - total_debit), max(0, total_debit - total_credit)
 
     def closed(self):
-        self.close = True
-        val = self.year.entryaccount_set.all().aggregate(Max('num'))  # pylint: disable=no-member
-        if val['num__max'] is None:
-            self.num = 1
-        else:
-            self.num = val['num__max'] + 1
-        self.date_entry = date.today()
+        if self.close == False:
+            self.close = True
+            val = self.year.entryaccount_set.all().aggregate(Max('num'))  # pylint: disable=no-member
+            if val['num__max'] is None:
+                self.num = 1
+            else:
+                self.num = val['num__max'] + 1
+            self.date_entry = date.today()
+            self.save()
 
     def unlink(self):
         if self.link is not None:
@@ -909,7 +874,6 @@ class EntryLineAccount(LucteriosModel):
             self.set_montant(float(xfer.getparam('debit_val', 0.0)), float(xfer.getparam('credit_val', 0.0)))
             if abs(self.amount) < 0.0001:
                 self.set_montant(debit_rest, credit_rest)
-
         xfer.add_component(sel)
         return lbl, edt
 
@@ -986,6 +950,12 @@ class EntryLineAccount(LucteriosModel):
         verbose_name = _('entry line of account')
         verbose_name_plural = _('entry lines of account')
         default_permissions = []
+
+def get_amount_sum(val):
+    if val['amount__sum'] is None:
+        return 0
+    else:
+        return val['amount__sum']
 
 def format_devise(amount, mode):
     # pylint: disable=too-many-branches

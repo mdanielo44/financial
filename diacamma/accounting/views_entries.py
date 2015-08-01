@@ -36,7 +36,6 @@ from lucterios.framework.xfergraphic import XferContainerAcknowledge, \
 from lucterios.framework.xfercomponents import XferCompButton, XferCompSelect, \
     XferCompLabelForm, XferCompGrid, XferCompImage
 from lucterios.framework.error import LucteriosException, GRAVE
-from lucterios.CORE.views import Unlock
 
 from diacamma.accounting.models import EntryLineAccount, EntryAccount, FiscalYear, \
     Journal, AccountLink, current_system_account
@@ -144,9 +143,7 @@ class EntryAccountClose(XferContainerAcknowledge):
             self.items = [self.item]
         if (len(self.items) > 0) and self.confirme(_("Do you want to close this entry?")):
             for item in self.items:
-                if not item.close:
-                    item.closed()
-                    item.save()
+                item.closed()
 
 @ActionsManage.affect('EntryLineAccount', 'link')
 @MenuManage.describ('accounting.add_entryaccount')
@@ -264,17 +261,15 @@ class EntryAccountEdit(XferAddEditor):
         else:
             if (debit_rest < 0.0001) and (credit_rest < 0.0001) and (nb_lines > 0):
                 self.add_action(EntryAccountValidate.get_action(_('Ok'), 'images/ok.png'), {})
-            self.add_action(WrapAction(_('Cancel'), 'images/cancel.png'), {})
-        self.set_close_action(EntryAccountUnlock.get_action())
+            self.add_action(EntryAccountUnlock.get_action(_('Cancel'), 'images/cancel.png'), {})
 
 @MenuManage.describ('')
-class EntryAccountUnlock(Unlock):
+class EntryAccountUnlock(XferContainerAcknowledge):
     model = EntryAccount
     field_id = 'entryaccount'
 
     def fillresponse(self):
-        Unlock.fillresponse(self)
-        if len(self.item.entrylineaccount_set.all()) == 0:
+        if (self.item.id is not None) and (len(self.item.entrylineaccount_set.all()) == 0):
             self.item.delete()
 
 @ActionsManage.affect('EntryAccount', 'show')

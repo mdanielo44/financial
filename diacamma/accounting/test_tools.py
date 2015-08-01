@@ -117,7 +117,6 @@ def add_entry(yearid, journalid, date_value, designation, serial_entry, closed=F
     new_entry.save_entrylineaccounts(serial_entry)
     if closed:
         new_entry.closed()
-        new_entry.save()
     return new_entry
 
 def fill_entries(yearid):

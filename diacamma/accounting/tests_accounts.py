@@ -1,27 +1,22 @@
 # -*- coding: utf-8 -*-
 '''
 Describe test for Django
-
 @author: Laurent GAY
 @organization: sd-libre.fr
 @contact: info@sd-libre.fr
 @copyright: 2015 sd-libre.fr
 @license: This file is part of Lucterios.
-
 Lucterios is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
-
 Lucterios is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
-
 You should have received a copy of the GNU General Public License
 along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 '''
-
 from __future__ import unicode_literals
 from shutil import rmtree
 
@@ -29,10 +24,12 @@ from lucterios.framework.test import LucteriosTest
 from lucterios.framework.xfergraphic import XferContainerAcknowledge
 from lucterios.framework.filetools import get_user_dir
 
-from diacamma.accounting.test_tools import initial_thirds, default_compta, fill_entries,\
-    set_accounting_system
+from diacamma.accounting.test_tools import initial_thirds, default_compta, fill_entries, \
+    set_accounting_system, add_entry
 from diacamma.accounting.views_accounts import ChartsAccountList, \
-     ChartsAccountDel, ChartsAccountShow, ChartsAccountAddModify
+     ChartsAccountDel, ChartsAccountShow, ChartsAccountAddModify, \
+    FiscalYearBegin
+from diacamma.accounting.models import FiscalYear
 
 class ChartsAccountTest(LucteriosTest):
     # pylint: disable=too-many-public-methods,too-many-statements
@@ -90,7 +87,6 @@ class ChartsAccountTest(LucteriosTest):
         self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[1]/VALUE[@name="last_year_total"]', '{[font color="green"]}Crédit: 0.00€{[/font]}')
         self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[1]/VALUE[@name="current_total"]', '{[font color="green"]}Crédit: 78.24€{[/font]}')
         self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[1]/VALUE[@name="current_validated"]', '{[font color="green"]}Crédit: 0.00€{[/font]}')
-
     def test_equity(self):
         self.factory.xfer = ChartsAccountList()
         self.call('/diacamma.accounting/chartsAccountList', {'year':'1', 'type_of_account':'2'}, False)
@@ -163,7 +159,6 @@ class ChartsAccountTest(LucteriosTest):
         self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="entry.designation"]', 'vente 2')
         self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="credit"]', '125.97€')
         self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="entry.link"]', '---')
-
         self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[3]/VALUE[@name="entry.num"]', '---')
         self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[3]/VALUE[@name="entry.date_value"]', '24 février 2015')
         self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[3]/VALUE[@name="entry.designation"]', 'vente 3')
@@ -175,7 +170,6 @@ class ChartsAccountTest(LucteriosTest):
         self.call('/diacamma.accounting/chartsAccountDel', {'CONFIRME':'YES', 'year':'1', 'type_of_account':'5', 'chartsaccount':'10'}, False)
         self.assert_observer('CORE.Exception', 'diacamma.accounting', 'chartsAccountDel')
         self.assert_xml_equal('EXCEPTION/MESSAGE', "Impossible de supprimer cet enregistrement: il est associé avec d'autres sous-enregistrements")
-
         self.factory.xfer = ChartsAccountDel()
         self.call('/diacamma.accounting/chartsAccountDel', {'CONFIRME':'YES', 'year':'1', 'type_of_account':'5', 'chartsaccount':'9'}, False)
         self.assert_observer('Core.Acknowledge', 'diacamma.accounting', 'chartsAccountDel')
@@ -262,3 +256,89 @@ class ChartsAccountTest(LucteriosTest):
         self.assert_xml_equal('COMPONENTS/EDIT[@name="name"]', '707000')
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="type_of_account"]', 'Produit')
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="error_code"]', "{[center]}{[font color='red']}Changement non permis!{[/font]}{[/center]}")
+
+class FiscalYearWorkflowTest(LucteriosTest):
+    # pylint: disable=too-many-public-methods,too-many-statements
+
+    def setUp(self):
+        self.xfer_class = XferContainerAcknowledge
+        LucteriosTest.setUp(self)
+        set_accounting_system()
+        initial_thirds()
+        default_compta()
+        fill_entries(1)
+        rmtree(get_user_dir(), True)
+
+    def test_begin_simple(self):
+        self.assertEqual(FiscalYear.objects.get(id=1).status, 0)  # pylint: disable=no-member
+
+        self.factory.xfer = ChartsAccountList()
+        self.call('/diacamma.accounting/chartsAccountList', {'year':'1', 'type_of_account':'-1'}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'chartsAccountList')
+        self.assert_count_equal('COMPONENTS/*', 9)
+        self.assert_count_equal('ACTIONS/ACTION', 2)
+        self.assert_action_equal('ACTIONS/ACTION[1]', ('Commencer', 'images/ok.png', 'diacamma.accounting', 'fiscalYearBegin', 0, 1, 1))
+
+        self.factory.xfer = FiscalYearBegin()
+        self.call('/diacamma.accounting/fiscalYearBegin', {'year':'1', 'type_of_account':'-1'}, False)
+        self.assert_observer('Core.DialogBox', 'diacamma.accounting', 'fiscalYearBegin')
+        self.assert_xml_equal('TEXT', "Voulez-vous commencer 'Exercice du 1 janvier 2015 au 31 décembre 2015", True)
+
+        self.factory.xfer = FiscalYearBegin()
+        self.call('/diacamma.accounting/fiscalYearBegin', {'CONFIRME':'YES', 'year':'1', 'type_of_account':'-1'}, False)
+        self.assert_observer('Core.Acknowledge', 'diacamma.accounting', 'fiscalYearBegin')
+
+        self.assertEqual(FiscalYear.objects.get(id=1).status, 1)  # pylint: disable=no-member
+
+    def test_begin_lastyearnovalid(self):
+        self.assertEqual(FiscalYear.objects.get(id=1).status, 0)  # pylint: disable=no-member
+        new_entry = add_entry(1, 1, '2015-04-11', 'Report à nouveau aussi', '-1|1|0|37.61|None|\n-2|2|0|-37.61|None|', False)
+
+        self.factory.xfer = FiscalYearBegin()
+        self.call('/diacamma.accounting/fiscalYearBegin', {'year':'1', 'type_of_account':'-1'}, False)
+        self.assert_observer('CORE.Exception', 'diacamma.accounting', 'fiscalYearBegin')
+        self.assert_xml_equal('EXCEPTION/MESSAGE', "Des écritures de report à nouveau ne sont pas validées!")
+
+        new_entry.closed()
+
+        self.factory.xfer = FiscalYearBegin()
+        self.call('/diacamma.accounting/fiscalYearBegin', {'CONFIRME':'YES', 'year':'1', 'type_of_account':'-1'}, False)
+        self.assert_observer('Core.Acknowledge', 'diacamma.accounting', 'fiscalYearBegin')
+        self.assertEqual(FiscalYear.objects.get(id=1).status, 1)  # pylint: disable=no-member
+
+    def test_begin_withbenef(self):
+        self.assertEqual(FiscalYear.objects.get(id=1).status, 0)  # pylint: disable=no-member
+        add_entry(1, 1, '2015-04-11', 'Report à nouveau bénèf', '-1|6|0|123.45|None|\n-2|2|0|123.45|None|', True)
+
+        self.factory.xfer = ChartsAccountList()
+        self.call('/diacamma.accounting/chartsAccountList', {'year':'1', 'type_of_account':'2'}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'chartsAccountList')
+        self.assert_count_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD', 3)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[1]/VALUE[@name="code"]', '106000')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[1]/VALUE[@name="last_year_total"]', '{[font color="green"]}Crédit: 1250.47€{[/font]}')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[2]/VALUE[@name="code"]', '110000')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[2]/VALUE[@name="last_year_total"]', '{[font color="green"]}Crédit: 123.45€{[/font]}')
+
+        self.factory.xfer = FiscalYearBegin()
+        self.call('/diacamma.accounting/fiscalYearBegin', {'year':'1', 'type_of_account':'-1'}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'fiscalYearBegin')
+        self.assert_count_equal('COMPONENTS/*', 4)
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="info"]', "{[i]}Vous avez un bénéfice de 123.45€.{[br/]}", True)
+        self.assert_xml_equal('COMPONENTS/SELECT[@name="profit_account"]', '5')
+        self.assert_count_equal('COMPONENTS/SELECT[@name="profit_account"]/CASE', 1)
+        self.assert_count_equal('ACTIONS/ACTION', 2)
+
+        self.factory.xfer = FiscalYearBegin()
+        self.call('/diacamma.accounting/fiscalYearBegin', {'profit_account':'5', 'year':'1', 'type_of_account':'-1'}, False)
+        self.assert_observer('Core.Acknowledge', 'diacamma.accounting', 'fiscalYearBegin')
+
+        self.assertEqual(FiscalYear.objects.get(id=1).status, 1)  # pylint: disable=no-member
+
+        self.factory.xfer = ChartsAccountList()
+        self.call('/diacamma.accounting/chartsAccountList', {'year':'1', 'type_of_account':'2'}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'chartsAccountList')
+        self.assert_count_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD', 3)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[1]/VALUE[@name="code"]', '106000')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[1]/VALUE[@name="last_year_total"]', '{[font color="green"]}Crédit: 1373.92€{[/font]}')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[2]/VALUE[@name="code"]', '110000')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[2]/VALUE[@name="last_year_total"]', '{[font color="green"]}Crédit: 0.00€{[/font]}')

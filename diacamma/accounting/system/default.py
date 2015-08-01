@@ -62,6 +62,6 @@ class DefaultSystemAccounting(object):
         # pylint: disable=no-self-use,unused-argument
         return ''
 
-    def check_begin(self, xfer):
+    def check_begin(self, year, xfer):
         # pylint: disable=no-self-use,unused-argument
         return False
