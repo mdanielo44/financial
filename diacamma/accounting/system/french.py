@@ -196,18 +196,14 @@ class FrenchSystemAcounting(DefaultSystemAccounting):
                 return current_charts[2], current_charts[3]
         return '', -2
 
-    def _create_custom_for_profit(self, year, xfer, val_profit):
+    def _create_custom_for_profit(self, year, custom, val_profit):
         # pylint: disable=no-self-use,too-many-locals
-        from lucterios.framework.xfergraphic import XferContainerCustom
         from lucterios.framework.xfercomponents import XferCompImage, XferCompLabelForm, XferCompSelect
-        from lucterios.framework.tools import WrapAction, CLOSE_YES, FORMTYPE_MODAL
         from diacamma.accounting.models import format_devise
         if val_profit > 0.0001:
             type_profit = 'bénéfice'
         else:
             type_profit = 'déficite'
-        custom = XferContainerCustom()
-        custom.request = xfer.request
         img = XferCompImage("img")
         img.set_location(0, 0)
         img.set_value("diacamma.accounting/images/account.png")
@@ -229,8 +225,6 @@ class FrenchSystemAcounting(DefaultSystemAccounting):
         sel.set_select(sel_cmpt)
         sel.set_location(1, 2)
         custom.add_component(sel)
-        custom.add_action(xfer.get_action(_("Ok"), "images/ok.png"), {'modal':FORMTYPE_MODAL, 'close':CLOSE_YES})
-        custom.add_action(WrapAction(_("Cancel"), "images/cancel.png"), {})
         return custom
 
     def _get_profit(self, year):
@@ -273,8 +267,11 @@ class FrenchSystemAcounting(DefaultSystemAccounting):
             return self._create_profit_entry(year, profit_account)
         val_profit = self._get_profit(year)
         if abs(val_profit) > 0.0001:
-            custom = self._create_custom_for_profit(year, xfer, val_profit)
-            xfer.set_custom(custom)
+            from lucterios.framework.tools import WrapAction, CLOSE_YES, FORMTYPE_MODAL
+            custom = xfer.create_custom()
+            self._create_custom_for_profit(year, custom, val_profit)
+            custom.add_action(xfer.get_action(_("Ok"), "images/ok.png"), {'modal':FORMTYPE_MODAL, 'close':CLOSE_YES})
+            custom.add_action(WrapAction(_("Cancel"), "images/cancel.png"), {})
             return False
         else:
             text = "Voulez-vous commencer '%s'? {[br/]}{[br/]}{[i]}{[u]}Attention:{[/u]} Votre report à nouveau doit être totalement fait.{[/i]}" % six.text_type(year)
