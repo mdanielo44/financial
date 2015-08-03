@@ -68,6 +68,9 @@ class ChartsAccountList(XferListEditor):
             grid_charts = self.get_components('chartsaccount')
             grid_charts.actions = []
             grid_charts.add_action(self.request, ActionsManage.get_act_changed('ChartsAccount', 'show', _("Edit"), "images/edit.png"), {'modal':FORMTYPE_MODAL, 'unique':SELECT_SINGLE})
+        elif self.item.year.last_fiscalyear is not None:
+            grid_charts = self.get_components('chartsaccount')
+            grid_charts.add_action(self.request, FiscalYearImport.get_action(_("import"), ''), {'modal':FORMTYPE_MODAL, 'close':CLOSE_NO})
         lbl = XferCompLabelForm("result")
         lbl.set_value_center(self.item.year.total_result_text)
         lbl.set_location(0, 10, 2)
@@ -75,12 +78,22 @@ class ChartsAccountList(XferListEditor):
         if self.item.year.status == 0:
             self.add_action(FiscalYearBegin.get_action(_('Begin'), 'images/ok.png'), {'modal':FORMTYPE_MODAL, 'close':CLOSE_NO}, 0)
             if (self.item.year.last_fiscalyear is not None) and self.item.year.has_no_lastyear_entry and (self.item.year.last_fiscalyear.status == 2):
-                self.add_action(FiscalYearImport.get_action(_('Last fiscal year'), 'images/edit.png'), {'modal':FORMTYPE_MODAL, 'close':CLOSE_NO}, 0)
+                self.add_action(FiscalYearReportLastYear.get_action(_('Last fiscal year'), 'images/edit.png'), {'modal':FORMTYPE_MODAL, 'close':CLOSE_NO}, 0)
         if self.item.year.status == 1:
             self.add_action(FiscalYearClose.get_action(_('Closing'), 'images/ok.png'), {'modal':FORMTYPE_MODAL, 'close':CLOSE_NO}, 0)
 
 @MenuManage.describ('accounting.add_fiscalyear')
 class FiscalYearImport(XferContainerAcknowledge):
+    icon = "accountingYear.png"
+    model = FiscalYear
+    field_id = 'year'
+    caption = _("Import charts accounts from last fiscal year")
+
+    def fillresponse(self):
+        self.item.run_import()
+
+@MenuManage.describ('accounting.add_fiscalyear')
+class FiscalYearReportLastYear(XferContainerAcknowledge):
     icon = "accountingYear.png"
     model = FiscalYear
     field_id = 'year'

@@ -305,7 +305,14 @@ class FiscalYear(LucteriosModel):
         val = get_amount_sum(EntryLineAccount.objects.filter(entry__journal__id=1, account__year=self).aggregate(Sum('amount')))  # pylint: disable=no-member
         return abs(val) < 0.0001
 
-    def run_import(self, xfer):
+    def run_import(self):
+        if self.last_fiscalyear is None:
+            raise LucteriosException(IMPORTANT, _("This fiscal year has not a last fiscal year!"))
+        if self.status != 2:
+            for last_charts_account in self.last_fiscalyear.chartsaccount_set.all(): # pylint: disable=no-member
+                ChartsAccount.objects.get_or_create(year=self, code=last_charts_account.code, name=last_charts_account.name, type_of_account=last_charts_account.type_of_account)  # pylint: disable=no-member
+
+    def run_report_lastyear(self, xfer):
         pass
 
     def run_begin(self, xfer):
