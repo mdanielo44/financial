@@ -105,7 +105,8 @@ class Migration(migrations.Migration):
                 ('end', models.DateField(verbose_name='end')),
                 ('status', models.IntegerField(verbose_name='status', choices=[(0, 'building'), (1, 'running'), (2, 'finished')], default=0)),
                 ('is_actif', models.BooleanField(verbose_name='actif', default=False)),
-                ('last_fiscalyear', models.ForeignKey(to='accounting.FiscalYear', verbose_name='last fiscal year', null=True, on_delete=models.SET_NULL)),
+                ('last_fiscalyear', models.ForeignKey(to='accounting.FiscalYear', verbose_name='last fiscal year', related_name='next_fiscalyear', \
+                                                      null=True, on_delete=models.SET_NULL)),
             ],
             options={
                 'verbose_name_plural': 'fiscal years',

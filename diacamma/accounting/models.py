@@ -204,11 +204,12 @@ class AccountThird(LucteriosModel):
         default_permissions = []
 
 class FiscalYear(LucteriosModel):
+    # pylint: disable=too-many-public-methods
     begin = models.DateField(verbose_name=_('begin'))
     end = models.DateField(verbose_name=_('end'))
     status = models.IntegerField(verbose_name=_('status'), choices=((0, _('building')), (1, _('running')), (2, _('finished'))), default=0)
     is_actif = models.BooleanField(verbose_name=_('actif'), default=False)
-    last_fiscalyear = models.ForeignKey('FiscalYear', verbose_name=_('last fiscal year'), null=True, on_delete=models.SET_NULL)
+    last_fiscalyear = models.ForeignKey('FiscalYear', verbose_name=_('last fiscal year'), related_name='next_fiscalyear', null=True, on_delete=models.SET_NULL)
 
     def init_dates(self):
         fiscal_years = FiscalYear.objects.order_by('end')  # pylint: disable=no-member
@@ -326,7 +327,32 @@ class FiscalYear(LucteriosModel):
                 self.save()
 
     def run_close(self, xfer):
-        pass
+        if self.status == 0:
+            raise LucteriosException(IMPORTANT, _("This fiscal year is not 'in running'!"))
+        nb_entry_noclose = EntryAccount.objects.filter(close=False, entrylineaccount__account__year=self).distinct().count()  # pylint: disable=no-member
+        if (nb_entry_noclose > 0) and (FiscalYear.objects.filter(last_fiscalyear=self).count() == 0):  # pylint: disable=no-member
+            raise LucteriosException(IMPORTANT, _("This fiscal year has entries not closed and not next fiscal year!"))
+        if current_system_account().check_end(self, xfer, nb_entry_noclose):
+            self.status = 2
+            self.save()
+
+    def getorcreate_chartaccount(self, code):
+        try:
+            return self.chartsaccount_set.get(code=code) # pylint: disable=no-member
+        except ObjectDoesNotExist:
+            descript, typeaccount = current_system_account().new_charts_account(code)
+            return ChartsAccount.objects.create(year=self, code=code, name=descript, type_of_account=typeaccount) # pylint: disable=no-member
+
+    def move_entry_noclose(self):
+        if self.status == 1:
+            next_ficalyear = FiscalYear.objects.get(last_fiscalyear=self) # pylint: disable=no-member
+            for entry_noclose in EntryAccount.objects.filter(close=False, entrylineaccount__account__year=self).distinct():  # pylint: disable=no-member
+                for entryline in entry_noclose.entrylineaccount_set.all():
+                    entryline.account = next_ficalyear.getorcreate_chartaccount(entryline.account.code)
+
+                    entryline.save()
+                entry_noclose.year = next_ficalyear
+                entry_noclose.save()
 
     @classmethod
     def get_current(cls, select_year=None):
@@ -663,7 +689,7 @@ class EntryAccount(LucteriosModel):
         return no_change, max(0, total_credit - total_debit), max(0, total_debit - total_credit)
 
     def closed(self):
-        if (self.year.status != 2) and (self.close == False): # pylint: disable=no-member
+        if (self.year.status != 2) and (self.close == False):  # pylint: disable=no-member
             self.close = True
             val = self.year.entryaccount_set.all().aggregate(Max('num'))  # pylint: disable=no-member
             if val['num__max'] is None:
@@ -674,7 +700,7 @@ class EntryAccount(LucteriosModel):
             self.save()
 
     def unlink(self):
-        if (self.year.status != 2) and (self.link is not None): # pylint: disable=no-member
+        if (self.year.status != 2) and (self.link is not None):  # pylint: disable=no-member
             for entry in self.link.entryaccount_set.all():
                 entry.link = None
                 entry.save()
@@ -682,7 +708,7 @@ class EntryAccount(LucteriosModel):
             self.link = None
 
     def create_linked(self):
-        if (self.year.status != 2) and (self.link is None): # pylint: disable=no-member
+        if (self.year.status != 2) and (self.link is None):  # pylint: disable=no-member
             paym_journ = Journal.objects.get(id=4)  # pylint: disable=no-member
             paym_desig = _('payment of %s') % self.designation
             new_entry = EntryAccount.objects.create(year=self.year, journal=paym_journ, designation=paym_desig, date_value=date.today())  # pylint: disable=no-member
@@ -694,6 +720,14 @@ class EntryAccount(LucteriosModel):
                     serial_val += line.create_clone_inverse()
             AccountLink.create_link([self, new_entry])
             return new_entry, serial_val
+
+    def add_entry_line(self, amount, code):
+        new_entry_line = EntryLineAccount()
+        new_entry_line.entry = self
+        new_entry_line.account = self.year.getorcreate_chartaccount(code) # pylint: disable=no-member
+        new_entry_line.amount = amount
+        new_entry_line.save()
+        return new_entry_line
 
     @property
     def has_third(self):

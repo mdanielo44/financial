@@ -128,7 +128,7 @@ def fill_entries(yearid):
     _ = add_entry(yearid, 2, '2015-02-20', 'depense 3', '-1|11|0|78.240000|None|\n-2|4|2|78.240000|None|')
     entry7 = add_entry(yearid, 3, '2015-02-21', 'vente 1', '-1|10|0|70.640000|None|\n-2|1|7|70.640000|None|', True)
     entry8 = add_entry(yearid, 4, '2015-02-22', 'regement vente 1', '-1|2|0|70.640000|BP N°654321|\n-2|1|7|-70.640000|None|', True)
-    _ = add_entry(yearid, 3, '2015-02-21', 'vente 2', '-1|10|0|125.970000|None|\n-2|1|5|125.970000|None|')
+    _ = add_entry(yearid, 3, '2015-02-21', 'vente 2', '-1|10|0|125.970000|None|\n-2|1|5|125.970000|None|', True)
     _ = add_entry(yearid, 3, '2015-02-24', 'vente 3', '-1|10|0|34.010000|None|\n-2|1|4|34.010000|None|')
     _ = add_entry(yearid, 5, '2015-02-20', 'Frais bancaire', '-1|2|0|-12.340000|None|\n-2|15|0|12.340000|None|', True)
     AccountLink.create_link([entry2, entry3])

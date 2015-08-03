@@ -276,3 +276,73 @@ class FrenchSystemAcounting(DefaultSystemAccounting):
         else:
             text = "Voulez-vous commencer '%s'? {[br/]}{[br/]}{[i]}{[u]}Attention:{[/u]} Votre report à nouveau doit être totalement fait.{[/i]}" % six.text_type(year)
             return xfer.confirme(text)
+
+    def _create_result_entry(self, year):
+        # pylint: disable=no-self-use
+        from diacamma.accounting.models import Journal, EntryAccount
+        end_journ = Journal.objects.get(id=5)  # pylint: disable=no-member
+        end_desig = "Cloture d'exercice - Résultat"
+        new_entry = EntryAccount.objects.create(year=year, journal=end_journ, designation=end_desig, date_value=date.today())  # pylint: disable=no-member
+        revenue = year.total_revenue
+        expense = year.total_expense
+        if expense > revenue:
+            new_entry.add_entry_line(revenue - expense, '129')
+        else:
+            new_entry.add_entry_line(revenue - expense, '120')
+        new_entry.closed()
+
+    def _create_thirds_ending_entry(self, year):
+        # pylint: disable=no-self-use,too-many-locals
+        from diacamma.accounting.models import get_amount_sum, Journal, EntryAccount, EntryLineAccount, ChartsAccount, Third
+        from django.db.models.aggregates import Sum
+        sum40 = get_amount_sum(EntryLineAccount.objects.filter(account__code__startswith='401', account__year=year).aggregate(Sum('amount')))  # pylint: disable=no-member
+        sum41 = get_amount_sum(EntryLineAccount.objects.filter(account__code__startswith='411', account__year=year).aggregate(Sum('amount')))  # pylint: disable=no-member
+        sum42 = get_amount_sum(EntryLineAccount.objects.filter(account__code__startswith='421', account__year=year).aggregate(Sum('amount')))  # pylint: disable=no-member
+        sum45 = get_amount_sum(EntryLineAccount.objects.filter(account__code__startswith='455', account__year=year).aggregate(Sum('amount')))  # pylint: disable=no-member
+        if (abs(sum40) > 0.001) or (abs(sum41) > 0.001) or (abs(sum42) > 0.001) or (abs(sum45) > 0.001):
+            end_journ = Journal.objects.get(id=5)  # pylint: disable=no-member
+            end_desig = "Cloture d'exercice - Résultat"
+            new_entry = EntryAccount.objects.create(year=year, journal=end_journ, designation=end_desig, date_value=date.today())  # pylint: disable=no-member
+            for data_line in EntryLineAccount.objects.filter(account__code__regex=THIRD_MASK, account__year=year).values('account', 'third').annotate(data_sum=Sum('amount')):  # pylint: disable=no-member
+                if abs(data_line['data_sum']) > 0.0001:
+                    new_line = EntryLineAccount()
+                    new_line.entry = new_entry
+                    new_line.amount = -1 * data_line['data_sum']
+                    new_line.account = ChartsAccount.objects.get(id=data_line['account'])  # pylint: disable=no-member
+                    if data_line['third'] is not None:
+                        new_line.third = Third.objects.get(id=data_line['third'])  # pylint: disable=no-member
+                    new_line.save()
+            if abs(sum40) > 0.001:
+                new_entry.add_entry_line(sum40, '408')
+            if abs(sum41) > 0.001:
+                new_entry.add_entry_line(sum41, '418')
+            if abs(sum42) > 0.001:
+                new_entry.add_entry_line(sum42, '428')
+            if abs(sum45) > 0.001:
+                new_entry.add_entry_line(sum45, '455')
+            new_entry.closed()
+
+    def check_end(self, year, xfer, nb_entry_noclose):
+        text_confirm = """{[center]}{[b]}Voulez-vous cloturer cet exercice?{[/b]}{[/center]}{[br/]}
+{[u]}Attention:{[/u]}Ceci est une opération définitif, vérifiez bien d'avoir saisi:{[br/]}
+ - L'ensemble de vos factures clients et fournisseurs sur l'exercice.{[br/]}
+ - L'ensemble de vos réglements.{[br/]}
+ - Le prorata de frais (assurance, téléphone, loyer,...) à cheval sur plusieurs exercices.{[br/]}
+ - L'état de vos immobilisation.{[br/]}
+ - Le calcul de vos ammortissements.{[br/]}
+ - L'état de vos stocks.{[br/]}
+{[br/]}
+{[u]}L'outil va créer une éventuelle écriture de cloture.{[/u]}{[br/]}"""
+        if nb_entry_noclose > 0:
+            if nb_entry_noclose == 1:
+                text_confirm += "{[br/]}{[u]}Attention:{[/u]}une écriture n'est pas validée{[br/]}"
+            else:
+                text_confirm += "{[br/]}{[u]}Attention:{[/u]}%d écritures ne sont pas validées{[br/]}" % nb_entry_noclose
+
+            text_confirm += "elles seront déplacées sur l'exercice suivant"
+        if xfer.confirme(text_confirm):
+            year.move_entry_noclose()
+            self._create_result_entry(year)
+            self._create_thirds_ending_entry(year)
+            return True
+        return False
