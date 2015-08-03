@@ -239,6 +239,15 @@ class EntryAccountEdit(XferAddEditor):
 
     def fillresponse(self):
         XferAddEditor.fillresponse(self)
+        if self.item.year.status != 0:
+            cmp_journal = self.get_components('journal')
+            select_list = cmp_journal.select_list
+            for item_idx in range(len(select_list)):
+                if select_list[item_idx][0] == 1:
+                    del select_list[item_idx]
+                    break
+            cmp_journal.select_list = select_list
+
         serial_vals = self.getparam('serial_entry')
         if serial_vals is None:
             self.params['serial_entry'] = self.item.get_serial()

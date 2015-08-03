@@ -90,7 +90,7 @@ class FiscalYearImport(XferContainerAcknowledge):
     caption = _("Import charts accounts from last fiscal year")
 
     def fillresponse(self):
-        self.item.run_import()
+        self.item.import_charts_accounts()
 
 @MenuManage.describ('accounting.add_fiscalyear')
 class FiscalYearReportLastYear(XferContainerAcknowledge):
@@ -100,7 +100,7 @@ class FiscalYearReportLastYear(XferContainerAcknowledge):
     caption = _("Last fiscal year import")
 
     def fillresponse(self):
-        self.item.run_import(self)
+        self.item.import_charts_accounts(self)
 
 @MenuManage.describ('accounting.add_fiscalyear')
 class FiscalYearBegin(XferContainerAcknowledge):

@@ -305,12 +305,13 @@ class FiscalYear(LucteriosModel):
         val = get_amount_sum(EntryLineAccount.objects.filter(entry__journal__id=1, account__year=self).aggregate(Sum('amount')))  # pylint: disable=no-member
         return abs(val) < 0.0001
 
-    def run_import(self):
+    def import_charts_accounts(self):
         if self.last_fiscalyear is None:
             raise LucteriosException(IMPORTANT, _("This fiscal year has not a last fiscal year!"))
-        if self.status != 2:
-            for last_charts_account in self.last_fiscalyear.chartsaccount_set.all(): # pylint: disable=no-member
-                ChartsAccount.objects.get_or_create(year=self, code=last_charts_account.code, name=last_charts_account.name, type_of_account=last_charts_account.type_of_account)  # pylint: disable=no-member
+        if self.status == 2:
+            raise LucteriosException(IMPORTANT, _('Fiscal year finished!'))
+        for last_charts_account in self.last_fiscalyear.chartsaccount_set.all():  # pylint: disable=no-member
+            ChartsAccount.objects.get_or_create(year=self, code=last_charts_account.code, name=last_charts_account.name, type_of_account=last_charts_account.type_of_account)  # pylint: disable=no-member
 
     def run_report_lastyear(self, xfer):
         pass
@@ -662,7 +663,7 @@ class EntryAccount(LucteriosModel):
         return no_change, max(0, total_credit - total_debit), max(0, total_debit - total_credit)
 
     def closed(self):
-        if self.close == False:
+        if (self.year.status != 2) and (self.close == False): # pylint: disable=no-member
             self.close = True
             val = self.year.entryaccount_set.all().aggregate(Max('num'))  # pylint: disable=no-member
             if val['num__max'] is None:
@@ -673,7 +674,7 @@ class EntryAccount(LucteriosModel):
             self.save()
 
     def unlink(self):
-        if self.link is not None:
+        if (self.year.status != 2) and (self.link is not None): # pylint: disable=no-member
             for entry in self.link.entryaccount_set.all():
                 entry.link = None
                 entry.save()
@@ -681,17 +682,18 @@ class EntryAccount(LucteriosModel):
             self.link = None
 
     def create_linked(self):
-        paym_journ = Journal.objects.get(id=4)  # pylint: disable=no-member
-        paym_desig = _('payment of %s') % self.designation
-        new_entry = EntryAccount.objects.create(year=self.year, journal=paym_journ, designation=paym_desig, date_value=date.today())  # pylint: disable=no-member
-        serial_val = ''
-        for line in self.entrylineaccount_set.all():  # pylint: disable=no-member
-            if line.account.is_third:
-                if serial_val != '':
-                    serial_val += '\n'
-                serial_val += line.create_clone_inverse()
-        AccountLink.create_link([self, new_entry])
-        return new_entry, serial_val
+        if (self.year.status != 2) and (self.link is None): # pylint: disable=no-member
+            paym_journ = Journal.objects.get(id=4)  # pylint: disable=no-member
+            paym_desig = _('payment of %s') % self.designation
+            new_entry = EntryAccount.objects.create(year=self.year, journal=paym_journ, designation=paym_desig, date_value=date.today())  # pylint: disable=no-member
+            serial_val = ''
+            for line in self.entrylineaccount_set.all():  # pylint: disable=no-member
+                if line.account.is_third:
+                    if serial_val != '':
+                        serial_val += '\n'
+                    serial_val += line.create_clone_inverse()
+            AccountLink.create_link([self, new_entry])
+            return new_entry, serial_val
 
     @property
     def has_third(self):
@@ -861,7 +863,6 @@ class EntryLineAccount(LucteriosModel):
         edt = XferCompEdit('num_cpt_txt')
         edt.set_location(column, row + 1, 2)
         edt.set_value(num_cpt_txt)
-        edt.mask = current_system_account().get_general_mask()
         edt.set_size(20, 25)
         edt.set_action(xfer.request, xfer.get_action(), {'close':CLOSE_NO, 'modal':FORMTYPE_REFRESH})
         xfer.add_component(edt)

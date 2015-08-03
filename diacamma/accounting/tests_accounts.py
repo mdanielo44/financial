@@ -30,6 +30,7 @@ from diacamma.accounting.views_accounts import ChartsAccountList, \
      ChartsAccountDel, ChartsAccountShow, ChartsAccountAddModify, \
     FiscalYearBegin, FiscalYearImport
 from diacamma.accounting.models import FiscalYear
+from diacamma.accounting.views_entries import EntryAccountEdit
 
 class ChartsAccountTest(LucteriosTest):
     # pylint: disable=too-many-public-methods,too-many-statements
@@ -343,6 +344,19 @@ class FiscalYearWorkflowTest(LucteriosTest):
         self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[1]/VALUE[@name="last_year_total"]', '{[font color="green"]}Crédit: 1373.92€{[/font]}')
         self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[2]/VALUE[@name="code"]', '110000')
         self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[2]/VALUE[@name="last_year_total"]', '{[font color="green"]}Crédit: 0.00€{[/font]}')
+
+    def test_begin_dont_add_report(self):
+        self.factory.xfer = FiscalYearBegin()
+        self.call('/diacamma.accounting/fiscalYearBegin', {'CONFIRME':'YES', 'year':'1', 'type_of_account':'-1'}, False)
+        self.assert_observer('Core.Acknowledge', 'diacamma.accounting', 'fiscalYearBegin')
+        self.assertEqual(FiscalYear.objects.get(id=1).status, 1)  # pylint: disable=no-member
+
+        self.factory.xfer = EntryAccountEdit()
+        self.call('/diacamma.accounting/entryAccountEdit', {'year':'1', 'journal':'1'}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'entryAccountEdit')
+        self.assert_count_equal('COMPONENTS/*', 8)
+        self.assert_count_equal("COMPONENTS/SELECT[@name='journal']/CASE", 4)
+        self.assert_xml_equal("COMPONENTS/SELECT[@name='journal']", '2')
 
     def test_import_charsaccount(self):
         self.assertEqual(FiscalYear.objects.get(id=1).status, 0)  # pylint: disable=no-member
