@@ -781,6 +781,29 @@ class EntryTest(LucteriosTest):
         self.assert_observer('CORE.Exception', 'diacamma.accounting', 'entryAccountDel')
         self.assert_xml_equal('EXCEPTION/MESSAGE', 'écriture validée!')
 
+    def test_buyingselling_in_report(self):
+        self.factory.xfer = EntryAccountEdit()
+        self.call('/diacamma.accounting/entryAccountEdit', {'SAVE':'YES', 'year':'1', 'journal':'1', \
+                            'date_value':'2015-03-21', 'designation':'mauvais report'}, False)
+        self.assert_observer('Core.Acknowledge', 'diacamma.accounting', 'entryAccountEdit')
+
+        self.factory.xfer = EntryLineAccountAddModify()
+        self.call('/diacamma.accounting/entryLineAccountAddModify', {'year':'1', 'journal':'1', 'entryaccount':'1', 'num_cpt_txt':'70', \
+                                            'num_cpt':'9', 'third':0, 'debit_val':'0.0', 'credit_val':'152.34'}, False)
+        self.assert_observer('CORE.Exception', 'diacamma.accounting', 'entryLineAccountAddModify')
+        self.assert_xml_equal('EXCEPTION/MESSAGE', "Ce type d'écriture n'est pas permis dans ce journal")
+
+        self.factory.xfer = EntryLineAccountAddModify()
+        self.call('/diacamma.accounting/entryLineAccountAddModify', {'year':'1', 'journal':'1', 'entryaccount':'1', 'num_cpt_txt':'60', \
+                                            'num_cpt':'13', 'third':0, 'debit_val':'0.0', 'credit_val':'152.34'}, False)
+        self.assert_observer('CORE.Exception', 'diacamma.accounting', 'entryLineAccountAddModify')
+        self.assert_xml_equal('EXCEPTION/MESSAGE', "Ce type d'écriture n'est pas permis dans ce journal")
+
+        self.factory.xfer = EntryLineAccountAddModify()
+        self.call('/diacamma.accounting/entryLineAccountAddModify', {'year':'1', 'journal':'1', 'entryaccount':'1', 'num_cpt_txt':'401', \
+                                            'num_cpt':'4', 'third':0, 'debit_val':'0.0', 'credit_val':'152.34'}, False)
+        self.assert_observer('Core.Acknowledge', 'diacamma.accounting', 'entryLineAccountAddModify')
+
 class CompletedEntryTest(LucteriosTest):
     # pylint: disable=too-many-public-methods,too-many-statements
 

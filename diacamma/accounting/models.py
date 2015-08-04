@@ -41,6 +41,7 @@ from lucterios.CORE.parameters import Params
 from lucterios.contacts.models import AbstractContact  # pylint: disable=no-name-in-module,import-error
 
 from diacamma.accounting.system import get_accounting_system
+import re
 
 def current_system_account():
     import sys
@@ -338,14 +339,14 @@ class FiscalYear(LucteriosModel):
 
     def getorcreate_chartaccount(self, code):
         try:
-            return self.chartsaccount_set.get(code=code) # pylint: disable=no-member
+            return self.chartsaccount_set.get(code=code)  # pylint: disable=no-member
         except ObjectDoesNotExist:
             descript, typeaccount = current_system_account().new_charts_account(code)
-            return ChartsAccount.objects.create(year=self, code=code, name=descript, type_of_account=typeaccount) # pylint: disable=no-member
+            return ChartsAccount.objects.create(year=self, code=code, name=descript, type_of_account=typeaccount)  # pylint: disable=no-member
 
     def move_entry_noclose(self):
         if self.status == 1:
-            next_ficalyear = FiscalYear.objects.get(last_fiscalyear=self) # pylint: disable=no-member
+            next_ficalyear = FiscalYear.objects.get(last_fiscalyear=self)  # pylint: disable=no-member
             for entry_noclose in EntryAccount.objects.filter(close=False, entrylineaccount__account__year=self).distinct():  # pylint: disable=no-member
                 for entryline in entry_noclose.entrylineaccount_set.all():
                     entryline.account = next_ficalyear.getorcreate_chartaccount(entryline.account.code)
@@ -670,6 +671,20 @@ class EntryAccount(LucteriosModel):
         del lines._result_cache[line_idx]  # pylint: disable=protected-access
         return self.get_serial(lines)
 
+    def add_new_entryline(self, serial_entry, entrylineaccount, num_cpt, credit_val, debit_val, third, reference):
+        if self.journal.id == 1: # pylint: disable=no-member
+            charts = ChartsAccount.objects.get(id=num_cpt) # pylint: disable=no-member
+            pat_rev = re.compile(current_system_account().get_revenue_mask())
+            pat_exp = re.compile(current_system_account().get_expence_mask())
+            if pat_rev.match(charts.code) or pat_exp.match(charts.code):
+                raise LucteriosException(IMPORTANT, _('This kind of entry is not allowed for this journal!'))
+        if entrylineaccount != 0:
+            serial_entry = self.remove_entrylineaccounts(serial_entry, entrylineaccount)
+        if serial_entry != '':
+            serial_entry += '\n'
+        serial_entry += EntryLineAccount.add_serial(num_cpt, debit_val, credit_val, third, reference)
+        return serial_entry
+
     def serial_control(self, serial_vals):
         total_credit = 0
         total_debit = 0
@@ -724,7 +739,7 @@ class EntryAccount(LucteriosModel):
     def add_entry_line(self, amount, code):
         new_entry_line = EntryLineAccount()
         new_entry_line.entry = self
-        new_entry_line.account = self.year.getorcreate_chartaccount(code) # pylint: disable=no-member
+        new_entry_line.account = self.year.getorcreate_chartaccount(code)  # pylint: disable=no-member
         new_entry_line.amount = amount
         new_entry_line.save()
         return new_entry_line

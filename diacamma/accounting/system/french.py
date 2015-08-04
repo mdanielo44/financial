@@ -41,6 +41,10 @@ EMPLOYED_MASK = r'^42[0-9]+$'
 
 SOCIETARY_MASK = r'^45[0-9]+$'
 
+REVENUE_MASK = r'^7[0-9][0-9]+$'
+
+EXPENSE_MASK = r'^6[0-9][0-9]+$'
+
 THIRD_MASK = "%s|%s|%s|%s" % (PROVIDER_MASK, CUSTOMER_MASK, EMPLOYED_MASK, SOCIETARY_MASK)
 
 GENERAL_CHARTS_ACCOUNT = [
@@ -184,6 +188,12 @@ class FrenchSystemAcounting(DefaultSystemAccounting):
 
     def get_third_mask(self):
         return THIRD_MASK
+
+    def get_revenue_mask(self):
+        return REVENUE_MASK
+
+    def get_expence_mask(self):
+        return EXPENSE_MASK
 
     def new_charts_account(self, code):
         code = code.strip()

@@ -307,11 +307,7 @@ class EntryLineAccountAddModify(XferContainerAcknowledge):
             for old_key in ['num_cpt_txt', 'num_cpt', 'credit_val', 'debit_val', 'third', 'reference', 'entrylineaccount', 'serial_entry']:
                 if old_key in self.params.keys():
                     del self.params[old_key]
-            if entrylineaccount != 0:
-                serial_entry = self.item.remove_entrylineaccounts(serial_entry, entrylineaccount)
-            if serial_entry != '':
-                serial_entry += '\n'
-            serial_entry += EntryLineAccount.add_serial(num_cpt, debit_val, credit_val, third, reference)
+            serial_entry = self.item.add_new_entryline(serial_entry, entrylineaccount, num_cpt, credit_val, debit_val, third, reference)
         self.redirect_action(EntryAccountEdit.get_action(), {'params':{"serial_entry":serial_entry}})
 
 @MenuManage.describ('accounting.add_entryaccount')

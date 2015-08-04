@@ -54,6 +54,14 @@ class DefaultSystemAccounting(object):
         # pylint: disable=no-self-use
         return ''
 
+    def get_revenue_mask(self):
+        # pylint: disable=no-self-use
+        return ''
+
+    def get_expence_mask(self):
+        # pylint: disable=no-self-use
+        return ''
+
     def get_third_mask(self):
         # pylint: disable=no-self-use
         return ''
@@ -63,5 +71,9 @@ class DefaultSystemAccounting(object):
         return ''
 
     def check_begin(self, year, xfer):
+        # pylint: disable=no-self-use,unused-argument
+        return False
+
+    def check_end(self, year, xfer, nb_entry_noclose):
         # pylint: disable=no-self-use,unused-argument
         return False
