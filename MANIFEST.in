@@ -1,0 +1,4 @@
+recursive-include diacamma/accounting *
+recursive-exclude diacamma/accounting/__pycache__ *
+recursive-exclude diacamma/accounting/migrations/__pycache__ *
+recursive-exclude diacamma/accounting/system/__pycache__ *
