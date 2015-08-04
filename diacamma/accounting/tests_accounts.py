@@ -28,7 +28,7 @@ from diacamma.accounting.test_tools import initial_thirds, default_compta, fill_
     set_accounting_system, add_entry
 from diacamma.accounting.views_accounts import ChartsAccountList, \
      ChartsAccountDel, ChartsAccountShow, ChartsAccountAddModify, \
-    FiscalYearBegin, FiscalYearImport, FiscalYearClose
+    FiscalYearBegin, FiscalYearImport, FiscalYearClose, FiscalYearReportLastYear
 from diacamma.accounting.models import FiscalYear
 from diacamma.accounting.views_entries import EntryAccountEdit, \
     EntryLineAccountList
@@ -399,7 +399,7 @@ class FiscalYearWorkflowTest(LucteriosTest):
         self.assert_observer('Core.Custom', 'diacamma.accounting', 'chartsAccountList')
         self.assert_count_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD', 15)
 
-    def test_close_simple(self):
+    def test_close(self):
         self.assertEqual(FiscalYear.objects.get(id=1).status, 0)  # pylint: disable=no-member
         self.factory.xfer = FiscalYearClose()
         self.call('/diacamma.accounting/fiscalYearImport', {'year':'1', 'type_of_account':'-1'}, False)
@@ -439,8 +439,8 @@ class FiscalYearWorkflowTest(LucteriosTest):
         self.assert_xml_equal("COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit:{[/b]} 0.00€ - {[b]}Charge:{[/b]} 0.00€ = {[b]}Resultat:{[/b]} 0.00€ | {[b]}Trésorie:{[/b]} 0.00€ - {[b]}Validé:{[/b]} 0.00€{[/center]}')  # pylint: disable=line-too-long
 
         self.factory.xfer = FiscalYearClose()
-        self.call('/diacamma.accounting/fiscalYearImport', {'CONFIRME':'YES', 'year':'1', 'type_of_account':'-1'}, False)
-        self.assert_observer('Core.Acknowledge', 'diacamma.accounting', 'fiscalYearImport')
+        self.call('/diacamma.accounting/fiscalYearClose', {'CONFIRME':'YES', 'year':'1', 'type_of_account':'-1'}, False)
+        self.assert_observer('Core.Acknowledge', 'diacamma.accounting', 'fiscalYearClose')
 
         self.assertEqual(FiscalYear.objects.get(id=1).status, 2)  # pylint: disable=no-member
 
@@ -469,3 +469,39 @@ class FiscalYearWorkflowTest(LucteriosTest):
         self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[6]/VALUE[@name="current_total"]', '{[font color="green"]}Crédit: 0.00€{[/font]}')
         self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[7]/VALUE[@name="code"]', '418')
         self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[7]/VALUE[@name="current_total"]', '{[font color="blue"]}Débit: 125.97€{[/font]}')
+
+    def test_import_lastyear(self):
+        FiscalYear.objects.create(begin='2016-01-01', end='2016-12-31', status=0, last_fiscalyear=FiscalYear.objects.get(id=1))  # pylint: disable=no-member
+        self.factory.xfer = FiscalYearBegin()
+        self.call('/diacamma.accounting/fiscalYearBegin', {'CONFIRME':'YES', 'year':'1', 'type_of_account':'-1'}, False)
+        self.assert_observer('Core.Acknowledge', 'diacamma.accounting', 'fiscalYearBegin')
+        self.assertEqual(FiscalYear.objects.get(id=1).status, 1)  # pylint: disable=no-member
+        self.factory.xfer = FiscalYearClose()
+        self.call('/diacamma.accounting/fiscalYearClose', {'CONFIRME':'YES', 'year':'1', 'type_of_account':'-1'}, False)
+        self.assert_observer('Core.Acknowledge', 'diacamma.accounting', 'fiscalYearClose')
+
+        self.assertEqual(FiscalYear.objects.get(id=1).status, 2)  # pylint: disable=no-member
+        self.assertEqual(FiscalYear.objects.get(id=2).status, 0)  # pylint: disable=no-member
+
+        self.factory.xfer = FiscalYearReportLastYear()
+        self.call('/diacamma.accounting/fiscalYearReportLastYear', {'CONFIRME':'YES', 'year':'2', 'type_of_account':'-1'}, False)
+        self.assert_observer('Core.Acknowledge', 'diacamma.accounting', 'fiscalYearReportLastYear')
+        self.assertEqual(FiscalYear.objects.get(id=2).status, 0)  # pylint: disable=no-member
+
+        self.factory.xfer = EntryLineAccountList()
+        self.call('/diacamma.accounting/entryLineAccountList', {'year':'2', 'journal':'-1', 'filter':'0'}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'entryLineAccountList')
+        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD', 15)
+        self.assert_xml_equal("COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit:{[/b]} 34.01€ - {[b]}Charge:{[/b]} 272.32€ = {[b]}Resultat:{[/b]} -238.31€ | {[b]}Trésorie:{[/b]} 1050.66€ - {[b]}Validé:{[/b]} 1244.74€{[/center]}')  # pylint: disable=line-too-long
+
+        self.factory.xfer = ChartsAccountList()
+        self.call('/diacamma.accounting/chartsAccountList', {'year':'2', 'type_of_account':'-1'}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'chartsAccountList')
+        self.assert_count_equal('COMPONENTS/*', 9)
+        self.assert_count_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD', 10)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[2]/VALUE[@name="code"]', '110')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[2]/VALUE[@name="current_total"]', '{[font color="green"]}Crédit: 120.33€{[/font]}')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[4]/VALUE[@name="code"]', '411000')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[4]/VALUE[@name="current_total"]', '{[font color="blue"]}Débit: 159.98€{[/font]}')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[5]/VALUE[@name="code"]', '418')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[5]/VALUE[@name="current_total"]', '{[font color="green"]}Crédit: 0.00€{[/font]}')

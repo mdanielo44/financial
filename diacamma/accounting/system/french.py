@@ -322,14 +322,10 @@ class FrenchSystemAcounting(DefaultSystemAccounting):
                     if data_line['third'] is not None:
                         new_line.third = Third.objects.get(id=data_line['third'])  # pylint: disable=no-member
                     new_line.save()
-            if abs(sum40) > 0.001:
-                new_entry.add_entry_line(sum40, '408')
-            if abs(sum41) > 0.001:
-                new_entry.add_entry_line(sum41, '418')
-            if abs(sum42) > 0.001:
-                new_entry.add_entry_line(sum42, '428')
-            if abs(sum45) > 0.001:
-                new_entry.add_entry_line(sum45, '455')
+            new_entry.add_entry_line(sum40, '408')
+            new_entry.add_entry_line(sum41, '418')
+            new_entry.add_entry_line(sum42, '428')
+            new_entry.add_entry_line(sum45, '455')
             new_entry.closed()
 
     def check_end(self, year, xfer, nb_entry_noclose):
@@ -356,3 +352,39 @@ class FrenchSystemAcounting(DefaultSystemAccounting):
             self._create_thirds_ending_entry(year)
             return True
         return False
+
+    def _create_report_lastyearresult(self, year):
+        # pylint: disable=no-self-use
+        from diacamma.accounting.models import Journal, EntryAccount
+        end_journ = Journal.objects.get(id=1)  # pylint: disable=no-member
+        end_desig = "Report à nouveau - Bilan"
+        new_entry = EntryAccount.objects.create(year=year, journal=end_journ, designation=end_desig, date_value=date.today())  # pylint: disable=no-member
+        for charts_account in year.last_fiscalyear.chartsaccount_set.filter(type_of_account__in=(0, 1, 2)):  # pylint: disable=no-member
+            if charts_account.code == '120':
+                code = "110"
+                name = None
+            elif charts_account.code == '129':
+                code = "119"
+                name = None
+            else:
+                code = charts_account.code
+                name = charts_account.name
+            new_entry.add_entry_line(charts_account.get_current_validated(), code, name)
+        new_entry.closed()
+
+    def _create_report_third(self, year):
+        # pylint: disable=no-self-use
+        from diacamma.accounting.models import Journal, EntryAccount
+        last_entry_account = list(year.last_fiscalyear.entryaccount_set.filter(journal__id=5).order_by('num'))[-1]
+        end_journ = Journal.objects.get(id=1)  # pylint: disable=no-member
+        end_desig = "Report à nouveau - Dette tiers"
+        new_entry = EntryAccount.objects.create(year=year, journal=end_journ, designation=end_desig, date_value=date.today())  # pylint: disable=no-member
+        for entry_line in last_entry_account.entrylineaccount_set.all():  # pylint: disable=no-member
+            if re.match(THIRD_MASK, entry_line.account.code):
+                new_entry.add_entry_line(-1 * entry_line.amount, entry_line.account.code, entry_line.account.name, entry_line.third)
+        new_entry.closed()
+
+    def import_lastyear(self, year):
+        self._create_report_lastyearresult(year)
+        self._create_report_third(year)
+        return

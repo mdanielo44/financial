@@ -262,6 +262,7 @@ class FiscalYear(LucteriosModel):
                 xfer.change_to_readonly('begin')
         # creation and not the first
         elif len(fiscal_years) > 0:
+            xfer.params['last_fiscalyear'] = fiscal_years[len(fiscal_years) - 1].id
             xfer.params['begin'] = self.begin.isoformat()
             xfer.change_to_readonly('begin')
         if self.status == 2:
@@ -315,8 +316,12 @@ class FiscalYear(LucteriosModel):
         for last_charts_account in self.last_fiscalyear.chartsaccount_set.all():  # pylint: disable=no-member
             ChartsAccount.objects.get_or_create(year=self, code=last_charts_account.code, name=last_charts_account.name, type_of_account=last_charts_account.type_of_account)  # pylint: disable=no-member
 
-    def run_report_lastyear(self, xfer):
-        pass
+    def run_report_lastyear(self):
+        if self.last_fiscalyear is None:
+            raise LucteriosException(IMPORTANT, _("This fiscal year has not a last fiscal year!"))
+        if self.status != 0:
+            raise LucteriosException(IMPORTANT, _("This fiscal year is not 'in building'!"))
+        current_system_account().import_lastyear(self)
 
     def run_begin(self, xfer):
         if self.status == 0:
@@ -337,12 +342,14 @@ class FiscalYear(LucteriosModel):
             self.status = 2
             self.save()
 
-    def getorcreate_chartaccount(self, code):
+    def getorcreate_chartaccount(self, code, name=None):
         try:
             return self.chartsaccount_set.get(code=code)  # pylint: disable=no-member
         except ObjectDoesNotExist:
             descript, typeaccount = current_system_account().new_charts_account(code)
-            return ChartsAccount.objects.create(year=self, code=code, name=descript, type_of_account=typeaccount)  # pylint: disable=no-member
+            if name is None:
+                name = descript
+            return ChartsAccount.objects.create(year=self, code=code, name=name, type_of_account=typeaccount)  # pylint: disable=no-member
 
     def move_entry_noclose(self):
         if self.status == 1:
@@ -350,7 +357,6 @@ class FiscalYear(LucteriosModel):
             for entry_noclose in EntryAccount.objects.filter(close=False, entrylineaccount__account__year=self).distinct():  # pylint: disable=no-member
                 for entryline in entry_noclose.entrylineaccount_set.all():
                     entryline.account = next_ficalyear.getorcreate_chartaccount(entryline.account.code)
-
                     entryline.save()
                 entry_noclose.year = next_ficalyear
                 entry_noclose.save()
@@ -672,11 +678,10 @@ class EntryAccount(LucteriosModel):
         return self.get_serial(lines)
 
     def add_new_entryline(self, serial_entry, entrylineaccount, num_cpt, credit_val, debit_val, third, reference):
-        if self.journal.id == 1: # pylint: disable=no-member
-            charts = ChartsAccount.objects.get(id=num_cpt) # pylint: disable=no-member
-            pat_rev = re.compile(current_system_account().get_revenue_mask())
-            pat_exp = re.compile(current_system_account().get_expence_mask())
-            if pat_rev.match(charts.code) or pat_exp.match(charts.code):
+        if self.journal.id == 1:  # pylint: disable=no-member
+            charts = ChartsAccount.objects.get(id=num_cpt)  # pylint: disable=no-member
+            if re.match(current_system_account().get_revenue_mask(), charts.code) or \
+                    re.match(current_system_account().get_expence_mask(), charts.code):
                 raise LucteriosException(IMPORTANT, _('This kind of entry is not allowed for this journal!'))
         if entrylineaccount != 0:
             serial_entry = self.remove_entrylineaccounts(serial_entry, entrylineaccount)
@@ -736,13 +741,15 @@ class EntryAccount(LucteriosModel):
             AccountLink.create_link([self, new_entry])
             return new_entry, serial_val
 
-    def add_entry_line(self, amount, code):
-        new_entry_line = EntryLineAccount()
-        new_entry_line.entry = self
-        new_entry_line.account = self.year.getorcreate_chartaccount(code)  # pylint: disable=no-member
-        new_entry_line.amount = amount
-        new_entry_line.save()
-        return new_entry_line
+    def add_entry_line(self, amount, code, name=None, third=None):
+        if abs(amount) > 0.0001:
+            new_entry_line = EntryLineAccount()
+            new_entry_line.entry = self
+            new_entry_line.account = self.year.getorcreate_chartaccount(code, name)  # pylint: disable=no-member
+            new_entry_line.amount = amount
+            new_entry_line.third = third
+            new_entry_line.save()
+            return new_entry_line
 
     @property
     def has_third(self):

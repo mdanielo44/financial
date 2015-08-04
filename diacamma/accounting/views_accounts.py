@@ -56,6 +56,7 @@ class ChartsAccountList(XferListEditor):
         self.get_components('year').set_action(self.request, ChartsAccountList.get_action(), {'close':CLOSE_NO, 'modal':FORMTYPE_REFRESH})
         type_of_account = self.get_components('type_of_account')
         type_of_account.select_list.append((-1, '---'))
+        type_of_account.set_value(select_type)
         type_of_account.set_action(self.request, ChartsAccountList.get_action(modal=FORMTYPE_REFRESH), {'close':CLOSE_NO, 'modal':FORMTYPE_REFRESH})
         q_filter = Q(year=self.item.year)
         if select_type != -1:
@@ -100,7 +101,9 @@ class FiscalYearReportLastYear(XferContainerAcknowledge):
     caption = _("Last fiscal year import")
 
     def fillresponse(self):
-        self.item.import_charts_accounts(self)
+        if self.confirme(_('Do you want to import last year result?')):
+
+            self.item.run_report_lastyear()
 
 @MenuManage.describ('accounting.add_fiscalyear')
 class FiscalYearBegin(XferContainerAcknowledge):
