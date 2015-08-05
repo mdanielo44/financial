@@ -91,7 +91,8 @@ class FiscalYearImport(XferContainerAcknowledge):
     caption = _("Import charts accounts from last fiscal year")
 
     def fillresponse(self):
-        self.item.import_charts_accounts()
+        if self.confirme(_("Do you want to import last year charts accounts?")):
+            self.item.import_charts_accounts()
 
 @MenuManage.describ('accounting.add_fiscalyear')
 class FiscalYearReportLastYear(XferContainerAcknowledge):

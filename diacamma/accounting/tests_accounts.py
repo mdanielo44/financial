@@ -364,7 +364,7 @@ class FiscalYearWorkflowTest(LucteriosTest):
         self.assertEqual(FiscalYear.objects.get(id=2).status, 0)  # pylint: disable=no-member
 
         self.factory.xfer = FiscalYearImport()
-        self.call('/diacamma.accounting/fiscalYearImport', {'year':'1', 'type_of_account':'-1'}, False)
+        self.call('/diacamma.accounting/fiscalYearImport', {'CONFIRME':'YES', 'year':'1', 'type_of_account':'-1'}, False)
         self.assert_observer('CORE.Exception', 'diacamma.accounting', 'fiscalYearImport')
         self.assert_xml_equal('EXCEPTION/MESSAGE', "Cet exercice n'a pas d'exercice précédent!")
 
@@ -382,7 +382,7 @@ class FiscalYearWorkflowTest(LucteriosTest):
         self.assert_action_equal('COMPONENTS/GRID[@name="chartsaccount"]/ACTIONS/ACTION[4]', ('importer', None, 'diacamma.accounting', 'fiscalYearImport', 0, 1, 1))
 
         self.factory.xfer = FiscalYearImport()
-        self.call('/diacamma.accounting/fiscalYearImport', {'year':'2', 'type_of_account':'-1'}, False)
+        self.call('/diacamma.accounting/fiscalYearImport', {'CONFIRME':'YES', 'year':'2', 'type_of_account':'-1'}, False)
         self.assert_observer('Core.Acknowledge', 'diacamma.accounting', 'fiscalYearImport')
 
         self.factory.xfer = ChartsAccountList()
@@ -391,7 +391,7 @@ class FiscalYearWorkflowTest(LucteriosTest):
         self.assert_count_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD', 15)
 
         self.factory.xfer = FiscalYearImport()
-        self.call('/diacamma.accounting/fiscalYearImport', {'year':'2', 'type_of_account':'-1'}, False)
+        self.call('/diacamma.accounting/fiscalYearImport', {'CONFIRME':'YES', 'year':'2', 'type_of_account':'-1'}, False)
         self.assert_observer('Core.Acknowledge', 'diacamma.accounting', 'fiscalYearImport')
 
         self.factory.xfer = ChartsAccountList()
