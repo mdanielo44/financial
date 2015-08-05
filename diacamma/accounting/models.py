@@ -359,7 +359,7 @@ class FiscalYear(LucteriosModel):
             next_ficalyear = FiscalYear.objects.get(last_fiscalyear=self)  # pylint: disable=no-member
             for entry_noclose in EntryAccount.objects.filter(close=False, entrylineaccount__account__year=self).distinct():  # pylint: disable=no-member
                 for entryline in entry_noclose.entrylineaccount_set.all():
-                    entryline.account = next_ficalyear.getorcreate_chartaccount(entryline.account.code)
+                    entryline.account = next_ficalyear.getorcreate_chartaccount(entryline.account.code, entryline.account.name)
                     entryline.save()
                 entry_noclose.year = next_ficalyear
                 entry_noclose.save()
