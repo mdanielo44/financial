@@ -19,7 +19,6 @@ You should have received a copy of the GNU General Public License
 along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 '''
 from __future__ import unicode_literals
-from datetime import date
 import re
 
 from django.utils.translation import ugettext_lazy as _
@@ -253,7 +252,7 @@ class FrenchSystemAcounting(DefaultSystemAccounting):
         from django.db.models import Q
         paym_journ = Journal.objects.get(id=1)  # pylint: disable=no-member
         paym_desig = 'Affectation des bénéfices/pertes'
-        new_entry = EntryAccount.objects.create(year=year, journal=paym_journ, designation=paym_desig, date_value=date.today())  # pylint: disable=no-member
+        new_entry = EntryAccount.objects.create(year=year, journal=paym_journ, designation=paym_desig, date_value=year.begin)  # pylint: disable=no-member
         query = Q(account__code__startswith='110') | Q(account__code__startswith='119')
         query &= Q(account__year=year)
         sum_profit = 0
@@ -292,7 +291,7 @@ class FrenchSystemAcounting(DefaultSystemAccounting):
         from diacamma.accounting.models import Journal, EntryAccount
         end_journ = Journal.objects.get(id=5)  # pylint: disable=no-member
         end_desig = "Cloture d'exercice - Résultat"
-        new_entry = EntryAccount.objects.create(year=year, journal=end_journ, designation=end_desig, date_value=date.today())  # pylint: disable=no-member
+        new_entry = EntryAccount.objects.create(year=year, journal=end_journ, designation=end_desig, date_value=year.end)  # pylint: disable=no-member
         revenue = year.total_revenue
         expense = year.total_expense
         if expense > revenue:
@@ -312,7 +311,7 @@ class FrenchSystemAcounting(DefaultSystemAccounting):
         if (abs(sum40) > 0.001) or (abs(sum41) > 0.001) or (abs(sum42) > 0.001) or (abs(sum45) > 0.001):
             end_journ = Journal.objects.get(id=5)  # pylint: disable=no-member
             end_desig = "Cloture d'exercice - Résultat"
-            new_entry = EntryAccount.objects.create(year=year, journal=end_journ, designation=end_desig, date_value=date.today())  # pylint: disable=no-member
+            new_entry = EntryAccount.objects.create(year=year, journal=end_journ, designation=end_desig, date_value=year.end)  # pylint: disable=no-member
             for data_line in EntryLineAccount.objects.filter(account__code__regex=THIRD_MASK, account__year=year).values('account', 'third').annotate(data_sum=Sum('amount')):  # pylint: disable=no-member
                 if abs(data_line['data_sum']) > 0.0001:
                     new_line = EntryLineAccount()
@@ -358,7 +357,7 @@ class FrenchSystemAcounting(DefaultSystemAccounting):
         from diacamma.accounting.models import Journal, EntryAccount
         end_journ = Journal.objects.get(id=1)  # pylint: disable=no-member
         end_desig = "Report à nouveau - Bilan"
-        new_entry = EntryAccount.objects.create(year=year, journal=end_journ, designation=end_desig, date_value=date.today())  # pylint: disable=no-member
+        new_entry = EntryAccount.objects.create(year=year, journal=end_journ, designation=end_desig, date_value=year.begin)  # pylint: disable=no-member
         for charts_account in year.last_fiscalyear.chartsaccount_set.filter(type_of_account__in=(0, 1, 2)):  # pylint: disable=no-member
             if charts_account.code == '120':
                 code = "110"
@@ -378,7 +377,7 @@ class FrenchSystemAcounting(DefaultSystemAccounting):
         last_entry_account = list(year.last_fiscalyear.entryaccount_set.filter(journal__id=5).order_by('num'))[-1]
         end_journ = Journal.objects.get(id=1)  # pylint: disable=no-member
         end_desig = "Report à nouveau - Dette tiers"
-        new_entry = EntryAccount.objects.create(year=year, journal=end_journ, designation=end_desig, date_value=date.today())  # pylint: disable=no-member
+        new_entry = EntryAccount.objects.create(year=year, journal=end_journ, designation=end_desig, date_value=year.begin)  # pylint: disable=no-member
         for entry_line in last_entry_account.entrylineaccount_set.all():  # pylint: disable=no-member
             if re.match(THIRD_MASK, entry_line.account.code):
                 new_entry.add_entry_line(-1 * entry_line.amount, entry_line.account.code, entry_line.account.name, entry_line.third)

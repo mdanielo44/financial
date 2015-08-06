@@ -282,25 +282,25 @@ class FiscalYear(LucteriosModel):
 
     @property
     def total_revenue(self):
-          # pylint: disable=no-member
+        # pylint: disable=no-member
         return get_amount_sum(EntryLineAccount.objects.filter(account__type_of_account=3, account__year=self, \
                                 entry__date_value__gte=self.begin, entry__date_value__lte=self.end).aggregate(Sum('amount')))
 
     @property
     def total_expense(self):
-          # pylint: disable=no-member
+        # pylint: disable=no-member
         return get_amount_sum(EntryLineAccount.objects.filter(account__type_of_account=4, account__year=self, \
                                 entry__date_value__gte=self.begin, entry__date_value__lte=self.end).aggregate(Sum('amount')))
 
     @property
     def total_cash(self):
-          # pylint: disable=no-member
+        # pylint: disable=no-member
         return get_amount_sum(EntryLineAccount.objects.filter(account__code__regex=current_system_account().get_cash_mask(), \
                                 account__year=self, entry__date_value__gte=self.begin, entry__date_value__lte=self.end).aggregate(Sum('amount')))
 
     @property
     def total_cash_close(self):
-          # pylint: disable=no-member
+        # pylint: disable=no-member
         return get_amount_sum(EntryLineAccount.objects.filter(entry__close=True, account__code__regex=current_system_account().get_cash_mask(), \
                                 account__year=self, entry__date_value__gte=self.begin, entry__date_value__lte=self.end).aggregate(Sum('amount')))
 
@@ -374,6 +374,7 @@ class FiscalYear(LucteriosModel):
                     entryline.account = next_ficalyear.getorcreate_chartaccount(entryline.account.code, entryline.account.name)
                     entryline.save()
                 entry_noclose.year = next_ficalyear
+                entry_noclose.date_value = next_ficalyear.begin
                 entry_noclose.save()
 
     @classmethod
