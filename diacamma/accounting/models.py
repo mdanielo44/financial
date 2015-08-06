@@ -82,6 +82,10 @@ class Third(LucteriosModel):
         return {'':['contact'], _('001@AccountThird information'):["status", "accountthird_set", ((_('total'), 'total'),)]}
 
     @classmethod
+    def get_print_fields(cls):
+        return cls.get_other_fields()
+
+    @classmethod
     def get_search_fields(cls):
         result = []
         for field_name in AbstractContact.get_search_fields():

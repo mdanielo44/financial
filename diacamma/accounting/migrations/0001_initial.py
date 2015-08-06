@@ -27,8 +27,8 @@ from __future__ import unicode_literals
 from django.utils.translation import ugettext_lazy as _
 
 from django.db import models, migrations
-from lucterios.CORE.models import Parameter
-from diacamma.accounting.models import Journal
+from lucterios.CORE.models import Parameter, PrintModel
+from diacamma.accounting.models import Journal, Third
 from django.db.models.deletion import PROTECT, SET_NULL
 
 def initial_values(*args):
@@ -62,6 +62,12 @@ def initial_values(*args):
     Journal.objects.create(name=_("Selling"), id=3)
     Journal.objects.create(name=_("Payment"), id=4)
     Journal.objects.create(name=_("Other"), id=5)
+
+    prtmdl = PrintModel.objects.create(name=_("listing"), kind=0, modelname=Third.get_long_name())
+    prtmdl.change_listing(210, 297, [(12, _("contact"), "#contact.str"), \
+                                     (18, _('account'), "#accountthird_set.code"), \
+                                     (13, _("total"), "#total")])
+    prtmdl.save()
 
 class Migration(migrations.Migration):
 

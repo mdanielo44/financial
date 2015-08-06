@@ -36,6 +36,7 @@ from lucterios.framework.xfercomponents import XferCompLabelForm
 
 from diacamma.accounting.models import ChartsAccount, FiscalYear
 from lucterios.framework.xfergraphic import XferContainerAcknowledge
+from lucterios.CORE.xferprint import XferPrintListing
 
 MenuManage.add_sub("bookkeeping", "financial", "diacamma.accounting/images/accounting.png", _("Bookkeeping"), _("Manage of Bookkeeping"), 30)
 
@@ -82,6 +83,14 @@ class ChartsAccountList(XferListEditor):
                 self.add_action(FiscalYearReportLastYear.get_action(_('Last fiscal year'), 'images/edit.png'), {'modal':FORMTYPE_MODAL, 'close':CLOSE_NO}, 0)
         if self.item.year.status == 1:
             self.add_action(FiscalYearClose.get_action(_('Closing'), 'images/ok.png'), {'modal':FORMTYPE_MODAL, 'close':CLOSE_NO}, 0)
+
+@ActionsManage.affect('ChartsAccount', 'listing')
+@MenuManage.describ('accounting.change_chartsaccount')
+class ChartsAccountListing(XferPrintListing):
+    icon = "account.png"
+    model = ChartsAccount
+    field_id = 'chartsaccount'
+    caption = _("Listing charts of account")
 
 @MenuManage.describ('accounting.add_fiscalyear')
 class FiscalYearImport(XferContainerAcknowledge):

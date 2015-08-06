@@ -62,7 +62,7 @@ class ThirdList(XferListEditor):
         if self.getparam('show_filter', 0) == 2:
             items = [item for item in items if abs(item.get_total()) > 0.0001]
         res = QuerySet(model=Third)
-        res._result_cache = items # pylint: disable=protected-access,
+        res._result_cache = items  # pylint: disable=protected-access,
         return res
 
     def fillresponse_header(self):
@@ -165,6 +165,27 @@ class ThirdListing(XferPrintListing):
     model = Third
     field_id = 'third'
     caption = _("Listing third")
+
+    def filter_callback(self, items):
+        items = sorted(items, key=lambda t: six.text_type(t))  # pylint: disable=unnecessary-lambda
+        if (self.getparam('CRITERIA') is None) and (self.getparam('show_filter', 0) == 2):
+            items = [item for item in items if abs(item.get_total()) > 0.0001]
+        res = QuerySet(model=Third)
+        res._result_cache = items  # pylint: disable=protected-access,
+        return res
+
+    def get_filter(self):
+        if self.getparam('CRITERIA') is None:
+            contact_filter = self.getparam('filter', '')
+            q_filter = Q(status=0)
+            if contact_filter != "":
+                q_legalentity = Q(contact__legalentity__name__contains=contact_filter)
+                q_individual = (Q(contact__individual__firstname__contains=contact_filter) | Q(contact__individual__lastname__contains=contact_filter))
+                q_filter = q_filter & (q_legalentity | q_individual)
+            new_filter = [q_filter]
+        else:
+            new_filter = XferPrintListing.get_filter(self)
+        return new_filter
 
 @ActionsManage.affect('AccountThird', 'add')
 @MenuManage.describ('accounting.add_third')
