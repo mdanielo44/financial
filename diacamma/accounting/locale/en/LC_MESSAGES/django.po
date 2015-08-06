@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-08-06 14:23+0000\n"
+"POT-Creation-Date: 2015-08-06 15:21+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -67,8 +67,8 @@ msgid "contact"
 msgstr "contact"
 
 #: migrations/0001_initial.py:69 migrations/0001_initial.py:85 models.py:207
-#: models.py:785 models.py:793 models.py:797 models.py:803 models.py:808
-#: models.py:812 models.py:933
+#: models.py:786 models.py:794 models.py:798 models.py:804 models.py:809
+#: models.py:813 models.py:934
 msgid "account"
 msgstr "account"
 
@@ -110,14 +110,14 @@ msgid "date value"
 msgstr "date value"
 
 #: migrations/0001_initial.py:87 models.py:503 models.py:505 models.py:507
-#: models.py:793 models.py:798 models.py:803 models.py:808 models.py:812
-#: models.py:1006
+#: models.py:794 models.py:799 models.py:804 models.py:809 models.py:813
+#: models.py:1007
 msgid "debit"
 msgstr "debit"
 
 #: migrations/0001_initial.py:88 models.py:503 models.py:505 models.py:507
-#: models.py:793 models.py:798 models.py:803 models.py:808 models.py:812
-#: models.py:1015
+#: models.py:794 models.py:799 models.py:804 models.py:809 models.py:813
+#: models.py:1016
 msgid "credit"
 msgstr "credit"
 
@@ -170,7 +170,7 @@ msgstr "entry of account"
 msgid "Edit"
 msgstr "Edit"
 
-#: models.py:156 models.py:160 models.py:789 models.py:965
+#: models.py:156 models.py:160 models.py:790 models.py:966
 msgid "third"
 msgstr "third"
 
@@ -375,31 +375,31 @@ msgstr "payment of %s"
 msgid "entries of account"
 msgstr "entries of account"
 
-#: models.py:786
+#: models.py:787
 msgid "entry"
 msgstr "entry"
 
-#: models.py:787
+#: models.py:788
 msgid "amount"
 msgstr "account"
 
-#: models.py:788 models.py:985
+#: models.py:789 models.py:986
 msgid "reference"
 msgstr "reference"
 
-#: models.py:1030
+#: models.py:1031
 msgid "entry line of account"
 msgstr "entry line of account"
 
-#: models.py:1031
+#: models.py:1032
 msgid "entry lines of account"
 msgstr "entry lines of account"
 
-#: models.py:1062
+#: models.py:1063
 msgid "Credit"
 msgstr "Credit"
 
-#: models.py:1067
+#: models.py:1068
 msgid "Debit"
 msgstr "Debit"
 
@@ -751,3 +751,35 @@ msgstr "Reverse entry lines of account"
 #: views_entries.py:411
 msgid "Add payment entry of account"
 msgstr "Add payment entry of account"
+
+#: views_reports.py:39
+msgid "Show balance sheet for current fiscal year"
+msgstr "Show balance sheet for current fiscal year"
+
+#: views_reports.py:41
+msgid "Balance sheet"
+msgstr "Balance sheet"
+
+#: views_reports.py:43
+msgid "Show income statement for current fiscal year"
+msgstr "Show income statement for current fiscal year"
+
+#: views_reports.py:45
+msgid "Income statement"
+msgstr "Income statement"
+
+#: views_reports.py:47
+msgid "Show ledger for current fiscal year"
+msgstr "Show ledger for current fiscal year"
+
+#: views_reports.py:49
+msgid "Ledger"
+msgstr "Ledger"
+
+#: views_reports.py:51
+msgid "Show trial balance for current fiscal year"
+msgstr "Show trial balance for current fiscal year"
+
+#: views_reports.py:53
+msgid "Trial balance"
+msgstr "Trial balance"
