@@ -28,7 +28,8 @@ from django.utils.translation import ugettext_lazy as _
 
 from django.db import models, migrations
 from lucterios.CORE.models import Parameter, PrintModel
-from diacamma.accounting.models import Journal, Third
+from diacamma.accounting.models import Journal, Third, ChartsAccount, \
+    EntryLineAccount
 from django.db.models.deletion import PROTECT, SET_NULL
 
 def initial_values(*args):
@@ -67,6 +68,25 @@ def initial_values(*args):
     prtmdl.change_listing(210, 297, [(12, _("contact"), "#contact.str"), \
                                      (18, _('account'), "#accountthird_set.code"), \
                                      (13, _("total"), "#total")])
+    prtmdl.save()
+
+    prtmdl = PrintModel.objects.create(name=_("listing"), kind=0, modelname=ChartsAccount.get_long_name())
+    prtmdl.change_listing(210, 297, [(10, _('code'), '#code'), \
+                                     (25, _('name'), '#name'), \
+                                     (15, _('total of last year'), '#last_year_total'), \
+                                     (15, _('total current'), '#current_total'), \
+                                     (15, _('total validated'), '#current_validated')])
+    prtmdl.save()
+
+    prtmdl = PrintModel.objects.create(name=_("listing"), kind=0, modelname=EntryLineAccount.get_long_name())
+    prtmdl.change_listing(297, 210, [(5, _('numeros'), '#entry.num'), \
+                                     (12, _('date entry'), '#entry.date_entry'), \
+                                     (12, _('date value'), '#entry.date_value'), \
+                                     (20, _('account'), '#entry_account'), \
+                                     (25, _('name'), '#entry.designation'), \
+                                     (15, _('debit'), '#debit'), \
+                                     (15, _('credit'), '#credit'), \
+                                     (5, _('link'), '#entry.link')])
     prtmdl.save()
 
 class Migration(migrations.Migration):

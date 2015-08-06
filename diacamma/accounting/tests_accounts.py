@@ -28,10 +28,13 @@ from diacamma.accounting.test_tools import initial_thirds, default_compta, fill_
     set_accounting_system, add_entry
 from diacamma.accounting.views_accounts import ChartsAccountList, \
      ChartsAccountDel, ChartsAccountShow, ChartsAccountAddModify, \
-    FiscalYearBegin, FiscalYearImport, FiscalYearClose, FiscalYearReportLastYear
+    FiscalYearBegin, FiscalYearImport, FiscalYearClose, FiscalYearReportLastYear, \
+    ChartsAccountListing
 from diacamma.accounting.models import FiscalYear
 from diacamma.accounting.views_entries import EntryAccountEdit, \
     EntryLineAccountList
+from base64 import b64decode
+from django.utils import six
 
 class ChartsAccountTest(LucteriosTest):
     # pylint: disable=too-many-public-methods,too-many-statements
@@ -259,6 +262,26 @@ class ChartsAccountTest(LucteriosTest):
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="type_of_account"]', 'Produit')
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="error_code"]', "{[center]}{[font color='red']}Changement non permis!{[/font]}{[/center]}")
 
+    def test_listing(self):
+        self.factory.xfer = ChartsAccountListing()
+        self.call('/diacamma.accounting/chartsAccountListing', {'year':'1', 'type_of_account':'-1', 'PRINT_MODE':'4', 'MODEL':6}, False)
+        self.assert_observer('Core.Print', 'diacamma.accounting', 'chartsAccountListing')
+        csv_value = b64decode(six.text_type(self.get_first_xpath('PRINT').text)).decode("utf-8")
+        content_csv = csv_value.split('\n')
+        self.assertEqual(len(content_csv), 21, str(content_csv))
+        self.assertEqual(content_csv[1].strip(), '"Liste de plan comptable"')
+        self.assertEqual(content_csv[3].strip(), '"code";"nom";"report à nouveau";"total exercice";"total validé";')
+        self.assertEqual(content_csv[4].strip(), '"106000";"106000";"Crédit: 1250.47€";"Crédit: 1250.47€";"Crédit: 1250.47€";')
+        self.assertEqual(content_csv[9].strip(), '"512000";"512000";"Débit: 1135.93€";"Débit: 1130.29€";"Débit: 1130.29€";')
+        self.assertEqual(content_csv[10].strip(), '"531000";"531000";"Débit: 114.45€";"Crédit: 79.63€";"Débit: 114.45€";')
+
+        self.factory.xfer = ChartsAccountListing()
+        self.call('/diacamma.accounting/chartsAccountListing', {'year':'1', 'type_of_account':'4', 'PRINT_MODE':'4', 'MODEL':6}, False)
+        self.assert_observer('Core.Print', 'diacamma.accounting', 'chartsAccountListing')
+        csv_value = b64decode(six.text_type(self.get_first_xpath('PRINT').text)).decode("utf-8")
+        content_csv = csv_value.split('\n')
+        self.assertEqual(len(content_csv), 11, str(content_csv))
+
 class FiscalYearWorkflowTest(LucteriosTest):
     # pylint: disable=too-many-public-methods,too-many-statements
 
@@ -278,7 +301,7 @@ class FiscalYearWorkflowTest(LucteriosTest):
         self.call('/diacamma.accounting/chartsAccountList', {'year':'1', 'type_of_account':'-1'}, False)
         self.assert_observer('Core.Custom', 'diacamma.accounting', 'chartsAccountList')
         self.assert_count_equal('COMPONENTS/*', 9)
-        self.assert_count_equal('ACTIONS/ACTION', 2)
+        self.assert_count_equal('ACTIONS/ACTION', 3)
         self.assert_action_equal('ACTIONS/ACTION[1]', ('Commencer', 'images/ok.png', 'diacamma.accounting', 'fiscalYearBegin', 0, 1, 1))
 
         self.factory.xfer = FiscalYearBegin()
@@ -291,6 +314,12 @@ class FiscalYearWorkflowTest(LucteriosTest):
         self.assert_observer('Core.Acknowledge', 'diacamma.accounting', 'fiscalYearBegin')
 
         self.assertEqual(FiscalYear.objects.get(id=1).status, 1)  # pylint: disable=no-member
+
+        self.factory.xfer = ChartsAccountList()
+        self.call('/diacamma.accounting/chartsAccountList', {'year':'1', 'type_of_account':'-1'}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'chartsAccountList')
+        self.assert_count_equal('ACTIONS/ACTION', 3)
+        self.assert_action_equal('ACTIONS/ACTION[1]', ('Clôturer', 'images/ok.png', 'diacamma.accounting', 'fiscalYearClose', 0, 1, 1))
 
     def test_begin_lastyearnovalid(self):
         self.assertEqual(FiscalYear.objects.get(id=1).status, 0)  # pylint: disable=no-member
@@ -498,6 +527,7 @@ class FiscalYearWorkflowTest(LucteriosTest):
         self.call('/diacamma.accounting/chartsAccountList', {'year':'2', 'type_of_account':'-1'}, False)
         self.assert_observer('Core.Custom', 'diacamma.accounting', 'chartsAccountList')
         self.assert_count_equal('COMPONENTS/*', 9)
+        self.assert_count_equal('ACTIONS/ACTION', 3)
         self.assert_count_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD', 10)
         self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[2]/VALUE[@name="code"]', '110')
         self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[2]/VALUE[@name="current_total"]', '{[font color="green"]}Crédit: 120.33€{[/font]}')
@@ -505,3 +535,8 @@ class FiscalYearWorkflowTest(LucteriosTest):
         self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[4]/VALUE[@name="current_total"]', '{[font color="blue"]}Débit: 159.98€{[/font]}')
         self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[5]/VALUE[@name="code"]', '418')
         self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[5]/VALUE[@name="current_total"]', '{[font color="green"]}Crédit: 0.00€{[/font]}')
+
+        self.factory.xfer = ChartsAccountList()
+        self.call('/diacamma.accounting/chartsAccountList', {'year':'1', 'type_of_account':'-1'}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'chartsAccountList')
+        self.assert_count_equal('ACTIONS/ACTION', 2)

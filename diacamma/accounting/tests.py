@@ -32,7 +32,7 @@ from lucterios.framework.filetools import get_user_dir
 from lucterios.CORE.views import StatusMenu
 
 from diacamma.accounting.views import ThirdList, ThirdAdd, ThirdSave, ThirdShow, \
-    AccountThirdAddModify, AccountThirdDel
+    AccountThirdAddModify, AccountThirdDel, ThirdListing
 from diacamma.accounting.views_admin import Configuration, JournalAddModify, \
     JournalDel, FiscalYearAddModify, FiscalYearActive, FiscalYearDel
 from diacamma.accounting.test_tools import initial_contacts, fill_entries, initial_thirds, \
@@ -41,6 +41,8 @@ from diacamma.accounting.test_tools import initial_contacts, fill_entries, initi
 from diacamma.accounting.models import FiscalYear, clear_system_account, \
     current_system_account
 from diacamma.accounting.system import get_accounting_system
+from base64 import b64decode
+from django.utils import six
 
 class ThirdTest(LucteriosTest):
     # pylint: disable=too-many-public-methods,too-many-statements
@@ -389,6 +391,58 @@ class ThirdTest(LucteriosTest):
         self.assert_xml_equal('COMPONENTS/GRID[@name="third"]/RECORD[3]/VALUE[@name="contact"]', 'Minimum')
         self.assert_xml_equal('COMPONENTS/GRID[@name="third"]/RECORD[3]/VALUE[@name="accountthird_set"]', '411000{[br/]}401000')
         self.assert_xml_equal('COMPONENTS/GRID[@name="third"]/RECORD[3]/VALUE[@name="total"]', '34.01€')
+
+    def test_listing(self):
+        fill_thirds()
+        default_compta()
+        fill_entries(1)
+        self.factory.xfer = ThirdListing()
+        self.call('/diacamma.accounting/thirdListing', {}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'thirdListing')
+        self.assert_count_equal('COMPONENTS/*', 4)
+        self.assert_comp_equal('COMPONENTS/SELECT[@name="PRINT_MODE"]', "3", (1, 0, 1, 1))
+        self.assert_count_equal('COMPONENTS/SELECT[@name="PRINT_MODE"]/CASE', 2)
+        self.assert_comp_equal('COMPONENTS/SELECT[@name="MODEL"]', "5", (1, 1, 1, 1))
+        self.assert_count_equal('COMPONENTS/SELECT[@name="MODEL"]/CASE', 1)
+        self.assert_count_equal('ACTIONS/ACTION', 2)
+
+        self.factory.xfer = ThirdListing()
+        self.call('/diacamma.accounting/thirdListing', {'PRINT_MODE':'4', 'MODEL':5}, False)
+        self.assert_observer('Core.Print', 'diacamma.accounting', 'thirdListing')
+        csv_value = b64decode(six.text_type(self.get_first_xpath('PRINT').text)).decode("utf-8")
+        content_csv = csv_value.split('\n')
+        self.assertEqual(len(content_csv), 13, str(content_csv))
+        self.assertEqual(content_csv[1].strip(), '"Liste de tiers"')
+        self.assertEqual(content_csv[3].strip(), '"contact";"compte";"total";')
+        self.assertEqual(content_csv[4].strip(), '"Dalton Avrel";"401000";"0.00€";')
+        self.assertEqual(content_csv[5].strip(), '"Dalton Jack";"411000";"0.00€";')
+        self.assertEqual(content_csv[6].strip(), '"Dalton Joe";"411000";"0.00€";')
+        self.assertEqual(content_csv[7].strip(), '"Dalton William";"411000";"125.97€";')
+        self.assertEqual(content_csv[8].strip(), '"Luke Lucky";"411000 401000";"0.00€";')
+        self.assertEqual(content_csv[9].strip(), '"Maximum";"401000";"78.24€";')
+        self.assertEqual(content_csv[10].strip(), '"Minimum";"411000 401000";"34.01€";')
+
+        self.factory.xfer = ThirdListing()
+        self.call('/diacamma.accounting/individualListing', {'PRINT_MODE':'4', 'MODEL':5, 'filter':'joe'}, False)
+        self.assert_observer('Core.Print', 'diacamma.accounting', 'individualListing')
+        csv_value = b64decode(six.text_type(self.get_first_xpath('PRINT').text)).decode("utf-8")
+        content_csv = csv_value.split('\n')
+        self.assertEqual(len(content_csv), 7, str(content_csv))
+        self.assertEqual(content_csv[1].strip(), '"Liste de tiers"')
+        self.assertEqual(content_csv[3].strip(), '"contact";"compte";"total";')
+        self.assertEqual(content_csv[4].strip(), '"Dalton Joe";"411000";"0.00€";')
+
+        self.factory.xfer = ThirdListing()
+        self.call('/diacamma.accounting/individualListing', {'PRINT_MODE':'4', 'MODEL':5, 'show_filter':'2'}, False)
+        self.assert_observer('Core.Print', 'diacamma.accounting', 'individualListing')
+        csv_value = b64decode(six.text_type(self.get_first_xpath('PRINT').text)).decode("utf-8")
+        content_csv = csv_value.split('\n')
+        self.assertEqual(len(content_csv), 9, str(content_csv))
+        self.assertEqual(content_csv[1].strip(), '"Liste de tiers"')
+        self.assertEqual(content_csv[3].strip(), '"contact";"compte";"total";')
+        self.assertEqual(content_csv[4].strip(), '"Dalton William";"411000";"125.97€";')
+        self.assertEqual(content_csv[5].strip(), '"Maximum";"401000";"78.24€";')
+        self.assertEqual(content_csv[6].strip(), '"Minimum";"411000 401000";"34.01€";')
 
 class AdminTest(LucteriosTest):
     # pylint: disable=too-many-public-methods,too-many-statements

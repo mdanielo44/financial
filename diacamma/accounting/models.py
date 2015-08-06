@@ -423,6 +423,11 @@ class ChartsAccount(LucteriosModel):
     def get_show_fields(cls):
         return ['code', 'name', 'type_of_account']
 
+    @classmethod
+    def get_print_fields(cls):
+        return ['code', 'name', (_('total of last year'), 'last_year_total'), \
+                (_('total current'), 'current_total'), (_('total validated'), 'current_validated'), 'entrylineaccount_set']
+
     def __str__(self):
         return "[%s] %s" % (self.code, self.name)
 
@@ -776,6 +781,7 @@ class EntryAccount(LucteriosModel):
         verbose_name_plural = _('entries of account')
 
 class EntryLineAccount(LucteriosModel):
+    # pylint: disable=too-many-public-methods
 
     account = models.ForeignKey('ChartsAccount', verbose_name=_('account'), null=False, on_delete=models.PROTECT)
     entry = models.ForeignKey('EntryAccount', verbose_name=_('entry'), null=False, on_delete=models.CASCADE)
@@ -801,6 +807,10 @@ class EntryLineAccount(LucteriosModel):
     def get_show_fields(cls):
         return ['entry.date_entry', 'entry.date_value', 'entry.designation', \
                     ((_('account'), 'entry_account'),), ((_('debit'), 'debit'),), ((_('credit'), 'credit'),)]
+
+    @classmethod
+    def get_print_fields(cls):
+        return ['entry', (_('account'), 'entry_account'), (_('debit'), 'debit'), (_('credit'), 'credit'), 'reference', 'third']
 
     @property
     def entry_account(self):

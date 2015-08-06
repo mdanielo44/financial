@@ -39,6 +39,7 @@ from lucterios.framework.error import LucteriosException, GRAVE
 
 from diacamma.accounting.models import EntryLineAccount, EntryAccount, FiscalYear, \
     Journal, AccountLink, current_system_account
+from lucterios.CORE.xferprint import XferPrintListing
 
 @ActionsManage.affect('EntryLineAccount', 'list')
 @MenuManage.describ('accounting.change_entryaccount', FORMTYPE_NOMODAL, 'bookkeeping', _('Edition of accounting entry for current fiscal year'),)
@@ -102,11 +103,39 @@ class EntryLineAccountList(XferListEditor):
             grid_entries.add_action(self.request, EntryAccountClose.get_action(_("Closed"), "images/ok.png"), {'modal':FORMTYPE_MODAL, 'unique':SELECT_MULTI})
         if self.item.year.status in [0, 1]:
             grid_entries.add_action(self.request, EntryAccountLink.get_action(_("Link/Unlink"), ""), {'modal':FORMTYPE_MODAL, 'unique':SELECT_MULTI})
-
         lbl = XferCompLabelForm("result")
         lbl.set_value_center(self.item.year.total_result_text)
         lbl.set_location(0, 10, 2)
         self.add_component(lbl)
+
+@ActionsManage.affect('EntryLineAccount', 'listing')
+@MenuManage.describ('accounting.change_entryaccount')
+class EntryLineAccountListing(XferPrintListing):
+    icon = "entry.png"
+    model = EntryLineAccount
+    field_id = 'entrylineaccount'
+    caption = _("Listing accounting entry")
+
+    def get_filter(self):
+        if self.getparam('CRITERIA') is None:
+            select_year = self.getparam('year')
+            select_journal = self.getparam('journal', 4)
+            select_filter = self.getparam('filter', 1)
+            current_filter = Q(entry__year=FiscalYear.get_current(select_year))
+            if select_filter == 1:
+                current_filter &= Q(entry__close=False)
+            elif select_filter == 2:
+                current_filter &= Q(entry__close=True)
+            elif select_filter == 3:
+                current_filter &= Q(entry__link__id__gt=0)
+            elif select_filter == 4:
+                current_filter &= Q(entry__link=None)
+            if select_journal != -1:
+                current_filter &= Q(entry__journal__id=select_journal)
+            new_filter = [current_filter]
+        else:
+            new_filter = XferPrintListing.get_filter(self)
+        return new_filter
 
 @MenuManage.describ('accounting.delete_entryaccount')
 class EntryAccountDel(XferDelete):

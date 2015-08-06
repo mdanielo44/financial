@@ -92,6 +92,18 @@ class ChartsAccountListing(XferPrintListing):
     field_id = 'chartsaccount'
     caption = _("Listing charts of account")
 
+    def get_filter(self):
+        if self.getparam('CRITERIA') is None:
+            select_year = self.getparam('year')
+            select_type = self.getparam('type_of_account', 0)
+            q_filter = Q(year=FiscalYear.get_current(select_year))
+            if select_type != -1:
+                q_filter &= Q(type_of_account=select_type)
+            new_filter = [q_filter]
+        else:
+            new_filter = XferPrintListing.get_filter(self)
+        return new_filter
+
 @MenuManage.describ('accounting.add_fiscalyear')
 class FiscalYearImport(XferContainerAcknowledge):
     icon = "accountingYear.png"
