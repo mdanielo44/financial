@@ -622,6 +622,7 @@ class EntryAccount(LucteriosModel):
         LucteriosModel.delete(self)
 
     def before_save(self, xfer):
+        # pylint: disable=no-member
         if self.date_value > self.year.end.isoformat():
             self.date_value = self.year.end.isoformat()
         if self.date_value < self.year.begin.isoformat():
@@ -1071,7 +1072,7 @@ def format_devise(amount, mode):
     currency_epsilon = pow(10, -1 * currency_decimal - 1)
     if (amount is None) or (abs(amount) < currency_epsilon):
         amount = 0
-    if (abs(amount) >= currency_epsilon) or ((mode > 0) and (mode < 6)):
+    if abs(amount) >= currency_epsilon:
         if amount >= 0:
             if mode == 2:
                 result = '{[font color="green"]}'
