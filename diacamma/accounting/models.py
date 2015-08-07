@@ -1072,7 +1072,7 @@ def format_devise(amount, mode):
     currency_epsilon = pow(10, -1 * currency_decimal - 1)
     if (amount is None) or (abs(amount) < currency_epsilon):
         amount = 0
-    if abs(amount) >= currency_epsilon:
+    if (abs(amount) >= currency_epsilon) or (mode in (1, 2)):
         if amount >= 0:
             if mode == 2:
                 result = '{[font color="green"]}'

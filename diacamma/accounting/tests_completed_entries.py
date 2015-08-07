@@ -201,7 +201,7 @@ class CompletedEntryTest(LucteriosTest):
         content_csv = csv_value.split('\n')
         self.assertEqual(len(content_csv), 29, str(content_csv))
         self.assertEqual(content_csv[1].strip(), '"Liste d\'écritures"')
-        self.assertEqual(content_csv[3].strip(), '"numéros";"date d\'écriture";"date de pièce";"compte";"nom";"débit";"crédit";"lettrage";')
+        self.assertEqual(content_csv[3].strip(), '"N°";"date d\'écriture";"date de pièce";"compte";"nom";"débit";"crédit";"lettrage";')
         self.assertEqual(content_csv[4].strip(), '"1";"%s";"1 février 2015";"[106000] 106000";"Report à nouveau";"";"1250.47€";"";' % formats.date_format(date.today(), "DATE_FORMAT"))
         self.assertEqual(content_csv[11].strip(), '"---";"---";"13 février 2015";"[607000] 607000";"depense 2";"194.08€";"";"C";')
 
