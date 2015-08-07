@@ -25,7 +25,7 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import unicode_literals
 from shutil import rmtree
 
-from django.utils import six
+from django.utils import six, formats
 
 from lucterios.framework.test import LucteriosTest
 from lucterios.framework.xfergraphic import XferContainerAcknowledge
@@ -35,6 +35,7 @@ from diacamma.accounting.views_entries import EntryLineAccountList, EntryLineAcc
 from diacamma.accounting.test_tools import default_compta, initial_thirds, fill_entries
 from lucterios.CORE.views import StatusMenu
 from base64 import b64decode
+from datetime import date
 
 class CompletedEntryTest(LucteriosTest):
     # pylint: disable=too-many-public-methods,too-many-statements
@@ -201,7 +202,7 @@ class CompletedEntryTest(LucteriosTest):
         self.assertEqual(len(content_csv), 29, str(content_csv))
         self.assertEqual(content_csv[1].strip(), '"Liste d\'écritures"')
         self.assertEqual(content_csv[3].strip(), '"numéros";"date d\'écriture";"date de pièce";"compte";"nom";"débit";"crédit";"lettrage";')
-        self.assertEqual(content_csv[4].strip(), '"1";"6 août 2015";"1 février 2015";"[106000] 106000";"Report à nouveau";"";"1250.47€";"";')
+        self.assertEqual(content_csv[4].strip(), '"1";"%s";"1 février 2015";"[106000] 106000";"Report à nouveau";"";"1250.47€";"";' % formats.date_format(date.today(), "DATE_FORMAT"))
         self.assertEqual(content_csv[11].strip(), '"---";"---";"13 février 2015";"[607000] 607000";"depense 2";"194.08€";"";"C";')
 
         self.factory.xfer = EntryLineAccountListing()

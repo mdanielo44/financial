@@ -621,6 +621,13 @@ class EntryAccount(LucteriosModel):
         self.unlink()
         LucteriosModel.delete(self)
 
+    def before_save(self, xfer):
+        if self.date_value > self.year.end.isoformat():
+            self.date_value = self.year.end.isoformat()
+        if self.date_value < self.year.begin.isoformat():
+            self.date_value = self.year.begin.isoformat()
+        return
+
     def show(self, xfer):
         from lucterios.framework.xfercomponents import XferCompLabelForm
         from lucterios.framework.xfercomponents import XferCompGrid

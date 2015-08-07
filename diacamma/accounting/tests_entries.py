@@ -102,6 +102,35 @@ class EntryTest(LucteriosTest):
         self.assert_xml_equal("CONTEXT/PARAM[@name='year']", "1")
         self.assert_xml_equal("CONTEXT/PARAM[@name='journal']", "2")
 
+    def test_add_entry_bad_date(self):
+        self.factory.xfer = EntryAccountEdit()
+        self.call('/diacamma.accounting/entryAccountEdit', {'SAVE':'YES', 'year':'1', 'journal':'2', \
+                            'date_value':'2017-04-20', 'designation':'Truc'}, False)
+        self.assert_observer('Core.Acknowledge', 'diacamma.accounting', 'entryAccountEdit')
+        self.assert_xml_equal("ACTION/PARAM[@name='entryaccount']", "1")
+
+        self.factory.xfer = EntryAccountEdit()
+        self.call('/diacamma.accounting/entryAccountEdit', {'year':'1', 'journal':'2', 'entryaccount':'1'}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'entryAccountEdit')
+        self.assert_count_equal('COMPONENTS/*', 20)
+        self.assert_xml_equal("COMPONENTS/SELECT[@name='journal']", '2')
+        self.assert_xml_equal("COMPONENTS/DATE[@name='date_value']", '2015-12-31')
+        self.assert_xml_equal("COMPONENTS/EDIT[@name='designation']", 'Truc')
+
+        self.factory.xfer = EntryAccountEdit()
+        self.call('/diacamma.accounting/entryAccountEdit', {'SAVE':'YES', 'year':'1', 'journal':'2', \
+                            'date_value':'2010-04-20', 'designation':'Machin'}, False)
+        self.assert_observer('Core.Acknowledge', 'diacamma.accounting', 'entryAccountEdit')
+        self.assert_xml_equal("ACTION/PARAM[@name='entryaccount']", "2")
+
+        self.factory.xfer = EntryAccountEdit()
+        self.call('/diacamma.accounting/entryAccountEdit', {'year':'1', 'journal':'2', 'entryaccount':'2'}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'entryAccountEdit')
+        self.assert_count_equal('COMPONENTS/*', 20)
+        self.assert_xml_equal("COMPONENTS/SELECT[@name='journal']", '2')
+        self.assert_xml_equal("COMPONENTS/DATE[@name='date_value']", '2015-01-01')
+        self.assert_xml_equal("COMPONENTS/EDIT[@name='designation']", 'Machin')
+
     def test_add_line_third(self):
         self.factory.xfer = EntryAccountEdit()
         self.call('/diacamma.accounting/entryAccountEdit', {'SAVE':'YES', 'year':'1', 'journal':'2', \
