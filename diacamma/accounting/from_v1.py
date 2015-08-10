@@ -31,7 +31,6 @@ from django.utils import six
 from lucterios.install.lucterios_migration import MigrateAbstract
 import sys
 import datetime
-from gi.overrides.keysyms import Begin
 
 def decode_html(data):
     def _callback(matches):
@@ -194,7 +193,7 @@ class AccountingMigrate(MigrateAbstract):
             self._years()
             self._chartsaccount()
             self._entryaccount()
-        except:
+        except: # pylint: disable=bare-except
             import traceback
-            traceback.print_exc()            
+            traceback.print_exc()
             six.print_("*** Unexpected error: %s ****" % sys.exc_info()[0])
