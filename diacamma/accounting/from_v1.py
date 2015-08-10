@@ -29,6 +29,9 @@ from django.apps import apps
 from django.utils import six
 
 from lucterios.install.lucterios_migration import MigrateAbstract
+import sys
+import datetime
+from gi.overrides.keysyms import Begin
 
 def decode_html(data):
     def _callback(matches):
@@ -75,6 +78,8 @@ class AccountingMigrate(MigrateAbstract):
                 accountthird_mdl.objects.create(third=self.third_list[thirdid], code=convert_code(compte_societaire))
 
     def _years(self):
+        def get_date(new_date):
+            return datetime.date(*[int(subvalue) for subvalue in re.split(r'[^\d]', new_date)[:3]])
         year_mdl = apps.get_model("accounting", "FiscalYear")
         year_mdl.objects.all().delete()
         self.year_list = {}
@@ -83,7 +88,7 @@ class AccountingMigrate(MigrateAbstract):
         cur.execute("SELECT id, debut,fin,etat,actif  FROM fr_sdlibre_compta_Exercices ORDER BY fin")
         for yearid, debut, fin, etat, actif in cur.fetchall():
             self.print_log("=> Year of %s => %s", (debut, fin))
-            self.year_list[yearid] = year_mdl.objects.create(begin=debut, end=fin, status=etat, is_actif=(actif == 'o'))
+            self.year_list[yearid] = year_mdl.objects.create(begin=get_date(debut), end=get_date(fin), status=etat, is_actif=(actif == 'o'))
             if last_exercice is not None:
                 self.year_list[yearid].last_fiscalyear = self.year_list[last_exercice]
                 self.year_list[yearid].save()
@@ -149,9 +154,10 @@ class AccountingMigrate(MigrateAbstract):
             self.entryaccount_list[entryaccountid] = entryaccount_mdl.objects.create(num=num, designation=designation, \
                                                         year=self.year_list[exercice], date_entry=date_ecr, date_value=date_piece, \
                                                         close=point == 'o', journal=self.journal_list[journal])
+            self.entryaccount_list[entryaccountid].before_save(None)
             if operaproch is not None:
                 self.entryaccount_list[entryaccountid].link = self.accountlink_list[operaproch]
-                self.entryaccount_list[entryaccountid].save()
+            self.entryaccount_list[entryaccountid].save()
         cur_l = self.old_db.open()
         cur_l.execute("SELECT id,numCpt,montant,reference,operation,tiers  FROM fr_sdlibre_compta_Ecriture")
         for entrylineaccountid, num_cpt, montant, reference, operation, tiers in cur_l.fetchall():
@@ -182,8 +188,13 @@ class AccountingMigrate(MigrateAbstract):
                 Parameter.change_value(pname, param_value)
 
     def run(self):
-        self._params()
-        self._thirds()
-        self._years()
-        self._chartsaccount()
-        self._entryaccount()
+        try:
+            self._params()
+            self._thirds()
+            self._years()
+            self._chartsaccount()
+            self._entryaccount()
+        except:
+            import traceback
+            traceback.print_exc()            
+            six.print_("*** Unexpected error: %s ****" % sys.exc_info()[0])
