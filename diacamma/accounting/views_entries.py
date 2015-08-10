@@ -248,13 +248,13 @@ class EntryAccountEdit(XferAddEditor):
         lbl.set_value_center(_("Add a entry line"))
         self.add_component(lbl)
         entry_line = EntryLineAccount()
-        entry_line.edit_line(self, 0, last_row + 2, debit_rest, credit_rest)
+        entry_line.editor.edit_line(self, 0, last_row + 2, debit_rest, credit_rest) # pylint: disable=no-member
         if entry_line.has_account:
             btn = XferCompButton('entrybtn')
             btn.set_location(3, last_row + 5)
             btn.set_action(self.request, EntryLineAccountAddModify.get_action(_("Add"), "images/add.png"), {'close':CLOSE_YES})
             self.add_component(btn)
-        self.item.show(self)
+        self.item.editor.show(self)
         grid_lines = self.get_components('entrylineaccount')
         self.remove_component('entrylineaccount')
         new_grid_lines = XferCompGrid('entrylineaccount')
@@ -357,8 +357,8 @@ class EntryLineAccountEdit(XferContainerCustom):
         self.fill_from_model(1, 1, True, ['account'])
         cmp_account = self.get_components('account')
         cmp_account.colspan = 2
-        self.item.edit_creditdebit_for_line(self, 1, 2)
-        self.item.edit_extra_for_line(self, 1, 4, False)
+        self.item.editor.edit_creditdebit_for_line(self, 1, 2)
+        self.item.editor.edit_extra_for_line(self, 1, 4, False)
 
         self.add_action(EntryLineAccountAddModify.get_action(_('Ok'), 'images/ok.png'), {'params':{"num_cpt":self.item.account.id}})
         self.add_action(EntryAccountEdit.get_action(_('Cancel'), 'images/cancel.png'), {})

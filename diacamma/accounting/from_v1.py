@@ -153,7 +153,7 @@ class AccountingMigrate(MigrateAbstract):
             self.entryaccount_list[entryaccountid] = entryaccount_mdl.objects.create(num=num, designation=designation, \
                                                         year=self.year_list[exercice], date_entry=date_ecr, date_value=date_piece, \
                                                         close=point == 'o', journal=self.journal_list[journal])
-            self.entryaccount_list[entryaccountid].before_save(None)
+            self.entryaccount_list[entryaccountid].editor.before_save(None)
             if operaproch is not None:
                 self.entryaccount_list[entryaccountid].link = self.accountlink_list[operaproch]
             self.entryaccount_list[entryaccountid].save()

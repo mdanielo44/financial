@@ -135,7 +135,7 @@ class FiscalYearBegin(XferContainerAcknowledge):
     caption_add = _("Begin fiscal year")
 
     def fillresponse(self):
-        self.item.run_begin(self)
+        self.item.editor.run_begin(self)
 
 @MenuManage.describ('accounting.add_fiscalyear')
 class FiscalYearClose(XferContainerAcknowledge):
@@ -145,7 +145,7 @@ class FiscalYearClose(XferContainerAcknowledge):
     caption_add = _("Close fiscal year")
 
     def fillresponse(self):
-        self.item.run_close(self)
+        self.item.editor.run_close(self)
 
 @ActionsManage.affect('ChartsAccount', 'modify', 'add')
 @MenuManage.describ('accounting.add_chartsaccount')
