@@ -275,7 +275,7 @@ class EntryLineAccountAddModify(XferContainerAcknowledge):
 
     def fillresponse(self, entrylineaccount_serial=0, serial_entry='', num_cpt=0, credit_val=0.0, debit_val=0.0, third=0, reference='None'):
         if (credit_val > 0.0001) or (debit_val > 0.0001):
-            for old_key in ['num_cpt_txt', 'num_cpt', 'credit_val', 'debit_val', 'third', 'reference', 'entrylineaccount', 'serial_entry']:
+            for old_key in ['num_cpt_txt', 'num_cpt', 'credit_val', 'debit_val', 'third', 'reference', 'entrylineaccount_serial', 'serial_entry']:
                 if old_key in self.params.keys():
                     del self.params[old_key]
             serial_entry = self.item.add_new_entryline(serial_entry, entrylineaccount_serial, num_cpt, credit_val, debit_val, third, reference)
@@ -314,7 +314,7 @@ class EntryLineAccountDel(XferContainerAcknowledge):
     caption = _("Delete entry line of account")
 
     def fillresponse(self, entrylineaccount_serial=0, serial_entry=''):
-        for old_key in ['serial_entry', 'entrylineaccount']:
+        for old_key in ['serial_entry', 'entrylineaccount_serial']:
             if old_key in self.params.keys():
                 del self.params[old_key]
         serial_entry = self.item.remove_entrylineaccounts(serial_entry, entrylineaccount_serial)
