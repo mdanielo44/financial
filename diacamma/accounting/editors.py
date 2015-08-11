@@ -282,7 +282,7 @@ class EntryAccountEditor(LucteriosEditor):
         xfer.actions = []
         if no_change:
             if (self.item.link is None) and self.item.has_third and not self.item.has_cash:
-                xfer.add_action(ActionsManage.get_act_changed('EntryAccount', 'payement', _('Payment'), ''), {'close':CLOSE_NO})
+                xfer.add_action(ActionsManage.get_act_changed('EntryAccount', 'payement', _('Payment'), ''), {'close':CLOSE_YES})
             xfer.add_action(ActionsManage.get_act_changed('EntryAccount', 'reverse', _('Reverse'), 'images/edit.png'), {'close':CLOSE_YES})
             xfer.add_action(WrapAction(_('Close'), 'images/close.png'), {})
         else:
