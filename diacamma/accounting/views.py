@@ -92,12 +92,11 @@ class ThirdList(XferListEditor):
         if show_filter != 0:
             self.fieldnames = Third.get_other_fields()
 
-        q_filter = Q(status=0)
+        self.filter = Q(status=0)
         if contact_filter != "":
             q_legalentity = Q(contact__legalentity__name__contains=contact_filter)
             q_individual = (Q(contact__individual__firstname__contains=contact_filter) | Q(contact__individual__lastname__contains=contact_filter))
-            q_filter = q_filter & (q_legalentity | q_individual)
-        self.filter = [q_filter]
+            self.filter &= (q_legalentity | q_individual)
 
 @ActionsManage.affect('Third', 'search')
 @MenuManage.describ('accounting.change_third')
@@ -177,12 +176,11 @@ class ThirdListing(XferPrintListing):
     def get_filter(self):
         if self.getparam('CRITERIA') is None:
             contact_filter = self.getparam('filter', '')
-            q_filter = Q(status=0)
+            new_filter = Q(status=0)
             if contact_filter != "":
                 q_legalentity = Q(contact__legalentity__name__contains=contact_filter)
                 q_individual = (Q(contact__individual__firstname__contains=contact_filter) | Q(contact__individual__lastname__contains=contact_filter))
-                q_filter = q_filter & (q_legalentity | q_individual)
-            new_filter = [q_filter]
+                new_filter &= (q_legalentity | q_individual)
         else:
             new_filter = XferPrintListing.get_filter(self)
         return new_filter

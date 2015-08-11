@@ -36,7 +36,7 @@ from lucterios.framework.editors import LucteriosEditor
 from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompSelect, \
     XferCompButton, XferCompGrid, XferCompEdit, XferCompFloat
 from lucterios.framework.tools import FORMTYPE_REFRESH, CLOSE_NO, ActionsManage, \
-    FORMTYPE_MODAL, SELECT_SINGLE, SELECT_MULTI, CLOSE_YES
+    FORMTYPE_MODAL, SELECT_SINGLE, SELECT_MULTI, CLOSE_YES, WrapAction
 
 from diacamma.accounting.models import current_system_account, FiscalYear, \
     EntryLineAccount, EntryAccount, get_amount_sum, Third
@@ -237,6 +237,76 @@ class EntryAccountEditor(LucteriosEditor):
                             {'modal':FORMTYPE_MODAL, 'unique':SELECT_SINGLE, 'close':CLOSE_YES})
             xfer.add_component(link_grid_lines)
 
+    def _entryline_editor(self, xfer, serial_vals, debit_rest, credit_rest):
+        last_row = xfer.get_max_row() + 5
+        lbl = XferCompLabelForm('sep1')
+        lbl.set_location(0, last_row, 6)
+        lbl.set_value("{[center]}{[hr/]}{[/center]}")
+        xfer.add_component(lbl)
+        lbl = XferCompLabelForm('sep2')
+        lbl.set_location(1, last_row + 1, 5)
+        lbl.set_value_center(_("Add a entry line"))
+        xfer.add_component(lbl)
+        entry_line = EntryLineAccount()
+        entry_line.editor.edit_line(xfer, 0, last_row + 2, debit_rest, credit_rest)  # pylint: disable=no-member
+        if entry_line.has_account:
+            btn = XferCompButton('entrybtn')
+            btn.set_location(3, last_row + 5)
+            btn.set_action(xfer.request, ActionsManage.get_act_changed('EntryAccount', 'addentity', _("Add"), "images/add.png"), {'close':CLOSE_YES})
+            xfer.add_component(btn)
+        self.item.editor.show(xfer)
+        grid_lines = xfer.get_components('entrylineaccount')
+        xfer.remove_component('entrylineaccount')
+        new_grid_lines = XferCompGrid('entrylineaccount_serial')
+        new_grid_lines.set_model(self.item.get_entrylineaccounts(serial_vals), None, xfer)
+        new_grid_lines.set_location(grid_lines.col, grid_lines.row, grid_lines.colspan + 2, grid_lines.rowspan)
+        new_grid_lines.add_action(xfer.request, ActionsManage.get_act_changed('EntryAccount', 'change', _("Edit"), "images/edit.png"), \
+                                  {'close':CLOSE_YES, 'modal':FORMTYPE_MODAL, 'unique':SELECT_SINGLE})
+        new_grid_lines.add_action(xfer.request, ActionsManage.get_act_changed('EntryAccount', 'remove', _("Delete"), "images/delete.png"), \
+                                  {'close':CLOSE_YES, 'modal':FORMTYPE_MODAL, 'unique':SELECT_SINGLE})
+        xfer.add_component(new_grid_lines)
+        nb_lines = len(new_grid_lines.record_ids)
+        return nb_lines
+
+    def _remove_lastyear_notbuilding(self, xfer):
+        if self.item.year.status != 0:
+            cmp_journal = xfer.get_components('journal')
+            select_list = cmp_journal.select_list
+            for item_idx in range(len(select_list)):
+                if select_list[item_idx][0] == 1:
+                    del select_list[item_idx]
+                    break
+            cmp_journal.select_list = select_list
+
+    def _change_buttons(self, xfer, no_change, debit_rest, credit_rest, nb_lines):
+        xfer.actions = []
+        if no_change:
+            if (self.item.link is None) and self.item.has_third and not self.item.has_cash:
+                xfer.add_action(ActionsManage.get_act_changed('EntryAccount', 'payement', _('Payment'), ''), {'close':CLOSE_NO})
+            xfer.add_action(ActionsManage.get_act_changed('EntryAccount', 'reverse', _('Reverse'), 'images/edit.png'), {'close':CLOSE_YES})
+            xfer.add_action(WrapAction(_('Close'), 'images/close.png'), {})
+        else:
+            if (debit_rest < 0.0001) and (credit_rest < 0.0001) and (nb_lines > 0):
+                xfer.add_action(ActionsManage.get_act_changed('EntryAccount', 'validate', _('Ok'), 'images/ok.png'), {})
+            xfer.add_action(ActionsManage.get_act_changed('EntryAccount', 'unlock', _('Cancel'), 'images/cancel.png'), {})
+
+    def edit(self, xfer):
+        self._remove_lastyear_notbuilding(xfer)
+        serial_vals = xfer.getparam('serial_entry')
+        if serial_vals is None:
+            xfer.params['serial_entry'] = self.item.get_serial()
+            serial_vals = xfer.getparam('serial_entry')
+        no_change, debit_rest, credit_rest = self.item.serial_control(serial_vals)
+        btn = XferCompButton('save_modif')
+        btn.set_location(3, 0, 1, 2)
+        btn.set_action(xfer.request, xfer.get_action(_("Modify"), "images/edit.png"), {'params':{"SAVE":"YES"}})
+        xfer.add_component(btn)
+        if self.item.id:
+            nb_lines = self._entryline_editor(xfer, serial_vals, debit_rest, credit_rest)
+        else:
+            nb_lines = 0
+        self._change_buttons(xfer, no_change, debit_rest, credit_rest, nb_lines)
+
 class EntryLineAccountEditor(LucteriosEditor):
 
     def edit_account_for_line(self, xfer, column, row, debit_rest, credit_rest):
@@ -299,7 +369,7 @@ class EntryLineAccountEditor(LucteriosEditor):
                 lbl = XferCompLabelForm('referencelbl')
                 lbl.set_value_as_name(_('reference'))
                 edt = XferCompEdit('reference')
-                reference = xfer.getparam('reference')
+                reference = xfer.getparam('reference', self.item.reference)
                 if reference is not None:
                     edt.set_value(reference)
                 if vertical:

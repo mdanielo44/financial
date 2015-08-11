@@ -59,10 +59,9 @@ class ChartsAccountList(XferListEditor):
         type_of_account.select_list.append((-1, '---'))
         type_of_account.set_value(select_type)
         type_of_account.set_action(self.request, ChartsAccountList.get_action(modal=FORMTYPE_REFRESH), {'close':CLOSE_NO, 'modal':FORMTYPE_REFRESH})
-        q_filter = Q(year=self.item.year)
+        self.filter = Q(year=self.item.year)
         if select_type != -1:
-            q_filter &= Q(type_of_account=select_type)
-        self.filter = [q_filter]
+            self.filter &= Q(type_of_account=select_type)
 
     def fillresponse(self):
         XferListEditor.fillresponse(self)
@@ -96,10 +95,9 @@ class ChartsAccountListing(XferPrintListing):
         if self.getparam('CRITERIA') is None:
             select_year = self.getparam('year')
             select_type = self.getparam('type_of_account', 0)
-            q_filter = Q(year=FiscalYear.get_current(select_year))
+            new_filter = Q(year=FiscalYear.get_current(select_year))
             if select_type != -1:
-                q_filter &= Q(type_of_account=select_type)
-            new_filter = [q_filter]
+                new_filter &= Q(type_of_account=select_type)
         else:
             new_filter = XferPrintListing.get_filter(self)
         return new_filter
