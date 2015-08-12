@@ -27,14 +27,14 @@ from setuptools import setup
 from diacamma.accounting import __version__
 
 setup(
-    name="diacamma-accounting",
+    name="diacamma-financial",
     version=__version__,
     author="Lucterios",
     author_email="support@lucterios.org",
     url="http://www.lucterios.org",
-    description="Diacamma accounting managment module for Lucterios framework.",
+    description="Diacamma financial modules for Lucterios framework.",
     long_description="""
-    Diacamma accounting managment module for Lucterios framework.
+    Diacamma financial modules for Lucterios framework.
     """,
     include_package_data=True,
     platforms=('Any',),
