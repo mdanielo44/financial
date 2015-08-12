@@ -23,6 +23,7 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
 from __future__ import unicode_literals
+from datetime import timedelta, date
 
 from django.utils.translation import ugettext_lazy as _
 from django.db.models.query import QuerySet
@@ -32,17 +33,18 @@ from django.utils import six
 from lucterios.framework.xferadvance import XferListEditor, XferAddEditor, XferShowEditor, XferDelete
 from lucterios.framework.xfersearch import XferSearchEditor
 from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage, \
-    FORMTYPE_REFRESH, CLOSE_NO
+    FORMTYPE_REFRESH, CLOSE_NO, WrapAction
 from lucterios.framework.xfergraphic import XferContainerAcknowledge
 from lucterios.CORE.xferprint import XferPrintListing
 from lucterios.contacts.tools import ContactSelection  # pylint: disable=no-name-in-module,import-error
 from lucterios.contacts.models import AbstractContact  # pylint: disable=no-name-in-module,import-error
 from lucterios.framework import signal_and_lock
 from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompEdit, XferCompButton, \
-    XferCompSelect
+    XferCompSelect, XferCompImage, XferCompDate
 from lucterios.framework.error import LucteriosException
 
-from diacamma.accounting.models import Third, AccountThird, FiscalYear
+from diacamma.accounting.models import Third, AccountThird, FiscalYear, \
+    EntryLineAccount
 from diacamma.accounting.views_admin import Configuration
 
 MenuManage.add_sub("financial", None, "diacamma.accounting/images/financial.png", _("Financial"), _("Financial tools"), 50)
@@ -54,7 +56,9 @@ class ThirdList(XferListEditor):
     model = Third
     field_id = 'third'
     caption = _("Thirds")
-    action_list = [('search', _("Search"), "diacamma.accounting/images/thirds.png"), ('listing', _("Listing"), "images/print.png")]
+    action_list = [('disable', _('Disabled'), ''), \
+                   ('search', _("Search"), "diacamma.accounting/images/thirds.png"), \
+                   ('listing', _("Listing"), "images/print.png")]
 
     def get_items_from_filter(self):
         items = XferListEditor.get_items_from_filter(self)
@@ -122,6 +126,37 @@ class ThirdSave(XferContainerAcknowledge):
             self.item.status = 0
             self.item.save()
         self.redirect_action(ThirdShow.get_action(), {'params':{self.field_id:self.item.id}})
+
+@ActionsManage.affect('Third', 'disable')
+@MenuManage.describ('accounting.add_third')
+class ThirdDisable(XferContainerAcknowledge):
+    model = Third
+    icon = "thirds.png"
+    caption = _("Disable third")
+
+    def fillresponse(self, limit_date=''):
+        if limit_date == '':
+            dlg = self.create_custom()
+            img = XferCompImage('img')
+            img.set_value(self.icon_path())
+            img.set_location(0, 0, 1, 6)
+            dlg.add_component(img)
+            lbl = XferCompLabelForm('lb_limit_date')
+            lbl.set_value_as_name(_('limit date'))
+            lbl.set_location(1, 1, 1)
+            dlg.add_component(lbl)
+            limite_date = XferCompDate('limit_date')
+            limite_date.set_value((date.today() - timedelta(weeks=25)))
+            limite_date.set_location(1, 2, 1)
+            dlg.add_component(limite_date)
+            dlg.add_action(self.get_action(_('Ok'), 'images/ok.png'), {'params':{"SAVE":"YES"}})
+            dlg.add_action(WrapAction(_('Cancel'), 'images/cancel.png'), {})
+        else:
+            third_ids = [val_third['third'] for val_third in EntryLineAccount.objects.filter(entry__date_value__gt=limit_date, third__gt=0).values('third')]  # pylint: disable=no-member
+            for third in Third.objects.filter(status=0):  # pylint: disable=no-member
+                if not third.id in third_ids:
+                    third.status = 1
+                    third.save()
 
 @ActionsManage.affect('Third', 'add')
 @MenuManage.describ('accounting.add_third')

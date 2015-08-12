@@ -32,7 +32,7 @@ from lucterios.framework.filetools import get_user_dir
 from lucterios.CORE.views import StatusMenu
 
 from diacamma.accounting.views import ThirdList, ThirdAdd, ThirdSave, ThirdShow, \
-    AccountThirdAddModify, AccountThirdDel, ThirdListing
+    AccountThirdAddModify, AccountThirdDel, ThirdListing, ThirdDisable
 from diacamma.accounting.views_admin import Configuration, JournalAddModify, \
     JournalDel, FiscalYearAddModify, FiscalYearActive, FiscalYearDel
 from diacamma.accounting.test_tools import initial_contacts, fill_entries, initial_thirds, \
@@ -443,6 +443,29 @@ class ThirdTest(LucteriosTest):
         self.assertEqual(content_csv[4].strip(), '"Dalton William";"411000";"125.97€";')
         self.assertEqual(content_csv[5].strip(), '"Maximum";"401000";"78.24€";')
         self.assertEqual(content_csv[6].strip(), '"Minimum";"411000 401000";"34.01€";')
+
+    def test_list_disable(self):
+        fill_thirds()
+        default_compta()
+        fill_entries(1)
+        self.factory.xfer = ThirdList()
+        self.call('/diacamma.accounting/thirdListing', {'show_filter':'1'}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'thirdListing')
+        self.assert_count_equal('COMPONENTS/GRID[@name="third"]/RECORD', 7)
+
+        self.factory.xfer = ThirdDisable()
+        self.call('/diacamma.accounting/thirdDisable', {}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'thirdDisable')
+        self.assert_count_equal('COMPONENTS/*', 3)
+
+        self.factory.xfer = ThirdDisable()
+        self.call('/diacamma.accounting/thirdDisable', {'limit_date':'2015-02-18'}, False)
+        self.assert_observer('Core.Acknowledge', 'diacamma.accounting', 'thirdDisable')
+
+        self.factory.xfer = ThirdList()
+        self.call('/diacamma.accounting/thirdListing', {'show_filter':'1'}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'thirdListing')
+        self.assert_count_equal('COMPONENTS/GRID[@name="third"]/RECORD', 4)
 
 class AdminTest(LucteriosTest):
     # pylint: disable=too-many-public-methods,too-many-statements
