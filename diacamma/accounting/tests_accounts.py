@@ -383,7 +383,7 @@ class FiscalYearWorkflowTest(LucteriosTest):
         self.factory.xfer = EntryAccountEdit()
         self.call('/diacamma.accounting/entryAccountEdit', {'year':'1', 'journal':'1'}, False)
         self.assert_observer('Core.Custom', 'diacamma.accounting', 'entryAccountEdit')
-        self.assert_count_equal('COMPONENTS/*', 8)
+        self.assert_count_equal('COMPONENTS/*', 10)
         self.assert_count_equal("COMPONENTS/SELECT[@name='journal']/CASE", 4)
         self.assert_xml_equal("COMPONENTS/SELECT[@name='journal']", '2')
 

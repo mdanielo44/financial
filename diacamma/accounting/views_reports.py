@@ -38,7 +38,7 @@ from lucterios.contacts.models import LegalEntity
 from lucterios.CORE.xferprint import XferPrintAction
 
 from diacamma.accounting.models import FiscalYear, format_devise, EntryLineAccount, \
-    ChartsAccount
+    ChartsAccount, CostAccounting
 from django.db.models.aggregates import Sum
 
 def get_spaces(size):
@@ -299,3 +299,40 @@ class FiscalYearReportPrint(XferPrintAction):
         gen.page_width = 297
         gen.page_height = 210
         return gen
+
+@MenuManage.describ('accounting.change_entryaccount')
+class CostAccountingIncomeStatement(FiscalYearReport):
+    icon = "costAccounting.png"
+    model = CostAccounting
+    field_id = 'costaccounting'
+    caption = _("Income statement of cost accounting")
+
+    def __init__(self, **kwargs):
+        FiscalYearReport.__init__(self, **kwargs)
+        self.grid.add_header('left', _('Expenses'))
+        self.grid.add_header('left_n', _('Value'))
+        self.grid.add_header('space', '')
+        self.grid.add_header('right', _('Revenues'))
+        self.grid.add_header('right_n', _('Value'))
+
+    def fill_header(self):
+        img = XferCompImage('img')
+        img.set_value(self.icon_path())
+        img.set_location(0, 0, 1, 3)
+        self.add_component(img)
+        lbl = XferCompLabelForm('lblname')
+        lbl.set_value_as_name(self.model._meta.verbose_name)  # pylint: disable=no-member,protected-access
+        lbl.set_location(1, 2)
+        self.add_component(lbl)
+        lbl = XferCompLabelForm('name')
+        lbl.set_value(self.item)
+        lbl.set_location(2, 2)
+        self.add_component(lbl)
+        img = XferCompLabelForm('sep1')
+        img.set_value("{[br/]}")
+        img.set_location(0, 3)
+        self.add_component(img)
+        self.filter = Q(entry__costaccounting=self.item)
+
+    def calcul_table(self):
+        self._add_left_right_accounting(Q(account__type_of_account=4), Q(account__type_of_account=3), True)

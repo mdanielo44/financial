@@ -39,7 +39,7 @@ from lucterios.framework.tools import FORMTYPE_REFRESH, CLOSE_NO, ActionsManage,
     FORMTYPE_MODAL, SELECT_SINGLE, SELECT_MULTI, CLOSE_YES, WrapAction
 
 from diacamma.accounting.models import current_system_account, FiscalYear, \
-    EntryLineAccount, EntryAccount, get_amount_sum, Third
+    EntryLineAccount, EntryAccount, get_amount_sum, Third, CostAccounting
 from django.db.models.aggregates import Sum
 
 class ThirdEditor(LucteriosEditor):
@@ -142,6 +142,22 @@ class FiscalYearEditor(LucteriosEditor):
             self.item.status = 2
             self.item.save()
 
+class CostAccountingEditor(LucteriosEditor):
+
+    def edit(self, xfer):
+        if self.item.status == 1:
+            xfer.change_to_readonly('name')
+            xfer.change_to_readonly('description')
+            xfer.change_to_readonly('last_costaccounting')
+        elif self.item.id is not None:
+            sel = xfer.get_components('last_costaccounting')
+            sel.set_select_query(CostAccounting.objects.all().exclude(id=self.item.id))  # pylint: disable=no-member
+
+    def before_save(self, xfer):
+        if self.item.id is None and (len(CostAccounting.objects.all()) == 0):  # pylint: disable=no-member
+            self.item.is_default = True
+        return
+
 class ChartsAccountEditor(LucteriosEditor):
 
     def edit(self, xfer):
@@ -204,7 +220,24 @@ class EntryAccountEditor(LucteriosEditor):
             self.item.date_value = self.item.year.begin.isoformat()
         return
 
+    def _add_cost_savebtn(self, xfer):
+        name_comp = xfer.get_components('designation')
+        if (self.item.costaccounting is None) or (self.item.costaccounting.status == 0):
+            xfer.fill_from_model(1, name_comp.row + 1, False, ['costaccounting'])
+            sel = xfer.get_components('costaccounting')
+            sel.set_select_query(CostAccounting.objects.filter(status=0))  # pylint: disable=no-member
+            added = True
+        else:
+            xfer.fill_from_model(1, name_comp.row + 1, True, ['costaccounting'])
+            added = isinstance(name_comp, XferCompEdit)
+        if added:
+            btn = XferCompButton('save_modif')
+            btn.set_location(3, 0, 1, 2)
+            btn.set_action(xfer.request, xfer.get_action(_("Modify"), "images/edit.png"), {'params':{"SAVE":"YES"}})
+            xfer.add_component(btn)
+
     def show(self, xfer):
+        self._add_cost_savebtn(xfer)
         last_row = xfer.get_max_row() + 10
         lbl = XferCompLabelForm('sep3')
         lbl.set_location(0, last_row + 1, 6)
@@ -297,13 +330,10 @@ class EntryAccountEditor(LucteriosEditor):
             xfer.params['serial_entry'] = self.item.get_serial()
             serial_vals = xfer.getparam('serial_entry')
         no_change, debit_rest, credit_rest = self.item.serial_control(serial_vals)
-        btn = XferCompButton('save_modif')
-        btn.set_location(3, 0, 1, 2)
-        btn.set_action(xfer.request, xfer.get_action(_("Modify"), "images/edit.png"), {'params':{"SAVE":"YES"}})
-        xfer.add_component(btn)
         if self.item.id:
             nb_lines = self._entryline_editor(xfer, serial_vals, debit_rest, credit_rest)
         else:
+            self._add_cost_savebtn(xfer)
             nb_lines = 0
         self._change_buttons(xfer, no_change, debit_rest, credit_rest, nb_lines)
 

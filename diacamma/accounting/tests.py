@@ -247,7 +247,7 @@ class ThirdTest(LucteriosTest):
 
         self.assert_xml_equal('COMPONENTS/SELECT[@name="lines_filter"]', '0')
         self.assert_count_equal('COMPONENTS/SELECT[@name="lines_filter"]/CASE', 3)
-        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount"]/HEADER', 8)
+        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount"]/HEADER', 9)
         self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD', 3)
         self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="entry.num"]', '2')
         self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="credit"]', '63.94€')
@@ -276,7 +276,7 @@ class ThirdTest(LucteriosTest):
         self.assert_count_equal('COMPONENTS/*', 16 + 7 + 4)
         self.assert_xml_equal('COMPONENTS/SELECT[@name="lines_filter"]', '0')
         self.assert_count_equal('COMPONENTS/SELECT[@name="lines_filter"]/CASE', 3)
-        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount"]/HEADER', 8)
+        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount"]/HEADER', 9)
         self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD', 3)
 
         self.factory.xfer = ThirdShow()
@@ -286,7 +286,7 @@ class ThirdTest(LucteriosTest):
         self.assert_count_equal('COMPONENTS/*', 16 + 7 + 4)
         self.assert_xml_equal('COMPONENTS/SELECT[@name="lines_filter"]', '1')
         self.assert_count_equal('COMPONENTS/SELECT[@name="lines_filter"]/CASE', 3)
-        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount"]/HEADER', 8)
+        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount"]/HEADER', 9)
         self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD', 1)
 
         default_compta()
@@ -298,7 +298,7 @@ class ThirdTest(LucteriosTest):
         self.assert_count_equal('COMPONENTS/*', 16 + 7 + 4)
         self.assert_xml_equal('COMPONENTS/SELECT[@name="lines_filter"]', '0')
         self.assert_count_equal('COMPONENTS/SELECT[@name="lines_filter"]/CASE', 3)
-        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount"]/HEADER', 8)
+        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount"]/HEADER', 9)
         self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD', 0)
 
         self.factory.xfer = ThirdShow()
@@ -308,7 +308,7 @@ class ThirdTest(LucteriosTest):
         self.assert_count_equal('COMPONENTS/*', 16 + 7 + 4)
         self.assert_xml_equal('COMPONENTS/SELECT[@name="lines_filter"]', '2')
         self.assert_count_equal('COMPONENTS/SELECT[@name="lines_filter"]/CASE', 3)
-        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount"]/HEADER', 8)
+        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount"]/HEADER', 9)
         self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD', 3)
 
     def test_list(self):

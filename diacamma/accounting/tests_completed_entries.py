@@ -53,7 +53,7 @@ class CompletedEntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryLineAccountList', {'year':'1', 'journal':journal, 'filter':filterlist}, False)
         self.assert_observer('Core.Custom', 'diacamma.accounting', 'entryLineAccountList')
         self.assert_count_equal('COMPONENTS/*', 11)
-        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount"]/HEADER', 8)
+        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount"]/HEADER', 9)
         self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD', nb_line)
 
     def test_lastyear(self):
@@ -176,7 +176,7 @@ class CompletedEntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryLineAccountList', {'year':'1', 'journal':'-1', 'filter':'2'}, False)
         self.assert_observer('Core.Custom', 'diacamma.accounting', 'entryLineAccountList')
         self.assert_count_equal('COMPONENTS/*', 11)
-        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount"]/HEADER', 8)
+        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount"]/HEADER', 9)
         self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD', 15)
 
     def test_letter(self):

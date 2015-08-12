@@ -181,6 +181,22 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.CreateModel(
+            name='CostAccounting',
+            fields=[
+                ('id', models.AutoField(auto_created=True, verbose_name='ID', primary_key=True, serialize=False)),
+                ('name', models.CharField(verbose_name='name', unique=True, max_length=50)),
+                ('description', models.CharField(verbose_name='description', unique=True, max_length=50)),
+                ('status', models.IntegerField(choices=[(0, 'open'), (1, 'close')], verbose_name='status', default=0)),
+                ('last_costaccounting', models.ForeignKey(null=True, verbose_name='last cost accounting', to='accounting.CostAccounting', related_name='next_costaccounting', on_delete=SET_NULL)),
+                ('is_default', models.BooleanField(verbose_name=_('default'), default=False)),
+            ],
+            options={
+                'verbose_name': 'cost accounting',
+                'verbose_name_plural': 'costs accounting',
+                'default_permissions': [],
+            },
+        ),
+        migrations.CreateModel(
             name='EntryAccount',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
@@ -192,6 +208,7 @@ class Migration(migrations.Migration):
                 ('designation', models.CharField(verbose_name='name', max_length=200)),
                 ('close', models.BooleanField(verbose_name='close', default=False)),
                 ('year', models.ForeignKey(verbose_name='fiscal year', to='accounting.FiscalYear', on_delete=models.CASCADE)),
+                ('costaccounting', models.ForeignKey(verbose_name='cost accounting', to='accounting.CostAccounting', on_delete=PROTECT, null=True)),
             ],
             options={
                 'verbose_name': 'entry of account',

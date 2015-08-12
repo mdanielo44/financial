@@ -310,6 +310,56 @@ class FiscalYear(LucteriosModel):
         verbose_name = _('fiscal year')
         verbose_name_plural = _('fiscal years')
 
+class CostAccounting(LucteriosModel):
+    # pylint: disable=too-many-public-methods
+    name = models.CharField(_('name'), max_length=50, unique=True)
+    description = models.CharField(_('description'), max_length=50, unique=True)
+    status = models.IntegerField(verbose_name=_('status'), choices=((0, _('opened')), (1, _('closed'))), default=0)
+    last_costaccounting = models.ForeignKey('CostAccounting', verbose_name=_('last cost accounting'), related_name='next_costaccounting', null=True, on_delete=models.SET_NULL)
+    is_default = models.BooleanField(verbose_name=_('default'), default=False)
+
+    def __str__(self):
+        return self.name
+
+    @classmethod
+    def get_default_fields(cls):
+        return ['name', 'description', (_('total revenue'), 'total_revenue'), (_('total expense'), 'total_expense'), \
+                        'last_costaccounting', 'status', 'is_default']
+
+    @classmethod
+    def get_edit_fields(cls):
+        return ['name', 'description', 'last_costaccounting']
+
+    @property
+    def total_revenue(self):
+        return format_devise(self.get_total_revenue(), 5)
+
+    def get_total_revenue(self):
+        # pylint: disable=no-member
+        return get_amount_sum(EntryLineAccount.objects.filter(account__type_of_account=3, entry__costaccounting=self).aggregate(Sum('amount')))
+
+    @property
+    def total_expense(self):
+        return format_devise(self.get_total_expense(), 5)
+
+    def get_total_expense(self):
+        # pylint: disable=no-member
+        return get_amount_sum(EntryLineAccount.objects.filter(account__type_of_account=4, entry__costaccounting=self).aggregate(Sum('amount')))
+
+    def set_has_default(self):
+        all_cost = CostAccounting.objects.all()  # pylint: disable=no-member
+        for cost_item in all_cost:
+            cost_item.is_default = False
+            cost_item.save()
+        self.is_default = True
+        self.save()
+
+    class Meta(object):
+        # pylint: disable=no-init
+        verbose_name = _('cost accounting')
+        verbose_name_plural = _('costs accounting')
+        default_permissions = []
+
 class ChartsAccount(LucteriosModel):
     code = models.CharField(_('code'), max_length=50)
     name = models.CharField(_('name'), max_length=200)
@@ -441,11 +491,12 @@ class EntryAccount(LucteriosModel):
     date_entry = models.DateField(verbose_name=_('date entry'), null=True)
     date_value = models.DateField(verbose_name=_('date value'), null=True)
     designation = models.CharField(_('name'), max_length=200)
+    costaccounting = models.ForeignKey('CostAccounting', verbose_name=_('cost accounting'), null=True, on_delete=models.PROTECT)
     close = models.BooleanField(verbose_name=_('close'), default=False)
 
     @classmethod
     def get_default_fields(cls):
-        return ['year', 'close', 'num', 'journal', 'date_entry', 'date_value', 'designation']
+        return ['year', 'close', 'num', 'journal', 'date_entry', 'date_value', 'designation', 'costaccounting']
 
     @classmethod
     def get_edit_fields(cls):
@@ -609,7 +660,7 @@ class EntryLineAccount(LucteriosModel):
     @classmethod
     def get_other_fields(cls):
         return ['entry.num', 'entry.date_entry', 'entry.date_value', (_('account'), 'entry_account'), \
-                    'entry.designation', (_('debit'), 'debit'), (_('credit'), 'credit'), 'entry.link']
+                    'entry.designation', (_('debit'), 'debit'), (_('credit'), 'credit'), 'entry.link', 'entry.costaccounting']
 
     @classmethod
     def get_edit_fields(cls):
@@ -623,7 +674,7 @@ class EntryLineAccount(LucteriosModel):
 
     @classmethod
     def get_print_fields(cls):
-        return ['entry', (_('account'), 'entry_account'), (_('debit'), 'debit'), (_('credit'), 'credit'), 'reference', 'third']
+        return ['entry', (_('account'), 'entry_account'), (_('debit'), 'debit'), (_('credit'), 'credit'), 'reference', 'third', 'entry.costaccounting']
 
     @property
     def entry_account(self):

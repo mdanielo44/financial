@@ -29,7 +29,7 @@ from django.db.models import Q
 from lucterios.framework.xferadvance import XferShowEditor, XferDelete
 from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage, \
     CLOSE_NO, FORMTYPE_REFRESH, CLOSE_YES, SELECT_SINGLE, \
-    SELECT_MULTI, SELECT_NONE
+    SELECT_MULTI, SELECT_NONE, WrapAction
 from lucterios.framework.xferadvance import XferListEditor, XferAddEditor
 from lucterios.framework.xfergraphic import XferContainerAcknowledge, \
     XferContainerCustom
@@ -38,7 +38,7 @@ from lucterios.framework.xfercomponents import XferCompSelect, \
 from lucterios.framework.error import LucteriosException, GRAVE
 
 from diacamma.accounting.models import EntryLineAccount, EntryAccount, FiscalYear, \
-    Journal, AccountLink, current_system_account
+    Journal, AccountLink, current_system_account, CostAccounting
 from lucterios.CORE.xferprint import XferPrintListing
 
 @ActionsManage.affect('EntryLineAccount', 'list')
@@ -72,6 +72,7 @@ class EntryLineAccountList(XferListEditor):
             self.action_grid.append(('remove', _("Delete"), "images/delete.png", SELECT_MULTI))
             self.action_grid.append(('insertentry', _("Add"), "images/add.png", SELECT_NONE))
             self.action_grid.append(('closeentry', _("Closed"), "images/ok.png", SELECT_MULTI))
+        self.action_grid.append(('costaccounting', _("Cost"), "images/edit.png", SELECT_MULTI))
         lbl = XferCompLabelForm("filterLbl")
         lbl.set_location(0, 3)
         lbl.set_value_as_name(_("Filter"))
@@ -196,6 +197,41 @@ class EntryAccountLink(XferContainerAcknowledge):
                 self.items[0].unlink()
         else:
             AccountLink.create_link(self.items)
+
+@ActionsManage.affect('EntryLineAccount', 'costaccounting')
+@MenuManage.describ('accounting.add_entryaccount')
+class EntryAccountCostAccounting(XferContainerAcknowledge):
+    icon = "entry.png"
+    model = EntryAccount
+    field_id = 'entryaccount'
+    caption = _("cost accounting for entry")
+
+    def fillresponse(self, entrylineaccount, costaccounting):
+        if entrylineaccount is None:
+            raise LucteriosException(GRAVE, _("No selection"))
+        if costaccounting is None:
+            dlg = self.create_custom()
+            icon = XferCompImage('img')
+            icon.set_location(0, 0, 1, 6)
+            icon.set_value(self.icon_path())
+            dlg.add_component(icon)
+            lbl = XferCompLabelForm('lb_costaccounting')
+            lbl.set_value_as_name(CostAccounting._meta.verbose_name)  # pylint: disable=protected-access,no-member
+            lbl.set_location(1, 1)
+            dlg.add_component(lbl)
+            sel = XferCompSelect('costaccounting')
+            sel.set_select_query(CostAccounting.objects.filter(status=0))  # pylint: disable=no-member
+            sel.set_location(1, 2)
+            dlg.add_component(sel)
+            dlg.add_action(self.get_action(_('Ok'), 'images/ok.png'), {'params':{"SAVE":"YES"}})
+            dlg.add_action(WrapAction(_('Cancel'), 'images/cancel.png'), {})
+        else:
+            new_cost = CostAccounting.objects.get(id=costaccounting)  # pylint: disable=no-member
+            ids = entrylineaccount.split(';')  # pylint: disable=no-member
+            for item in self.model.objects.filter(entrylineaccount__in=ids):  # pylint: disable=no-member
+                if (item.costaccounting is None) or (item.costaccounting.status == 0):
+                    item.costaccounting = new_cost
+                    item.save()
 
 @ActionsManage.affect('EntryLineAccount', 'open')
 @MenuManage.describ('accounting.add_entryaccount')

@@ -50,6 +50,7 @@ class AccountingMigrate(MigrateAbstract):
         self.abstract_list = self.old_db.objectlinks['abstracts']
         self.third_list = {}
         self.year_list = {}
+        self.costaccounting_list = {}
         self.chartsaccount_list = {}
         self.journal_list = {}
         self.accountlink_list = {}
@@ -92,6 +93,20 @@ class AccountingMigrate(MigrateAbstract):
                 self.year_list[yearid].last_fiscalyear = self.year_list[last_exercice]
                 self.year_list[yearid].save()
             last_exercice = yearid
+
+    def _costaccounting(self):
+        costaccounting_mdl = apps.get_model("accounting", "CostAccounting")
+        costaccounting_mdl.objects.all().delete()
+        self.costaccounting_list = {}
+        cur = self.old_db.open()
+        cur.execute("SELECT id, title, description, etat, last, codeDefault FROM fr_sdlibre_compta_Analytique ORDER BY id")
+        for yearid, title, description, etat, last, code_default in cur.fetchall():
+            self.print_log("=> cost accounting %s", (title,))
+            self.costaccounting_list[yearid] = costaccounting_mdl.objects.create(name=title, description=description, \
+                                                                status=etat, is_default=(code_default == 'o'))
+            if last is not None:
+                self.costaccounting_list[yearid].last_costaccounting = self.costaccounting_list[last]
+                self.costaccounting_list[yearid].save()
 
     def _chartsaccount(self):
         chartsaccount_mdl = apps.get_model("accounting", "ChartsAccount")
@@ -148,11 +163,13 @@ class AccountingMigrate(MigrateAbstract):
         self._extra()
         cur_e = self.old_db.open()
         cur_e.execute("SELECT id, num, dateEcr, datePiece, designation, exercice, point, journal, opeRaproch, analytique FROM fr_sdlibre_compta_Operation")
-        for entryaccountid, num, date_ecr, date_piece, designation, exercice, point, journal, operaproch, _ in cur_e.fetchall():
+        for entryaccountid, num, date_ecr, date_piece, designation, exercice, point, journal, operaproch, analytique in cur_e.fetchall():
             self.print_log("=> entry account %s - %d", (six.text_type(num), exercice))
             self.entryaccount_list[entryaccountid] = entryaccount_mdl.objects.create(num=num, designation=designation, \
                                                         year=self.year_list[exercice], date_entry=date_ecr, date_value=date_piece, \
                                                         close=point == 'o', journal=self.journal_list[journal])
+            if analytique is not None:
+                self.entryaccount_list[entryaccountid].costaccounting = self.costaccounting_list[analytique]
             self.entryaccount_list[entryaccountid].editor.before_save(None)
             if operaproch is not None:
                 self.entryaccount_list[entryaccountid].link = self.accountlink_list[operaproch]
@@ -191,9 +208,10 @@ class AccountingMigrate(MigrateAbstract):
             self._params()
             self._thirds()
             self._years()
+            self._costaccounting()
             self._chartsaccount()
             self._entryaccount()
-        except: # pylint: disable=bare-except
+        except:  # pylint: disable=bare-except
             import traceback
             traceback.print_exc()
             six.print_("*** Unexpected error: %s ****" % sys.exc_info()[0])
