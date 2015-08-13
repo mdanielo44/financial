@@ -71,10 +71,11 @@ class EntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryAccountEdit', {'year':'1', 'journal':'2'}, False)
         self.assert_observer('Core.Custom', 'diacamma.accounting', 'entryAccountEdit')
         self.assert_count_equal('COMPONENTS/*', 10)
-
         self.assert_xml_equal("COMPONENTS/SELECT[@name='journal']", '2')
         self.assert_xml_equal("COMPONENTS/DATE[@name='date_value']", date.today().isoformat())
         self.assert_xml_equal("COMPONENTS/EDIT[@name='designation']", None)
+        self.assert_xml_equal("COMPONENTS/SELECT[@name='costaccounting']", '0')
+        self.assert_count_equal("COMPONENTS/SELECT[@name='costaccounting']/CASE", 1)
         self.assert_count_equal('ACTIONS/ACTION', 1)
 
         self.factory.xfer = EntryAccountEdit()

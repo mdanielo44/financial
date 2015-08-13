@@ -321,7 +321,10 @@ class EntryAccountEditor(LucteriosEditor):
         else:
             if (debit_rest < 0.0001) and (credit_rest < 0.0001) and (nb_lines > 0):
                 xfer.add_action(ActionsManage.get_act_changed('EntryAccount', 'validate', _('Ok'), 'images/ok.png'), {})
-            xfer.add_action(ActionsManage.get_act_changed('EntryAccount', 'unlock', _('Cancel'), 'images/cancel.png'), {})
+            if self.item.id is None:
+                xfer.add_action(WrapAction(_('Cancel'), 'images/cancel.png'), {})
+            else:
+                xfer.add_action(ActionsManage.get_act_changed('EntryAccount', 'unlock', _('Cancel'), 'images/cancel.png'), {})
 
     def edit(self, xfer):
         self._remove_lastyear_notbuilding(xfer)

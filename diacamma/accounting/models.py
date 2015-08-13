@@ -324,11 +324,11 @@ class CostAccounting(LucteriosModel):
     @classmethod
     def get_default_fields(cls):
         return ['name', 'description', (_('total revenue'), 'total_revenue'), (_('total expense'), 'total_expense'), \
-                        'last_costaccounting', 'status', 'is_default']
+                        'status', 'is_default']
 
     @classmethod
     def get_edit_fields(cls):
-        return ['name', 'description', 'last_costaccounting']
+        return ['name', 'description']
 
     @property
     def total_revenue(self):
@@ -346,13 +346,18 @@ class CostAccounting(LucteriosModel):
         # pylint: disable=no-member
         return get_amount_sum(EntryLineAccount.objects.filter(account__type_of_account=4, entry__costaccounting=self).aggregate(Sum('amount')))
 
-    def set_has_default(self):
-        all_cost = CostAccounting.objects.all()  # pylint: disable=no-member
-        for cost_item in all_cost:
-            cost_item.is_default = False
-            cost_item.save()
-        self.is_default = True
-        self.save()
+    def change_has_default(self):
+        if self.status == 0:
+            if self.is_default:
+                self.is_default = False
+                self.save()
+            else:
+                all_cost = CostAccounting.objects.all()  # pylint: disable=no-member
+                for cost_item in all_cost:
+                    cost_item.is_default = False
+                    cost_item.save()
+                self.is_default = True
+                self.save()
 
     class Meta(object):
         # pylint: disable=no-init

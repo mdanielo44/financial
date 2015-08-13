@@ -148,11 +148,10 @@ class EntryAccountDel(XferDelete):
     caption = _("Delete accounting entry")
 
     def _search_model(self):
-        ids = self.getparam('entrylineaccount')
-        if ids is None:
+        entrylineaccount = self.getparam('entrylineaccount', [])
+        if len(entrylineaccount) == 0:
             raise LucteriosException(GRAVE, _("No selection"))
-        ids = ids.split(';')  # pylint: disable=no-member
-        self.items = self.model.objects.filter(entrylineaccount__in=ids)  # pylint: disable=no-member
+        self.items = self.model.objects.filter(entrylineaccount__in=entrylineaccount)  # pylint: disable=no-member
 
 @ActionsManage.affect('EntryLineAccount', 'closeentry')
 @MenuManage.describ('accounting.add_entryaccount')
@@ -162,14 +161,13 @@ class EntryAccountClose(XferContainerAcknowledge):
     field_id = 'entryaccount'
     caption = _("Close accounting entry")
 
-    def fillresponse(self):
+    def fillresponse(self, entrylineaccount=[]):
+        # pylint: disable=dangerous-default-value
         if self.item.id is None:
-            ids = self.getparam('entrylineaccount')
-            if ids is None:
+            if len(entrylineaccount) == 0:
                 raise LucteriosException(GRAVE, _("No selection"))
-            ids = ids.split(';')  # pylint: disable=no-member
             self.items = []
-            for item in self.model.objects.filter(entrylineaccount__in=ids):  # pylint: disable=no-member
+            for item in self.model.objects.filter(entrylineaccount__in=entrylineaccount):  # pylint: disable=no-member
                 if not item.close:
                     self.items.append(item)
         else:
@@ -186,12 +184,11 @@ class EntryAccountLink(XferContainerAcknowledge):
     field_id = 'entryaccount'
     caption = _("Delete accounting entry")
 
-    def fillresponse(self):
-        ids = self.getparam('entrylineaccount')
-        if ids is None:
+    def fillresponse(self, entrylineaccount=[]):
+        # pylint: disable=dangerous-default-value
+        if len(entrylineaccount) == 0:
             raise LucteriosException(GRAVE, _("No selection"))
-        ids = ids.split(';')  # pylint: disable=no-member
-        self.items = self.model.objects.filter(entrylineaccount__in=ids)  # pylint: disable=no-member
+        self.items = self.model.objects.filter(entrylineaccount__in=entrylineaccount)  # pylint: disable=no-member
         if len(self.items) == 1:
             if self.confirme(_('Do you want unlink this entry?')):
                 self.items[0].unlink()
@@ -206,10 +203,11 @@ class EntryAccountCostAccounting(XferContainerAcknowledge):
     field_id = 'entryaccount'
     caption = _("cost accounting for entry")
 
-    def fillresponse(self, entrylineaccount, costaccounting):
-        if entrylineaccount is None:
+    def fillresponse(self, entrylineaccount=[], costaccounting=0):
+        # pylint: disable=dangerous-default-value
+        if len(entrylineaccount) == 0:
             raise LucteriosException(GRAVE, _("No selection"))
-        if costaccounting is None:
+        if self.getparam("SAVE") is None:
             dlg = self.create_custom()
             icon = XferCompImage('img')
             icon.set_location(0, 0, 1, 6)
@@ -226,9 +224,11 @@ class EntryAccountCostAccounting(XferContainerAcknowledge):
             dlg.add_action(self.get_action(_('Ok'), 'images/ok.png'), {'params':{"SAVE":"YES"}})
             dlg.add_action(WrapAction(_('Cancel'), 'images/cancel.png'), {})
         else:
-            new_cost = CostAccounting.objects.get(id=costaccounting)  # pylint: disable=no-member
-            ids = entrylineaccount.split(';')  # pylint: disable=no-member
-            for item in self.model.objects.filter(entrylineaccount__in=ids):  # pylint: disable=no-member
+            if costaccounting == 0:
+                new_cost = None
+            else:
+                new_cost = CostAccounting.objects.get(id=costaccounting)  # pylint: disable=no-member
+            for item in self.model.objects.filter(entrylineaccount__in=entrylineaccount):  # pylint: disable=no-member
                 if (item.costaccounting is None) or (item.costaccounting.status == 0):
                     item.costaccounting = new_cost
                     item.save()
