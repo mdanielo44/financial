@@ -184,7 +184,7 @@
 			<arg value="setup.py" />
 			<arg value="sdist" />
 		</exec>
-		<delete dir="diacamma_accounting.egg-info" />
+		<delete dir="diacamma_financial.egg-info" />
 	</target>
 
 </project>

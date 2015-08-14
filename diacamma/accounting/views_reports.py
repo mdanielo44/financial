@@ -73,7 +73,6 @@ class FiscalYearReport(XferContainerCustom):
     def fillresponse(self):
         self.fill_header()
         self.calcul_table()
-
         self.fill_body()
 
     def fill_header(self):
@@ -250,16 +249,14 @@ class FiscalYearTrialBalance(FiscalYearReport):
         data_line_positifs = list(EntryLineAccount.objects.filter(self.filter & Q(amount__gt=0)).values('account').annotate(data_sum=Sum('amount')))  # pylint: disable=no-member
         data_line_negatifs = list(EntryLineAccount.objects.filter(self.filter & Q(amount__lt=0)).values('account').annotate(data_sum=Sum('amount')))  # pylint: disable=no-member
         for data_line in data_line_positifs + data_line_negatifs:
-            account = ChartsAccount.objects.get(id=data_line['account'])  # pylint: disable=no-member
-            account_txt = six.text_type(account)
             if abs(data_line['data_sum']) > 0.0001:
-                if not account_txt in balance_values.keys():
-                    balance_values[account.code] = [account_txt, 0, 0]
-            if (account.credit_debit_way() * data_line['data_sum']) > 0.0001:
-                balance_values[account.code][2] = account.credit_debit_way() * data_line['data_sum']
-            else:
-                balance_values[account.code][1] = -1 * account.credit_debit_way() * data_line['data_sum']
-
+                account = ChartsAccount.objects.get(id=data_line['account'])  # pylint: disable=no-member
+                if not account.code in balance_values.keys():
+                    balance_values[account.code] = [six.text_type(account), 0, 0]
+                if (account.credit_debit_way() * data_line['data_sum']) > 0.0001:
+                    balance_values[account.code][2] = account.credit_debit_way() * data_line['data_sum']
+                else:
+                    balance_values[account.code][1] = -1 * account.credit_debit_way() * data_line['data_sum']
         return balance_values
 
     def calcul_table(self):

@@ -156,7 +156,7 @@ class FiscalYear(LucteriosModel):
     begin = models.DateField(verbose_name=_('begin'))
     end = models.DateField(verbose_name=_('end'))
     status = models.IntegerField(verbose_name=_('status'), choices=((0, _('building')), (1, _('running')), (2, _('finished'))), default=0)
-    is_actif = models.BooleanField(verbose_name=_('actif'), default=False)
+    is_actif = models.BooleanField(verbose_name=_('actif'), default=False, db_index=True)
     last_fiscalyear = models.ForeignKey('FiscalYear', verbose_name=_('last fiscal year'), related_name='next_fiscalyear', null=True, on_delete=models.SET_NULL)
 
     def init_dates(self):
@@ -366,11 +366,12 @@ class CostAccounting(LucteriosModel):
         default_permissions = []
 
 class ChartsAccount(LucteriosModel):
-    code = models.CharField(_('code'), max_length=50)
+    code = models.CharField(_('code'), max_length=50, db_index=True)
     name = models.CharField(_('name'), max_length=200)
-    year = models.ForeignKey('FiscalYear', verbose_name=_('fiscal year'), null=False, on_delete=models.CASCADE)
+    year = models.ForeignKey('FiscalYear', verbose_name=_('fiscal year'), null=False, on_delete=models.CASCADE, db_index=True)
     type_of_account = models.IntegerField(verbose_name=_('type of account'), \
-            choices=((0, _('Asset')), (1, _('Liability')), (2, _('Equity')), (3, _('Revenue')), (4, _('Expense')), (5, _('Contra-accounts'))), null=True)
+            choices=((0, _('Asset')), (1, _('Liability')), (2, _('Equity')), (3, _('Revenue')), (4, _('Expense')), (5, _('Contra-accounts'))), \
+            null=True, db_index=True)
 
     @classmethod
     def get_default_fields(cls):
@@ -494,10 +495,10 @@ class EntryAccount(LucteriosModel):
     journal = models.ForeignKey('Journal', verbose_name=_('journal'), null=False, default=0, on_delete=models.PROTECT)
     link = models.ForeignKey('AccountLink', verbose_name=_('link'), null=True, on_delete=models.SET_NULL)
     date_entry = models.DateField(verbose_name=_('date entry'), null=True)
-    date_value = models.DateField(verbose_name=_('date value'), null=True)
+    date_value = models.DateField(verbose_name=_('date value'), null=True, db_index=True)
     designation = models.CharField(_('name'), max_length=200)
     costaccounting = models.ForeignKey('CostAccounting', verbose_name=_('cost accounting'), null=True, on_delete=models.PROTECT)
-    close = models.BooleanField(verbose_name=_('close'), default=False)
+    close = models.BooleanField(verbose_name=_('close'), default=False, db_index=True)
 
     @classmethod
     def get_default_fields(cls):
@@ -654,9 +655,9 @@ class EntryLineAccount(LucteriosModel):
 
     account = models.ForeignKey('ChartsAccount', verbose_name=_('account'), null=False, on_delete=models.PROTECT)
     entry = models.ForeignKey('EntryAccount', verbose_name=_('entry'), null=False, on_delete=models.CASCADE)
-    amount = models.FloatField(_('amount'))
+    amount = models.FloatField(_('amount'), db_index=True)
     reference = models.CharField(_('reference'), max_length=100, null=True)
-    third = models.ForeignKey('Third', verbose_name=_('third'), null=True, on_delete=models.PROTECT)
+    third = models.ForeignKey('Third', verbose_name=_('third'), null=True, on_delete=models.PROTECT, db_index=True)
 
     @classmethod
     def get_default_fields(cls):
