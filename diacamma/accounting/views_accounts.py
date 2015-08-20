@@ -168,12 +168,6 @@ class ChartsAccountShow(XferShowEditor):
     field_id = 'chartsaccount'
     caption = _("Show an account")
 
-    def fill_simple_fields(self):
-        for old_key in ['year', 'type_of_account']:
-            if old_key in self.params.keys():
-                del self.params[old_key]
-        return XferShowEditor.fill_simple_fields(self)
-
 @ActionsManage.affect('ChartsAccount', 'delete')
 @MenuManage.describ('accounting.delete_chartsaccount')
 class ChartsAccountDel(XferDelete):
