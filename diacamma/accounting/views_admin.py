@@ -35,11 +35,12 @@ from lucterios.CORE.views import ParamEdit
 from lucterios.framework.xfercomponents import XferCompButton, XferCompGrid, \
     XferCompLabelForm, XferCompSelect
 
-from diacamma.accounting.models import FiscalYear, Journal, clear_system_account
+from diacamma.accounting.models import FiscalYear, Journal
 from diacamma.accounting.system import accounting_system_list, \
     accounting_system_name
 from lucterios.CORE.models import Parameter
 from lucterios.framework.error import LucteriosException, IMPORTANT
+from diacamma.accounting.tools import clear_system_account
 
 @ActionsManage.affect('FiscalYear', 'list')
 @MenuManage.describ('accounting.change_fiscalyear', FORMTYPE_MODAL, 'contact.conf', _('Management of fiscal year and financial parameters'))

@@ -35,26 +35,9 @@ from django.utils import six
 
 from lucterios.framework.models import LucteriosModel, get_value_converted, get_value_if_choices
 from lucterios.framework.error import LucteriosException, IMPORTANT
-from lucterios.CORE.parameters import Params
 from lucterios.contacts.models import AbstractContact  # pylint: disable=no-name-in-module,import-error
-
-from diacamma.accounting.system import get_accounting_system
-import re
-
-def current_system_account():
-    import sys
-    current_module = sys.modules[__name__]
-
-    if not hasattr(current_module, 'SYSTEM_ACCOUNT_CACHE'):
-        setattr(current_module, 'SYSTEM_ACCOUNT_CACHE', get_accounting_system(Params.getvalue("accounting-system")))
-    return current_module.SYSTEM_ACCOUNT_CACHE
-
-def clear_system_account():
-    import sys
-    current_module = sys.modules[__name__]
-
-    if hasattr(current_module, 'SYSTEM_ACCOUNT_CACHE'):
-        del current_module.SYSTEM_ACCOUNT_CACHE
+from diacamma.accounting.tools import get_amount_sum, format_devise, \
+    current_system_account
 
 class Third(LucteriosModel):
     contact = models.ForeignKey('contacts.AbstractContact', verbose_name=_('contact'), null=False)
@@ -562,8 +545,8 @@ class EntryAccount(LucteriosModel):
     def add_new_entryline(self, serial_entry, entrylineaccount, num_cpt, credit_val, debit_val, third, reference):
         if self.journal.id == 1:  # pylint: disable=no-member
             charts = ChartsAccount.objects.get(id=num_cpt)  # pylint: disable=no-member
-            if re.match(current_system_account().get_revenue_mask(), charts.code) or \
-                    re.match(current_system_account().get_expence_mask(), charts.code):
+            if match(current_system_account().get_revenue_mask(), charts.code) or \
+                    match(current_system_account().get_expence_mask(), charts.code):
                 raise LucteriosException(IMPORTANT, _('This kind of entry is not allowed for this journal!'))
         if entrylineaccount != 0:
             serial_entry = self.remove_entrylineaccounts(serial_entry, entrylineaccount)
@@ -798,51 +781,99 @@ class EntryLineAccount(LucteriosModel):
         verbose_name_plural = _('entry lines of account')
         default_permissions = []
 
-def get_amount_sum(val):
-    if val['amount__sum'] is None:
-        return 0
-    else:
-        return val['amount__sum']
+class ModelEntry(LucteriosModel):
+    # pylint: disable=too-many-public-methods
 
-def format_devise(amount, mode):
-    # pylint: disable=too-many-branches
-    # mode 0 25.45 => 25,45€ / -25.45 =>
+    journal = models.ForeignKey('Journal', verbose_name=_('journal'), null=False, default=0, on_delete=models.PROTECT)
+    designation = models.CharField(_('name'), max_length=200)
 
-    # mode 1 25.45 => Credit 25,45€ / -25.45 => Debit 25,45€
-    # mode 2 25.45 => {[font color="green"]}Credit 25,45€{[/font]}     / -25.45 => {[font color="blue"]}Debit 25,45€{[/font]}
+    @classmethod
+    def get_default_fields(cls):
+        return ['journal', 'designation', (_('total'), 'total')]
 
-    # mode 3 25.45 => 25,45 / -25.45 => -25.45
-    # mode 4 25.45 => 25,45€ / -25.45 => 25.45€
-    # mode 5+ 25.45 => 25,45€ / -25.45 => -25.45€
-    result = ''
-    currency_short = Params.getvalue("accounting-devise")
-    currency_decimal = Params.getvalue("accounting-devise-prec")
-    currency_format = "%%0.%df" % currency_decimal
-    currency_epsilon = pow(10, -1 * currency_decimal - 1)
-    if (amount is None) or (abs(amount) < currency_epsilon):
-        amount = 0
-    if (abs(amount) >= currency_epsilon) or (mode in (1, 2)):
-        if amount >= 0:
-            if mode == 2:
-                result = '{[font color="green"]}'
-            if (mode == 1) or (mode == 2):
-                result = '%s%s: ' % (result, _('Credit'))
+    @classmethod
+    def get_edit_fields(cls):
+        return ['journal', 'designation']
+
+    @classmethod
+    def get_show_fields(cls):
+        return ['journal', 'designation', ((_('total'), 'total'),), 'modellineentry_set']
+
+    def get_total(self):
+        try:
+            value = 0.0
+            for line in self.modellineentry_set.all(): # pylint: disable=no-member
+                value += line.get_credit()
+            return value
+
+        except LucteriosException:
+            return 0.0
+
+    @property
+    def total(self):
+        return format_devise(self.get_total(), 0)
+
+    class Meta(object):
+        # pylint: disable=no-init
+        verbose_name = _('Model of entry')
+        verbose_name_plural = _('Models of entry')
+        default_permissions = []
+
+class ModelLineEntry(LucteriosModel):
+    # pylint: disable=too-many-public-methods
+
+    model = models.ForeignKey('ModelEntry', verbose_name=_('model'), null=False, default=0, on_delete=models.CASCADE)
+    code = models.CharField(_('code'), max_length=50)
+    third = models.ForeignKey('Third', verbose_name=_('third'), null=True, on_delete=models.PROTECT)
+    amount = models.FloatField(_('amount'), default=0)
+
+    @classmethod
+    def get_default_fields(cls):
+        return ['code', 'third', (_('debit'), 'debit'), (_('credit'), 'credit')]
+
+    @classmethod
+    def get_edit_fields(cls):
+        return ['code', 'third']
+
+    def credit_debit_way(self):
+        chart_account = current_system_account().new_charts_account(self.code)
+        if chart_account[0] == '':
+            raise LucteriosException(IMPORTANT, _("Invalid code"))
+        if chart_account[1] in [0, 4]:
+            return -1
         else:
-            if mode == 2:
-                result = result + '{[font color="blue"]}'
-            if (mode == 1) or (mode == 2):
-                result = '%s%s: ' % (result, _('Debit'))
-    if mode == 3:
-        result = currency_format % amount
-    elif mode == 0:
-        if amount >= currency_epsilon:
-            result = currency_format % abs(amount) + currency_short
-    else:
-        if mode < 5:
-            amount_text = currency_format % abs(amount)
+            return 1
+
+    def get_debit(self):
+        try:
+            return max((0, -1 * self.credit_debit_way() * self.amount))  # pylint: disable=no-member
+        except LucteriosException:
+            return 0.0
+
+    @property
+    def debit(self):
+        return format_devise(self.get_debit(), 0)
+
+    def get_credit(self):
+        try:
+            return max((0, self.credit_debit_way() * self.amount))  # pylint: disable=no-member
+        except LucteriosException:
+            return 0.0
+
+    @property
+    def credit(self):
+        return format_devise(self.get_credit(), 0)
+
+    def set_montant(self, debit_val, credit_val):
+        if debit_val > 0:
+            self.amount = -1 * debit_val * self.credit_debit_way()
+        elif credit_val > 0:
+            self.amount = credit_val * self.credit_debit_way()
         else:
-            amount_text = currency_format % amount
-        result = result + amount_text + currency_short
-    if mode == 2:
-        result = result + '{[/font]}'
-    return result
+            self.amount = 0
+
+    class Meta(object):
+        # pylint: disable=no-init
+        verbose_name = _('Model line')
+        verbose_name_plural = _('Model lines')
+        default_permissions = []

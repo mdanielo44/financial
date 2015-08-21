@@ -28,10 +28,11 @@ from lucterios.contacts.models import Individual, LegalEntity, AbstractContact
 from lucterios.contacts.tests_contacts import change_ourdetail
 
 from diacamma.accounting.models import Third, AccountThird, FiscalYear, \
-    ChartsAccount, EntryAccount, Journal, AccountLink, clear_system_account, \
+    ChartsAccount, EntryAccount, Journal, AccountLink, \
     CostAccounting
 from lucterios.CORE.models import Parameter
 from lucterios.CORE.parameters import Params
+from diacamma.accounting.tools import clear_system_account
 
 def create_individual(firstname, lastname):
     empty_contact = Individual()

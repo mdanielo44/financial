@@ -44,6 +44,7 @@ def convert_code(num_cpt):
     return num_cpt
 
 class AccountingMigrate(MigrateAbstract):
+    # pylint: disable=too-many-instance-attributes
 
     def __init__(self, old_db):
         MigrateAbstract.__init__(self, old_db)
@@ -56,6 +57,8 @@ class AccountingMigrate(MigrateAbstract):
         self.accountlink_list = {}
         self.entryaccount_list = {}
         self.entrylineaccount_list = {}
+        self.model_list = {}
+        self.modelline_list = {}
 
     def _thirds(self):
         third_mdl = apps.get_model("accounting", "Third")
@@ -185,6 +188,28 @@ class AccountingMigrate(MigrateAbstract):
                     self.entrylineaccount_list[entrylineaccountid].third = self.third_list[tiers]
                     self.entrylineaccount_list[entrylineaccountid].save()
 
+    def _model(self):
+        model_mdl = apps.get_model("accounting", "ModelEntry")
+        model_mdl.objects.all().delete()
+        modelline_mdl = apps.get_model("accounting", "ModelLineEntry")
+        modelline_mdl.objects.all().delete()
+        self.model_list = {}
+        self.modelline_list = {}
+        cur_m = self.old_db.open()
+        cur_m.execute("SELECT id, journal, designation FROM fr_sdlibre_compta_Model")
+        for modelid, journal, designation in cur_m.fetchall():
+            self.print_log("=> model %s", (designation,))
+            self.model_list[modelid] = model_mdl.objects.create(journal=self.journal_list[journal], designation=designation)
+
+        cur_ml = self.old_db.open()
+        cur_ml.execute("SELECT id, model, compte, montant, tiers FROM fr_sdlibre_compta_ModelLigne")
+        for modellineid, model, compte, montant, tiers in cur_ml.fetchall():
+            self.print_log("=> model line %d %s", (model, compte))
+            self.modelline_list[modellineid] = modelline_mdl.objects.create(model=self.model_list[model], code=convert_code(compte), amount=montant)
+            if tiers is not None:
+                self.modelline_list[modellineid].third = self.third_list[tiers]
+                self.modelline_list[modellineid].save()
+
     def _params(self):
         from lucterios.CORE.models import Parameter
         Parameter.change_value('accounting-system', 'diacamma.accounting.system.french.FrenchSystemAcounting')
@@ -211,6 +236,7 @@ class AccountingMigrate(MigrateAbstract):
             self._costaccounting()
             self._chartsaccount()
             self._entryaccount()
+            self._model()
         except:  # pylint: disable=bare-except
             import traceback
             traceback.print_exc()

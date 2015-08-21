@@ -41,6 +41,7 @@ from lucterios.framework.tools import FORMTYPE_REFRESH, CLOSE_NO, ActionsManage,
 from diacamma.accounting.models import current_system_account, FiscalYear, \
     EntryLineAccount, EntryAccount, get_amount_sum, Third, CostAccounting
 from django.db.models.aggregates import Sum
+from re import match
 
 class ThirdEditor(LucteriosEditor):
 
@@ -441,3 +442,18 @@ class EntryLineAccountEditor(LucteriosEditor):
         self.edit_account_for_line(xfer, init_col, init_row, debit_rest, credit_rest)
         self.edit_creditdebit_for_line(xfer, init_col, init_row + 2)
         self.edit_extra_for_line(xfer, init_col + 3, init_row)
+
+class ModelLineEntryEditor(EntryLineAccountEditor):
+
+    def edit(self, xfer):
+        xfer.params['model'] = xfer.getparam('modelentry', 0)
+        code = xfer.get_components('code')
+        code.set_action(xfer.request, xfer.get_action(), {'modal':FORMTYPE_REFRESH, 'close':CLOSE_NO})
+        if match(current_system_account().get_third_mask(), self.item.code) is None:
+            xfer.remove_component('third')
+            xfer.remove_component('lbl_third')
+        xfer.move(0, 1, 0)
+        self.edit_creditdebit_for_line(xfer, 1, xfer.get_max_row() + 1)
+
+    def before_save(self, xfer):
+        self.item.set_montant(xfer.getparam('debit_val', 0.0), xfer.getparam('credit_val', 0.0))

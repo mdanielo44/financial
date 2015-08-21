@@ -38,11 +38,12 @@ from diacamma.accounting.views_admin import Configuration, JournalAddModify, \
 from diacamma.accounting.test_tools import initial_contacts, fill_entries, initial_thirds, \
     create_third, fill_accounts, fill_thirds, default_compta, \
     set_accounting_system
-from diacamma.accounting.models import FiscalYear, clear_system_account, \
-    current_system_account
+from diacamma.accounting.models import FiscalYear
 from diacamma.accounting.system import get_accounting_system
 from base64 import b64decode
 from django.utils import six
+from diacamma.accounting.tools import current_system_account,\
+    clear_system_account
 
 class ThirdTest(LucteriosTest):
     # pylint: disable=too-many-public-methods,too-many-statements

@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 from django.utils.translation import ugettext_lazy as _
 from django.db.models import Q
 
-from lucterios.framework.xferadvance import XferDelete
+from lucterios.framework.xferadvance import XferDelete, XferShowEditor
 from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage, \
     SELECT_SINGLE, CLOSE_NO, FORMTYPE_REFRESH
 from lucterios.framework.xferadvance import XferListEditor
@@ -13,7 +13,8 @@ from lucterios.framework.xfergraphic import XferContainerAcknowledge
 from lucterios.framework.error import LucteriosException, IMPORTANT
 from lucterios.framework.xfercomponents import XferCompCheck, XferCompLabelForm
 
-from diacamma.accounting.models import CostAccounting
+from diacamma.accounting.models import CostAccounting, ModelLineEntry, \
+    ModelEntry
 from diacamma.accounting.views_reports import CostAccountingIncomeStatement
 
 @ActionsManage.affect('CostAccounting', 'list')
@@ -90,3 +91,54 @@ class CostAccountingDel(XferDelete):
     model = CostAccounting
     field_id = 'costaccounting'
     caption = _("Delete cost accounting")
+
+@ActionsManage.affect('ModelEntry', 'list')
+@MenuManage.describ('accounting.change_entryaccount', FORMTYPE_NOMODAL, 'bookkeeping', _('Edition of entry model'),)
+class ModelEntryList(XferListEditor):
+    icon = "entryModel.png"
+    model = ModelEntry
+    field_id = 'modelentry'
+
+    caption = _("Models of entry")
+
+@ActionsManage.affect('ModelEntry', 'modify', 'add')
+@MenuManage.describ('accounting.add_entryaccount')
+class ModelEntryAddModify(XferAddEditor):
+    icon = "entryModel.png"
+    model = ModelEntry
+    field_id = 'modelentry'
+    caption_add = _("Add model of entry")
+    caption_modify = _("Modify model of entry")
+
+@ActionsManage.affect('ModelEntry', 'show')
+@MenuManage.describ('accounting.change_entryaccount')
+class ModelEntryShow(XferShowEditor):
+    icon = "entryModel.png"
+    model = ModelEntry
+    field_id = 'modelentry'
+    caption = _("Show Model of entry")
+
+@ActionsManage.affect('ModelEntry', 'delete')
+@MenuManage.describ('accounting.delete_entryaccount')
+class ModelEntryDel(XferDelete):
+    icon = "entryModel.png"
+    model = ModelEntry
+    field_id = 'modelentry'
+    caption = _("Delete Model of entry")
+
+@ActionsManage.affect('ModelLineEntry', 'edit', 'modify', 'add')
+@MenuManage.describ('accounting.add_entryaccount')
+class ModelLineEntryAddModify(XferAddEditor):
+    icon = "entryModel.png"
+    model = ModelLineEntry
+    field_id = 'modellineentry'
+    caption_add = _("Add model line  of entry")
+    caption_modify = _("Modify model line  of entry")
+
+@ActionsManage.affect('ModelLineEntry', 'delete')
+@MenuManage.describ('accounting.delete_entryaccount')
+class ModelLineEntryDel(XferDelete):
+    icon = "entryModel.png"
+    model = ModelLineEntry
+    field_id = 'modellineentry'
+    caption = _("Delete Model line  of entry")

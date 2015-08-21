@@ -233,5 +233,33 @@ class Migration(migrations.Migration):
             },
             bases=(models.Model,),
         ),
+        migrations.CreateModel(
+            name='ModelEntry',
+            fields=[
+                ('id', models.AutoField(primary_key=True, serialize=False, verbose_name='ID', auto_created=True)),
+                ('designation', models.CharField(max_length=200, verbose_name='name')),
+                ('journal', models.ForeignKey(to='accounting.Journal', default=0, verbose_name='journal', on_delete=models.PROTECT)),
+            ],
+            options={
+                'verbose_name_plural': 'Models of entry',
+                'verbose_name': 'Model of entry',
+                'default_permissions': [],
+            },
+        ),
+        migrations.CreateModel(
+            name='ModelLineEntry',
+            fields=[
+                ('id', models.AutoField(primary_key=True, serialize=False, verbose_name='ID', auto_created=True)),
+                ('code', models.CharField(max_length=50, verbose_name='code')),
+                ('amount', models.FloatField(verbose_name='amount')),
+                ('model', models.ForeignKey(default=0, verbose_name='model', to='accounting.ModelEntry')),
+                ('third', models.ForeignKey(to='accounting.Third', verbose_name='third', on_delete=models.PROTECT, null=True)),
+            ],
+            options={
+                'verbose_name_plural': 'Model lines of entry',
+                'verbose_name': 'Model line  of entry',
+                'default_permissions': [],
+            },
+        ),
         migrations.RunPython(initial_values),
     ]
