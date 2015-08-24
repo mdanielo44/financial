@@ -52,6 +52,10 @@ def get_amount_sum(val):
     else:
         return val['amount__sum']
 
+def currency_round(amount):
+    currency_decimal = Params.getvalue("accounting-devise-prec")
+    return round(amount, currency_decimal)
+
 def format_devise(amount, mode):
     # pylint: disable=too-many-branches
     # mode 0 25.45 => 25,45€ / -25.45 =>

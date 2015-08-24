@@ -37,13 +37,15 @@ from diacamma.accounting.views_admin import Configuration, JournalAddModify, \
     JournalDel, FiscalYearAddModify, FiscalYearActive, FiscalYearDel
 from diacamma.accounting.test_tools import initial_contacts, fill_entries, initial_thirds, \
     create_third, fill_accounts, fill_thirds, default_compta, \
-    set_accounting_system
+    set_accounting_system, add_models
 from diacamma.accounting.models import FiscalYear
 from diacamma.accounting.system import get_accounting_system
 from base64 import b64decode
 from django.utils import six
-from diacamma.accounting.tools import current_system_account,\
+from diacamma.accounting.tools import current_system_account, \
     clear_system_account
+from diacamma.accounting.views_other import ModelEntryList, ModelEntryAddModify, \
+    ModelLineEntryAddModify, ModelEntrySelector
 
 class ThirdTest(LucteriosTest):
     # pylint: disable=too-many-public-methods,too-many-statements
@@ -683,3 +685,111 @@ class AdminTest(LucteriosTest):
         self.assertEqual(current_system_account().__class__.__name__, "DefaultSystemAccounting")
         set_accounting_system()
         self.assertEqual(current_system_account().__class__.__name__, "FrenchSystemAcounting")
+
+class ModelTest(LucteriosTest):
+
+    def setUp(self):
+        self.xfer_class = XferContainerAcknowledge
+        LucteriosTest.setUp(self)
+        initial_thirds()
+        rmtree(get_user_dir(), True)
+        clear_system_account()
+        default_compta()
+
+    def test_add(self):
+        self.factory.xfer = ModelEntryList()
+        self.call('/diacamma.accounting/modelEntryList', {}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'modelEntryList')
+        self.assert_count_equal('COMPONENTS/*', 4)
+        self.assert_count_equal('COMPONENTS/GRID[@name="modelentry"]/HEADER', 3)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="modelentry"]/HEADER[@name="journal"]', "journal")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="modelentry"]/HEADER[@name="designation"]', "nom")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="modelentry"]/HEADER[@name="total"]', "total")
+        self.assert_count_equal('COMPONENTS/GRID[@name="modelentry"]/RECORD', 0)
+
+        self.factory.xfer = ModelEntryAddModify()
+        self.call('/diacamma.accounting/modelEntryAddModify', {}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'modelEntryAddModify')
+        self.assert_count_equal('COMPONENTS/*', 5)
+        self.assert_count_equal('COMPONENTS/SELECT[@name="journal"]/CASE', 4)
+
+        self.factory.xfer = ModelEntryAddModify()
+        self.call('/diacamma.accounting/modelEntryAddModify', {'SAVE':'YES', 'journal':'2', 'designation':'foo'}, False)
+        self.assert_observer('Core.Acknowledge', 'diacamma.accounting', 'modelEntryAddModify')
+
+        self.factory.xfer = ModelEntryList()
+        self.call('/diacamma.accounting/modelEntryList', {}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'modelEntryList')
+        self.assert_count_equal('COMPONENTS/*', 4)
+        self.assert_count_equal('COMPONENTS/GRID[@name="modelentry"]/HEADER', 3)
+        self.assert_count_equal('COMPONENTS/GRID[@name="modelentry"]/RECORD', 1)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="modelentry"]/RECORD[1]/VALUE[@name="journal"]', "Achat")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="modelentry"]/RECORD[1]/VALUE[@name="designation"]', "foo")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="modelentry"]/RECORD[1]/VALUE[@name="total"]', "0.00€")
+
+    def test_addline(self):
+        self.factory.xfer = ModelEntryAddModify()
+        self.call('/diacamma.accounting/modelEntryAddModify', {'SAVE':'YES', 'journal':'2', 'designation':'foo'}, False)
+        self.assert_observer('Core.Acknowledge', 'diacamma.accounting', 'modelEntryAddModify')
+
+        self.factory.xfer = ModelLineEntryAddModify()
+        self.call('/diacamma.accounting/modelLineEntryAddModify', {'modelentry':'1'}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'modelLineEntryAddModify')
+        self.assert_count_equal('COMPONENTS/*', 7)
+        self.assert_xml_equal('COMPONENTS/EDIT[@name="code"]', None)
+        self.assert_xml_equal('COMPONENTS/FLOAT[@name="credit_val"]', '0.00')
+        self.assert_xml_equal('COMPONENTS/FLOAT[@name="debit_val"]', '0.00')
+
+        self.factory.xfer = ModelLineEntryAddModify()
+        self.call('/diacamma.accounting/modelLineEntryAddModify', {'modelentry':'1', 'code':'411'}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'modelLineEntryAddModify')
+        self.assert_count_equal('COMPONENTS/*', 9)
+        self.assert_xml_equal('COMPONENTS/EDIT[@name="code"]', '411')
+        self.assert_xml_equal('COMPONENTS/SELECT[@name="third"]', '0')
+        self.assert_xml_equal('COMPONENTS/FLOAT[@name="credit_val"]', '0.00')
+        self.assert_xml_equal('COMPONENTS/FLOAT[@name="debit_val"]', '0.00')
+
+        self.factory.xfer = ModelLineEntryAddModify()
+        self.call('/diacamma.accounting/modelLineEntryAddModify', {'SAVE':'YES', 'model':'1', 'modelentry':'1', 'code':'411', 'third':'3', 'credit_val':'19.37', 'debit_val':'0.0'}, False)
+
+        self.assert_observer('Core.Acknowledge', 'diacamma.accounting', 'modelLineEntryAddModify')
+
+        self.factory.xfer = ModelEntryList()
+        self.call('/diacamma.accounting/modelEntryList', {}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'modelEntryList')
+        self.assert_count_equal('COMPONENTS/*', 4)
+        self.assert_count_equal('COMPONENTS/GRID[@name="modelentry"]/HEADER', 3)
+        self.assert_count_equal('COMPONENTS/GRID[@name="modelentry"]/RECORD', 1)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="modelentry"]/RECORD[1]/VALUE[@name="journal"]', "Achat")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="modelentry"]/RECORD[1]/VALUE[@name="designation"]', "foo")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="modelentry"]/RECORD[1]/VALUE[@name="total"]', "19.37€")
+
+    def test_selector(self):
+        add_models()
+        self.factory.xfer = ModelEntrySelector()
+        self.call('/diacamma.accounting/modelEntrySelector', {}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'modelEntrySelector')
+        self.assert_count_equal('COMPONENTS/*', 5)
+        self.assert_count_equal('COMPONENTS/SELECT[@name="model"]/CASE', 2)
+        self.assert_xml_equal('COMPONENTS/FLOAT[@name="factor"]', '1.00')
+
+        self.factory.xfer = ModelEntrySelector()
+        self.call('/diacamma.accounting/modelEntrySelector', {'journal':2}, False)
+        self.assert_observer('Core.Custom', 'diacamma.accounting', 'modelEntrySelector')
+        self.assert_count_equal('COMPONENTS/*', 5)
+        self.assert_count_equal('COMPONENTS/SELECT[@name="model"]/CASE', 1)
+        self.assert_xml_equal('COMPONENTS/FLOAT[@name="factor"]', '1.00')
+
+    def test_insert(self):
+        add_models()
+        self.factory.xfer = ModelEntrySelector()
+        self.call('/diacamma.accounting/modelEntrySelector', {'SAVE':'YES', 'journal':'2', 'model':1, 'factor':2.50}, False)
+        self.assert_observer('Core.Acknowledge', 'diacamma.accounting', 'modelEntrySelector')
+        self.assert_count_equal("CONTEXT/*", 2)
+        self.assert_xml_equal("CONTEXT/PARAM[@name='entryaccount']", "1")
+        self.assert_xml_equal("CONTEXT/PARAM[@name='journal']", "2")
+        self.assert_attrib_equal("ACTION", "id", "diacamma.accounting/entryAccountEdit")
+        self.assert_count_equal("ACTION/PARAM", 1)
+        serial_entry = self.get_first_xpath("ACTION/PARAM[@name='serial_entry']").text.split('\n')
+        self.assertEqual(serial_entry[0][-20:], "|1|3|48.430000|None|", serial_entry[0])
+        self.assertEqual(serial_entry[1][-21:], "|2|0|-48.430000|None|", serial_entry[1])

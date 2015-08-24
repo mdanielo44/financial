@@ -443,6 +443,17 @@ class EntryLineAccountEditor(LucteriosEditor):
         self.edit_creditdebit_for_line(xfer, init_col, init_row + 2)
         self.edit_extra_for_line(xfer, init_col + 3, init_row)
 
+class ModelEntryEditor(EntryLineAccountEditor):
+
+    def edit(self, xfer):
+        comp_journal = xfer.get_components('journal')
+        select_jrn = comp_journal.select_list
+        for item_idx in range(len(select_jrn)):
+            if select_jrn[item_idx][0] == 1:
+                del select_jrn[item_idx]
+                break
+        comp_journal.select_list = select_jrn
+
 class ModelLineEntryEditor(EntryLineAccountEditor):
 
     def edit(self, xfer):

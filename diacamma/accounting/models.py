@@ -37,7 +37,7 @@ from lucterios.framework.models import LucteriosModel, get_value_converted, get_
 from lucterios.framework.error import LucteriosException, IMPORTANT
 from lucterios.contacts.models import AbstractContact  # pylint: disable=no-name-in-module,import-error
 from diacamma.accounting.tools import get_amount_sum, format_devise, \
-    current_system_account
+    current_system_account, currency_round
 
 class Third(LucteriosModel):
     contact = models.ForeignKey('contacts.AbstractContact', verbose_name=_('contact'), null=False)
@@ -708,19 +708,19 @@ class EntryLineAccount(LucteriosModel):
         if self.third is None:
             res = res and (other.third is None)
         else:
-            res = res and (self.third.id == other.third.id)
+            res = res and (self.third.id == other.third.id)  # pylint: disable=no-member
         return res
 
     def get_serial(self):
         if self.third is None:
             third_id = 0
         else:
-            third_id = self.third.id
+            third_id = self.third.id # pylint: disable=no-member
         if self.reference is None:
             reference = 'None'
         else:
             reference = self.reference
-        return "%d|%d|%d|%f|%s|" % (self.id, self.account.id, third_id, self.amount, reference)
+        return "%d|%d|%d|%f|%s|" % (self.id, self.account.id, third_id, self.amount, reference)  # pylint: disable=no-member
 
     @classmethod
     def add_serial(cls, num_cpt, debit_val, credit_val, thirdid=0, reference=None):
@@ -787,6 +787,9 @@ class ModelEntry(LucteriosModel):
     journal = models.ForeignKey('Journal', verbose_name=_('journal'), null=False, default=0, on_delete=models.PROTECT)
     designation = models.CharField(_('name'), max_length=200)
 
+    def __str__(self):
+        return "[%s] %s (%s)" % (self.journal, self.designation, self.total)
+
     @classmethod
     def get_default_fields(cls):
         return ['journal', 'designation', (_('total'), 'total')]
@@ -802,16 +805,25 @@ class ModelEntry(LucteriosModel):
     def get_total(self):
         try:
             value = 0.0
-            for line in self.modellineentry_set.all(): # pylint: disable=no-member
+            for line in self.modellineentry_set.all():  # pylint: disable=no-member
                 value += line.get_credit()
             return value
-
         except LucteriosException:
             return 0.0
 
     @property
     def total(self):
-        return format_devise(self.get_total(), 0)
+        return format_devise(self.get_total(), 5)
+
+    def get_serial_entry(self, factor):
+        serial_val = ''
+        num = 0
+        for line in self.modellineentry_set.all():  # pylint: disable=no-member
+            if serial_val != '':
+                serial_val += '\n'
+            serial_val += line.get_serial(factor, num)
+            num += 1
+        return serial_val
 
     class Meta(object):
         # pylint: disable=no-init
@@ -871,6 +883,19 @@ class ModelLineEntry(LucteriosModel):
             self.amount = credit_val * self.credit_debit_way()
         else:
             self.amount = 0
+
+    def get_serial(self, factor, num):
+        import time
+        try:
+            new_entry_line = EntryLineAccount()
+            new_entry_line.id = -1 * int(time.time() * 60) + num  # pylint: disable=invalid-name,attribute-defined-outside-init
+            new_entry_line.account = ChartsAccount.objects.get(code=self.code)  # pylint: disable=no-member
+            new_entry_line.third = self.third
+            new_entry_line.amount = currency_round(self.amount * factor)
+            new_entry_line.reference = None
+            return new_entry_line.get_serial()
+        except ObjectDoesNotExist:
+            raise LucteriosException(IMPORTANT, _('Account code "%s" unknown for this fiscal year!') % self.code)
 
     class Meta(object):
         # pylint: disable=no-init

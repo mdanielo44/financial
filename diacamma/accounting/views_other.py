@@ -6,16 +6,19 @@ from django.db.models import Q
 
 from lucterios.framework.xferadvance import XferDelete, XferShowEditor
 from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage, \
-    SELECT_SINGLE, CLOSE_NO, FORMTYPE_REFRESH
+    SELECT_SINGLE, CLOSE_NO, FORMTYPE_REFRESH, WrapAction
 from lucterios.framework.xferadvance import XferListEditor
 from lucterios.framework.xferadvance import XferAddEditor
 from lucterios.framework.xfergraphic import XferContainerAcknowledge
 from lucterios.framework.error import LucteriosException, IMPORTANT
-from lucterios.framework.xfercomponents import XferCompCheck, XferCompLabelForm
+from lucterios.framework.xfercomponents import XferCompCheck, XferCompLabelForm, \
+    XferCompImage, XferCompSelect, XferCompFloat
 
 from diacamma.accounting.models import CostAccounting, ModelLineEntry, \
-    ModelEntry
+    ModelEntry, EntryAccount, FiscalYear
 from diacamma.accounting.views_reports import CostAccountingIncomeStatement
+from diacamma.accounting.views_entries import EntryAccountEdit
+from datetime import date
 
 @ActionsManage.affect('CostAccounting', 'list')
 @MenuManage.describ('accounting.change_entryaccount', FORMTYPE_NOMODAL, 'bookkeeping', _('Edition of costs accounting'))
@@ -142,3 +145,54 @@ class ModelLineEntryDel(XferDelete):
     model = ModelLineEntry
     field_id = 'modellineentry'
     caption = _("Delete Model line  of entry")
+
+@ActionsManage.affect('EntryLineAccount', 'model')
+@MenuManage.describ('accounting.add_entryaccount')
+class ModelEntrySelector(XferContainerAcknowledge):
+    icon = "entryModel.png"
+    model = ModelEntry
+    field_id = 'model'
+    caption = _("Select model of entry")
+
+    def fillresponse(self, journal=0):
+        if self.getparam('SAVE') is None:
+            dlg = self.create_custom()
+            image = XferCompImage('image')
+            image.set_value(self.icon_path())
+            image.set_location(0, 0, 1, 6)
+            dlg.add_component(image)
+            lbl = XferCompLabelForm('lblmodel')
+            lbl.set_value(_('model name'))
+            lbl.set_location(1, 0)
+            dlg.add_component(lbl)
+            if journal > 0:
+                mod_query = ModelEntry.objects.filter(journal=journal)  # pylint: disable=no-member
+            else:
+                mod_query = ModelEntry.objects.all()  # pylint: disable=no-member
+            sel = XferCompSelect('model')
+            sel.set_location(2, 0)
+            sel.set_needed(True)
+            sel.set_select_query(mod_query)
+            dlg.add_component(sel)
+            lbl = XferCompLabelForm('lblfactor')
+            lbl.set_value(_('factor'))
+            lbl.set_location(1, 1)
+            dlg.add_component(lbl)
+            fact = XferCompFloat('factor', 0.00, 1000000.0, 2)
+            fact.set_value(1.0)
+            fact.set_location(2, 1)
+            dlg.add_component(fact)
+            dlg.add_action(self.get_action(_('Ok'), 'images/ok.png'), {'params':{"SAVE":"YES"}})
+            dlg.add_action(WrapAction(_('Cancel'), 'images/cancel.png'), {})
+        else:
+            factor = self.getparam('factor', 1.0)
+            for old_key in ['SAVE', 'model', 'factor']:
+                if old_key in self.params.keys():
+                    del self.params[old_key]
+            serial_entry = self.item.get_serial_entry(factor)
+            date_value = date.today().isoformat()
+            year = FiscalYear.get_current(self.getparam('year'))
+            entry = EntryAccount.objects.create(year=year, date_value=date_value, designation=self.item.designation, journal=self.item.journal)  # pylint: disable=no-member
+            entry.editor.before_save(self)
+            self.params["entryaccount"] = entry.id
+            self.redirect_action(EntryAccountEdit.get_action(), {'params':{"serial_entry":serial_entry}})

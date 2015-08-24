@@ -71,6 +71,7 @@ class EntryLineAccountList(XferListEditor):
         if (self.item.year.status in [0, 1]) and (select_filter != 2):  # pylint: disable=no-member
             self.action_grid.append(('remove', _("Delete"), "images/delete.png", SELECT_MULTI))
             self.action_grid.append(('insertentry', _("Add"), "images/add.png", SELECT_NONE))
+            self.action_grid.append(('model', _("Model"), "images/add.png", SELECT_NONE))
             self.action_grid.append(('closeentry', _("Closed"), "images/ok.png", SELECT_MULTI))
         self.action_grid.append(('costaccounting', _("Cost"), "images/edit.png", SELECT_MULTI))
         lbl = XferCompLabelForm("filterLbl")
