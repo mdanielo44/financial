@@ -34,6 +34,7 @@ from lucterios.CORE.models import Parameter
 from lucterios.CORE.parameters import Params
 from diacamma.accounting.tools import clear_system_account
 
+
 def create_individual(firstname, lastname):
     empty_contact = Individual()
     empty_contact.firstname = firstname
@@ -47,6 +48,7 @@ def create_individual(firstname, lastname):
     empty_contact.save()
     return empty_contact
 
+
 def change_legal(name):
     ourdetails = LegalEntity()
     ourdetails.name = name
@@ -58,6 +60,7 @@ def change_legal(name):
     ourdetails.email = "%s@worldcompany.com" % name
     ourdetails.save()
 
+
 def initial_contacts():
     change_ourdetail()  # contact 1
     create_individual('Avrel', 'Dalton')  # contact 2
@@ -68,85 +71,122 @@ def initial_contacts():
     change_legal("Minimum")  # contact 7
     change_legal("Maximum")  # contact 8
 
+
 def create_third(abstractids, codes=None):
     for abstractid in abstractids:
-        new_third = Third.objects.create(contact=AbstractContact.objects.get(id=abstractid), status=0)  # pylint: disable=no-member
+        new_third = Third.objects.create(contact=AbstractContact.objects.get(
+            id=abstractid), status=0)
         if codes is not None:
             for code in codes:
-                AccountThird.objects.create(third=new_third, code=code)  # pylint: disable=no-member
+                AccountThird.objects.create(
+                    third=new_third, code=code)
+
 
 def create_year(status=0):
-    new_year = FiscalYear.objects.create(begin='2015-01-01', end='2015-12-31', status=status)  # pylint: disable=no-member
+    new_year = FiscalYear.objects.create(
+        begin='2015-01-01', end='2015-12-31', status=status)
     new_year.set_has_actif()
     return new_year
+
 
 def create_account(codes, type_of_account, year=None):
     if year is None:
         year = FiscalYear.get_current()
     for code in codes:
-        ChartsAccount.objects.create(code=code, name=code, type_of_account=type_of_account, year=year)  # pylint: disable=no-member
+        ChartsAccount.objects.create(
+            code=code, name=code, type_of_account=type_of_account, year=year)
+
 
 def fill_thirds():
     create_third([2, 8], ['401000'])  # 1 2
     create_third([6, 7], ['411000', '401000'])  # 3 4
     create_third([3, 4, 5], ['411000'])  # 5 6 7
 
+
 def initial_thirds():
     initial_contacts()
     fill_thirds()
+
 
 def fill_accounts(year=None):
     create_account(['411000', '512000', '531000'], 0, year)  # 1 2 3
     create_account(['401000'], 1, year)  # 4
     create_account(['106000', '110000', '119000'], 2, year)  # 5 6 7
     create_account(['701000', '706000', '707000'], 3, year)  # 8 9 10
-    create_account(['601000', '602000', '604000', '607000', '627000'], 4, year)  # 11 12 13 14 15
+    # 11 12 13 14 15
+    create_account(['601000', '602000', '604000', '607000', '627000'], 4, year)
+
 
 def add_models():
-    model1 = ModelEntry.objects.create(journal=Journal.objects.get(id=2), designation='achat') # pylint: disable=no-member
-    ModelLineEntry.objects.create(model=model1, code='411000', third=Third.objects.get(id=3), amount=19.37) # pylint: disable=no-member
-    ModelLineEntry.objects.create(model=model1, code='512000', amount=-19.37) # pylint: disable=no-member
-    model2 = ModelEntry.objects.create(journal=Journal.objects.get(id=3), designation='vente') # pylint: disable=no-member
-    ModelLineEntry.objects.create(model=model2, code='401000', third=Third.objects.get(id=6), amount=-68.47) # pylint: disable=no-member
-    ModelLineEntry.objects.create(model=model2, code='531000', amount=68.47) # pylint: disable=no-member
+    model1 = ModelEntry.objects.create(journal=Journal.objects.get(
+        id=2), designation='achat')
+    ModelLineEntry.objects.create(model=model1, code='411000', third=Third.objects.get(
+        id=3), amount=19.37)
+    ModelLineEntry.objects.create(
+        model=model1, code='512000', amount=-19.37)
+    model2 = ModelEntry.objects.create(journal=Journal.objects.get(
+        id=3), designation='vente')
+    ModelLineEntry.objects.create(model=model2, code='401000', third=Third.objects.get(
+        id=6), amount=-68.47)
+    ModelLineEntry.objects.create(
+        model=model2, code='531000', amount=68.47)
+
 
 def set_accounting_system():
-    Parameter.change_value('accounting-system', 'diacamma.accounting.system.french.FrenchSystemAcounting')
+    Parameter.change_value(
+        'accounting-system', 'diacamma.accounting.system.french.FrenchSystemAcounting')
     Params.clear()
     clear_system_account()
+
 
 def default_compta(status=0):
     set_accounting_system()
     year = create_year(status)
     fill_accounts(year)
 
+
 def add_entry(yearid, journalid, date_value, designation, serial_entry, closed=False, costaccounting=None):
-    year = FiscalYear.objects.get(id=yearid)  # pylint: disable=no-member
-    journal = Journal.objects.get(id=journalid)  # pylint: disable=no-member
-    new_entry = EntryAccount.objects.create(year=year, journal=journal, date_value=date_value, designation=designation, costaccounting=costaccounting)  # pylint: disable=no-member
+    year = FiscalYear.objects.get(id=yearid)
+    journal = Journal.objects.get(id=journalid)
+    new_entry = EntryAccount.objects.create(
+        year=year, journal=journal, date_value=date_value, designation=designation, costaccounting=costaccounting)
     new_entry.save_entrylineaccounts(serial_entry)
     if closed:
         new_entry.closed()
     return new_entry
 
+
 def fill_entries(yearid):
 
-    cost1 = CostAccounting.objects.create(name='close', description='Close cost', status=1, is_default=False)  # pylint: disable=no-member
+    cost1 = CostAccounting.objects.create(
+        name='close', description='Close cost', status=1, is_default=False)
     # cost1: dep=12.34 / rec=0.00 => res=-12.34
-    cost2 = CostAccounting.objects.create(name='open', description='Open cost', status=0, is_default=True)  # pylint: disable=no-member
+    cost2 = CostAccounting.objects.create(
+        name='open', description='Open cost', status=0, is_default=True)
 
     # cost2: dep=258.02 / rec=70.64 => res=-187.38
-    _ = add_entry(yearid, 1, '2015-02-01', 'Report à nouveau', '-1|5|0|1250.470000|None|\n-2|2|0|1135.930000|None|\n-3|3|0|114.450000|None|', True)  # 1 2 3
-    entry2 = add_entry(yearid, 2, '2015-02-14', 'depense 1', '-1|12|0|63.940000|None|\n-2|4|4|63.940000|None|', True, costaccounting=cost2)  # 4 5
-    entry3 = add_entry(yearid, 4, '2015-02-15', 'regement depense 1', '-1|2|0|-63.940000|ch N°34543|\n-2|4|4|-63.940000|None|', True)  # 6 7
-    entry4 = add_entry(yearid, 2, '2015-02-13', 'depense 2', '-1|14|0|194.080000|None|\n-2|4|1|194.080000|None|', costaccounting=cost2)  # 8 9
-    entry5 = add_entry(yearid, 4, '2015-02-17', 'regement depense 2', '-1|3|0|-194.080000|ch N°34545|\n-2|4|1|-194.080000|None|')  # 10 11
-    _ = add_entry(yearid, 2, '2015-02-20', 'depense 3', '-1|11|0|78.240000|None|\n-2|4|2|78.240000|None|')  # 12 13
-    entry7 = add_entry(yearid, 3, '2015-02-21', 'vente 1', '-1|10|0|70.640000|None|\n-2|1|7|70.640000|None|', True, costaccounting=cost2)  # 14 15
-    entry8 = add_entry(yearid, 4, '2015-02-22', 'regement vente 1', '-1|2|0|70.640000|BP N°654321|\n-2|1|7|-70.640000|None|', True)  # 16 17
-    _ = add_entry(yearid, 3, '2015-02-21', 'vente 2', '-1|10|0|125.970000|None|\n-2|1|5|125.970000|None|', True)  # 18 19
-    _ = add_entry(yearid, 3, '2015-02-24', 'vente 3', '-1|10|0|34.010000|None|\n-2|1|4|34.010000|None|')  # 20 21
-    _ = add_entry(yearid, 5, '2015-02-20', 'Frais bancaire', '-1|2|0|-12.340000|None|\n-2|15|0|12.340000|None|', True, costaccounting=cost1)  # 22 23
+    _ = add_entry(yearid, 1, '2015-02-01', 'Report à nouveau',
+                  '-1|5|0|1250.470000|None|\n-2|2|0|1135.930000|None|\n-3|3|0|114.450000|None|', True)  # 1 2 3
+    entry2 = add_entry(yearid, 2, '2015-02-14', 'depense 1',
+                       '-1|12|0|63.940000|None|\n-2|4|4|63.940000|None|', True, costaccounting=cost2)  # 4 5
+    entry3 = add_entry(yearid, 4, '2015-02-15', 'regement depense 1',
+                       '-1|2|0|-63.940000|ch N°34543|\n-2|4|4|-63.940000|None|', True)  # 6 7
+    entry4 = add_entry(yearid, 2, '2015-02-13', 'depense 2',
+                       '-1|14|0|194.080000|None|\n-2|4|1|194.080000|None|', costaccounting=cost2)  # 8 9
+    entry5 = add_entry(yearid, 4, '2015-02-17', 'regement depense 2',
+                       '-1|3|0|-194.080000|ch N°34545|\n-2|4|1|-194.080000|None|')  # 10 11
+    _ = add_entry(yearid, 2, '2015-02-20', 'depense 3',
+                  '-1|11|0|78.240000|None|\n-2|4|2|78.240000|None|')  # 12 13
+    entry7 = add_entry(yearid, 3, '2015-02-21', 'vente 1',
+                       '-1|10|0|70.640000|None|\n-2|1|7|70.640000|None|', True, costaccounting=cost2)  # 14 15
+    entry8 = add_entry(yearid, 4, '2015-02-22', 'regement vente 1',
+                       '-1|2|0|70.640000|BP N°654321|\n-2|1|7|-70.640000|None|', True)  # 16 17
+    _ = add_entry(yearid, 3, '2015-02-21', 'vente 2',
+                  '-1|10|0|125.970000|None|\n-2|1|5|125.970000|None|', True)  # 18 19
+    _ = add_entry(yearid, 3, '2015-02-24', 'vente 3',
+                  '-1|10|0|34.010000|None|\n-2|1|4|34.010000|None|')  # 20 21
+    _ = add_entry(yearid, 5, '2015-02-20', 'Frais bancaire',
+                  '-1|2|0|-12.340000|None|\n-2|15|0|12.340000|None|', True, costaccounting=cost1)  # 22 23
     AccountLink.create_link([entry2, entry3])
     AccountLink.create_link([entry4, entry5])
     AccountLink.create_link([entry7, entry8])

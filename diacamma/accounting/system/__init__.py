@@ -27,10 +27,13 @@ from __future__ import unicode_literals
 from django.utils.translation import ugettext_lazy as _
 from django.utils.module_loading import import_module
 
+
 def accounting_system_list():
     res = {}
-    res['diacamma.accounting.system.french.FrenchSystemAcounting'] = _('French system acounting')
+    res['diacamma.accounting.system.french.FrenchSystemAcounting'] = _(
+        'French system acounting')
     return res
+
 
 def accounting_system_name(complete_name):
     sys_list = accounting_system_list()
@@ -38,6 +41,7 @@ def accounting_system_name(complete_name):
         return sys_list[complete_name]
     else:
         return "---"
+
 
 def get_accounting_system(complete_name):
     modules_long = complete_name.split('.')

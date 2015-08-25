@@ -32,19 +32,21 @@ from lucterios.install.lucterios_migration import MigrateAbstract
 import sys
 import datetime
 
+
 def decode_html(data):
     def _callback(matches):
         match_id = matches.group(1)
         return six.unichr(int(match_id))
     return re.sub(r"&#(\d+)(;|(?=\s))", _callback, data)
 
+
 def convert_code(num_cpt):
     while len(num_cpt) > 3 and num_cpt[-1] == '0':
         num_cpt = num_cpt[:-1]
     return num_cpt
 
+
 class AccountingMigrate(MigrateAbstract):
-    # pylint: disable=too-many-instance-attributes
 
     def __init__(self, old_db):
         MigrateAbstract.__init__(self, old_db)
@@ -67,18 +69,24 @@ class AccountingMigrate(MigrateAbstract):
         accountthird_mdl.objects.all().delete()
         self.third_list = {}
         cur = self.old_db.open()
-        cur.execute("SELECT id,contact,compteFournisseur,compteClient,compteSalarie,compteSocietaire,etat FROM fr_sdlibre_compta_Tiers")
+        cur.execute(
+            "SELECT id,contact,compteFournisseur,compteClient,compteSalarie,compteSocietaire,etat FROM fr_sdlibre_compta_Tiers")
         for thirdid, abstractid, compte_fournisseur, compte_client, compte_salarie, compte_societaire, etat in cur.fetchall():
             self.print_log("=> Third of %s", (self.abstract_list[abstractid],))
-            self.third_list[thirdid] = third_mdl.objects.create(contact=self.abstract_list[abstractid], status=etat)
+            self.third_list[thirdid] = third_mdl.objects.create(
+                contact=self.abstract_list[abstractid], status=etat)
             if (compte_fournisseur is not None) and (compte_fournisseur != ''):
-                accountthird_mdl.objects.create(third=self.third_list[thirdid], code=convert_code(compte_fournisseur))
+                accountthird_mdl.objects.create(
+                    third=self.third_list[thirdid], code=convert_code(compte_fournisseur))
             if (compte_client is not None) and (compte_client != ''):
-                accountthird_mdl.objects.create(third=self.third_list[thirdid], code=convert_code(compte_client))
+                accountthird_mdl.objects.create(
+                    third=self.third_list[thirdid], code=convert_code(compte_client))
             if (compte_salarie is not None) and (compte_salarie != ''):
-                accountthird_mdl.objects.create(third=self.third_list[thirdid], code=convert_code(compte_salarie))
+                accountthird_mdl.objects.create(
+                    third=self.third_list[thirdid], code=convert_code(compte_salarie))
             if (compte_societaire is not None) and (compte_societaire != ''):
-                accountthird_mdl.objects.create(third=self.third_list[thirdid], code=convert_code(compte_societaire))
+                accountthird_mdl.objects.create(
+                    third=self.third_list[thirdid], code=convert_code(compte_societaire))
 
     def _years(self):
         def get_date(new_date):
@@ -88,12 +96,15 @@ class AccountingMigrate(MigrateAbstract):
         self.year_list = {}
         cur = self.old_db.open()
         last_exercice = None
-        cur.execute("SELECT id, debut,fin,etat,actif  FROM fr_sdlibre_compta_Exercices ORDER BY fin")
+        cur.execute(
+            "SELECT id, debut,fin,etat,actif  FROM fr_sdlibre_compta_Exercices ORDER BY fin")
         for yearid, debut, fin, etat, actif in cur.fetchall():
             self.print_log("=> Year of %s => %s", (debut, fin))
-            self.year_list[yearid] = year_mdl.objects.create(begin=get_date(debut), end=get_date(fin), status=etat, is_actif=(actif == 'o'))
+            self.year_list[yearid] = year_mdl.objects.create(
+                begin=get_date(debut), end=get_date(fin), status=etat, is_actif=(actif == 'o'))
             if last_exercice is not None:
-                self.year_list[yearid].last_fiscalyear = self.year_list[last_exercice]
+                self.year_list[yearid].last_fiscalyear = self.year_list[
+                    last_exercice]
                 self.year_list[yearid].save()
             last_exercice = yearid
 
@@ -102,13 +113,15 @@ class AccountingMigrate(MigrateAbstract):
         costaccounting_mdl.objects.all().delete()
         self.costaccounting_list = {}
         cur = self.old_db.open()
-        cur.execute("SELECT id, title, description, etat, last, codeDefault FROM fr_sdlibre_compta_Analytique ORDER BY id")
+        cur.execute(
+            "SELECT id, title, description, etat, last, codeDefault FROM fr_sdlibre_compta_Analytique ORDER BY id")
         for yearid, title, description, etat, last, code_default in cur.fetchall():
             self.print_log("=> cost accounting %s", (title,))
-            self.costaccounting_list[yearid] = costaccounting_mdl.objects.create(name=title, description=description, \
-                                                                status=etat, is_default=(code_default == 'o'))
+            self.costaccounting_list[yearid] = costaccounting_mdl.objects.create(name=title, description=description,
+                                                                                 status=etat, is_default=(code_default == 'o'))
             if last is not None:
-                self.costaccounting_list[yearid].last_costaccounting = self.costaccounting_list[last]
+                self.costaccounting_list[
+                    yearid].last_costaccounting = self.costaccounting_list[last]
                 self.costaccounting_list[yearid].save()
 
     def _chartsaccount(self):
@@ -116,24 +129,35 @@ class AccountingMigrate(MigrateAbstract):
         chartsaccount_mdl.objects.all().delete()
         self.chartsaccount_list = {}
         cur = self.old_db.open()
-        cur.execute("SELECT id,numCpt,designation,exercice FROM fr_sdlibre_compta_Plan")
+        cur.execute(
+            "SELECT id,numCpt,designation,exercice FROM fr_sdlibre_compta_Plan")
         for chartsaccountid, num_cpt, designation, exercice in cur.fetchall():
             num_cpt = convert_code(num_cpt)
             if len(num_cpt) > 1:
-                self.print_log("=> charts of account %s - %d", (num_cpt, exercice))
-                self.chartsaccount_list[chartsaccountid] = chartsaccount_mdl.objects.create(code=num_cpt, name=designation, year=self.year_list[exercice])
+                self.print_log(
+                    "=> charts of account %s - %d", (num_cpt, exercice))
+                self.chartsaccount_list[chartsaccountid] = chartsaccount_mdl.objects.create(
+                    code=num_cpt, name=designation, year=self.year_list[exercice])
                 if (num_cpt[0] == '2') or (num_cpt[0] == '3') or (num_cpt[0:2] == '41') or (num_cpt[0] == '5'):
-                    self.chartsaccount_list[chartsaccountid].type_of_account = 0  # Asset / 'actif'
+                    self.chartsaccount_list[
+                        chartsaccountid].type_of_account = 0  # Asset / 'actif'
                 if (num_cpt[0] == '4') and (num_cpt[0:2] != '41'):
-                    self.chartsaccount_list[chartsaccountid].type_of_account = 1  # Liability / 'passif'
+                    # Liability / 'passif'
+                    self.chartsaccount_list[
+                        chartsaccountid].type_of_account = 1
                 if num_cpt[0] == '1':
-                    self.chartsaccount_list[chartsaccountid].type_of_account = 2  # Equity / 'capital'
+                    # Equity / 'capital'
+                    self.chartsaccount_list[
+                        chartsaccountid].type_of_account = 2
                 if num_cpt[0] == '7':
-                    self.chartsaccount_list[chartsaccountid].type_of_account = 3  # Revenue
+                    self.chartsaccount_list[
+                        chartsaccountid].type_of_account = 3  # Revenue
                 if num_cpt[0] == '6':
-                    self.chartsaccount_list[chartsaccountid].type_of_account = 4  # Expense
+                    self.chartsaccount_list[
+                        chartsaccountid].type_of_account = 4  # Expense
                 if num_cpt[0] == '8':
-                    self.chartsaccount_list[chartsaccountid].type_of_account = 5  # Contra-accounts
+                    self.chartsaccount_list[
+                        chartsaccountid].type_of_account = 5  # Contra-accounts
                 self.chartsaccount_list[chartsaccountid].save()
             else:
                 self.print_log("=> charts of account %s - XXX", (num_cpt,))
@@ -151,12 +175,14 @@ class AccountingMigrate(MigrateAbstract):
         self.journal_list[5] = journal_mdl.objects.get(id=1)
         self.accountlink_list = {}
         cur_al = self.old_db.open()
-        cur_al.execute("SELECT id FROM fr_sdlibre_compta_raprochement ORDER BY id")
+        cur_al.execute(
+            "SELECT id FROM fr_sdlibre_compta_raprochement ORDER BY id")
         for (accountlinkid,) in cur_al.fetchall():
-            self.accountlink_list[accountlinkid] = accountlink_mdl.objects.create()
+            self.accountlink_list[
+                accountlinkid] = accountlink_mdl.objects.create()
 
     def _entryaccount(self):
-        # pylint: disable=too-many-locals
+
         entryaccount_mdl = apps.get_model("accounting", "EntryAccount")
         entryaccount_mdl.objects.all().delete()
         entrylineaccount_mdl = apps.get_model("accounting", "EntryLineAccount")
@@ -165,27 +191,35 @@ class AccountingMigrate(MigrateAbstract):
         self.entrylineaccount_list = {}
         self._extra()
         cur_e = self.old_db.open()
-        cur_e.execute("SELECT id, num, dateEcr, datePiece, designation, exercice, point, journal, opeRaproch, analytique FROM fr_sdlibre_compta_Operation")
+        cur_e.execute(
+            "SELECT id, num, dateEcr, datePiece, designation, exercice, point, journal, opeRaproch, analytique FROM fr_sdlibre_compta_Operation")
         for entryaccountid, num, date_ecr, date_piece, designation, exercice, point, journal, operaproch, analytique in cur_e.fetchall():
-            self.print_log("=> entry account %s - %d", (six.text_type(num), exercice))
-            self.entryaccount_list[entryaccountid] = entryaccount_mdl.objects.create(num=num, designation=designation, \
-                                                        year=self.year_list[exercice], date_entry=date_ecr, date_value=date_piece, \
-                                                        close=point == 'o', journal=self.journal_list[journal])
+            self.print_log(
+                "=> entry account %s - %d", (six.text_type(num), exercice))
+            self.entryaccount_list[entryaccountid] = entryaccount_mdl.objects.create(num=num, designation=designation,
+                                                                                     year=self.year_list[
+                                                                                         exercice], date_entry=date_ecr, date_value=date_piece,
+                                                                                     close=point == 'o', journal=self.journal_list[journal])
             if analytique is not None:
-                self.entryaccount_list[entryaccountid].costaccounting = self.costaccounting_list[analytique]
+                self.entryaccount_list[
+                    entryaccountid].costaccounting = self.costaccounting_list[analytique]
             self.entryaccount_list[entryaccountid].editor.before_save(None)
             if operaproch is not None:
-                self.entryaccount_list[entryaccountid].link = self.accountlink_list[operaproch]
+                self.entryaccount_list[
+                    entryaccountid].link = self.accountlink_list[operaproch]
             self.entryaccount_list[entryaccountid].save()
         cur_l = self.old_db.open()
-        cur_l.execute("SELECT id,numCpt,montant,reference,operation,tiers  FROM fr_sdlibre_compta_Ecriture")
+        cur_l.execute(
+            "SELECT id,numCpt,montant,reference,operation,tiers  FROM fr_sdlibre_compta_Ecriture")
         for entrylineaccountid, num_cpt, montant, reference, operation, tiers in cur_l.fetchall():
             if self.chartsaccount_list[num_cpt] is not None:
-                self.print_log("=> line entry account %f - %d", (montant, num_cpt))
-                self.entrylineaccount_list[entrylineaccountid] = entrylineaccount_mdl.objects.create(account=self.chartsaccount_list[num_cpt], entry=self.entryaccount_list[operation], \
-                                                                                    amount=montant, reference=reference)
+                self.print_log(
+                    "=> line entry account %f - %d", (montant, num_cpt))
+                self.entrylineaccount_list[entrylineaccountid] = entrylineaccount_mdl.objects.create(account=self.chartsaccount_list[num_cpt], entry=self.entryaccount_list[operation],
+                                                                                                     amount=montant, reference=reference)
                 if tiers is not None:
-                    self.entrylineaccount_list[entrylineaccountid].third = self.third_list[tiers]
+                    self.entrylineaccount_list[
+                        entrylineaccountid].third = self.third_list[tiers]
                     self.entrylineaccount_list[entrylineaccountid].save()
 
     def _model(self):
@@ -196,25 +230,31 @@ class AccountingMigrate(MigrateAbstract):
         self.model_list = {}
         self.modelline_list = {}
         cur_m = self.old_db.open()
-        cur_m.execute("SELECT id, journal, designation FROM fr_sdlibre_compta_Model")
+        cur_m.execute(
+            "SELECT id, journal, designation FROM fr_sdlibre_compta_Model")
         for modelid, journal, designation in cur_m.fetchall():
             self.print_log("=> model %s", (designation,))
-            self.model_list[modelid] = model_mdl.objects.create(journal=self.journal_list[journal], designation=designation)
+            self.model_list[modelid] = model_mdl.objects.create(
+                journal=self.journal_list[journal], designation=designation)
 
         cur_ml = self.old_db.open()
-        cur_ml.execute("SELECT id, model, compte, montant, tiers FROM fr_sdlibre_compta_ModelLigne")
+        cur_ml.execute(
+            "SELECT id, model, compte, montant, tiers FROM fr_sdlibre_compta_ModelLigne")
         for modellineid, model, compte, montant, tiers in cur_ml.fetchall():
             self.print_log("=> model line %d %s", (model, compte))
-            self.modelline_list[modellineid] = modelline_mdl.objects.create(model=self.model_list[model], code=convert_code(compte), amount=montant)
+            self.modelline_list[modellineid] = modelline_mdl.objects.create(
+                model=self.model_list[model], code=convert_code(compte), amount=montant)
             if tiers is not None:
                 self.modelline_list[modellineid].third = self.third_list[tiers]
                 self.modelline_list[modellineid].save()
 
     def _params(self):
         from lucterios.CORE.models import Parameter
-        Parameter.change_value('accounting-system', 'diacamma.accounting.system.french.FrenchSystemAcounting')
+        Parameter.change_value(
+            'accounting-system', 'diacamma.accounting.system.french.FrenchSystemAcounting')
         cur_p = self.old_db.open()
-        cur_p.execute("SELECT paramName,value FROM CORE_extension_params WHERE extensionId LIKE 'fr_sdlibre_compta' and paramName in ('Devise','DeviseOff','PrecDevise')")
+        cur_p.execute(
+            "SELECT paramName,value FROM CORE_extension_params WHERE extensionId LIKE 'fr_sdlibre_compta' and paramName in ('Devise','DeviseOff','PrecDevise')")
         for param_name, param_value in cur_p.fetchall():
             pname = ''
             if param_name == 'Devise':
@@ -225,7 +265,8 @@ class AccountingMigrate(MigrateAbstract):
             elif param_name == 'PrecDevise':
                 pname = 'accounting-devise-prec'
             if pname != '':
-                self.print_log("=> parameter of account %s - %s", (pname, param_value))
+                self.print_log(
+                    "=> parameter of account %s - %s", (pname, param_value))
                 Parameter.change_value(pname, param_value)
 
     def run(self):
@@ -237,7 +278,7 @@ class AccountingMigrate(MigrateAbstract):
             self._chartsaccount()
             self._entryaccount()
             self._model()
-        except:  # pylint: disable=bare-except
+        except:
             import traceback
             traceback.print_exc()
             six.print_("*** Unexpected error: %s ****" % sys.exc_info()[0])

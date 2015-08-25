@@ -35,16 +35,19 @@ from django.utils import six
 
 from lucterios.framework.models import LucteriosModel, get_value_converted, get_value_if_choices
 from lucterios.framework.error import LucteriosException, IMPORTANT
-from lucterios.contacts.models import AbstractContact  # pylint: disable=no-name-in-module,import-error
+from lucterios.contacts.models import AbstractContact
 from diacamma.accounting.tools import get_amount_sum, format_devise, \
     current_system_account, currency_round
 
+
 class Third(LucteriosModel):
-    contact = models.ForeignKey('contacts.AbstractContact', verbose_name=_('contact'), null=False)
-    status = models.IntegerField(verbose_name=_('status'), choices=((0, _('Enable')), (1, _('Disable'))))
+    contact = models.ForeignKey(
+        'contacts.AbstractContact', verbose_name=_('contact'), null=False)
+    status = models.IntegerField(
+        verbose_name=_('status'), choices=((0, _('Enable')), (1, _('Disable'))))
 
     def __str__(self):
-        return six.text_type(self.contact.get_final_child())  # pylint: disable=no-member
+        return six.text_type(self.contact.get_final_child())
 
     @classmethod
     def get_default_fields(cls):
@@ -60,7 +63,7 @@ class Third(LucteriosModel):
 
     @classmethod
     def get_show_fields(cls):
-        return {'':['contact'], _('001@AccountThird information'):["status", "accountthird_set", ((_('total'), 'total'),)]}
+        return {'': ['contact'], _('001@AccountThird information'): ["status", "accountthird_set", ((_('total'), 'total'),)]}
 
     @classmethod
     def get_print_fields(cls):
@@ -76,26 +79,29 @@ class Third(LucteriosModel):
         return result
 
     def get_total(self):
-        return get_amount_sum(EntryLineAccount.objects.filter(third=self).aggregate(Sum('amount')))  # pylint: disable=no-member
+        return get_amount_sum(EntryLineAccount.objects.filter(third=self).aggregate(Sum('amount')))
 
     @property
     def total(self):
         return format_devise(self.get_total(), 5)
 
     class Meta(object):
-        # pylint: disable=no-init
+
         verbose_name = _('third')
         verbose_name_plural = _('thirds')
 
+
 class AccountThird(LucteriosModel):
-    third = models.ForeignKey(Third, verbose_name=_('third'), null=False, on_delete=models.CASCADE)
+    third = models.ForeignKey(
+        Third, verbose_name=_('third'), null=False, on_delete=models.CASCADE)
     code = models.CharField(_('code'), max_length=50)
 
     def __str__(self):
         return self.code
 
     def can_delete(self):
-        nb_lines = EntryLineAccount.objects.filter(third=self.third, account__code=self.code).count()  # pylint: disable=no-member
+        nb_lines = EntryLineAccount.objects.filter(
+            third=self.third, account__code=self.code).count()
         if nb_lines != 0:
             return _('This account has some entries!')
         else:
@@ -112,7 +118,7 @@ class AccountThird(LucteriosModel):
     @property
     def current_charts(self):
         try:
-            return ChartsAccount.objects.get(code=self.code, year=FiscalYear.get_current())  # pylint: disable=no-member
+            return ChartsAccount.objects.get(code=self.code, year=FiscalYear.get_current())
         except (ObjectDoesNotExist, LucteriosException):
             return None
 
@@ -126,34 +132,41 @@ class AccountThird(LucteriosModel):
 
     @property
     def total(self):
-        return get_amount_sum(EntryLineAccount.objects.filter(third=self.third, account__code=self.code).aggregate(Sum('amount')))  # pylint: disable=no-member
+        return get_amount_sum(EntryLineAccount.objects.filter(third=self.third, account__code=self.code).aggregate(Sum('amount')))
 
     class Meta(object):
-        # pylint: disable=no-init
+
         verbose_name = _('account')
         verbose_name_plural = _('accounts')
         default_permissions = []
 
+
 class FiscalYear(LucteriosModel):
-    # pylint: disable=too-many-public-methods
+
     begin = models.DateField(verbose_name=_('begin'))
     end = models.DateField(verbose_name=_('end'))
-    status = models.IntegerField(verbose_name=_('status'), choices=((0, _('building')), (1, _('running')), (2, _('finished'))), default=0)
-    is_actif = models.BooleanField(verbose_name=_('actif'), default=False, db_index=True)
-    last_fiscalyear = models.ForeignKey('FiscalYear', verbose_name=_('last fiscal year'), related_name='next_fiscalyear', null=True, on_delete=models.SET_NULL)
+    status = models.IntegerField(verbose_name=_('status'), choices=(
+        (0, _('building')), (1, _('running')), (2, _('finished'))), default=0)
+    is_actif = models.BooleanField(
+        verbose_name=_('actif'), default=False, db_index=True)
+    last_fiscalyear = models.ForeignKey('FiscalYear', verbose_name=_(
+        'last fiscal year'), related_name='next_fiscalyear', null=True, on_delete=models.SET_NULL)
 
     def init_dates(self):
-        fiscal_years = FiscalYear.objects.order_by('end')  # pylint: disable=no-member
+        fiscal_years = FiscalYear.objects.order_by(
+            'end')
         if len(fiscal_years) == 0:
             self.begin = date.today()
         else:
             last_fiscal_year = fiscal_years[len(fiscal_years) - 1]
             self.begin = last_fiscal_year.end + timedelta(days=1)
-        self.end = date(self.begin.year + 1, self.begin.month, self.begin.day) - timedelta(days=1)
+        self.end = date(
+            self.begin.year + 1, self.begin.month, self.begin.day) - timedelta(days=1)
 
     def can_delete(self):
-        fiscal_years = FiscalYear.objects.order_by('end')  # pylint: disable=no-member
-        if (len(fiscal_years) != 0) and (fiscal_years[len(fiscal_years) - 1].id != self.id):  # pylint: disable=no-member
+        fiscal_years = FiscalYear.objects.order_by(
+            'end')
+        if (len(fiscal_years) != 0) and (fiscal_years[len(fiscal_years) - 1].id != self.id):
             return _('This fiscal year is not the last!')
         elif self.status == 2:
             return _('Fiscal year finished!')
@@ -161,11 +174,11 @@ class FiscalYear(LucteriosModel):
             return ''
 
     def delete(self, using=None):
-        self.entryaccount_set.all().delete()  # pylint: disable=no-member
+        self.entryaccount_set.all().delete()
         LucteriosModel.delete(self, using=using)
 
     def set_has_actif(self):
-        all_year = FiscalYear.objects.all()  # pylint: disable=no-member
+        all_year = FiscalYear.objects.all()
         for year_item in all_year:
             year_item.is_actif = False
             year_item.save()
@@ -182,77 +195,88 @@ class FiscalYear(LucteriosModel):
 
     @property
     def total_revenue(self):
-        # pylint: disable=no-member
-        return get_amount_sum(EntryLineAccount.objects.filter(account__type_of_account=3, account__year=self, \
-                                entry__date_value__gte=self.begin, entry__date_value__lte=self.end).aggregate(Sum('amount')))
+
+        return get_amount_sum(EntryLineAccount.objects.filter(account__type_of_account=3, account__year=self,
+                                                              entry__date_value__gte=self.begin, entry__date_value__lte=self.end).aggregate(Sum('amount')))
 
     @property
     def total_expense(self):
-        # pylint: disable=no-member
-        return get_amount_sum(EntryLineAccount.objects.filter(account__type_of_account=4, account__year=self, \
-                                entry__date_value__gte=self.begin, entry__date_value__lte=self.end).aggregate(Sum('amount')))
+
+        return get_amount_sum(EntryLineAccount.objects.filter(account__type_of_account=4, account__year=self,
+                                                              entry__date_value__gte=self.begin, entry__date_value__lte=self.end).aggregate(Sum('amount')))
 
     @property
     def total_cash(self):
-        # pylint: disable=no-member
-        return get_amount_sum(EntryLineAccount.objects.filter(account__code__regex=current_system_account().get_cash_mask(), \
-                                account__year=self, entry__date_value__gte=self.begin, entry__date_value__lte=self.end).aggregate(Sum('amount')))
+
+        return get_amount_sum(EntryLineAccount.objects.filter(account__code__regex=current_system_account().get_cash_mask(),
+                                                              account__year=self, entry__date_value__gte=self.begin, entry__date_value__lte=self.end).aggregate(Sum('amount')))
 
     @property
     def total_cash_close(self):
-        # pylint: disable=no-member
-        return get_amount_sum(EntryLineAccount.objects.filter(entry__close=True, account__code__regex=current_system_account().get_cash_mask(), \
-                                account__year=self, entry__date_value__gte=self.begin, entry__date_value__lte=self.end).aggregate(Sum('amount')))
+
+        return get_amount_sum(EntryLineAccount.objects.filter(entry__close=True, account__code__regex=current_system_account().get_cash_mask(),
+                                                              account__year=self, entry__date_value__gte=self.begin, entry__date_value__lte=self.end).aggregate(Sum('amount')))
 
     @property
     def total_result_text(self):
         value = {}
         value['revenue'] = format_devise(self.total_revenue, 5)
         value['expense'] = format_devise(self.total_expense, 5)
-        value['result'] = format_devise(self.total_revenue - self.total_expense, 5)
+        value['result'] = format_devise(
+            self.total_revenue - self.total_expense, 5)
         value['cash'] = format_devise(self.total_cash, 5)
         value['closed'] = format_devise(self.total_cash_close, 5)
-        res_text = _('{[b]}Revenue:{[/b]} %(revenue)s - {[b]}Expense:{[/b]} %(expense)s = {[b]}Result:{[/b]} %(result)s | {[b]}Cash:{[/b]} %(cash)s - {[b]}Closed:{[/b]} %(closed)s')
+        res_text = _(
+            '{[b]}Revenue:{[/b]} %(revenue)s - {[b]}Expense:{[/b]} %(expense)s = {[b]}Result:{[/b]} %(result)s | {[b]}Cash:{[/b]} %(cash)s - {[b]}Closed:{[/b]} %(closed)s')
         return res_text % value
 
     @property
     def has_no_lastyear_entry(self):
-        val = get_amount_sum(EntryLineAccount.objects.filter(entry__journal__id=1, account__year=self).aggregate(Sum('amount')))  # pylint: disable=no-member
+        val = get_amount_sum(EntryLineAccount.objects.filter(
+            entry__journal__id=1, account__year=self).aggregate(Sum('amount')))
         return abs(val) < 0.0001
 
     def import_charts_accounts(self):
         if self.last_fiscalyear is None:
-            raise LucteriosException(IMPORTANT, _("This fiscal year has not a last fiscal year!"))
+            raise LucteriosException(
+                IMPORTANT, _("This fiscal year has not a last fiscal year!"))
         if self.status == 2:
             raise LucteriosException(IMPORTANT, _('Fiscal year finished!'))
-        for last_charts_account in self.last_fiscalyear.chartsaccount_set.all():  # pylint: disable=no-member
+        for last_charts_account in self.last_fiscalyear.chartsaccount_set.all():
             try:
-                self.chartsaccount_set.get(code=last_charts_account.code)  # pylint: disable=no-member
+                self.chartsaccount_set.get(
+                    code=last_charts_account.code)
             except ObjectDoesNotExist:
-                ChartsAccount.objects.create(year=self, code=last_charts_account.code, name=last_charts_account.name, type_of_account=last_charts_account.type_of_account)  # pylint: disable=no-member
+                ChartsAccount.objects.create(year=self, code=last_charts_account.code, name=last_charts_account.name,
+                                             type_of_account=last_charts_account.type_of_account)
 
     def run_report_lastyear(self):
         if self.last_fiscalyear is None:
-            raise LucteriosException(IMPORTANT, _("This fiscal year has not a last fiscal year!"))
+            raise LucteriosException(
+                IMPORTANT, _("This fiscal year has not a last fiscal year!"))
         if self.status != 0:
-            raise LucteriosException(IMPORTANT, _("This fiscal year is not 'in building'!"))
+            raise LucteriosException(
+                IMPORTANT, _("This fiscal year is not 'in building'!"))
         current_system_account().import_lastyear(self)
 
     def getorcreate_chartaccount(self, code, name=None):
         try:
-            return self.chartsaccount_set.get(code=code)  # pylint: disable=no-member
+            return self.chartsaccount_set.get(code=code)
         except ObjectDoesNotExist:
-            descript, typeaccount = current_system_account().new_charts_account(code)
+            descript, typeaccount = current_system_account().new_charts_account(
+                code)
             if name is None:
                 name = descript
-            return ChartsAccount.objects.create(year=self, code=code, name=name, type_of_account=typeaccount)  # pylint: disable=no-member
+            return ChartsAccount.objects.create(year=self, code=code, name=name, type_of_account=typeaccount)
 
     def move_entry_noclose(self):
         if self.status == 1:
-            next_ficalyear = FiscalYear.objects.get(last_fiscalyear=self)  # pylint: disable=no-member
-            for entry_noclose in EntryAccount.objects.filter(close=False, entrylineaccount__account__year=self).distinct():  # pylint: disable=no-member
+            next_ficalyear = FiscalYear.objects.get(
+                last_fiscalyear=self)
+            for entry_noclose in EntryAccount.objects.filter(close=False, entrylineaccount__account__year=self).distinct():
                 for entryline in entry_noclose.entrylineaccount_set.all():
-                    entryline.account = next_ficalyear.getorcreate_chartaccount(entryline.account.code, entryline.account.name)
+                    entryline.account = next_ficalyear.getorcreate_chartaccount(
+                        entryline.account.code, entryline.account.name)
                     entryline.save()
                 entry_noclose.year = next_ficalyear
                 entry_noclose.date_value = next_ficalyear.begin
@@ -262,18 +286,21 @@ class FiscalYear(LucteriosModel):
     def get_current(cls, select_year=None):
         if select_year is None:
             try:
-                year = FiscalYear.objects.get(is_actif=True)  # pylint: disable=no-member
+                year = FiscalYear.objects.get(
+                    is_actif=True)
             except ObjectDoesNotExist:
-                raise LucteriosException(IMPORTANT, _('No fiscal year define!'))
+                raise LucteriosException(
+                    IMPORTANT, _('No fiscal year define!'))
         else:
-            year = FiscalYear.objects.get(id=select_year)  # pylint: disable=no-member
+            year = FiscalYear.objects.get(
+                id=select_year)
         return year
 
     def get_account_list(self, num_cpt_txt, num_cpt):
         account_list = []
         first_account = None
         current_account = None
-        for account in self.chartsaccount_set.all().filter(code__startswith=num_cpt_txt).order_by('code'):  # pylint: disable=no-member
+        for account in self.chartsaccount_set.all().filter(code__startswith=num_cpt_txt).order_by('code'):
             account_list.append((account.id, six.text_type(account)))
             if first_account is None:
                 first_account = account
@@ -285,20 +312,25 @@ class FiscalYear(LucteriosModel):
         return account_list, current_account
 
     def __str__(self):
-        status = get_value_if_choices(self.status, self._meta.get_field('status'))  # pylint: disable=protected-access,no-member
-        return _("Fiscal year from %(begin)s to %(end)s [%(status)s]") % {'begin':get_value_converted(self.begin), 'end':get_value_converted(self.end), 'status':status}
+        status = get_value_if_choices(self.status, self._meta.get_field(
+            'status'))
+        return _("Fiscal year from %(begin)s to %(end)s [%(status)s]") % {'begin': get_value_converted(self.begin), 'end': get_value_converted(self.end), 'status': status}
 
     class Meta(object):
-        # pylint: disable=no-init
+
         verbose_name = _('fiscal year')
         verbose_name_plural = _('fiscal years')
 
+
 class CostAccounting(LucteriosModel):
-    # pylint: disable=too-many-public-methods
+
     name = models.CharField(_('name'), max_length=50, unique=True)
-    description = models.CharField(_('description'), max_length=50, unique=True)
-    status = models.IntegerField(verbose_name=_('status'), choices=((0, _('opened')), (1, _('closed'))), default=0)
-    last_costaccounting = models.ForeignKey('CostAccounting', verbose_name=_('last cost accounting'), related_name='next_costaccounting', null=True, on_delete=models.SET_NULL)
+    description = models.CharField(
+        _('description'), max_length=50, unique=True)
+    status = models.IntegerField(verbose_name=_('status'), choices=(
+        (0, _('opened')), (1, _('closed'))), default=0)
+    last_costaccounting = models.ForeignKey('CostAccounting', verbose_name=_(
+        'last cost accounting'), related_name='next_costaccounting', null=True, on_delete=models.SET_NULL)
     is_default = models.BooleanField(verbose_name=_('default'), default=False)
 
     def __str__(self):
@@ -306,7 +338,7 @@ class CostAccounting(LucteriosModel):
 
     @classmethod
     def get_default_fields(cls):
-        return ['name', 'description', (_('total revenue'), 'total_revenue'), (_('total expense'), 'total_expense'), \
+        return ['name', 'description', (_('total revenue'), 'total_revenue'), (_('total expense'), 'total_expense'),
                         'status', 'is_default']
 
     @classmethod
@@ -318,7 +350,7 @@ class CostAccounting(LucteriosModel):
         return format_devise(self.get_total_revenue(), 5)
 
     def get_total_revenue(self):
-        # pylint: disable=no-member
+
         return get_amount_sum(EntryLineAccount.objects.filter(account__type_of_account=3, entry__costaccounting=self).aggregate(Sum('amount')))
 
     @property
@@ -326,7 +358,7 @@ class CostAccounting(LucteriosModel):
         return format_devise(self.get_total_expense(), 5)
 
     def get_total_expense(self):
-        # pylint: disable=no-member
+
         return get_amount_sum(EntryLineAccount.objects.filter(account__type_of_account=4, entry__costaccounting=self).aggregate(Sum('amount')))
 
     def change_has_default(self):
@@ -335,7 +367,8 @@ class CostAccounting(LucteriosModel):
                 self.is_default = False
                 self.save()
             else:
-                all_cost = CostAccounting.objects.all()  # pylint: disable=no-member
+                all_cost = CostAccounting.objects.all(
+                )
                 for cost_item in all_cost:
                     cost_item.is_default = False
                     cost_item.save()
@@ -343,22 +376,25 @@ class CostAccounting(LucteriosModel):
                 self.save()
 
     class Meta(object):
-        # pylint: disable=no-init
+
         verbose_name = _('cost accounting')
         verbose_name_plural = _('costs accounting')
         default_permissions = []
 
+
 class ChartsAccount(LucteriosModel):
     code = models.CharField(_('code'), max_length=50, db_index=True)
     name = models.CharField(_('name'), max_length=200)
-    year = models.ForeignKey('FiscalYear', verbose_name=_('fiscal year'), null=False, on_delete=models.CASCADE, db_index=True)
-    type_of_account = models.IntegerField(verbose_name=_('type of account'), \
-            choices=((0, _('Asset')), (1, _('Liability')), (2, _('Equity')), (3, _('Revenue')), (4, _('Expense')), (5, _('Contra-accounts'))), \
-            null=True, db_index=True)
+    year = models.ForeignKey('FiscalYear', verbose_name=_(
+        'fiscal year'), null=False, on_delete=models.CASCADE, db_index=True)
+    type_of_account = models.IntegerField(verbose_name=_('type of account'),
+                                          choices=((0, _('Asset')), (1, _('Liability')), (2, _('Equity')), (3, _(
+                                              'Revenue')), (4, _('Expense')), (5, _('Contra-accounts'))),
+                                          null=True, db_index=True)
 
     @classmethod
     def get_default_fields(cls):
-        return ['code', 'name', (_('total of last year'), 'last_year_total'), \
+        return ['code', 'name', (_('total of last year'), 'last_year_total'),
                 (_('total current'), 'current_total'), (_('total validated'), 'current_validated')]
 
     @classmethod
@@ -371,20 +407,20 @@ class ChartsAccount(LucteriosModel):
 
     @classmethod
     def get_print_fields(cls):
-        return ['code', 'name', (_('total of last year'), 'last_year_total'), \
+        return ['code', 'name', (_('total of last year'), 'last_year_total'),
                 (_('total current'), 'current_total'), (_('total validated'), 'current_validated'), 'entrylineaccount_set']
 
     def __str__(self):
         return "[%s] %s" % (self.code, self.name)
 
     def get_last_year_total(self):
-        return get_amount_sum(self.entrylineaccount_set.filter(entry__journal__id=1).aggregate(Sum('amount')))  # pylint: disable=no-member
+        return get_amount_sum(self.entrylineaccount_set.filter(entry__journal__id=1).aggregate(Sum('amount')))
 
     def get_current_total(self):
-        return get_amount_sum(self.entrylineaccount_set.all().aggregate(Sum('amount')))  # pylint: disable=no-member
+        return get_amount_sum(self.entrylineaccount_set.all().aggregate(Sum('amount')))
 
     def get_current_validated(self):
-        return get_amount_sum(self.entrylineaccount_set.filter(entry__close=True).aggregate(Sum('amount')))  # pylint: disable=no-member
+        return get_amount_sum(self.entrylineaccount_set.filter(entry__close=True).aggregate(Sum('amount')))
 
     def credit_debit_way(self):
         if self.type_of_account in [0, 4]:
@@ -413,10 +449,11 @@ class ChartsAccount(LucteriosModel):
         return match(current_system_account().get_cash_mask(), self.code) is not None
 
     class Meta(object):
-        # pylint: disable=no-init
+
         verbose_name = _('charts of account')
         verbose_name_plural = _('charts of accounts')
         ordering = ['year', 'code']
+
 
 class Journal(LucteriosModel):
     name = models.CharField(_('name'), max_length=50, unique=True)
@@ -425,7 +462,7 @@ class Journal(LucteriosModel):
         return self.name
 
     def can_delete(self):
-        if self.id in [1, 2, 3, 4, 5]:  # pylint: disable=no-member
+        if self.id in [1, 2, 3, 4, 5]:
             return _('journal reserved!')
         else:
             return ''
@@ -435,10 +472,11 @@ class Journal(LucteriosModel):
         return ["name"]
 
     class Meta(object):
-        # pylint: disable=no-init
+
         verbose_name = _('accounting journal')
         verbose_name_plural = _('accounting journals')
         default_permissions = []
+
 
 class AccountLink(LucteriosModel):
 
@@ -447,8 +485,9 @@ class AccountLink(LucteriosModel):
 
     @property
     def letter(self):
-        year = self.entryaccount_set.all()[0].year  # pylint: disable=no-member
-        nb_link = AccountLink.objects.filter(entryaccount__year=year, id__lt=self.id).count()  # pylint: disable=no-member
+        year = self.entryaccount_set.all()[0].year
+        nb_link = AccountLink.objects.filter(
+            entryaccount__year=year, id__lt=self.id).count()
         letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
         res = ''
         while nb_link >= 26:
@@ -461,27 +500,34 @@ class AccountLink(LucteriosModel):
     def create_link(cls, entries):
         for entry in entries:
             entry.unlink()
-        new_link = AccountLink.objects.create()  # pylint: disable=no-member
+        new_link = AccountLink.objects.create()
         for entry in entries:
             entry.link = new_link
             entry.save()
 
     class Meta(object):
-        # pylint: disable=no-init
+
         verbose_name = _('letter')
         verbose_name_plural = _('letters')
         default_permissions = []
 
+
 class EntryAccount(LucteriosModel):
-    year = models.ForeignKey('FiscalYear', verbose_name=_('fiscal year'), null=False, on_delete=models.CASCADE)
+    year = models.ForeignKey('FiscalYear', verbose_name=_(
+        'fiscal year'), null=False, on_delete=models.CASCADE)
     num = models.IntegerField(verbose_name=_('numeros'), null=True)
-    journal = models.ForeignKey('Journal', verbose_name=_('journal'), null=False, default=0, on_delete=models.PROTECT)
-    link = models.ForeignKey('AccountLink', verbose_name=_('link'), null=True, on_delete=models.SET_NULL)
+    journal = models.ForeignKey('Journal', verbose_name=_(
+        'journal'), null=False, default=0, on_delete=models.PROTECT)
+    link = models.ForeignKey(
+        'AccountLink', verbose_name=_('link'), null=True, on_delete=models.SET_NULL)
     date_entry = models.DateField(verbose_name=_('date entry'), null=True)
-    date_value = models.DateField(verbose_name=_('date value'), null=True, db_index=True)
+    date_value = models.DateField(
+        verbose_name=_('date value'), null=True, db_index=True)
     designation = models.CharField(_('name'), max_length=200)
-    costaccounting = models.ForeignKey('CostAccounting', verbose_name=_('cost accounting'), null=True, on_delete=models.PROTECT)
-    close = models.BooleanField(verbose_name=_('close'), default=False, db_index=True)
+    costaccounting = models.ForeignKey('CostAccounting', verbose_name=_(
+        'cost accounting'), null=True, on_delete=models.PROTECT)
+    close = models.BooleanField(
+        verbose_name=_('close'), default=False, db_index=True)
 
     @classmethod
     def get_default_fields(cls):
@@ -507,7 +553,8 @@ class EntryAccount(LucteriosModel):
 
     def get_serial(self, entrylines=None):
         if entrylines is None:
-            entrylines = self.entrylineaccount_set.all()  # pylint: disable=no-member
+            entrylines = self.entrylineaccount_set.all(
+            )
         serial_val = ''
         for line in entrylines:
             if serial_val != '':
@@ -517,17 +564,19 @@ class EntryAccount(LucteriosModel):
 
     def get_entrylineaccounts(self, serial_vals):
         res = QuerySet(model=EntryLineAccount)
-        res._result_cache = []  # pylint: disable=protected-access
+        res._result_cache = []
         for serial_val in serial_vals.split('\n'):
             if serial_val != '':
                 new_line = EntryLineAccount.get_entrylineaccount(serial_val)
                 new_line.entry = self
-                res._result_cache.append(new_line)  # pylint: disable=protected-access
+                res._result_cache.append(
+                    new_line)
         return res
 
     def save_entrylineaccounts(self, serial_vals):
-        if self.close == False:
-            self.entrylineaccount_set.all().delete()  # pylint: disable=no-member
+        if not self.close:
+            self.entrylineaccount_set.all().delete(
+            )
             for line in self.get_entrylineaccounts(serial_vals):
                 if line.id < 0:
                     line.id = None
@@ -539,27 +588,31 @@ class EntryAccount(LucteriosModel):
         for idx in range(len(lines)):
             if lines[idx].id == entrylineid:
                 line_idx = idx
-        del lines._result_cache[line_idx]  # pylint: disable=protected-access
+        del lines._result_cache[line_idx]
         return self.get_serial(lines)
 
     def add_new_entryline(self, serial_entry, entrylineaccount, num_cpt, credit_val, debit_val, third, reference):
-        if self.journal.id == 1:  # pylint: disable=no-member
-            charts = ChartsAccount.objects.get(id=num_cpt)  # pylint: disable=no-member
+        if self.journal.id == 1:
+            charts = ChartsAccount.objects.get(
+                id=num_cpt)
             if match(current_system_account().get_revenue_mask(), charts.code) or \
                     match(current_system_account().get_expence_mask(), charts.code):
-                raise LucteriosException(IMPORTANT, _('This kind of entry is not allowed for this journal!'))
+                raise LucteriosException(
+                    IMPORTANT, _('This kind of entry is not allowed for this journal!'))
         if entrylineaccount != 0:
-            serial_entry = self.remove_entrylineaccounts(serial_entry, entrylineaccount)
+            serial_entry = self.remove_entrylineaccounts(
+                serial_entry, entrylineaccount)
         if serial_entry != '':
             serial_entry += '\n'
-        serial_entry += EntryLineAccount.add_serial(num_cpt, debit_val, credit_val, third, reference)
+        serial_entry += EntryLineAccount.add_serial(
+            num_cpt, debit_val, credit_val, third, reference)
         return serial_entry
 
     def serial_control(self, serial_vals):
         total_credit = 0
         total_debit = 0
         serial = self.get_entrylineaccounts(serial_vals)
-        current = self.entrylineaccount_set.all()  # pylint: disable=no-member
+        current = self.entrylineaccount_set.all()
         no_change = len(serial) > 0
         if len(serial) == len(current):
             for idx in range(len(serial)):
@@ -574,9 +627,10 @@ class EntryAccount(LucteriosModel):
         return no_change, max(0, total_credit - total_debit), max(0, total_debit - total_credit)
 
     def closed(self):
-        if (self.year.status != 2) and (self.close == False):  # pylint: disable=no-member
+        if (self.year.status != 2) and not self.close:
             self.close = True
-            val = self.year.entryaccount_set.all().aggregate(Max('num'))  # pylint: disable=no-member
+            val = self.year.entryaccount_set.all().aggregate(
+                Max('num'))
             if val['num__max'] is None:
                 self.num = 1
             else:
@@ -585,7 +639,7 @@ class EntryAccount(LucteriosModel):
             self.save()
 
     def unlink(self):
-        if (self.year.status != 2) and (self.link is not None):  # pylint: disable=no-member
+        if (self.year.status != 2) and (self.link is not None):
             for entry in self.link.entryaccount_set.all():
                 entry.link = None
                 entry.save()
@@ -593,12 +647,13 @@ class EntryAccount(LucteriosModel):
             self.link = None
 
     def create_linked(self):
-        if (self.year.status != 2) and (self.link is None):  # pylint: disable=no-member
-            paym_journ = Journal.objects.get(id=4)  # pylint: disable=no-member
+        if (self.year.status != 2) and (self.link is None):
+            paym_journ = Journal.objects.get(id=4)
             paym_desig = _('payment of %s') % self.designation
-            new_entry = EntryAccount.objects.create(year=self.year, journal=paym_journ, designation=paym_desig, date_value=date.today())  # pylint: disable=no-member
+            new_entry = EntryAccount.objects.create(
+                year=self.year, journal=paym_journ, designation=paym_desig, date_value=date.today())
             serial_val = ''
-            for line in self.entrylineaccount_set.all():  # pylint: disable=no-member
+            for line in self.entrylineaccount_set.all():
                 if line.account.is_third:
                     if serial_val != '':
                         serial_val += '\n'
@@ -610,7 +665,8 @@ class EntryAccount(LucteriosModel):
         if abs(amount) > 0.0001:
             new_entry_line = EntryLineAccount()
             new_entry_line.entry = self
-            new_entry_line.account = self.year.getorcreate_chartaccount(code, name)  # pylint: disable=no-member
+            new_entry_line.account = self.year.getorcreate_chartaccount(
+                code, name)
             new_entry_line.amount = amount
             new_entry_line.third = third
             new_entry_line.save()
@@ -618,29 +674,32 @@ class EntryAccount(LucteriosModel):
 
     @property
     def has_third(self):
-        return self.entrylineaccount_set.filter(account__code__regex=current_system_account().get_third_mask()).count() > 0  # pylint: disable=no-member
+        return self.entrylineaccount_set.filter(account__code__regex=current_system_account().get_third_mask()).count() > 0
 
     @property
     def has_customer(self):
-        return self.entrylineaccount_set.filter(account__code__regex=current_system_account().get_customer_mask()).count() > 0  # pylint: disable=no-member
+        return self.entrylineaccount_set.filter(account__code__regex=current_system_account().get_customer_mask()).count() > 0
 
     @property
     def has_cash(self):
-        return self.entrylineaccount_set.filter(account__code__regex=current_system_account().get_cash_mask()).count() > 0  # pylint: disable=no-member
+        return self.entrylineaccount_set.filter(account__code__regex=current_system_account().get_cash_mask()).count() > 0
 
     class Meta(object):
-        # pylint: disable=no-init
+
         verbose_name = _('entry of account')
         verbose_name_plural = _('entries of account')
 
-class EntryLineAccount(LucteriosModel):
-    # pylint: disable=too-many-public-methods
 
-    account = models.ForeignKey('ChartsAccount', verbose_name=_('account'), null=False, on_delete=models.PROTECT)
-    entry = models.ForeignKey('EntryAccount', verbose_name=_('entry'), null=False, on_delete=models.CASCADE)
+class EntryLineAccount(LucteriosModel):
+
+    account = models.ForeignKey('ChartsAccount', verbose_name=_(
+        'account'), null=False, on_delete=models.PROTECT)
+    entry = models.ForeignKey(
+        'EntryAccount', verbose_name=_('entry'), null=False, on_delete=models.CASCADE)
     amount = models.FloatField(_('amount'), db_index=True)
     reference = models.CharField(_('reference'), max_length=100, null=True)
-    third = models.ForeignKey('Third', verbose_name=_('third'), null=True, on_delete=models.PROTECT, db_index=True)
+    third = models.ForeignKey('Third', verbose_name=_(
+        'third'), null=True, on_delete=models.PROTECT, db_index=True)
 
     @classmethod
     def get_default_fields(cls):
@@ -648,18 +707,18 @@ class EntryLineAccount(LucteriosModel):
 
     @classmethod
     def get_other_fields(cls):
-        return ['entry.num', 'entry.date_entry', 'entry.date_value', (_('account'), 'entry_account'), \
-                    'entry.designation', (_('debit'), 'debit'), (_('credit'), 'credit'), 'entry.link', 'entry.costaccounting']
+        return ['entry.num', 'entry.date_entry', 'entry.date_value', (_('account'), 'entry_account'),
+                'entry.designation', (_('debit'), 'debit'), (_('credit'), 'credit'), 'entry.link', 'entry.costaccounting']
 
     @classmethod
     def get_edit_fields(cls):
-        return ['entry.date_entry', 'entry.date_value', 'entry.designation', \
-                    ((_('account'), 'entry_account'),), ((_('debit'), 'debit'),), ((_('credit'), 'credit'),)]
+        return ['entry.date_entry', 'entry.date_value', 'entry.designation',
+                ((_('account'), 'entry_account'),), ((_('debit'), 'debit'),), ((_('credit'), 'credit'),)]
 
     @classmethod
     def get_show_fields(cls):
-        return ['entry.date_entry', 'entry.date_value', 'entry.designation', \
-                    ((_('account'), 'entry_account'),), ((_('debit'), 'debit'),), ((_('credit'), 'credit'),)]
+        return ['entry.date_entry', 'entry.date_value', 'entry.designation',
+                ((_('account'), 'entry_account'),), ((_('debit'), 'debit'),), ((_('credit'), 'credit'),)]
 
     @classmethod
     def get_print_fields(cls):
@@ -670,11 +729,11 @@ class EntryLineAccount(LucteriosModel):
         if self.third is None:
             return six.text_type(self.account)
         else:
-            return "[%s %s]" % (self.account.code, six.text_type(self.third))  # pylint: disable=no-member
+            return "[%s %s]" % (self.account.code, six.text_type(self.third))
 
     def get_debit(self):
         try:
-            return max((0, -1 * self.account.credit_debit_way() * self.amount))  # pylint: disable=no-member
+            return max((0, -1 * self.account.credit_debit_way() * self.amount))
         except ObjectDoesNotExist:
             return 0.0
 
@@ -684,7 +743,7 @@ class EntryLineAccount(LucteriosModel):
 
     def get_credit(self):
         try:
-            return max((0, self.account.credit_debit_way() * self.amount))  # pylint: disable=no-member
+            return max((0, self.account.credit_debit_way() * self.amount))
         except ObjectDoesNotExist:
             return 0.0
 
@@ -708,30 +767,35 @@ class EntryLineAccount(LucteriosModel):
         if self.third is None:
             res = res and (other.third is None)
         else:
-            res = res and (self.third.id == other.third.id)  # pylint: disable=no-member
+            res = res and (
+                self.third.id == other.third.id)
         return res
 
     def get_serial(self):
         if self.third is None:
             third_id = 0
         else:
-            third_id = self.third.id # pylint: disable=no-member
+            third_id = self.third.id
         if self.reference is None:
             reference = 'None'
         else:
             reference = self.reference
-        return "%d|%d|%d|%f|%s|" % (self.id, self.account.id, third_id, self.amount, reference)  # pylint: disable=no-member
+        return "%d|%d|%d|%f|%s|" % (self.id, self.account.id, third_id, self.amount, reference)
 
     @classmethod
     def add_serial(cls, num_cpt, debit_val, credit_val, thirdid=0, reference=None):
         import time
         new_entry_line = cls()
-        new_entry_line.id = -1 * int(time.time() * 60)  # pylint: disable=invalid-name,attribute-defined-outside-init
-        new_entry_line.account = ChartsAccount.objects.get(id=num_cpt)  # pylint: disable=no-member
+        new_entry_line.id = -1 * \
+            int(time.time() *
+                60)
+        new_entry_line.account = ChartsAccount.objects.get(
+            id=num_cpt)
         if thirdid == 0:
             new_entry_line.third = None
         else:
-            new_entry_line.third = Third.objects.get(id=thirdid)  # pylint: disable=no-member
+            new_entry_line.third = Third.objects.get(
+                id=thirdid)
         new_entry_line.set_montant(debit_val, credit_val)
         if reference == "None":
             new_entry_line.reference = None
@@ -743,12 +807,15 @@ class EntryLineAccount(LucteriosModel):
     def get_entrylineaccount(cls, serial_val):
         serial_vals = serial_val.split('|')
         new_entry_line = cls()
-        new_entry_line.id = int(serial_vals[0])  # pylint: disable=invalid-name,attribute-defined-outside-init
-        new_entry_line.account = ChartsAccount.objects.get(id=int(serial_vals[1]))  # pylint: disable=no-member
+        new_entry_line.id = int(
+            serial_vals[0])
+        new_entry_line.account = ChartsAccount.objects.get(
+            id=int(serial_vals[1]))
         if int(serial_vals[2]) == 0:
             new_entry_line.third = None
         else:
-            new_entry_line.third = Third.objects.get(id=int(serial_vals[2]))  # pylint: disable=no-member
+            new_entry_line.third = Third.objects.get(
+                id=int(serial_vals[2]))
         new_entry_line.amount = float(serial_vals[3])
         new_entry_line.reference = "|".join(serial_vals[4:-1])
         if new_entry_line.reference == "None":
@@ -758,7 +825,9 @@ class EntryLineAccount(LucteriosModel):
     def create_clone_inverse(self):
         import time
         new_entry_line = EntryLineAccount()
-        new_entry_line.id = -1 * int(time.time() * 60)  # pylint: disable=invalid-name,attribute-defined-outside-init
+        new_entry_line.id = -1 * \
+            int(time.time() *
+                60)
         new_entry_line.account = self.account
         if self.third:
             new_entry_line.third = self.third
@@ -776,15 +845,16 @@ class EntryLineAccount(LucteriosModel):
             return False
 
     class Meta(object):
-        # pylint: disable=no-init
+
         verbose_name = _('entry line of account')
         verbose_name_plural = _('entry lines of account')
         default_permissions = []
 
-class ModelEntry(LucteriosModel):
-    # pylint: disable=too-many-public-methods
 
-    journal = models.ForeignKey('Journal', verbose_name=_('journal'), null=False, default=0, on_delete=models.PROTECT)
+class ModelEntry(LucteriosModel):
+
+    journal = models.ForeignKey('Journal', verbose_name=_(
+        'journal'), null=False, default=0, on_delete=models.PROTECT)
     designation = models.CharField(_('name'), max_length=200)
 
     def __str__(self):
@@ -805,7 +875,7 @@ class ModelEntry(LucteriosModel):
     def get_total(self):
         try:
             value = 0.0
-            for line in self.modellineentry_set.all():  # pylint: disable=no-member
+            for line in self.modellineentry_set.all():
                 value += line.get_credit()
             return value
         except LucteriosException:
@@ -818,7 +888,7 @@ class ModelEntry(LucteriosModel):
     def get_serial_entry(self, factor):
         serial_val = ''
         num = 0
-        for line in self.modellineentry_set.all():  # pylint: disable=no-member
+        for line in self.modellineentry_set.all():
             if serial_val != '':
                 serial_val += '\n'
             serial_val += line.get_serial(factor, num)
@@ -826,17 +896,19 @@ class ModelEntry(LucteriosModel):
         return serial_val
 
     class Meta(object):
-        # pylint: disable=no-init
+
         verbose_name = _('Model of entry')
         verbose_name_plural = _('Models of entry')
         default_permissions = []
 
-class ModelLineEntry(LucteriosModel):
-    # pylint: disable=too-many-public-methods
 
-    model = models.ForeignKey('ModelEntry', verbose_name=_('model'), null=False, default=0, on_delete=models.CASCADE)
+class ModelLineEntry(LucteriosModel):
+
+    model = models.ForeignKey('ModelEntry', verbose_name=_(
+        'model'), null=False, default=0, on_delete=models.CASCADE)
     code = models.CharField(_('code'), max_length=50)
-    third = models.ForeignKey('Third', verbose_name=_('third'), null=True, on_delete=models.PROTECT)
+    third = models.ForeignKey(
+        'Third', verbose_name=_('third'), null=True, on_delete=models.PROTECT)
     amount = models.FloatField(_('amount'), default=0)
 
     @classmethod
@@ -858,7 +930,7 @@ class ModelLineEntry(LucteriosModel):
 
     def get_debit(self):
         try:
-            return max((0, -1 * self.credit_debit_way() * self.amount))  # pylint: disable=no-member
+            return max((0, -1 * self.credit_debit_way() * self.amount))
         except LucteriosException:
             return 0.0
 
@@ -868,7 +940,7 @@ class ModelLineEntry(LucteriosModel):
 
     def get_credit(self):
         try:
-            return max((0, self.credit_debit_way() * self.amount))  # pylint: disable=no-member
+            return max((0, self.credit_debit_way() * self.amount))
         except LucteriosException:
             return 0.0
 
@@ -888,17 +960,21 @@ class ModelLineEntry(LucteriosModel):
         import time
         try:
             new_entry_line = EntryLineAccount()
-            new_entry_line.id = -1 * int(time.time() * 60) + num  # pylint: disable=invalid-name,attribute-defined-outside-init
-            new_entry_line.account = ChartsAccount.objects.get(code=self.code)  # pylint: disable=no-member
+            new_entry_line.id = -1 * \
+                int(time.time() * 60) + \
+                num
+            new_entry_line.account = ChartsAccount.objects.get(
+                code=self.code)
             new_entry_line.third = self.third
             new_entry_line.amount = currency_round(self.amount * factor)
             new_entry_line.reference = None
             return new_entry_line.get_serial()
         except ObjectDoesNotExist:
-            raise LucteriosException(IMPORTANT, _('Account code "%s" unknown for this fiscal year!') % self.code)
+            raise LucteriosException(
+                IMPORTANT, _('Account code "%s" unknown for this fiscal year!') % self.code)
 
     class Meta(object):
-        # pylint: disable=no-init
+
         verbose_name = _('Model line')
         verbose_name_plural = _('Model lines')
         default_permissions = []

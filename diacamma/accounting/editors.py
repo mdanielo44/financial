@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# pylint: disable=too-many-lines
+
 '''
 Describe database model for Django
 
@@ -43,31 +43,36 @@ from diacamma.accounting.models import current_system_account, FiscalYear, \
 from django.db.models.aggregates import Sum
 from re import match
 
+
 class ThirdEditor(LucteriosEditor):
 
     def _add_filtering(self, xfer, lines_filter):
-        # pylint: disable=no-self-use
+
         lbl = XferCompLabelForm('lbl_lines_filter')
         lbl.set_value_as_name(_('Accounts filter'))
         lbl.set_location(0, 1)
         xfer.add_component(lbl)
         edt = XferCompSelect("lines_filter")
-        edt.set_select([(0, _('All entries of current fiscal year')), (1, _('Only no-closed entries of current fiscal year')), (2, _('All entries for all fiscal year'))])
+        edt.set_select([(0, _('All entries of current fiscal year')), (1, _(
+            'Only no-closed entries of current fiscal year')), (2, _('All entries for all fiscal year'))])
         edt.set_value(lines_filter)
         edt.set_location(1, 1)
-        edt.set_action(xfer.request, xfer.get_action(), {'modal':FORMTYPE_REFRESH, 'close':CLOSE_NO})
+        edt.set_action(xfer.request, xfer.get_action(),
+                       {'modal': FORMTYPE_REFRESH, 'close': CLOSE_NO})
         xfer.add_component(edt)
 
     def show(self, xfer):
         xfer.tab = 0
         old_item = xfer.item
-        xfer.item = self.item.contact.get_final_child()  # pylint: disable=no-member
-        xfer.filltab_from_model(1, 1, True, ['address', ('postal_code', 'city'), 'country', ('tel1', 'tel2')])
+        xfer.item = self.item.contact.get_final_child(
+        )
+        xfer.filltab_from_model(
+            1, 1, True, ['address', ('postal_code', 'city'), 'country', ('tel1', 'tel2')])
         btn = XferCompButton('show')
         btn.set_location(2, 5, 3, 1)
         modal_name = xfer.item.__class__.__name__
-        btn.set_action(xfer.request, ActionsManage.get_act_changed(modal_name, 'show', _('Show'), 'images/edit.png'), \
-                {'modal':FORMTYPE_MODAL, 'close':CLOSE_NO, 'params':{modal_name.lower():six.text_type(xfer.item.id)}})
+        btn.set_action(xfer.request, ActionsManage.get_act_changed(modal_name, 'show', _('Show'), 'images/edit.png'),
+                       {'modal': FORMTYPE_MODAL, 'close': CLOSE_NO, 'params': {modal_name.lower(): six.text_type(xfer.item.id)}})
         xfer.add_component(btn)
         xfer.item = old_item
         try:
@@ -75,20 +80,24 @@ class ThirdEditor(LucteriosEditor):
             if lines_filter == 0:
                 entry_lines_filter = Q(entry__year=FiscalYear.get_current())
             elif lines_filter == 1:
-                entry_lines_filter = Q(entry__year=FiscalYear.get_current()) & Q(entry__close=False)
+                entry_lines_filter = Q(
+                    entry__year=FiscalYear.get_current()) & Q(entry__close=False)
             else:
                 entry_lines_filter = Q()
-            entry_lines = self.item.entrylineaccount_set.filter(entry_lines_filter)  # pylint: disable=no-member
+            entry_lines = self.item.entrylineaccount_set.filter(
+                entry_lines_filter)
             xfer.new_tab(_('entry of account'))
             self._add_filtering(xfer, lines_filter)
             link_grid_lines = XferCompGrid('entrylineaccount')
-            link_grid_lines.set_model(entry_lines, EntryLineAccount.get_other_fields(), xfer)
+            link_grid_lines.set_model(
+                entry_lines, EntryLineAccount.get_other_fields(), xfer)
             link_grid_lines.set_location(0, 2, 2)
-            link_grid_lines.add_action(xfer.request, ActionsManage.get_act_changed('EntryLineAccount', 'open', _('Edit'), 'images/edit.png'), \
-                                    {'modal':FORMTYPE_MODAL, 'unique':SELECT_SINGLE, 'close':CLOSE_NO})
+            link_grid_lines.add_action(xfer.request, ActionsManage.get_act_changed('EntryLineAccount', 'open', _('Edit'), 'images/edit.png'),
+                                       {'modal': FORMTYPE_MODAL, 'unique': SELECT_SINGLE, 'close': CLOSE_NO})
             xfer.add_component(link_grid_lines)
         except LucteriosException:
             pass
+
 
 class AccountThirdEditor(LucteriosEditor):
 
@@ -97,21 +106,25 @@ class AccountThirdEditor(LucteriosEditor):
         code_ed.mask = current_system_account().get_third_mask()
         return
 
+
 class FiscalYearEditor(LucteriosEditor):
 
     def edit(self, xfer):
-        fiscal_years = FiscalYear.objects.order_by('end')  # pylint: disable=no-member
+        fiscal_years = FiscalYear.objects.order_by(
+            'end')
         xfer.change_to_readonly('status')
         # modification case
-        if self.item.id is not None:  # pylint: disable=no-member
-            if (len(fiscal_years) != 0) and (fiscal_years[len(fiscal_years) - 1].id != self.item.id):  # pylint: disable=no-member
-                raise LucteriosException(IMPORTANT, _('This fiscal year is not the last!'))
+        if self.item.id is not None:
+            if (len(fiscal_years) != 0) and (fiscal_years[len(fiscal_years) - 1].id != self.item.id):
+                raise LucteriosException(
+                    IMPORTANT, _('This fiscal year is not the last!'))
             # modifcation and not the first in building
             if (len(fiscal_years) != 1) or (self.item.status != 0):
                 xfer.change_to_readonly('begin')
         # creation and not the first
         elif len(fiscal_years) > 0:
-            xfer.params['last_fiscalyear'] = fiscal_years[len(fiscal_years) - 1].id
+            xfer.params['last_fiscalyear'] = fiscal_years[
+                len(fiscal_years) - 1].id
             xfer.params['begin'] = self.item.begin.isoformat()
             xfer.change_to_readonly('begin')
         if self.item.status == 2:
@@ -119,29 +132,36 @@ class FiscalYearEditor(LucteriosEditor):
 
     def before_save(self, xfer):
         if self.item.end < self.item.begin:
-            raise LucteriosException(IMPORTANT, _("end of fiscal year must be after begin!"))
-        if self.item.id is None and (len(FiscalYear.objects.all()) == 0):  # pylint: disable=no-member
+            raise LucteriosException(
+                IMPORTANT, _("end of fiscal year must be after begin!"))
+        if self.item.id is None and (len(FiscalYear.objects.all()) == 0):
             self.item.is_actif = True
         return
 
     def run_begin(self, xfer):
         if self.item.status == 0:
-            nb_entry_noclose = EntryLineAccount.objects.filter(entry__journal__id=1, entry__close=False, account__year=self.item).count()  # pylint: disable=no-member
+            nb_entry_noclose = EntryLineAccount.objects.filter(
+                entry__journal__id=1, entry__close=False, account__year=self.item).count()
             if nb_entry_noclose > 0:
-                raise LucteriosException(IMPORTANT, _("Some enties for last year report are not closed!"))
+                raise LucteriosException(
+                    IMPORTANT, _("Some enties for last year report are not closed!"))
             if current_system_account().check_begin(self.item, xfer):
                 self.item.status = 1
                 self.item.save()
 
     def run_close(self, xfer):
         if self.item.status == 0:
-            raise LucteriosException(IMPORTANT, _("This fiscal year is not 'in running'!"))
-        nb_entry_noclose = EntryAccount.objects.filter(close=False, entrylineaccount__account__year=self.item).distinct().count()  # pylint: disable=no-member
-        if (nb_entry_noclose > 0) and (FiscalYear.objects.filter(last_fiscalyear=self.item).count() == 0):  # pylint: disable=no-member
-            raise LucteriosException(IMPORTANT, _("This fiscal year has entries not closed and not next fiscal year!"))
+            raise LucteriosException(
+                IMPORTANT, _("This fiscal year is not 'in running'!"))
+        nb_entry_noclose = EntryAccount.objects.filter(
+            close=False, entrylineaccount__account__year=self.item).distinct().count()
+        if (nb_entry_noclose > 0) and (FiscalYear.objects.filter(last_fiscalyear=self.item).count() == 0):
+            raise LucteriosException(IMPORTANT, _(
+                "This fiscal year has entries not closed and not next fiscal year!"))
         if current_system_account().check_end(self.item, xfer, nb_entry_noclose):
             self.item.status = 2
             self.item.save()
+
 
 class CostAccountingEditor(LucteriosEditor):
 
@@ -152,12 +172,14 @@ class CostAccountingEditor(LucteriosEditor):
             xfer.change_to_readonly('last_costaccounting')
         elif self.item.id is not None:
             sel = xfer.get_components('last_costaccounting')
-            sel.set_select_query(CostAccounting.objects.all().exclude(id=self.item.id))  # pylint: disable=no-member
+            sel.set_select_query(CostAccounting.objects.all().exclude(
+                id=self.item.id))
 
     def before_save(self, xfer):
-        if self.item.id is None and (len(CostAccounting.objects.all()) == 0):  # pylint: disable=no-member
+        if self.item.id is None and (len(CostAccounting.objects.all()) == 0):
             self.item.is_default = True
         return
+
 
 class ChartsAccountEditor(LucteriosEditor):
 
@@ -165,19 +187,22 @@ class ChartsAccountEditor(LucteriosEditor):
         xfer.change_to_readonly('type_of_account')
         code_ed = xfer.get_components('code')
         code_ed.mask = current_system_account().get_general_mask()
-        code_ed.set_action(xfer.request, xfer.get_action(), {'modal':FORMTYPE_REFRESH, 'close':CLOSE_NO})
-        descript, typeaccount = current_system_account().new_charts_account(self.item.code)
+        code_ed.set_action(
+            xfer.request, xfer.get_action(), {'modal': FORMTYPE_REFRESH, 'close': CLOSE_NO})
+        descript, typeaccount = current_system_account().new_charts_account(
+            self.item.code)
         error_msg = ''
         if typeaccount < 0:
             if typeaccount == -2:
                 error_msg = _("Invalid code")
             if self.item.code != '':
                 code_ed.set_value(self.item.code + '!')
-            if self.item.id is None:  # pylint: disable=no-member
+            if self.item.id is None:
                 xfer.get_components('type_of_account').set_value('---')
-        elif self.item.id is None:  # pylint: disable=no-member
+        elif self.item.id is None:
             field_type = self.item.get_field_by_name('type_of_account')
-            xfer.get_components('type_of_account').set_value(get_value_if_choices(typeaccount, field_type))
+            xfer.get_components('type_of_account').set_value(
+                get_value_if_choices(typeaccount, field_type))
             xfer.get_components('name').set_value(descript)
             xfer.params['type_of_account'] = typeaccount
         elif typeaccount != self.item.type_of_account:
@@ -191,30 +216,36 @@ class ChartsAccountEditor(LucteriosEditor):
 
     def show(self, xfer):
         if self.item.is_third:
-            fieldnames = ['entry.num', 'entry.date_entry', 'entry.date_value', 'third', 'entry.designation', (_('debit'), 'debit'), (_('credit'), 'credit'), 'entry.link']
+            fieldnames = ['entry.num', 'entry.date_entry', 'entry.date_value', 'third', 'entry.designation', (_(
+                'debit'), 'debit'), (_('credit'), 'credit'), 'entry.link']
         elif self.item.is_cash:
-            fieldnames = ['entry.num', 'entry.date_entry', 'entry.date_value', 'reference', 'entry.designation', (_('debit'), 'debit'), (_('credit'), 'credit'), 'entry.link']
+            fieldnames = ['entry.num', 'entry.date_entry', 'entry.date_value', 'reference',
+                          'entry.designation', (_('debit'), 'debit'), (_('credit'), 'credit'), 'entry.link']
         else:
-            fieldnames = ['entry.num', 'entry.date_entry', 'entry.date_value', 'entry.designation', (_('debit'), 'debit'), (_('credit'), 'credit'), 'entry.link']
+            fieldnames = ['entry.num', 'entry.date_entry', 'entry.date_value', 'entry.designation', (_(
+                'debit'), 'debit'), (_('credit'), 'credit'), 'entry.link']
         row = xfer.get_max_row() + 1
         lbl = XferCompLabelForm('lbl_entrylineaccount')
         lbl.set_location(1, row)
-        lbl.set_value_as_name(EntryLineAccount._meta.verbose_name)  # pylint: disable=protected-access,no-member
+        lbl.set_value_as_name(
+            EntryLineAccount._meta.verbose_name)
         xfer.add_component(lbl)
         comp = XferCompGrid('entrylineaccount')
-        comp.set_model(self.item.entrylineaccount_set.all(), fieldnames, xfer)  # pylint: disable=no-member
-        comp.add_action(xfer.request, ActionsManage.get_act_changed('EntryLineAccount', 'open', _('Edit'), 'images/edit.png'), \
-                                    {'modal':FORMTYPE_MODAL, 'unique':SELECT_SINGLE, 'close':CLOSE_NO})
+        comp.set_model(self.item.entrylineaccount_set.all(),
+                       fieldnames, xfer)
+        comp.add_action(xfer.request, ActionsManage.get_act_changed('EntryLineAccount', 'open', _('Edit'), 'images/edit.png'),
+                        {'modal': FORMTYPE_MODAL, 'unique': SELECT_SINGLE, 'close': CLOSE_NO})
         if self.item.is_third:
-            comp.add_action(xfer.request, ActionsManage.get_act_changed('EntryLineAccount', 'link', _('Link/Unlink'), ''), \
-                                        {'modal':FORMTYPE_MODAL, 'unique':SELECT_MULTI, 'close':CLOSE_NO})
+            comp.add_action(xfer.request, ActionsManage.get_act_changed('EntryLineAccount', 'link', _('Link/Unlink'), ''),
+                            {'modal': FORMTYPE_MODAL, 'unique': SELECT_MULTI, 'close': CLOSE_NO})
         comp.set_location(2, row)
         xfer.add_component(comp)
+
 
 class EntryAccountEditor(LucteriosEditor):
 
     def before_save(self, xfer):
-        # pylint: disable=no-member
+
         if self.item.date_value > self.item.year.end.isoformat():
             self.item.date_value = self.item.year.end.isoformat()
         if self.item.date_value < self.item.year.begin.isoformat():
@@ -224,17 +255,21 @@ class EntryAccountEditor(LucteriosEditor):
     def _add_cost_savebtn(self, xfer):
         name_comp = xfer.get_components('designation')
         if (self.item.costaccounting is None) or (self.item.costaccounting.status == 0):
-            xfer.fill_from_model(1, name_comp.row + 1, False, ['costaccounting'])
+            xfer.fill_from_model(
+                1, name_comp.row + 1, False, ['costaccounting'])
             sel = xfer.get_components('costaccounting')
-            sel.set_select_query(CostAccounting.objects.filter(status=0))  # pylint: disable=no-member
+            sel.set_select_query(
+                CostAccounting.objects.filter(status=0))
             added = True
         else:
-            xfer.fill_from_model(1, name_comp.row + 1, True, ['costaccounting'])
+            xfer.fill_from_model(
+                1, name_comp.row + 1, True, ['costaccounting'])
             added = isinstance(name_comp, XferCompEdit)
         if added:
             btn = XferCompButton('save_modif')
             btn.set_location(3, 0, 1, 2)
-            btn.set_action(xfer.request, xfer.get_action(_("Modify"), "images/edit.png"), {'params':{"SAVE":"YES"}})
+            btn.set_action(xfer.request, xfer.get_action(
+                _("Modify"), "images/edit.png"), {'params': {"SAVE": "YES"}})
             xfer.add_component(btn)
 
     def show(self, xfer):
@@ -244,18 +279,21 @@ class EntryAccountEditor(LucteriosEditor):
         lbl.set_location(0, last_row + 1, 6)
         lbl.set_value_center("{[hr/]}")
         xfer.add_component(lbl)
-        xfer.filltab_from_model(1, last_row + 2, True, ['entrylineaccount_set'])
+        xfer.filltab_from_model(
+            1, last_row + 2, True, ['entrylineaccount_set'])
         grid_lines = xfer.get_components('entrylineaccount')
         grid_lines.actions = []
         if self.item.has_third:
-            sum_customer = get_amount_sum(self.item.entrylineaccount_set.filter(account__code__regex=current_system_account().get_third_mask()).aggregate(Sum('amount')))  # pylint: disable=no-member
+            sum_customer = get_amount_sum(self.item.entrylineaccount_set.filter(
+                account__code__regex=current_system_account().get_third_mask()).aggregate(Sum('amount')))
             if ((sum_customer < 0) and not self.item.has_cash) or ((sum_customer > 0) and self.item.has_cash):
                 lbl = XferCompLabelForm('asset_warning')
                 lbl.set_location(0, last_row + 3, 6)
                 lbl.set_value_as_header(_("entry of accounting for an asset"))
                 xfer.add_component(lbl)
         if self.item.link is not None:
-            entrylines = EntryLineAccount.objects.filter(entry__link=self.item.link).exclude(entry__id=self.item.id)  # pylint: disable=no-member
+            entrylines = EntryLineAccount.objects.filter(entry__link=self.item.link).exclude(
+                entry__id=self.item.id)
             lbl = XferCompLabelForm('sep4')
             lbl.set_location(0, last_row + 4, 6)
             lbl.set_value_center("{[hr/]}")
@@ -265,10 +303,11 @@ class EntryAccountEditor(LucteriosEditor):
             lbl.set_value_center(_("Linked entries"))
             xfer.add_component(lbl)
             link_grid_lines = XferCompGrid('entrylineaccount_link')
-            link_grid_lines.set_model(entrylines, EntryLineAccount.get_other_fields(), xfer)
+            link_grid_lines.set_model(
+                entrylines, EntryLineAccount.get_other_fields(), xfer)
             link_grid_lines.set_location(1, last_row + 6, 5)
-            link_grid_lines.add_action(xfer.request, ActionsManage.get_act_changed('EntryLineAccount', 'open', _('Edit'), 'images/edit.png'), \
-                            {'modal':FORMTYPE_MODAL, 'unique':SELECT_SINGLE, 'close':CLOSE_YES})
+            link_grid_lines.add_action(xfer.request, ActionsManage.get_act_changed('EntryLineAccount', 'open', _('Edit'), 'images/edit.png'),
+                                       {'modal': FORMTYPE_MODAL, 'unique': SELECT_SINGLE, 'close': CLOSE_YES})
             xfer.add_component(link_grid_lines)
 
     def _entryline_editor(self, xfer, serial_vals, debit_rest, credit_rest):
@@ -282,22 +321,26 @@ class EntryAccountEditor(LucteriosEditor):
         lbl.set_value_center(_("Add a entry line"))
         xfer.add_component(lbl)
         entry_line = EntryLineAccount()
-        entry_line.editor.edit_line(xfer, 0, last_row + 2, debit_rest, credit_rest)  # pylint: disable=no-member
+        entry_line.editor.edit_line(
+            xfer, 0, last_row + 2, debit_rest, credit_rest)
         if entry_line.has_account:
             btn = XferCompButton('entrybtn')
             btn.set_location(3, last_row + 5)
-            btn.set_action(xfer.request, ActionsManage.get_act_changed('EntryAccount', 'addentity', _("Add"), "images/add.png"), {'close':CLOSE_YES})
+            btn.set_action(xfer.request, ActionsManage.get_act_changed(
+                'EntryAccount', 'addentity', _("Add"), "images/add.png"), {'close': CLOSE_YES})
             xfer.add_component(btn)
         self.item.editor.show(xfer)
         grid_lines = xfer.get_components('entrylineaccount')
         xfer.remove_component('entrylineaccount')
         new_grid_lines = XferCompGrid('entrylineaccount_serial')
-        new_grid_lines.set_model(self.item.get_entrylineaccounts(serial_vals), None, xfer)
-        new_grid_lines.set_location(grid_lines.col, grid_lines.row, grid_lines.colspan + 2, grid_lines.rowspan)
-        new_grid_lines.add_action(xfer.request, ActionsManage.get_act_changed('EntryAccount', 'change', _("Edit"), "images/edit.png"), \
-                                  {'close':CLOSE_YES, 'modal':FORMTYPE_MODAL, 'unique':SELECT_SINGLE})
-        new_grid_lines.add_action(xfer.request, ActionsManage.get_act_changed('EntryAccount', 'remove', _("Delete"), "images/delete.png"), \
-                                  {'close':CLOSE_YES, 'modal':FORMTYPE_MODAL, 'unique':SELECT_SINGLE})
+        new_grid_lines.set_model(
+            self.item.get_entrylineaccounts(serial_vals), None, xfer)
+        new_grid_lines.set_location(
+            grid_lines.col, grid_lines.row, grid_lines.colspan + 2, grid_lines.rowspan)
+        new_grid_lines.add_action(xfer.request, ActionsManage.get_act_changed('EntryAccount', 'change', _("Edit"), "images/edit.png"),
+                                  {'close': CLOSE_YES, 'modal': FORMTYPE_MODAL, 'unique': SELECT_SINGLE})
+        new_grid_lines.add_action(xfer.request, ActionsManage.get_act_changed('EntryAccount', 'remove', _("Delete"), "images/delete.png"),
+                                  {'close': CLOSE_YES, 'modal': FORMTYPE_MODAL, 'unique': SELECT_SINGLE})
         xfer.add_component(new_grid_lines)
         nb_lines = len(new_grid_lines.record_ids)
         return nb_lines
@@ -316,16 +359,21 @@ class EntryAccountEditor(LucteriosEditor):
         xfer.actions = []
         if no_change:
             if (self.item.link is None) and self.item.has_third and not self.item.has_cash:
-                xfer.add_action(ActionsManage.get_act_changed('EntryAccount', 'payement', _('Payment'), ''), {'close':CLOSE_YES})
-            xfer.add_action(ActionsManage.get_act_changed('EntryAccount', 'reverse', _('Reverse'), 'images/edit.png'), {'close':CLOSE_YES})
+                xfer.add_action(ActionsManage.get_act_changed(
+                    'EntryAccount', 'payement', _('Payment'), ''), {'close': CLOSE_YES})
+            xfer.add_action(ActionsManage.get_act_changed(
+                'EntryAccount', 'reverse', _('Reverse'), 'images/edit.png'), {'close': CLOSE_YES})
             xfer.add_action(WrapAction(_('Close'), 'images/close.png'), {})
         else:
             if (debit_rest < 0.0001) and (credit_rest < 0.0001) and (nb_lines > 0):
-                xfer.add_action(ActionsManage.get_act_changed('EntryAccount', 'validate', _('Ok'), 'images/ok.png'), {})
+                xfer.add_action(ActionsManage.get_act_changed(
+                    'EntryAccount', 'validate', _('Ok'), 'images/ok.png'), {})
             if self.item.id is None:
-                xfer.add_action(WrapAction(_('Cancel'), 'images/cancel.png'), {})
+                xfer.add_action(
+                    WrapAction(_('Cancel'), 'images/cancel.png'), {})
             else:
-                xfer.add_action(ActionsManage.get_act_changed('EntryAccount', 'unlock', _('Cancel'), 'images/cancel.png'), {})
+                xfer.add_action(ActionsManage.get_act_changed(
+                    'EntryAccount', 'unlock', _('Cancel'), 'images/cancel.png'), {})
 
     def edit(self, xfer):
         self._remove_lastyear_notbuilding(xfer)
@@ -333,18 +381,22 @@ class EntryAccountEditor(LucteriosEditor):
         if serial_vals is None:
             xfer.params['serial_entry'] = self.item.get_serial()
             serial_vals = xfer.getparam('serial_entry')
-        no_change, debit_rest, credit_rest = self.item.serial_control(serial_vals)
+        no_change, debit_rest, credit_rest = self.item.serial_control(
+            serial_vals)
         if self.item.id:
-            nb_lines = self._entryline_editor(xfer, serial_vals, debit_rest, credit_rest)
+            nb_lines = self._entryline_editor(
+                xfer, serial_vals, debit_rest, credit_rest)
         else:
             self._add_cost_savebtn(xfer)
             nb_lines = 0
-        self._change_buttons(xfer, no_change, debit_rest, credit_rest, nb_lines)
+        self._change_buttons(
+            xfer, no_change, debit_rest, credit_rest, nb_lines)
+
 
 class EntryLineAccountEditor(LucteriosEditor):
 
     def edit_account_for_line(self, xfer, column, row, debit_rest, credit_rest):
-        # pylint: disable=too-many-locals
+
         num_cpt_txt = xfer.getparam('num_cpt_txt', '')
         num_cpt = xfer.getparam('num_cpt', 0)
 
@@ -356,22 +408,26 @@ class EntryLineAccountEditor(LucteriosEditor):
         edt.set_location(column, row + 1, 2)
         edt.set_value(num_cpt_txt)
         edt.set_size(20, 25)
-        edt.set_action(xfer.request, xfer.get_action(), {'close':CLOSE_NO, 'modal':FORMTYPE_REFRESH})
+        edt.set_action(xfer.request, xfer.get_action(),
+                       {'close': CLOSE_NO, 'modal': FORMTYPE_REFRESH})
         xfer.add_component(edt)
         sel_val = []
         current_account = None
         if num_cpt_txt != '':
             year = FiscalYear.get_current(xfer.getparam('year'))
-            sel_val, current_account = year.get_account_list(num_cpt_txt, num_cpt)
+            sel_val, current_account = year.get_account_list(
+                num_cpt_txt, num_cpt)
         sel = XferCompSelect('num_cpt')
         sel.set_location(column + 2, row + 1, 1)
         sel.set_select(sel_val)
         sel.set_size(20, 150)
-        sel.set_action(xfer.request, xfer.get_action(), {'close':CLOSE_NO, 'modal':FORMTYPE_REFRESH})
+        sel.set_action(xfer.request, xfer.get_action(),
+                       {'close': CLOSE_NO, 'modal': FORMTYPE_REFRESH})
         if current_account is not None:
             sel.set_value(current_account.id)
             self.item.account = current_account
-            self.item.set_montant(float(xfer.getparam('debit_val', 0.0)), float(xfer.getparam('credit_val', 0.0)))
+            self.item.set_montant(
+                float(xfer.getparam('debit_val', 0.0)), float(xfer.getparam('credit_val', 0.0)))
             if abs(self.item.amount) < 0.0001:
                 self.item.set_montant(debit_rest, credit_rest)
         xfer.add_component(sel)
@@ -383,14 +439,15 @@ class EntryLineAccountEditor(LucteriosEditor):
                 lbl = XferCompLabelForm('thirdlbl')
                 lbl.set_value_as_name(_('third'))
                 sel_thirds = [(0, '---')]
-                for third in Third.objects.filter(accountthird__code=self.item.account.code):  # pylint: disable=no-member
+                for third in Third.objects.filter(accountthird__code=self.item.account.code):
                     sel_thirds.append((third.id, six.text_type(third)))
                 cb_third = XferCompSelect('third')
                 cb_third.set_select(sel_thirds)
                 if self.item.third is None:
                     cb_third.set_value(xfer.getparam('third', 0))
                 else:
-                    cb_third.set_value(xfer.getparam('third', self.item.third.id))
+                    cb_third.set_value(
+                        xfer.getparam('third', self.item.third.id))
                 if vertical:
                     cb_third.set_location(column, row + 1)
                     lbl.set_location(column, row)
@@ -432,16 +489,19 @@ class EntryLineAccountEditor(LucteriosEditor):
         lbl.set_location(column, row + 1, 2)
         lbl.set_value_as_name(_('credit'))
         xfer.add_component(lbl)
-        edt = XferCompFloat('credit_val', -10000000, 10000000, currency_decimal)
+        edt = XferCompFloat(
+            'credit_val', -10000000, 10000000, currency_decimal)
         edt.set_location(column + 2, row + 1)
         edt.set_value(self.item.get_credit())
         edt.set_size(20, 75)
         xfer.add_component(edt)
 
     def edit_line(self, xfer, init_col, init_row, debit_rest, credit_rest):
-        self.edit_account_for_line(xfer, init_col, init_row, debit_rest, credit_rest)
+        self.edit_account_for_line(
+            xfer, init_col, init_row, debit_rest, credit_rest)
         self.edit_creditdebit_for_line(xfer, init_col, init_row + 2)
         self.edit_extra_for_line(xfer, init_col + 3, init_row)
+
 
 class ModelEntryEditor(EntryLineAccountEditor):
 
@@ -454,12 +514,14 @@ class ModelEntryEditor(EntryLineAccountEditor):
                 break
         comp_journal.select_list = select_jrn
 
+
 class ModelLineEntryEditor(EntryLineAccountEditor):
 
     def edit(self, xfer):
         xfer.params['model'] = xfer.getparam('modelentry', 0)
         code = xfer.get_components('code')
-        code.set_action(xfer.request, xfer.get_action(), {'modal':FORMTYPE_REFRESH, 'close':CLOSE_NO})
+        code.set_action(xfer.request, xfer.get_action(),
+                        {'modal': FORMTYPE_REFRESH, 'close': CLOSE_NO})
         if match(current_system_account().get_third_mask(), self.item.code) is None:
             xfer.remove_component('third')
             xfer.remove_component('lbl_third')
@@ -467,4 +529,5 @@ class ModelLineEntryEditor(EntryLineAccountEditor):
         self.edit_creditdebit_for_line(xfer, 1, xfer.get_max_row() + 1)
 
     def before_save(self, xfer):
-        self.item.set_montant(xfer.getparam('debit_val', 0.0), xfer.getparam('credit_val', 0.0))
+        self.item.set_montant(
+            xfer.getparam('debit_val', 0.0), xfer.getparam('credit_val', 0.0))

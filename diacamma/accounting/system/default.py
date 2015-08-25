@@ -24,6 +24,7 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
 
+
 class DefaultSystemAccounting(object):
 
     def get_general_mask(self):

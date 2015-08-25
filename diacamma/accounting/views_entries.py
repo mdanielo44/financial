@@ -41,6 +41,7 @@ from diacamma.accounting.models import EntryLineAccount, EntryAccount, FiscalYea
     Journal, AccountLink, current_system_account, CostAccounting
 from lucterios.CORE.xferprint import XferPrintListing
 
+
 @ActionsManage.affect('EntryLineAccount', 'list')
 @MenuManage.describ('accounting.change_entryaccount', FORMTYPE_NOMODAL, 'bookkeeping', _('Edition of accounting entry for current fiscal year'),)
 class EntryLineAccountList(XferListEditor):
@@ -52,9 +53,11 @@ class EntryLineAccountList(XferListEditor):
     def _filter_by_year(self):
         select_year = self.getparam('year')
         self.item.year = FiscalYear.get_current(select_year)
-        self.item.journal = Journal.objects.get(id=1)  # pylint: disable=no-member
+        self.item.journal = Journal.objects.get(
+            id=1)
         self.fill_from_model(0, 1, False, ['year', 'journal'])
-        self.get_components('year').set_action(self.request, EntryLineAccountList.get_action(), {'close':CLOSE_NO, 'modal':FORMTYPE_REFRESH})
+        self.get_components('year').set_action(self.request, EntryLineAccountList.get_action(
+        ), {'close': CLOSE_NO, 'modal': FORMTYPE_REFRESH})
         self.filter = Q(entry__year=self.item.year)
 
     def _filter_by_journal(self):
@@ -62,28 +65,36 @@ class EntryLineAccountList(XferListEditor):
         journal = self.get_components('journal')
         journal.select_list.append((-1, '---'))
         journal.set_value(select_journal)
-        journal.set_action(self.request, EntryLineAccountList.get_action(), {'close':CLOSE_NO, 'modal':FORMTYPE_REFRESH})
+        journal.set_action(self.request, EntryLineAccountList.get_action(), {
+                           'close': CLOSE_NO, 'modal': FORMTYPE_REFRESH})
         if select_journal != -1:
             self.filter &= Q(entry__journal__id=select_journal)
 
     def _filter_by_nature(self):
         select_filter = self.getparam('filter', 1)
-        if (self.item.year.status in [0, 1]) and (select_filter != 2):  # pylint: disable=no-member
-            self.action_grid.append(('remove', _("Delete"), "images/delete.png", SELECT_MULTI))
-            self.action_grid.append(('insertentry', _("Add"), "images/add.png", SELECT_NONE))
-            self.action_grid.append(('model', _("Model"), "images/add.png", SELECT_NONE))
-            self.action_grid.append(('closeentry', _("Closed"), "images/ok.png", SELECT_MULTI))
-        self.action_grid.append(('costaccounting', _("Cost"), "images/edit.png", SELECT_MULTI))
+        if (self.item.year.status in [0, 1]) and (select_filter != 2):
+            self.action_grid.append(
+                ('remove', _("Delete"), "images/delete.png", SELECT_MULTI))
+            self.action_grid.append(
+                ('insertentry', _("Add"), "images/add.png", SELECT_NONE))
+            self.action_grid.append(
+                ('model', _("Model"), "images/add.png", SELECT_NONE))
+            self.action_grid.append(
+                ('closeentry', _("Closed"), "images/ok.png", SELECT_MULTI))
+        self.action_grid.append(
+            ('costaccounting', _("Cost"), "images/edit.png", SELECT_MULTI))
         lbl = XferCompLabelForm("filterLbl")
         lbl.set_location(0, 3)
         lbl.set_value_as_name(_("Filter"))
         self.add_component(lbl)
         sel = XferCompSelect("filter")
-        sel.set_select({0:_('All'), 1:_('In progress'), 2:_('Valid'), 3:_('Lettered'), 4:_('Not lettered')})
+        sel.set_select({0: _('All'), 1: _('In progress'), 2: _(
+            'Valid'), 3: _('Lettered'), 4: _('Not lettered')})
         sel.set_value(select_filter)
         sel.set_location(1, 3)
         sel.set_size(20, 200)
-        sel.set_action(self.request, EntryLineAccountList.get_action(modal=FORMTYPE_REFRESH), {'close':CLOSE_NO, 'modal':FORMTYPE_REFRESH})
+        sel.set_action(self.request, EntryLineAccountList.get_action(
+            modal=FORMTYPE_REFRESH), {'close': CLOSE_NO, 'modal': FORMTYPE_REFRESH})
         self.add_component(sel)
         if select_filter == 1:
             self.filter &= Q(entry__close=False)
@@ -96,21 +107,25 @@ class EntryLineAccountList(XferListEditor):
 
     def fillresponse_header(self):
         self.action_grid = []
-        self.action_grid.append(('open', _("Edit"), "images/edit.png", SELECT_SINGLE))
+        self.action_grid.append(
+            ('open', _("Edit"), "images/edit.png", SELECT_SINGLE))
         self.fieldnames = EntryLineAccount.get_other_fields()
         self.item = EntryAccount()
         self._filter_by_year()
         self._filter_by_journal()
         self._filter_by_nature()
-        if self.item.year.status in [0, 1]:  # pylint: disable=no-member
-            self.action_grid.append(('link', _("Link/Unlink"), "", SELECT_MULTI))
+        if self.item.year.status in [0, 1]:
+            self.action_grid.append(
+                ('link', _("Link/Unlink"), "", SELECT_MULTI))
 
     def fillresponse(self):
         XferListEditor.fillresponse(self)
         lbl = XferCompLabelForm("result")
-        lbl.set_value_center(self.item.year.total_result_text)  # pylint: disable=no-member
+        lbl.set_value_center(
+            self.item.year.total_result_text)
         lbl.set_location(0, 10, 2)
         self.add_component(lbl)
+
 
 @ActionsManage.affect('EntryLineAccount', 'listing')
 @MenuManage.describ('accounting.change_entryaccount')
@@ -140,6 +155,7 @@ class EntryLineAccountListing(XferPrintListing):
             new_filter = XferPrintListing.get_filter(self)
         return new_filter
 
+
 @ActionsManage.affect('EntryLineAccount', 'remove')
 @MenuManage.describ('accounting.delete_entryaccount')
 class EntryAccountDel(XferDelete):
@@ -152,7 +168,9 @@ class EntryAccountDel(XferDelete):
         entrylineaccount = self.getparam('entrylineaccount', [])
         if len(entrylineaccount) == 0:
             raise LucteriosException(GRAVE, _("No selection"))
-        self.items = self.model.objects.filter(entrylineaccount__in=entrylineaccount)  # pylint: disable=no-member
+        self.items = self.model.objects.filter(
+            entrylineaccount__in=entrylineaccount)
+
 
 @ActionsManage.affect('EntryLineAccount', 'closeentry')
 @MenuManage.describ('accounting.add_entryaccount')
@@ -163,12 +181,12 @@ class EntryAccountClose(XferContainerAcknowledge):
     caption = _("Close accounting entry")
 
     def fillresponse(self, entrylineaccount=[]):
-        # pylint: disable=dangerous-default-value
+
         if self.item.id is None:
             if len(entrylineaccount) == 0:
                 raise LucteriosException(GRAVE, _("No selection"))
             self.items = []
-            for item in self.model.objects.filter(entrylineaccount__in=entrylineaccount):  # pylint: disable=no-member
+            for item in self.model.objects.filter(entrylineaccount__in=entrylineaccount):
                 if not item.close:
                     self.items.append(item)
         else:
@@ -176,6 +194,7 @@ class EntryAccountClose(XferContainerAcknowledge):
         if (len(self.items) > 0) and self.confirme(_("Do you want to close this entry?")):
             for item in self.items:
                 item.closed()
+
 
 @ActionsManage.affect('EntryLineAccount', 'link')
 @MenuManage.describ('accounting.add_entryaccount')
@@ -186,15 +205,17 @@ class EntryAccountLink(XferContainerAcknowledge):
     caption = _("Delete accounting entry")
 
     def fillresponse(self, entrylineaccount=[]):
-        # pylint: disable=dangerous-default-value
+
         if len(entrylineaccount) == 0:
             raise LucteriosException(GRAVE, _("No selection"))
-        self.items = self.model.objects.filter(entrylineaccount__in=entrylineaccount)  # pylint: disable=no-member
+        self.items = self.model.objects.filter(
+            entrylineaccount__in=entrylineaccount)
         if len(self.items) == 1:
             if self.confirme(_('Do you want unlink this entry?')):
                 self.items[0].unlink()
         else:
             AccountLink.create_link(self.items)
+
 
 @ActionsManage.affect('EntryLineAccount', 'costaccounting')
 @MenuManage.describ('accounting.add_entryaccount')
@@ -205,7 +226,7 @@ class EntryAccountCostAccounting(XferContainerAcknowledge):
     caption = _("cost accounting for entry")
 
     def fillresponse(self, entrylineaccount=[], costaccounting=0):
-        # pylint: disable=dangerous-default-value
+
         if len(entrylineaccount) == 0:
             raise LucteriosException(GRAVE, _("No selection"))
         if self.getparam("SAVE") is None:
@@ -215,24 +236,29 @@ class EntryAccountCostAccounting(XferContainerAcknowledge):
             icon.set_value(self.icon_path())
             dlg.add_component(icon)
             lbl = XferCompLabelForm('lb_costaccounting')
-            lbl.set_value_as_name(CostAccounting._meta.verbose_name)  # pylint: disable=protected-access,no-member
+            lbl.set_value_as_name(
+                CostAccounting._meta.verbose_name)
             lbl.set_location(1, 1)
             dlg.add_component(lbl)
             sel = XferCompSelect('costaccounting')
-            sel.set_select_query(CostAccounting.objects.filter(status=0))  # pylint: disable=no-member
+            sel.set_select_query(
+                CostAccounting.objects.filter(status=0))
             sel.set_location(1, 2)
             dlg.add_component(sel)
-            dlg.add_action(self.get_action(_('Ok'), 'images/ok.png'), {'params':{"SAVE":"YES"}})
+            dlg.add_action(
+                self.get_action(_('Ok'), 'images/ok.png'), {'params': {"SAVE": "YES"}})
             dlg.add_action(WrapAction(_('Cancel'), 'images/cancel.png'), {})
         else:
             if costaccounting == 0:
                 new_cost = None
             else:
-                new_cost = CostAccounting.objects.get(id=costaccounting)  # pylint: disable=no-member
-            for item in self.model.objects.filter(entrylineaccount__in=entrylineaccount):  # pylint: disable=no-member
+                new_cost = CostAccounting.objects.get(
+                    id=costaccounting)
+            for item in self.model.objects.filter(entrylineaccount__in=entrylineaccount):
                 if (item.costaccounting is None) or (item.costaccounting.status == 0):
                     item.costaccounting = new_cost
                     item.save()
+
 
 @ActionsManage.affect('EntryLineAccount', 'open')
 @MenuManage.describ('accounting.add_entryaccount')
@@ -247,13 +273,15 @@ class EntryAccountOpenFromLine(XferContainerAcknowledge):
             if old_key in self.params.keys():
                 del self.params[old_key]
         if (self.item.id is None) and (entrylineaccount_link != 0):
-            self.item = EntryLineAccount.objects.get(id=entrylineaccount_link)  # pylint: disable=no-member
+            self.item = EntryLineAccount.objects.get(
+                id=entrylineaccount_link)
         entry_account = self.item.entry
-        option = {'params':{'entryaccount':entry_account.id}}
+        option = {'params': {'entryaccount': entry_account.id}}
         if entry_account.close:
             self.redirect_action(EntryAccountShow.get_action(), option)
         else:
             self.redirect_action(EntryAccountEdit.get_action(), option)
+
 
 @MenuManage.describ('accounting.add_entryaccount')
 class EntryAccountShow(XferShowEditor):
@@ -269,6 +297,7 @@ class EntryAccountShow(XferShowEditor):
 
         XferShowEditor.fillresponse(self, action_list)
 
+
 @ActionsManage.affect('EntryLineAccount', 'insertentry')
 @MenuManage.describ('accounting.add_entryaccount')
 class EntryAccountEdit(XferAddEditor):
@@ -277,6 +306,7 @@ class EntryAccountEdit(XferAddEditor):
     field_id = 'entryaccount'
     caption_add = _("Add entry of account")
     caption_modify = _("Modify accounting entry")
+
 
 @ActionsManage.affect('EntryAccount', 'unlock')
 @MenuManage.describ('')
@@ -287,6 +317,7 @@ class EntryAccountUnlock(XferContainerAcknowledge):
     def fillresponse(self):
         if (self.item.id is not None) and (len(self.item.entrylineaccount_set.all()) == 0):
             self.item.delete()
+
 
 @ActionsManage.affect('EntryAccount', 'show')
 @MenuManage.describ('accounting.add_entryaccount')
@@ -302,6 +333,7 @@ class EntryAccountAfterSave(XferContainerAcknowledge):
                 del self.params[old_key]
         self.redirect_action(EntryAccountEdit.get_action(), {})
 
+
 @ActionsManage.affect('EntryAccount', 'addentity')
 @MenuManage.describ('accounting.add_entryaccount')
 class EntryLineAccountAddModify(XferContainerAcknowledge):
@@ -315,8 +347,11 @@ class EntryLineAccountAddModify(XferContainerAcknowledge):
             for old_key in ['num_cpt_txt', 'num_cpt', 'credit_val', 'debit_val', 'third', 'reference', 'entrylineaccount_serial', 'serial_entry']:
                 if old_key in self.params.keys():
                     del self.params[old_key]
-            serial_entry = self.item.add_new_entryline(serial_entry, entrylineaccount_serial, num_cpt, credit_val, debit_val, third, reference)
-        self.redirect_action(EntryAccountEdit.get_action(), {'params':{"serial_entry":serial_entry}})
+            serial_entry = self.item.add_new_entryline(
+                serial_entry, entrylineaccount_serial, num_cpt, credit_val, debit_val, third, reference)
+        self.redirect_action(
+            EntryAccountEdit.get_action(), {'params': {"serial_entry": serial_entry}})
+
 
 @ActionsManage.affect('EntryAccount', 'change')
 @MenuManage.describ('accounting.add_entryaccount')
@@ -326,7 +361,8 @@ class EntryLineAccountEdit(XferContainerCustom):
     caption = _("Modify entry line of account")
 
     def fillresponse(self, entryaccount, entrylineaccount_serial=0, serial_entry=''):
-        entry = EntryAccount.objects.get(id=entryaccount)  # pylint: disable=no-member
+        entry = EntryAccount.objects.get(
+            id=entryaccount)
         for line in entry.get_entrylineaccounts(serial_entry):
             if line.id == entrylineaccount_serial:
                 self.item = line
@@ -339,8 +375,11 @@ class EntryLineAccountEdit(XferContainerCustom):
         cmp_account.colspan = 2
         self.item.editor.edit_creditdebit_for_line(self, 1, 2)
         self.item.editor.edit_extra_for_line(self, 1, 4, False)
-        self.add_action(EntryLineAccountAddModify.get_action(_('Ok'), 'images/ok.png'), {'params':{"num_cpt":self.item.account.id}})
-        self.add_action(EntryAccountEdit.get_action(_('Cancel'), 'images/cancel.png'), {})
+        self.add_action(EntryLineAccountAddModify.get_action(
+            _('Ok'), 'images/ok.png'), {'params': {"num_cpt": self.item.account.id}})
+        self.add_action(
+            EntryAccountEdit.get_action(_('Cancel'), 'images/cancel.png'), {})
+
 
 @ActionsManage.affect('EntryAccount', 'remove')
 @MenuManage.describ('accounting.add_entryaccount')
@@ -354,8 +393,11 @@ class EntryLineAccountDel(XferContainerAcknowledge):
         for old_key in ['serial_entry', 'entrylineaccount_serial']:
             if old_key in self.params.keys():
                 del self.params[old_key]
-        serial_entry = self.item.remove_entrylineaccounts(serial_entry, entrylineaccount_serial)
-        self.redirect_action(EntryAccountEdit.get_action(), {'params':{"serial_entry":serial_entry}})
+        serial_entry = self.item.remove_entrylineaccounts(
+            serial_entry, entrylineaccount_serial)
+        self.redirect_action(
+            EntryAccountEdit.get_action(), {'params': {"serial_entry": serial_entry}})
+
 
 @ActionsManage.affect('EntryAccount', 'validate')
 @MenuManage.describ('accounting.add_entryaccount')
@@ -367,6 +409,7 @@ class EntryAccountValidate(XferContainerAcknowledge):
 
     def fillresponse(self, serial_entry=''):
         self.item.save_entrylineaccounts(serial_entry)
+
 
 @ActionsManage.affect('EntryAccount', 'reverse')
 @MenuManage.describ('accounting.add_entryaccount')
@@ -385,6 +428,7 @@ class EntryAccountReverse(XferContainerAcknowledge):
             line.save()
         self.redirect_action(EntryAccountEdit.get_action(), {})
 
+
 @ActionsManage.affect('EntryAccount', 'payement')
 @MenuManage.describ('accounting.add_entryaccount')
 class EntryAccountCreateLinked(XferContainerAcknowledge):
@@ -395,6 +439,6 @@ class EntryAccountCreateLinked(XferContainerAcknowledge):
 
     def fillresponse(self):
         new_entry, serial_entry = self.item.create_linked()
-        self.redirect_action(EntryAccountEdit.get_action(), {'params':{"serial_entry":serial_entry, \
-                                            'journal':'4', 'entryaccount':new_entry.id, \
-                                            'num_cpt_txt':current_system_account().get_cash_begin()}})
+        self.redirect_action(EntryAccountEdit.get_action(), {'params': {"serial_entry": serial_entry,
+                                                                        'journal': '4', 'entryaccount': new_entry.id,
+                                                                        'num_cpt_txt': current_system_account().get_cash_begin()}})

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-08-24 15:30+0000\n"
+"POT-Creation-Date: 2015-08-25 13:56+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,14 +17,14 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: __init__.py:32
+#: system/__init__.py:34
 msgid "French system acounting"
 msgstr "French system acounting"
 
-#: french.py:282
+#: system/french.py:359
 msgid "Ok"
 msgstr ""
 
-#: french.py:283
+#: system/french.py:360
 msgid "Cancel"
 msgstr ""

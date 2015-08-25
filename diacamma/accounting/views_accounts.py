@@ -38,7 +38,9 @@ from diacamma.accounting.models import ChartsAccount, FiscalYear
 from lucterios.framework.xfergraphic import XferContainerAcknowledge
 from lucterios.CORE.xferprint import XferPrintListing
 
-MenuManage.add_sub("bookkeeping", "financial", "diacamma.accounting/images/accounting.png", _("Bookkeeping"), _("Manage of Bookkeeping"), 30)
+MenuManage.add_sub("bookkeeping", "financial", "diacamma.accounting/images/accounting.png",
+                   _("Bookkeeping"), _("Manage of Bookkeeping"), 30)
+
 
 @ActionsManage.affect('ChartsAccount', 'list')
 @MenuManage.describ('accounting.change_chartsaccount', FORMTYPE_NOMODAL, 'bookkeeping', _('Editing and modifying of Charts of accounts for current fiscal year'))
@@ -54,11 +56,13 @@ class ChartsAccountList(XferListEditor):
         select_type = self.getparam('type_of_account', 0)
         self.item.year = FiscalYear.get_current(select_year)
         self.fill_from_model(0, 1, False, ['year', 'type_of_account'])
-        self.get_components('year').set_action(self.request, ChartsAccountList.get_action(), {'close':CLOSE_NO, 'modal':FORMTYPE_REFRESH})
+        self.get_components('year').set_action(self.request, ChartsAccountList.get_action(
+        ), {'close': CLOSE_NO, 'modal': FORMTYPE_REFRESH})
         type_of_account = self.get_components('type_of_account')
         type_of_account.select_list.append((-1, '---'))
         type_of_account.set_value(select_type)
-        type_of_account.set_action(self.request, ChartsAccountList.get_action(modal=FORMTYPE_REFRESH), {'close':CLOSE_NO, 'modal':FORMTYPE_REFRESH})
+        type_of_account.set_action(self.request, ChartsAccountList.get_action(
+            modal=FORMTYPE_REFRESH), {'close': CLOSE_NO, 'modal': FORMTYPE_REFRESH})
         self.filter = Q(year=self.item.year)
         if select_type != -1:
             self.filter &= Q(type_of_account=select_type)
@@ -68,20 +72,26 @@ class ChartsAccountList(XferListEditor):
         if self.item.year.status == 2:
             grid_charts = self.get_components('chartsaccount')
             grid_charts.actions = []
-            grid_charts.add_action(self.request, ActionsManage.get_act_changed('ChartsAccount', 'show', _("Edit"), "images/edit.png"), {'modal':FORMTYPE_MODAL, 'unique':SELECT_SINGLE})
+            grid_charts.add_action(self.request, ActionsManage.get_act_changed('ChartsAccount', 'show', _(
+                "Edit"), "images/edit.png"), {'modal': FORMTYPE_MODAL, 'unique': SELECT_SINGLE})
         elif self.item.year.last_fiscalyear is not None:
             grid_charts = self.get_components('chartsaccount')
-            grid_charts.add_action(self.request, FiscalYearImport.get_action(_("import"), ''), {'modal':FORMTYPE_MODAL, 'close':CLOSE_NO})
+            grid_charts.add_action(self.request, FiscalYearImport.get_action(
+                _("import"), ''), {'modal': FORMTYPE_MODAL, 'close': CLOSE_NO})
         lbl = XferCompLabelForm("result")
         lbl.set_value_center(self.item.year.total_result_text)
         lbl.set_location(0, 10, 2)
         self.add_component(lbl)
         if self.item.year.status == 0:
-            self.add_action(FiscalYearBegin.get_action(_('Begin'), 'images/ok.png'), {'modal':FORMTYPE_MODAL, 'close':CLOSE_NO}, 0)
+            self.add_action(FiscalYearBegin.get_action(
+                _('Begin'), 'images/ok.png'), {'modal': FORMTYPE_MODAL, 'close': CLOSE_NO}, 0)
             if (self.item.year.last_fiscalyear is not None) and self.item.year.has_no_lastyear_entry and (self.item.year.last_fiscalyear.status == 2):
-                self.add_action(FiscalYearReportLastYear.get_action(_('Last fiscal year'), 'images/edit.png'), {'modal':FORMTYPE_MODAL, 'close':CLOSE_NO}, 0)
+                self.add_action(FiscalYearReportLastYear.get_action(
+                    _('Last fiscal year'), 'images/edit.png'), {'modal': FORMTYPE_MODAL, 'close': CLOSE_NO}, 0)
         if self.item.year.status == 1:
-            self.add_action(FiscalYearClose.get_action(_('Closing'), 'images/ok.png'), {'modal':FORMTYPE_MODAL, 'close':CLOSE_NO}, 0)
+            self.add_action(FiscalYearClose.get_action(
+                _('Closing'), 'images/ok.png'), {'modal': FORMTYPE_MODAL, 'close': CLOSE_NO}, 0)
+
 
 @ActionsManage.affect('ChartsAccount', 'listing')
 @MenuManage.describ('accounting.change_chartsaccount')
@@ -102,6 +112,7 @@ class ChartsAccountListing(XferPrintListing):
             new_filter = XferPrintListing.get_filter(self)
         return new_filter
 
+
 @MenuManage.describ('accounting.add_fiscalyear')
 class FiscalYearImport(XferContainerAcknowledge):
     icon = "accountingYear.png"
@@ -112,6 +123,7 @@ class FiscalYearImport(XferContainerAcknowledge):
     def fillresponse(self):
         if self.confirme(_("Do you want to import last year charts accounts?")):
             self.item.import_charts_accounts()
+
 
 @MenuManage.describ('accounting.add_fiscalyear')
 class FiscalYearReportLastYear(XferContainerAcknowledge):
@@ -125,6 +137,7 @@ class FiscalYearReportLastYear(XferContainerAcknowledge):
 
             self.item.run_report_lastyear()
 
+
 @MenuManage.describ('accounting.add_fiscalyear')
 class FiscalYearBegin(XferContainerAcknowledge):
     icon = "accountingYear.png"
@@ -135,6 +148,7 @@ class FiscalYearBegin(XferContainerAcknowledge):
     def fillresponse(self):
         self.item.editor.run_begin(self)
 
+
 @MenuManage.describ('accounting.add_fiscalyear')
 class FiscalYearClose(XferContainerAcknowledge):
     icon = "accountingYear.png"
@@ -144,6 +158,7 @@ class FiscalYearClose(XferContainerAcknowledge):
 
     def fillresponse(self):
         self.item.editor.run_close(self)
+
 
 @ActionsManage.affect('ChartsAccount', 'modify', 'add')
 @MenuManage.describ('accounting.add_chartsaccount')
@@ -160,6 +175,7 @@ class ChartsAccountAddModify(XferAddEditor):
                 del self.params[old_key]
         return XferAddEditor.fill_simple_fields(self)
 
+
 @ActionsManage.affect('ChartsAccount', 'show')
 @MenuManage.describ('accounting.change_chartsaccount')
 class ChartsAccountShow(XferShowEditor):
@@ -167,6 +183,7 @@ class ChartsAccountShow(XferShowEditor):
     model = ChartsAccount
     field_id = 'chartsaccount'
     caption = _("Show an account")
+
 
 @ActionsManage.affect('ChartsAccount', 'delete')
 @MenuManage.describ('accounting.delete_chartsaccount')

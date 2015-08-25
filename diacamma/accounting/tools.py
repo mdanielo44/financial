@@ -36,8 +36,10 @@ def current_system_account():
     current_module = sys.modules[__name__]
 
     if not hasattr(current_module, 'SYSTEM_ACCOUNT_CACHE'):
-        setattr(current_module, 'SYSTEM_ACCOUNT_CACHE', get_accounting_system(Params.getvalue("accounting-system")))
+        setattr(current_module, 'SYSTEM_ACCOUNT_CACHE',
+                get_accounting_system(Params.getvalue("accounting-system")))
     return current_module.SYSTEM_ACCOUNT_CACHE
+
 
 def clear_system_account():
     import sys
@@ -46,22 +48,26 @@ def clear_system_account():
     if hasattr(current_module, 'SYSTEM_ACCOUNT_CACHE'):
         del current_module.SYSTEM_ACCOUNT_CACHE
 
+
 def get_amount_sum(val):
     if val['amount__sum'] is None:
         return 0
     else:
         return val['amount__sum']
 
+
 def currency_round(amount):
     currency_decimal = Params.getvalue("accounting-devise-prec")
     return round(amount, currency_decimal)
 
+
 def format_devise(amount, mode):
-    # pylint: disable=too-many-branches
+
     # mode 0 25.45 => 25,45€ / -25.45 =>
 
     # mode 1 25.45 => Credit 25,45€ / -25.45 => Debit 25,45€
-    # mode 2 25.45 => {[font color="green"]}Credit 25,45€{[/font]}     / -25.45 => {[font color="blue"]}Debit 25,45€{[/font]}
+    # mode 2 25.45 => {[font color="green"]}Credit 25,45€{[/font]}     /
+    # -25.45 => {[font color="blue"]}Debit 25,45€{[/font]}
 
     # mode 3 25.45 => 25,45 / -25.45 => -25.45
     # mode 4 25.45 => 25,45€ / -25.45 => 25.45€

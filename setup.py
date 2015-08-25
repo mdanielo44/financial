@@ -54,9 +54,10 @@ setup(
     ],
     packages=["diacamma", "diacamma.accounting"],
     package_data={
-       "diacamma.accounting.migrations":['*'],
-       "diacamma.accounting.system":['*', 'locale/*/*/*'],
-       "diacamma.accounting":['build', 'images/*', 'locale/*/*/*', 'help/*'],
+        "diacamma.accounting.migrations": ['*'],
+        "diacamma.accounting.system": ['*', 'locale/*/*/*'],
+        "diacamma.accounting": ['build', 'images/*', 'locale/*/*/*', 'help/*'],
     },
-    install_requires=["lucterios >=2.0b0,<2.0b999999999999999", "lucterios-contacts >=2.0b0,<=2.0b999999999999999"],
+    install_requires=["lucterios >=2.0b0,<2.0b999999999999999",
+                      "lucterios-contacts >=2.0b0,<=2.0b999999999999999"],
 )
