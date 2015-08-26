@@ -522,7 +522,7 @@ class EntryAccount(LucteriosModel):
         'AccountLink', verbose_name=_('link'), null=True, on_delete=models.SET_NULL)
     date_entry = models.DateField(verbose_name=_('date entry'), null=True)
     date_value = models.DateField(
-        verbose_name=_('date value'), null=True, db_index=True)
+        verbose_name=_('date value'), null=False, db_index=True)
     designation = models.CharField(_('name'), max_length=200)
     costaccounting = models.ForeignKey('CostAccounting', verbose_name=_(
         'cost accounting'), null=True, on_delete=models.PROTECT)

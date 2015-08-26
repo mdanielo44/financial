@@ -245,7 +245,7 @@ class Migration(migrations.Migration):
                 ('date_entry', models.DateField(
                     verbose_name='date entry', null=True)),
                 ('date_value', models.DateField(
-                    verbose_name='date value', null=True, db_index=True)),
+                    verbose_name='date value', null=False, db_index=True)),
                 ('designation', models.CharField(
                     verbose_name='name', max_length=200)),
                 ('close', models.BooleanField(

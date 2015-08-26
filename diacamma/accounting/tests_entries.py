@@ -178,7 +178,7 @@ class EntryTest(LucteriosTest):
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD', 0)
         self.assert_xml_equal("COMPONENTS/EDIT[@name='num_cpt_txt']", None)
-        self.assert_xml_equal("COMPONENTS/SELECT[@name='num_cpt']", 'None')
+        self.assert_xml_equal("COMPONENTS/SELECT[@name='num_cpt']", 'NULL')
         self.assert_count_equal("COMPONENTS/SELECT[@name='num_cpt']/CASE", 0)
         self.assert_xml_equal("COMPONENTS/FLOAT[@name='debit_val']", '0.00')
         self.assert_xml_equal("COMPONENTS/FLOAT[@name='credit_val']", '0.00')
