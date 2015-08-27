@@ -666,7 +666,7 @@ class AdminTest(LucteriosTest):
         self.call('/CORE/statusMenu', {}, False)
         self.assert_observer('Core.Custom', 'CORE', 'statusMenu')
         self.assert_xml_equal(
-            "COMPONENTS/LABELFORM[@name='accountingtitle']", "{[center]}{[b]}{[u]}Financier{[/u]}{[/b]}{[/center]}")
+            "COMPONENTS/LABELFORM[@name='accountingtitle']", "{[center]}{[u]}{[b]}Financier{[/b]}{[/u]}{[/center]}")
         self.assert_xml_equal(
             "COMPONENTS/LABELFORM[@name='accounting_error']", "{[center]}Pas d'exercice défini!{[/center]}")
         self.assert_action_equal(

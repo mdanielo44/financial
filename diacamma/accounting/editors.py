@@ -520,6 +520,7 @@ class ModelLineEntryEditor(EntryLineAccountEditor):
     def edit(self, xfer):
         xfer.params['model'] = xfer.getparam('modelentry', 0)
         code = xfer.get_components('code')
+        code.mask = current_system_account().get_general_mask()
         code.set_action(xfer.request, xfer.get_action(),
                         {'modal': FORMTYPE_REFRESH, 'close': CLOSE_NO})
         if match(current_system_account().get_third_mask(), self.item.code) is None:
