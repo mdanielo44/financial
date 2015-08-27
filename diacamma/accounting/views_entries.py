@@ -40,6 +40,7 @@ from lucterios.framework.error import LucteriosException, GRAVE
 from diacamma.accounting.models import EntryLineAccount, EntryAccount, FiscalYear, \
     Journal, AccountLink, current_system_account, CostAccounting
 from lucterios.CORE.xferprint import XferPrintListing
+from lucterios.framework.xfersearch import XferSearchEditor
 
 
 @ActionsManage.affect('EntryLineAccount', 'list')
@@ -49,6 +50,9 @@ class EntryLineAccountList(XferListEditor):
     model = EntryLineAccount
     field_id = 'entrylineaccount'
     caption = _("accounting entries")
+    action_list = [('search', _("Search"),
+                    "diacamma.accounting/images/entry.png"),
+                   ('listing', _("Listing"), "images/print.png")]
 
     def _filter_by_year(self):
         select_year = self.getparam('year')
@@ -125,6 +129,22 @@ class EntryLineAccountList(XferListEditor):
             self.item.year.total_result_text)
         lbl.set_location(0, 10, 2)
         self.add_component(lbl)
+
+
+@ActionsManage.affect('EntryLineAccount', 'search')
+@MenuManage.describ('accounting.change_entryaccount')
+class EntryLineAccountSearch(XferSearchEditor):
+    icon = "entry.png"
+    model = EntryLineAccount
+    field_id = 'entrylineaccount'
+    caption = _("Search accounting entry")
+
+    def fillresponse(self):
+        self.action_grid = []
+        self.action_grid.append(
+            ('open', _("Edit"), "images/edit.png", SELECT_SINGLE))
+        self.fieldnames = EntryLineAccount.get_other_fields()
+        XferSearchEditor.fillresponse(self)
 
 
 @ActionsManage.affect('EntryLineAccount', 'listing')

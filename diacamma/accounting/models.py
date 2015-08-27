@@ -27,6 +27,7 @@ from datetime import date, timedelta
 from re import match
 
 from django.db import models
+from django.db.models import Q
 from django.db.models.query import QuerySet
 from django.db.models.aggregates import Sum, Max
 from django.core.exceptions import ObjectDoesNotExist
@@ -723,6 +724,17 @@ class EntryLineAccount(LucteriosModel):
     @classmethod
     def get_print_fields(cls):
         return ['entry', (_('account'), 'entry_account'), (_('debit'), 'debit'), (_('credit'), 'credit'), 'reference', 'third', 'entry.costaccounting']
+
+    @classmethod
+    def get_search_fields(cls):
+        result = ['entry.year', 'entry.date_value', 'account.code']
+        result.append(
+            ('amount', models.FloatField(_('amount')), 'amount__abs', Q()))
+        result.extend(['reference', 'entry.num', 'entry.designation', 'entry.date_entry',
+                       'entry.costaccounting', 'account.name', 'account.type_of_account'])
+        for fieldname in Third.get_search_fields():
+            result.append("third." + fieldname)
+        return result
 
     @property
     def entry_account(self):
