@@ -34,7 +34,6 @@ from diacamma.accounting.system import get_accounting_system
 def current_system_account():
     import sys
     current_module = sys.modules[__name__]
-
     if not hasattr(current_module, 'SYSTEM_ACCOUNT_CACHE'):
         setattr(current_module, 'SYSTEM_ACCOUNT_CACHE',
                 get_accounting_system(Params.getvalue("accounting-system")))

@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-# pylint: disable=bad-continuation
 '''
 lucterios.contacts package
 @author: Laurent GAY
@@ -25,6 +24,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.utils import six
 
 from diacamma.accounting.system.default import DefaultSystemAccounting
+from os.path import dirname, join
 
 GENERAL_MASK = r'^[0-8][0-9]{2}[0-9a-zA-Z]*$'
 
@@ -275,7 +275,6 @@ class FrenchSystemAcounting(DefaultSystemAccounting):
         return '', -2
 
     def _create_custom_for_profit(self, year, custom, val_profit):
-        # pylint: disable=no-self-use,too-many-locals
         from lucterios.framework.xfercomponents import XferCompImage, XferCompLabelForm, XferCompSelect
         from diacamma.accounting.models import format_devise
         if val_profit > 0.0001:
@@ -299,7 +298,7 @@ class FrenchSystemAcounting(DefaultSystemAccounting):
         lbl.set_location(0, 1, 2)
         custom.add_component(lbl)
         sel_cmpt = []
-        for account in year.chartsaccount_set.all().filter(code__startswith='10').order_by('code'):  # pylint: disable=no-member
+        for account in year.chartsaccount_set.all().filter(code__startswith='10').order_by('code'):
             sel_cmpt.append((account.id, six.text_type(account)))
         sel = XferCompSelect("profit_account")
         sel.set_select(sel_cmpt)
@@ -308,7 +307,6 @@ class FrenchSystemAcounting(DefaultSystemAccounting):
         return custom
 
     def _get_profit(self, year):
-        # pylint: disable=no-self-use
         from diacamma.accounting.models import EntryLineAccount, get_amount_sum
         from django.db.models.aggregates import Sum
         from django.db.models import Q
@@ -316,22 +314,21 @@ class FrenchSystemAcounting(DefaultSystemAccounting):
             account__code__startswith='119')
         query &= Q(account__year=year)
         val_profit = get_amount_sum(EntryLineAccount.objects.filter(
-            query).aggregate(Sum('amount')))  # pylint: disable=no-member
+            query).aggregate(Sum('amount')))
         return val_profit
 
     def _create_profit_entry(self, year, profit_account):
-        # pylint: disable=no-self-use
         from diacamma.accounting.models import Journal, EntryAccount, EntryLineAccount, ChartsAccount
         from django.db.models import Q
-        paym_journ = Journal.objects.get(id=1)  # pylint: disable=no-member
+        paym_journ = Journal.objects.get(id=1)
         paym_desig = 'Affectation des bénéfices/pertes'
         new_entry = EntryAccount.objects.create(
-            year=year, journal=paym_journ, designation=paym_desig, date_value=year.begin)  # pylint: disable=no-member
+            year=year, journal=paym_journ, designation=paym_desig, date_value=year.begin)
         query = Q(account__code__startswith='110') | Q(
             account__code__startswith='119')
         query &= Q(account__year=year)
         sum_profit = 0
-        for new_line in EntryLineAccount.objects.filter(query):  # pylint: disable=no-member
+        for new_line in EntryLineAccount.objects.filter(query):
             sum_profit += new_line.amount
             new_line.id = None
             new_line.entry = new_entry
@@ -341,7 +338,7 @@ class FrenchSystemAcounting(DefaultSystemAccounting):
         new_line.entry = new_entry
         new_line.amount = sum_profit
         new_line.account = ChartsAccount.objects.get(
-            id=profit_account)  # pylint: disable=no-member
+            id=profit_account)
         new_line.save()
         new_entry.closed()
         return True
@@ -365,12 +362,11 @@ class FrenchSystemAcounting(DefaultSystemAccounting):
             return xfer.confirme(text)
 
     def _create_result_entry(self, year):
-        # pylint: disable=no-self-use
         from diacamma.accounting.models import Journal, EntryAccount
-        end_journ = Journal.objects.get(id=5)  # pylint: disable=no-member
+        end_journ = Journal.objects.get(id=5)
         end_desig = "Cloture d'exercice - Résultat"
         new_entry = EntryAccount.objects.create(
-            year=year, journal=end_journ, designation=end_desig, date_value=year.end)  # pylint: disable=no-member
+            year=year, journal=end_journ, designation=end_desig, date_value=year.end)
         revenue = year.total_revenue
         expense = year.total_expense
         if expense > revenue:
@@ -380,32 +376,31 @@ class FrenchSystemAcounting(DefaultSystemAccounting):
         new_entry.closed()
 
     def _create_thirds_ending_entry(self, year):
-        # pylint: disable=no-self-use,too-many-locals
         from diacamma.accounting.models import get_amount_sum, Journal, EntryAccount, EntryLineAccount, ChartsAccount, Third
         from django.db.models.aggregates import Sum
         sum40 = get_amount_sum(EntryLineAccount.objects.filter(
-            account__code__startswith='401', account__year=year).aggregate(Sum('amount')))  # pylint: disable=no-member
+            account__code__startswith='401', account__year=year).aggregate(Sum('amount')))
         sum41 = get_amount_sum(EntryLineAccount.objects.filter(
-            account__code__startswith='411', account__year=year).aggregate(Sum('amount')))  # pylint: disable=no-member
+            account__code__startswith='411', account__year=year).aggregate(Sum('amount')))
         sum42 = get_amount_sum(EntryLineAccount.objects.filter(
-            account__code__startswith='421', account__year=year).aggregate(Sum('amount')))  # pylint: disable=no-member
+            account__code__startswith='421', account__year=year).aggregate(Sum('amount')))
         sum45 = get_amount_sum(EntryLineAccount.objects.filter(
-            account__code__startswith='455', account__year=year).aggregate(Sum('amount')))  # pylint: disable=no-member
+            account__code__startswith='455', account__year=year).aggregate(Sum('amount')))
         if (abs(sum40) > 0.001) or (abs(sum41) > 0.001) or (abs(sum42) > 0.001) or (abs(sum45) > 0.001):
-            end_journ = Journal.objects.get(id=5)  # pylint: disable=no-member
+            end_journ = Journal.objects.get(id=5)
             end_desig = "Cloture d'exercice - Résultat"
             new_entry = EntryAccount.objects.create(
-                year=year, journal=end_journ, designation=end_desig, date_value=year.end)  # pylint: disable=no-member
-            for data_line in EntryLineAccount.objects.filter(account__code__regex=THIRD_MASK, account__year=year).values('account', 'third').annotate(data_sum=Sum('amount')):  # pylint: disable=no-member
+                year=year, journal=end_journ, designation=end_desig, date_value=year.end)
+            for data_line in EntryLineAccount.objects.filter(account__code__regex=THIRD_MASK, account__year=year).values('account', 'third').annotate(data_sum=Sum('amount')):
                 if abs(data_line['data_sum']) > 0.0001:
                     new_line = EntryLineAccount()
                     new_line.entry = new_entry
                     new_line.amount = -1 * data_line['data_sum']
                     new_line.account = ChartsAccount.objects.get(
-                        id=data_line['account'])  # pylint: disable=no-member
+                        id=data_line['account'])
                     if data_line['third'] is not None:
                         new_line.third = Third.objects.get(
-                            id=data_line['third'])  # pylint: disable=no-member
+                            id=data_line['third'])
                     new_line.save()
             new_entry.add_entry_line(sum40, '408')
             new_entry.add_entry_line(sum41, '418')
@@ -439,13 +434,12 @@ class FrenchSystemAcounting(DefaultSystemAccounting):
         return False
 
     def _create_report_lastyearresult(self, year):
-        # pylint: disable=no-self-use
         from diacamma.accounting.models import Journal, EntryAccount
-        end_journ = Journal.objects.get(id=1)  # pylint: disable=no-member
+        end_journ = Journal.objects.get(id=1)
         end_desig = "Report à nouveau - Bilan"
         new_entry = EntryAccount.objects.create(
-            year=year, journal=end_journ, designation=end_desig, date_value=year.begin)  # pylint: disable=no-member
-        for charts_account in year.last_fiscalyear.chartsaccount_set.filter(type_of_account__in=(0, 1, 2)):  # pylint: disable=no-member
+            year=year, journal=end_journ, designation=end_desig, date_value=year.begin)
+        for charts_account in year.last_fiscalyear.chartsaccount_set.filter(type_of_account__in=(0, 1, 2)):
             if charts_account.code == '120':
                 code = "110"
                 name = None
@@ -460,15 +454,14 @@ class FrenchSystemAcounting(DefaultSystemAccounting):
         new_entry.closed()
 
     def _create_report_third(self, year):
-        # pylint: disable=no-self-use
         from diacamma.accounting.models import Journal, EntryAccount
         last_entry_account = list(
             year.last_fiscalyear.entryaccount_set.filter(journal__id=5).order_by('num'))[-1]
-        end_journ = Journal.objects.get(id=1)  # pylint: disable=no-member
+        end_journ = Journal.objects.get(id=1)
         end_desig = "Report à nouveau - Dette tiers"
         new_entry = EntryAccount.objects.create(
-            year=year, journal=end_journ, designation=end_desig, date_value=year.begin)  # pylint: disable=no-member
-        for entry_line in last_entry_account.entrylineaccount_set.all():  # pylint: disable=no-member
+            year=year, journal=end_journ, designation=end_desig, date_value=year.begin)
+        for entry_line in last_entry_account.entrylineaccount_set.all():
             if re.match(THIRD_MASK, entry_line.account.code):
                 new_entry.add_entry_line(-1 * entry_line.amount,
                                          entry_line.account.code, entry_line.account.name, entry_line.third)
@@ -478,3 +471,7 @@ class FrenchSystemAcounting(DefaultSystemAccounting):
         self._create_report_lastyearresult(year)
         self._create_report_third(year)
         return
+
+    def get_export_xmlfiles(self):
+        file_path = dirname(__file__)
+        return (join(file_path, 'french_accountexport.xml'), join(file_path, 'french_fichedescriptive_6709.xsd'))

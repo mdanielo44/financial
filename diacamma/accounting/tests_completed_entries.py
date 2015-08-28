@@ -29,7 +29,7 @@ from django.utils import six, formats
 
 from lucterios.framework.test import LucteriosTest
 from lucterios.framework.xfergraphic import XferContainerAcknowledge
-from lucterios.framework.filetools import get_user_dir
+from lucterios.framework.filetools import get_user_dir, get_user_path
 
 from diacamma.accounting.views_entries import EntryLineAccountList, EntryLineAccountListing, \
     EntryAccountEdit, EntryAccountShow, EntryAccountClose, \
@@ -42,6 +42,8 @@ from diacamma.accounting.views_other import CostAccountingList, \
     CostAccountingClose
 from diacamma.accounting.views_reports import FiscalYearBalanceSheet,\
     FiscalYearIncomeStatement, FiscalYearLedger, FiscalYearTrialBalance
+from diacamma.accounting.views_admin import FiscalYearExport
+from os.path import exists
 
 
 class CompletedEntryTest(LucteriosTest):
@@ -563,3 +565,13 @@ class CompletedEntryTest(LucteriosTest):
         self.assert_observer(
             'Core.Custom', 'diacamma.accounting', 'fiscalYearTrialBalance')
         self._check_result()
+
+    def test_export(self):
+        self.assertFalse(
+            exists(get_user_path('accounting', 'fiscalyear_export_1.xml')))
+        self.factory.xfer = FiscalYearExport()
+        self.call('/diacamma.accounting/fiscalYearExport', {}, False)
+        self.assert_observer(
+            'Core.Custom', 'diacamma.accounting', 'fiscalYearExport')
+        self.assertTrue(
+            exists(get_user_path('accounting', 'fiscalyear_export_1.xml')))

@@ -28,18 +28,20 @@ from django.utils.translation import ugettext_lazy as _
 from lucterios.framework.xferadvance import XferListEditor, XferDelete
 from lucterios.framework.xferadvance import XferAddEditor
 from lucterios.framework.tools import FORMTYPE_MODAL, ActionsManage, MenuManage, \
-    SELECT_SINGLE, CLOSE_NO
-from lucterios.framework.xfergraphic import XferContainerAcknowledge
+    SELECT_SINGLE, CLOSE_NO, SELECT_MULTI, SELECT_NONE
+from lucterios.framework.xfergraphic import XferContainerAcknowledge,\
+    XferContainerCustom
 from lucterios.CORE.parameters import Params
 from lucterios.CORE.views import ParamEdit
 from lucterios.framework.xfercomponents import XferCompButton, XferCompGrid, \
-    XferCompLabelForm, XferCompSelect
+    XferCompLabelForm, XferCompSelect, XferCompImage, XferCompDownLoad
 
 from diacamma.accounting.models import FiscalYear, Journal
 from diacamma.accounting.system import accounting_system_list, \
     accounting_system_name
 from lucterios.CORE.models import Parameter
 from lucterios.framework.error import LucteriosException, IMPORTANT
+
 from diacamma.accounting.tools import clear_system_account
 
 
@@ -75,6 +77,8 @@ class Configuration(XferListEditor):
         XferListEditor.fillresponse(self)
         grid = self.get_components(self.field_id)
         grid.add_action(self.request, FiscalYearActive.get_action(), {
+                        'unique': SELECT_SINGLE, 'close': CLOSE_NO})
+        grid.add_action(self.request, FiscalYearExport.get_action(), {
                         'unique': SELECT_SINGLE, 'close': CLOSE_NO})
         self.new_tab(_('Journals'))
         journals = Journal.objects.all()
@@ -162,3 +166,31 @@ class JournalDel(XferDelete):
     model = Journal
     field_id = 'journal'
     caption = _("Delete accounting journal")
+
+
+@MenuManage.describ('accounting.change_fiscalyear')
+class FiscalYearExport(XferContainerCustom):
+    icon = "entry.png"
+    model = FiscalYear
+    field_id = 'fiscalyear'
+    caption = _("Export")
+
+    def fillresponse(self):
+        if self.getparam("year") is None:
+            self.item = FiscalYear.get_current()
+        destination_file = self.item.get_xml_export()
+        img = XferCompImage('img')
+        img.set_value(self.icon_path())
+        img.set_location(0, 0, 1, 6)
+        self.add_component(img)
+        lbl = XferCompLabelForm('img')
+        lbl.set_value_as_title(_('Export fiscal year'))
+        lbl.set_location(1, 0)
+        self.add_component(lbl)
+        down = XferCompDownLoad('filename')
+        down.compress = False
+        down.set_value('export_year_%s_%s.xml' %
+                       (self.item.begin.isoformat(), self.item.end.isoformat()))
+        down.set_filename("CORE/download?filename=" + destination_file)
+        down.set_location(1, 1)
+        self.add_component(down)

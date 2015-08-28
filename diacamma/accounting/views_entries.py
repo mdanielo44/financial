@@ -311,11 +311,10 @@ class EntryAccountShow(XferShowEditor):
     caption = _("Show accounting entry")
 
     def fillresponse(self):
-        action_list = []
+        self.action_list = []
         if (self.item.link is None) and self.item.has_third and not self.item.has_cash:
-            action_list = [('payement', _('Payment'), '', CLOSE_YES)]
-
-        XferShowEditor.fillresponse(self, action_list)
+            self.action_list = [('payement', _('Payment'), '', CLOSE_YES)]
+        XferShowEditor.fillresponse(self)
 
 
 @ActionsManage.affect('EntryLineAccount', 'insertentry')

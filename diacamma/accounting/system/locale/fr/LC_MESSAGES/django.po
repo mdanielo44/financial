@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-08-25 13:56+0000\n"
+"POT-Creation-Date: 2015-08-28 14:26+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -22,10 +22,10 @@ msgstr ""
 msgid "French system acounting"
 msgstr "Plan comptable générale Français"
 
-#: system/french.py:359
+#: system/french.py:356
 msgid "Ok"
 msgstr ""
 
-#: system/french.py:360
+#: system/french.py:357
 msgid "Cancel"
 msgstr ""

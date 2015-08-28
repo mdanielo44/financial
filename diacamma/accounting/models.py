@@ -24,19 +24,24 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import unicode_literals
 
 from datetime import date, timedelta
+from os.path import join
 from re import match
 
 from django.db import models
 from django.db.models import Q
 from django.db.models.query import QuerySet
 from django.db.models.aggregates import Sum, Max
+from django.template import engines
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils.translation import ugettext_lazy as _
 from django.utils import six
 
 from lucterios.framework.models import LucteriosModel, get_value_converted, get_value_if_choices
-from lucterios.framework.error import LucteriosException, IMPORTANT
+from lucterios.framework.error import LucteriosException, IMPORTANT, GRAVE
 from lucterios.contacts.models import AbstractContact
+from lucterios.framework.filetools import read_file, xml_validator, save_file,\
+    get_user_path
+
 from diacamma.accounting.tools import get_amount_sum, format_devise, \
     current_system_account, currency_round
 
@@ -311,6 +316,30 @@ class FiscalYear(LucteriosModel):
             current_account = first_account
 
         return account_list, current_account
+
+    def get_context(self):
+        entries_by_journal = []
+        for journal in Journal.objects.all():
+            entries = self.entryaccount_set.filter(
+                journal=journal, close=True)
+            if len(entries) > 0:
+                entries_by_journal.append((journal, entries))
+        return {'year': self, 'entries_by_journal': entries_by_journal}
+
+    def get_xml_export(self):
+        file_name = "fiscalyear_export_%s.xml" % six.text_type(self.id)
+        xmlfiles = current_system_account().get_export_xmlfiles()
+        if xmlfiles is None:
+            raise LucteriosException(
+                IMPORTANT, _('No export for this accounting system!'))
+        xml_file, xsd_file = xmlfiles
+        template = engines['django'].from_string(read_file(xml_file))
+        fiscal_year_xml = template.render(self.get_context())
+        res_val = xml_validator(fiscal_year_xml, xsd_file)
+        if res_val is not None:
+            raise LucteriosException(GRAVE, res_val)
+        save_file(get_user_path("accounting", file_name), fiscal_year_xml)
+        return join("accounting", file_name)
 
     def __str__(self):
         status = get_value_if_choices(self.status, self._meta.get_field(

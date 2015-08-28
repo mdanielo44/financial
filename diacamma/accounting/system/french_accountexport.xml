@@ -1,0 +1,39 @@
+{% load l10n %}
+<comptabilite>
+	<exercice>
+		<DateCloture>{{ year.end.isoformat }}</DateCloture>
+		{% for journal,entries in entries_by_journal %}
+		<journal>
+			<JournalLib>{{journal.name}}</JournalLib>
+			{% for entry in entries %}
+			<ecriture>
+				<EcritureNum>{{entry.num}}</EcritureNum>
+				<EcritureDate>{{entry.date_value.isoformat}}</EcritureDate>
+				<EcritureLib>{{entry.designation}}</EcritureLib>
+				<PieceRef></PieceRef>
+				<PieceDate>{{entry.date_value.isoformat}}</PieceDate>
+				{% if entry.link != None %}
+				<EcritureLet>{{entry.link}}</EcritureLet>
+				{% endif %}
+				<ValidDate>{{entry.date_entry.isoformat}}</ValidDate>
+				<DateRglt>{{entry.date_entry.isoformat}}</DateRglt>
+				<ModeRglt></ModeRglt>
+				{% for line in entry.entrylineaccount_set.all %}
+				<ligne>
+					<CompteNum>{{line.account.code}}</CompteNum>
+					<CompteLib>{{line.account.name}}</CompteLib>
+					<CompAuxLib>{{line.third}}</CompAuxLib>
+					{% if line.debit != '' %}
+					<Debit>{{line.get_debit|unlocalize}}</Debit>
+					{% endif %}
+					{% if line.credit != '' %}
+					<Credit>{{line.get_credit|unlocalize}}</Credit>
+					{% endif %}
+				</ligne>
+				{% endfor %}
+			</ecriture>
+			{% endfor %}
+		</journal>
+		{% endfor %}
+	</exercice>
+</comptabilite>
