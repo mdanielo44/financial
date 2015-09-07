@@ -40,7 +40,7 @@ from lucterios.framework.error import LucteriosException, GRAVE
 from diacamma.accounting.models import EntryLineAccount, EntryAccount, FiscalYear, \
     Journal, AccountLink, current_system_account, CostAccounting
 from lucterios.CORE.xferprint import XferPrintListing
-from lucterios.framework.xfersearch import XferSearchEditor
+from lucterios.CORE.editors import XferSavedCriteriaSearchEditor
 
 
 @ActionsManage.affect('EntryLineAccount', 'list')
@@ -133,7 +133,7 @@ class EntryLineAccountList(XferListEditor):
 
 @ActionsManage.affect('EntryLineAccount', 'search')
 @MenuManage.describ('accounting.change_entryaccount')
-class EntryLineAccountSearch(XferSearchEditor):
+class EntryLineAccountSearch(XferSavedCriteriaSearchEditor):
     icon = "entry.png"
     model = EntryLineAccount
     field_id = 'entrylineaccount'
@@ -144,7 +144,7 @@ class EntryLineAccountSearch(XferSearchEditor):
         self.action_grid.append(
             ('open', _("Edit"), "images/edit.png", SELECT_SINGLE))
         self.fieldnames = EntryLineAccount.get_other_fields()
-        XferSearchEditor.fillresponse(self)
+        XferSavedCriteriaSearchEditor.fillresponse(self)
 
 
 @ActionsManage.affect('EntryLineAccount', 'listing')
