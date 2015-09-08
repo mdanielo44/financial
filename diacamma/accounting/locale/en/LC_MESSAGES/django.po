@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-08-28 14:26+0000\n"
+"POT-Creation-Date: 2015-09-08 14:08+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -155,6 +155,34 @@ msgstr "third"
 #: editors.py:461 models.py:730
 msgid "reference"
 msgstr "reference"
+
+#: help/01_definition.html:2
+msgid "01_definition.html"
+msgstr "Definition"
+
+#: help/02_fiscalyear.html:2
+msgid "02_fiscalyear.html"
+msgstr "Fiscal year"
+
+#: help/03_third.html:2
+msgid "03_third.html"
+msgstr "Thirds"
+
+#: help/04_costaccounting.html:2
+msgid "04_costaccounting.html"
+msgstr "Cost accounting"
+
+#: help/05_entity.html:2
+msgid "05_entity.html"
+msgstr "Entity"
+
+#: help/06_model.html:2
+msgid "06_model.html"
+msgstr "Model"
+
+#: help/07_reporting.html:2
+msgid "07_reporting.html"
+msgstr "Reporting"
 
 #: migrations/0001_initial.py:40
 msgid "accounting-devise"
