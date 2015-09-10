@@ -183,7 +183,7 @@ class FiscalYearExport(XferContainerCustom):
         img.set_value(self.icon_path())
         img.set_location(0, 0, 1, 6)
         self.add_component(img)
-        lbl = XferCompLabelForm('img')
+        lbl = XferCompLabelForm('title')
         lbl.set_value_as_title(_('Export fiscal year'))
         lbl.set_location(1, 0)
         self.add_component(lbl)
