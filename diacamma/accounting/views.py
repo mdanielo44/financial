@@ -271,7 +271,6 @@ def summary_accounting(xfer):
     lab.set_value_as_infocenter(_("Financial"))
     lab.set_location(0, row, 4)
     xfer.add_component(lab)
-
     try:
         year = FiscalYear.get_current()
         lbl = XferCompLabelForm("accounting_year")
@@ -292,8 +291,8 @@ def summary_accounting(xfer):
             _("conf."), ""), {'close': CLOSE_NO})
         btn.set_location(0, row + 2, 4)
         xfer.add_component(btn)
-
     lab = XferCompLabelForm('accountingend')
     lab.set_value_center('{[hr/]}')
     lab.set_location(0, row + 3, 4)
     xfer.add_component(lab)
+    return True
