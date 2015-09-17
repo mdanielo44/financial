@@ -573,7 +573,7 @@ class ThirdTest(LucteriosTest):
         csv_value = b64decode(
             six.text_type(self.get_first_xpath('PRINT').text)).decode("utf-8")
         content_csv = csv_value.split('\n')
-        self.assertEqual(len(content_csv), 13, str(content_csv))
+        self.assertEqual(len(content_csv), 14, str(content_csv))
         self.assertEqual(content_csv[1].strip(), '"Liste de tiers"')
         self.assertEqual(content_csv[3].strip(), '"contact";"compte";"total";')
         self.assertEqual(
@@ -599,7 +599,7 @@ class ThirdTest(LucteriosTest):
         csv_value = b64decode(
             six.text_type(self.get_first_xpath('PRINT').text)).decode("utf-8")
         content_csv = csv_value.split('\n')
-        self.assertEqual(len(content_csv), 7, str(content_csv))
+        self.assertEqual(len(content_csv), 8, str(content_csv))
         self.assertEqual(content_csv[1].strip(), '"Liste de tiers"')
         self.assertEqual(content_csv[3].strip(), '"contact";"compte";"total";')
         self.assertEqual(
@@ -613,7 +613,7 @@ class ThirdTest(LucteriosTest):
         csv_value = b64decode(
             six.text_type(self.get_first_xpath('PRINT').text)).decode("utf-8")
         content_csv = csv_value.split('\n')
-        self.assertEqual(len(content_csv), 9, str(content_csv))
+        self.assertEqual(len(content_csv), 10, str(content_csv))
         self.assertEqual(content_csv[1].strip(), '"Liste de tiers"')
         self.assertEqual(content_csv[3].strip(), '"contact";"compte";"total";')
         self.assertEqual(

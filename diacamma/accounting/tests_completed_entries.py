@@ -316,7 +316,7 @@ class CompletedEntryTest(LucteriosTest):
         csv_value = b64decode(
             six.text_type(self.get_first_xpath('PRINT').text)).decode("utf-8")
         content_csv = csv_value.split('\n')
-        self.assertEqual(len(content_csv), 29, str(content_csv))
+        self.assertEqual(len(content_csv), 30, str(content_csv))
         self.assertEqual(content_csv[1].strip(), '"Liste d\'écritures"')
         self.assertEqual(content_csv[3].strip(
         ), '"N°";"date d\'écriture";"date de pièce";"compte";"nom";"débit";"crédit";"lettrage";')
@@ -333,7 +333,7 @@ class CompletedEntryTest(LucteriosTest):
         csv_value = b64decode(
             six.text_type(self.get_first_xpath('PRINT').text)).decode("utf-8")
         content_csv = csv_value.split('\n')
-        self.assertEqual(len(content_csv), 14, str(content_csv))
+        self.assertEqual(len(content_csv), 15, str(content_csv))
 
         self.factory.xfer = EntryLineAccountListing()
         self.call('/diacamma.accounting/entryLineAccountListing',
@@ -343,7 +343,7 @@ class CompletedEntryTest(LucteriosTest):
         csv_value = b64decode(
             six.text_type(self.get_first_xpath('PRINT').text)).decode("utf-8")
         content_csv = csv_value.split('\n')
-        self.assertEqual(len(content_csv), 21, str(content_csv))
+        self.assertEqual(len(content_csv), 22, str(content_csv))
 
         self.factory.xfer = EntryLineAccountListing()
         self.call('/diacamma.accounting/entryLineAccountListing',
@@ -353,7 +353,7 @@ class CompletedEntryTest(LucteriosTest):
         csv_value = b64decode(
             six.text_type(self.get_first_xpath('PRINT').text)).decode("utf-8")
         content_csv = csv_value.split('\n')
-        self.assertEqual(len(content_csv), 18, str(content_csv))
+        self.assertEqual(len(content_csv), 19, str(content_csv))
 
         self.factory.xfer = EntryLineAccountListing()
         self.call('/diacamma.accounting/entryLineAccountListing',
@@ -363,7 +363,7 @@ class CompletedEntryTest(LucteriosTest):
         csv_value = b64decode(
             six.text_type(self.get_first_xpath('PRINT').text)).decode("utf-8")
         content_csv = csv_value.split('\n')
-        self.assertEqual(len(content_csv), 17, str(content_csv))
+        self.assertEqual(len(content_csv), 18, str(content_csv))
 
         self.factory.xfer = EntryLineAccountListing()
         self.call('/diacamma.accounting/entryLineAccountListing',
@@ -373,7 +373,7 @@ class CompletedEntryTest(LucteriosTest):
         csv_value = b64decode(
             six.text_type(self.get_first_xpath('PRINT').text)).decode("utf-8")
         content_csv = csv_value.split('\n')
-        self.assertEqual(len(content_csv), 12, str(content_csv))
+        self.assertEqual(len(content_csv), 13, str(content_csv))
 
     def test_costaccounting(self):
         self.factory.xfer = EntryAccountEdit()
