@@ -2,12 +2,12 @@
 	<property name="syndic.path" value="${basedir}/../syndic" />
 	<property name="core.path" value="${basedir}/../lct-core" />
 	<property name="contact.path" value="${basedir}/../lct-contacts" />
-	<property name="project.packagepath" value="diacamma/accounting" />
-	<property name="project.packagename" value="diacamma.accounting" />
+	<property name="project.packagepath" value="diacamma/accounting,diacamma/invoice" />
+	<property name="project.packagename" value="diacamma.accounting diacamma.invoice" />
 	<property name="project.name" value="diacamma" />
 	<property name="project.packname" value="diacamma_financial.egg-info" />
 	<property name="project.pythonpath" value="${core.path}:${syndic.path}:${contact.path}:${env.PYTHONPATH}" />
-	<property name="project.modules" value="lucterios.contacts,diacamma.accounting" />
+	<property name="project.modules" value="lucterios.contacts,diacamma.accounting,diacamma.invoice" />
 	<property name="project.appli" value="diacamma.syndic" />
 	<property name="project.test.source" value="diacamma" />
 	<property name="project.test.omit" value="${core.path}/lucterios/install/*" />

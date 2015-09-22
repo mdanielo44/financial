@@ -28,7 +28,7 @@ from django.utils.translation import ugettext_lazy as _
 from lucterios.framework.xferadvance import XferListEditor, XferDelete
 from lucterios.framework.xferadvance import XferAddEditor
 from lucterios.framework.tools import FORMTYPE_MODAL, ActionsManage, MenuManage, \
-    SELECT_SINGLE, CLOSE_NO, SELECT_MULTI, SELECT_NONE
+    SELECT_SINGLE, CLOSE_NO
 from lucterios.framework.xfergraphic import XferContainerAcknowledge,\
     XferContainerCustom
 from lucterios.CORE.parameters import Params

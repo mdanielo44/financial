@@ -1,0 +1,198 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2015-09-22 14:46+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: __init__.py:41
+msgid "Diacamma invoce"
+msgstr "Diacamma invoce"
+
+#: models.py:38
+msgid "name"
+msgstr "name"
+
+#: models.py:39
+msgid "rate"
+msgstr "rate"
+
+#: models.py:42
+msgid "is actif"
+msgstr "is actif"
+
+#: models.py:52 views_conf.py:24
+msgid "VAT"
+msgstr "VAT"
+
+#: models.py:53
+msgid "VATs"
+msgstr "VATs"
+
+#: models.py:57
+msgid "reference"
+msgstr "reference"
+
+#: models.py:58 models.py:131
+msgid "designation"
+msgstr "designation"
+
+#: models.py:59 models.py:132
+msgid "price"
+msgstr "price"
+
+#: models.py:61 models.py:134
+msgid "unit"
+msgstr "unit"
+
+#: models.py:63
+msgid "is disabled"
+msgstr "is disabled"
+
+#: models.py:64
+msgid "sell account"
+msgstr "sell account"
+
+#: models.py:66
+msgid "vat"
+msgstr "VAT"
+
+#: models.py:84
+msgid "article"
+msgstr "article"
+
+#: models.py:85 views.py:23
+msgid "articles"
+msgstr "articles"
+
+#: models.py:90 models.py:130
+msgid "fiscal year"
+msgstr "fiscal year"
+
+#: models.py:91
+msgid "bill type"
+msgstr "bill type"
+
+#: models.py:94
+msgid "numeros"
+msgstr "numeros"
+
+#: models.py:95
+msgid "date"
+msgstr "date"
+
+#: models.py:97
+msgid "third"
+msgstr "third"
+
+#: models.py:98
+msgid "comment"
+msgstr "comment"
+
+#: models.py:99
+msgid "status"
+msgstr "status"
+
+#: models.py:102
+msgid "entry"
+msgstr "entry"
+
+#: models.py:104
+msgid "cost accounting"
+msgstr "cost accounting"
+
+#: models.py:122 models.py:128
+msgid "bill"
+msgstr "bill"
+
+#: models.py:123
+msgid "bills"
+msgstr "bills"
+
+#: models.py:135
+msgid "quantity"
+msgstr "quantity"
+
+#: models.py:136
+msgid "reduce"
+msgstr "reduce"
+
+#: models.py:154
+msgid "detail"
+msgstr "detail"
+
+#: models.py:155
+msgid "details"
+msgstr "details"
+
+#: models.py:160
+msgid "thirds"
+msgstr "thirds"
+
+#: models.py:171
+msgid "bill batch"
+msgstr "bill batch"
+
+#: models.py:172
+msgid "bill batches"
+msgstr "bill batches"
+
+#: views.py:14
+msgid "invoice"
+msgstr "invoice"
+
+#: views.py:14
+msgid "Manage of billing"
+msgstr "Manage of billing"
+
+#: views.py:18
+msgid "Management of article list"
+msgstr "Management of article list"
+
+#: views.py:32
+msgid "Add article"
+msgstr "Add article"
+
+#: views.py:33
+msgid "Modify article"
+msgstr "Modify article"
+
+#: views.py:42
+msgid "Delete article"
+msgstr "Delete article"
+
+#: views_conf.py:15
+msgid "Management of parameters and configuration of invoice"
+msgstr "Management of parameters and configuration of invoice"
+
+#: views_conf.py:20
+msgid "Invoice configuration"
+msgstr "Invoice configuration"
+
+#: views_conf.py:23
+msgid "Parameters"
+msgstr "Parameters"
+
+#: views_conf.py:33
+msgid "Add VAT"
+msgstr "Add VAT"
+
+#: views_conf.py:34
+msgid "Modify VAT"
+msgstr "Modify VAT"
+
+#: views_conf.py:43
+msgid "Delete VAT"
+msgstr "Delete VAT"

@@ -306,15 +306,17 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(
                     primary_key=True, serialize=False, verbose_name='ID', auto_created=True)),
                 ('code', models.CharField(max_length=50, verbose_name='code')),
-                ('amount', models.FloatField(verbose_name='amount')),
+                ('amount', models.FloatField(
+                    verbose_name='amount', default=0)),
                 ('model', models.ForeignKey(
                     default=0, verbose_name='model', to='accounting.ModelEntry')),
                 ('third', models.ForeignKey(to='accounting.Third',
                                             verbose_name='third', on_delete=models.PROTECT, null=True)),
             ],
+
             options={
-                'verbose_name_plural': 'Model lines of entry',
-                'verbose_name': 'Model line  of entry',
+                'verbose_name_plural': 'Model lines',
+                'verbose_name': 'Model line',
                 'default_permissions': [],
             },
         ),

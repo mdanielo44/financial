@@ -92,7 +92,6 @@ class Third(LucteriosModel):
         return format_devise(self.get_total(), 5)
 
     class Meta(object):
-
         verbose_name = _('third')
         verbose_name_plural = _('thirds')
 
@@ -406,7 +405,6 @@ class CostAccounting(LucteriosModel):
                 self.save()
 
     class Meta(object):
-
         verbose_name = _('cost accounting')
         verbose_name_plural = _('costs accounting')
         default_permissions = []
