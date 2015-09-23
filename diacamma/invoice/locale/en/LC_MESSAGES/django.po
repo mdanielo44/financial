@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-09-22 14:46+0000\n"
+"POT-Creation-Date: 2015-09-23 15:21+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -20,6 +20,42 @@ msgstr ""
 #: __init__.py:41
 msgid "Diacamma invoce"
 msgstr "Diacamma invoce"
+
+#: migrations/0001_initial.py:15
+msgid "invoice-default-sell-account"
+msgstr "default sell account"
+
+#: migrations/0001_initial.py:22
+msgid "invoice-reduce-account"
+msgstr "reduce account"
+
+#: migrations/0001_initial.py:29
+msgid "invoice-cash-account"
+msgstr "cash account"
+
+#: migrations/0001_initial.py:36
+msgid "invoice-bankcharges-account"
+msgstr "bank charges account"
+
+#: migrations/0001_initial.py:43
+msgid "invoice-vatsell-account"
+msgstr "VAT sell account"
+
+#: migrations/0001_initial.py:50
+msgid "invoice-vat-mode"
+msgstr "VAT mode"
+
+#: migrations/0001_initial.py:51
+msgid "invoice-vat-mode.0"
+msgstr "not applicable"
+
+#: migrations/0001_initial.py:52
+msgid "invoice-vat-mode.1"
+msgstr "price without tax"
+
+#: migrations/0001_initial.py:52
+msgid "invoice-vat-mode.2"
+msgstr "price including tax"
 
 #: models.py:38
 msgid "name"
@@ -33,7 +69,7 @@ msgstr "rate"
 msgid "is actif"
 msgstr "is actif"
 
-#: models.py:52 views_conf.py:24
+#: models.py:52 views_conf.py:35
 msgid "VAT"
 msgstr "VAT"
 
@@ -173,26 +209,30 @@ msgstr "Modify article"
 msgid "Delete article"
 msgstr "Delete article"
 
-#: views_conf.py:15
+#: views_conf.py:18
 msgid "Management of parameters and configuration of invoice"
 msgstr "Management of parameters and configuration of invoice"
 
-#: views_conf.py:20
+#: views_conf.py:23
 msgid "Invoice configuration"
 msgstr "Invoice configuration"
 
-#: views_conf.py:23
+#: views_conf.py:26
 msgid "Parameters"
 msgstr "Parameters"
 
 #: views_conf.py:33
+msgid "Modify"
+msgstr "Modify"
+
+#: views_conf.py:44
 msgid "Add VAT"
 msgstr "Add VAT"
 
-#: views_conf.py:34
+#: views_conf.py:45
 msgid "Modify VAT"
 msgstr "Modify VAT"
 
-#: views_conf.py:43
+#: views_conf.py:54
 msgid "Delete VAT"
 msgstr "Delete VAT"

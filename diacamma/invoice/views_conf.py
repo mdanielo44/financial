@@ -9,6 +9,9 @@ from lucterios.framework.xferadvance import XferListEditor
 from lucterios.framework.xferadvance import XferAddEditor
 from lucterios.framework.xferadvance import XferDelete
 from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage
+from lucterios.CORE.parameters import Params
+from lucterios.framework.xfercomponents import XferCompButton
+from lucterios.CORE.views import ParamEdit
 
 
 @ActionsManage.affect('Vat', 'list')
@@ -21,6 +24,14 @@ class InvoiceConf(XferListEditor):
 
     def fillresponse_header(self):
         self.new_tab(_('Parameters'))
+        param_lists = ['invoice-vat-mode', 'invoice-default-sell-account', 'invoice-vatsell-account',
+                       'invoice-reduce-account', 'invoice-bankcharges-account', 'invoice-cash-account']
+        Params.fill(self, param_lists, 1, 1)
+        btn = XferCompButton('editparam')
+        btn.set_location(1, self.get_max_row() + 1, 2, 1)
+        btn.set_action(self.request, ParamEdit.get_action(
+            _('Modify'), 'images/edit.png'), {'close': 0, 'params': {'params': param_lists}})
+        self.add_component(btn)
         self.new_tab(_('VAT'))
 
 

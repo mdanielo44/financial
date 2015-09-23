@@ -56,9 +56,9 @@ class Vat(LucteriosModel):
 class Article(LucteriosModel):
     reference = models.CharField(_('reference'), max_length=20)
     designation = models.TextField(_('designation'))
-    price = models.DecimalField(_('price'), max_digits=10, decimal_places=3, default=10.0, validators=[
+    price = models.DecimalField(_('price'), max_digits=10, decimal_places=3, default=0.0, validators=[
         MinValueValidator(0.0), MaxValueValidator(9999999.999)])
-    unit = models.CharField(_('unit'), max_length=10)
+    unit = models.CharField(_('unit'), null=True, default='', max_length=10)
     isdisabled = models.BooleanField(
         verbose_name=_('is disabled'), default=False)
     sell_account = models.CharField(_('sell account'), max_length=50)
@@ -74,11 +74,11 @@ class Article(LucteriosModel):
 
     @classmethod
     def get_edit_fields(cls):
-        return ["reference", "designation", ("price", "unit"), "sell_account", "isdisabled"]
+        return ["reference", "designation", ("price", "unit"), ("sell_account", 'vat'), "isdisabled"]
 
     @classmethod
     def get_show_fields(cls):
-        return ["reference", "designation", ("price", "unit"), "sell_account", "isdisabled"]
+        return ["reference", "designation", ("price", "unit"), ("sell_account", 'vat'), "isdisabled"]
 
     class Meta(object):
         verbose_name = _('article')

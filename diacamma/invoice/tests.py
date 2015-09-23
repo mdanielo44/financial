@@ -23,3 +23,122 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
 from __future__ import unicode_literals
+from lucterios.framework.test import LucteriosTest
+from lucterios.framework.xfergraphic import XferContainerAcknowledge
+from lucterios.framework.filetools import get_user_dir
+from shutil import rmtree
+from diacamma.invoice.views_conf import InvoiceConf, VatAddModify, VatDel
+from diacamma.invoice.views import ArticleList, ArticleAddModify, ArticleDel
+
+
+class ConfigTest(LucteriosTest):
+
+    def setUp(self):
+        self.xfer_class = XferContainerAcknowledge
+        LucteriosTest.setUp(self)
+        rmtree(get_user_dir(), True)
+
+    def test_vat(self):
+        self.factory.xfer = InvoiceConf()
+        self.call('/diacamma.invoice/invoiceConf', {}, False)
+        self.assert_observer('Core.Custom', 'diacamma.invoice', 'invoiceConf')
+        self.assert_count_equal('COMPONENTS/TAB', 2)
+        self.assert_count_equal('COMPONENTS/*', 2 + 2 + 13 + 2)
+
+        self.assert_count_equal(
+            'COMPONENTS/GRID[@name="vat"]/HEADER', 3)
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="vat"]/HEADER[@name="name"]', "nom")
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="vat"]/HEADER[@name="rate"]', "taux")
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="vat"]/HEADER[@name="isactif"]', "actif?")
+        self.assert_count_equal(
+            'COMPONENTS/GRID[@name="vat"]/RECORD', 0)
+
+        self.factory.xfer = VatAddModify()
+        self.call('/diacamma.invoice/vatAddModify', {}, False)
+        self.assert_observer('Core.Custom', 'diacamma.invoice', 'vatAddModify')
+        self.assert_count_equal('COMPONENTS/*', 7)
+
+        self.factory.xfer = VatAddModify()
+        self.call('/diacamma.invoice/vatAddModify',
+                  {'name': 'my vat', 'rate': '11.57', 'isactif': 1, 'SAVE': 'YES'}, False)
+        self.assert_observer(
+            'Core.Acknowledge', 'diacamma.invoice', 'vatAddModify')
+
+        self.factory.xfer = InvoiceConf()
+        self.call('/diacamma.invoice/invoiceConf', {}, False)
+        self.assert_count_equal(
+            'COMPONENTS/GRID[@name="vat"]/RECORD', 1)
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="vat"]/RECORD[1]/VALUE[@name="name"]', 'my vat')
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="vat"]/RECORD[1]/VALUE[@name="rate"]', '11.57')
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="vat"]/RECORD[1]/VALUE[@name="isactif"]', '1')
+
+        self.factory.xfer = VatDel()
+        self.call(
+            '/diacamma.invoice/vatDel', {'vat': 1, 'CONFIRME': 'YES'}, False)
+        self.assert_observer('Core.Acknowledge', 'diacamma.invoice', 'vatDel')
+
+        self.factory.xfer = InvoiceConf()
+        self.call('/diacamma.invoice/invoiceConf', {}, False)
+        self.assert_count_equal(
+            'COMPONENTS/GRID[@name="vat"]/RECORD', 0)
+
+    def test_article(self):
+        self.factory.xfer = ArticleList()
+        self.call('/diacamma.invoice/articleList', {}, False)
+        self.assert_observer('Core.Custom', 'diacamma.invoice', 'articleList')
+        self.assert_count_equal('COMPONENTS/*', 4)
+        self.assert_count_equal(
+            'COMPONENTS/GRID[@name="article"]/HEADER', 4)
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="article"]/HEADER[@name="reference"]', "référence")
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="article"]/HEADER[@name="designation"]', "désignation")
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="article"]/HEADER[@name="price"]', "prix")
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="article"]/HEADER[@name="isdisabled"]', "désactivé?")
+        self.assert_count_equal(
+            'COMPONENTS/GRID[@name="article"]/RECORD', 0)
+
+        self.factory.xfer = ArticleAddModify()
+        self.call('/diacamma.invoice/articleAddModify', {}, False)
+        self.assert_observer(
+            'Core.Custom', 'diacamma.invoice', 'articleAddModify')
+        self.assert_count_equal('COMPONENTS/*', 15)
+
+        self.factory.xfer = ArticleAddModify()
+        self.call('/diacamma.invoice/articleAddModify',
+                  {'reference': 'ABC001', 'designation': 'My beautiful article', 'price': '43.72', 'SAVE': 'YES'}, False)
+        self.assert_observer(
+            'Core.Acknowledge', 'diacamma.invoice', 'articleAddModify')
+
+        self.factory.xfer = ArticleList()
+        self.call('/diacamma.invoice/articleList', {}, False)
+        self.assert_observer('Core.Custom', 'diacamma.invoice', 'articleList')
+        self.assert_count_equal(
+            'COMPONENTS/GRID[@name="article"]/RECORD', 1)
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="article"]/RECORD[1]/VALUE[@name="reference"]', "ABC001")
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="article"]/RECORD[1]/VALUE[@name="designation"]', "My beautiful article")
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="article"]/RECORD[1]/VALUE[@name="price"]', "43.720")
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="article"]/RECORD[1]/VALUE[@name="isdisabled"]', "0")
+
+        self.factory.xfer = ArticleDel()
+        self.call('/diacamma.invoice/articleDel',
+                  {'article': '1', 'CONFIRME': 'YES'}, False)
+        self.assert_observer(
+            'Core.Acknowledge', 'diacamma.invoice', 'articleDel')
+
+        self.factory.xfer = ArticleList()
+        self.call('/diacamma.invoice/articleList', {}, False)
+        self.assert_observer('Core.Custom', 'diacamma.invoice', 'articleList')
+        self.assert_count_equal('COMPONENTS/GRID[@name="article"]/RECORD', 0)

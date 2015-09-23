@@ -3,7 +3,56 @@ from __future__ import unicode_literals
 
 from django.db import models, migrations
 import django.db.models.deletion
+from django.utils.translation import ugettext_lazy as _
 from django.core.validators import MinValueValidator, MaxValueValidator
+
+from lucterios.CORE.models import Parameter
+
+
+def initial_values(*args):
+    param = Parameter.objects.create(
+        name='invoice-default-sell-account', typeparam=0)
+    param.title = _("invoice-default-sell-account")
+    param.args = "{'Multi':False}"
+    param.value = '706'
+    param.save()
+
+    param = Parameter.objects.create(
+        name='invoice-reduce-account', typeparam=0)
+    param.title = _("invoice-reduce-account")
+    param.args = "{'Multi':False}"
+    param.value = '709'
+    param.save()
+
+    param = Parameter.objects.create(
+        name='invoice-cash-account', typeparam=0)
+    param.title = _("invoice-cash-account")
+    param.args = "{'Multi':False}"
+    param.value = '531'
+    param.save()
+
+    param = Parameter.objects.create(
+        name='invoice-bankcharges-account', typeparam=0)
+    param.title = _("invoice-bankcharges-account")
+    param.args = "{'Multi':False}"
+    param.value = ''
+    param.save()
+
+    param = Parameter.objects.create(
+        name='invoice-vatsell-account', typeparam=0)
+    param.title = _("invoice-vatsell-account")
+    param.args = "{'Multi':False}"
+    param.value = '4455'
+    param.save()
+
+    param = Parameter.objects.create(
+        name='invoice-vat-mode', typeparam=4)
+    param.title = _("invoice-vat-mode")
+    param.param_titles = (_("invoice-vat-mode.0"),
+                          _("invoice-vat-mode.1"), _("invoice-vat-mode.2"))
+    param.args = "{'Enum':3}"
+    param.value = '0'
+    param.save()
 
 
 class Migration(migrations.Migration):
@@ -38,8 +87,9 @@ class Migration(migrations.Migration):
                     verbose_name='reference', max_length=20)),
                 ('designation', models.TextField(verbose_name='designation')),
                 ('price', models.DecimalField(validators=[MinValueValidator(0.0), MaxValueValidator(
-                    9999999.999)], decimal_places=3, max_digits=10, verbose_name='price', default=10.0)),
-                ('unit', models.CharField(verbose_name='unit', max_length=10)),
+                    9999999.999)], decimal_places=3, max_digits=10, verbose_name='price', default=0.0)),
+                ('unit', models.CharField(
+                    verbose_name='unit', null=True, default='', max_length=10)),
                 ('isdisabled', models.BooleanField(
                     verbose_name='is disabled', default=False)),
                 ('sell_account', models.CharField(
@@ -117,4 +167,5 @@ class Migration(migrations.Migration):
             },
             bases=('invoice.bill',),
         ),
+        migrations.RunPython(initial_values),
     ]
