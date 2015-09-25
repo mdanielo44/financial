@@ -53,7 +53,7 @@ class ChartsAccountTest(LucteriosTest):
         self.call('/diacamma.accounting/chartsAccountList',
                   {'year': '1', 'type_of_account': '-1'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'chartsAccountList')
+            'core.custom', 'diacamma.accounting', 'chartsAccountList')
         self.assert_count_equal('COMPONENTS/*', 9)
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="chartsaccount"]/HEADER', 5)
@@ -67,7 +67,7 @@ class ChartsAccountTest(LucteriosTest):
         self.call('/diacamma.accounting/chartsAccountList',
                   {'year': '1', 'type_of_account': '0'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'chartsAccountList')
+            'core.custom', 'diacamma.accounting', 'chartsAccountList')
         self.assert_count_equal('COMPONENTS/*', 9)
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="chartsaccount"]/HEADER', 5)
@@ -109,7 +109,7 @@ class ChartsAccountTest(LucteriosTest):
         self.call('/diacamma.accounting/chartsAccountList',
                   {'year': '1', 'type_of_account': '1'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'chartsAccountList')
+            'core.custom', 'diacamma.accounting', 'chartsAccountList')
         self.assert_count_equal('COMPONENTS/*', 9)
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="chartsaccount"]/HEADER', 5)
@@ -131,7 +131,7 @@ class ChartsAccountTest(LucteriosTest):
         self.call('/diacamma.accounting/chartsAccountList',
                   {'year': '1', 'type_of_account': '2'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'chartsAccountList')
+            'core.custom', 'diacamma.accounting', 'chartsAccountList')
         self.assert_count_equal('COMPONENTS/*', 9)
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="chartsaccount"]/HEADER', 5)
@@ -153,7 +153,7 @@ class ChartsAccountTest(LucteriosTest):
         self.call('/diacamma.accounting/chartsAccountList',
                   {'year': '1', 'type_of_account': '3'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'chartsAccountList')
+            'core.custom', 'diacamma.accounting', 'chartsAccountList')
         self.assert_count_equal('COMPONENTS/*', 9)
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="chartsaccount"]/HEADER', 5)
@@ -175,7 +175,7 @@ class ChartsAccountTest(LucteriosTest):
         self.call('/diacamma.accounting/chartsAccountList',
                   {'year': '1', 'type_of_account': '4'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'chartsAccountList')
+            'core.custom', 'diacamma.accounting', 'chartsAccountList')
         self.assert_count_equal('COMPONENTS/*', 9)
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="chartsaccount"]/HEADER', 5)
@@ -207,7 +207,7 @@ class ChartsAccountTest(LucteriosTest):
         self.call('/diacamma.accounting/chartsAccountList',
                   {'year': '1', 'type_of_account': '5'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'chartsAccountList')
+            'core.custom', 'diacamma.accounting', 'chartsAccountList')
         self.assert_count_equal('COMPONENTS/*', 9)
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="chartsaccount"]/HEADER', 5)
@@ -219,7 +219,7 @@ class ChartsAccountTest(LucteriosTest):
         self.call('/diacamma.accounting/chartsAccountShow',
                   {'year': '1', 'type_of_account': '-1', 'chartsaccount': '10'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'chartsAccountShow')
+            'core.custom', 'diacamma.accounting', 'chartsAccountShow')
         self.assert_count_equal('COMPONENTS/*', 9)
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="code"]', '707000')
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="name"]', '707000')
@@ -265,21 +265,21 @@ class ChartsAccountTest(LucteriosTest):
         self.call('/diacamma.accounting/chartsAccountDel',
                   {'CONFIRME': 'YES', 'year': '1', 'type_of_account': '5', 'chartsaccount': '10'}, False)
         self.assert_observer(
-            'CORE.Exception', 'diacamma.accounting', 'chartsAccountDel')
+            'core.exception', 'diacamma.accounting', 'chartsAccountDel')
         self.assert_xml_equal(
             'EXCEPTION/MESSAGE', "Impossible de supprimer cet enregistrement: il est associé avec d'autres sous-enregistrements")
         self.factory.xfer = ChartsAccountDel()
         self.call('/diacamma.accounting/chartsAccountDel',
                   {'CONFIRME': 'YES', 'year': '1', 'type_of_account': '5', 'chartsaccount': '9'}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'chartsAccountDel')
+            'core.acknowledge', 'diacamma.accounting', 'chartsAccountDel')
 
     def test_add(self):
         self.factory.xfer = ChartsAccountAddModify()
         self.call('/diacamma.accounting/chartsAccountAddModify',
                   {'year': '1', 'type_of_account': '-1'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'chartsAccountAddModify')
+            'core.custom', 'diacamma.accounting', 'chartsAccountAddModify')
         self.assert_count_equal('COMPONENTS/*', 8)
         self.assert_xml_equal('COMPONENTS/EDIT[@name="code"]', None)
         self.assert_xml_equal('COMPONENTS/EDIT[@name="name"]', None)
@@ -292,7 +292,7 @@ class ChartsAccountTest(LucteriosTest):
         self.call('/diacamma.accounting/chartsAccountAddModify',
                   {'year': '1', 'type_of_account': '-1', 'code': '2301'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'chartsAccountAddModify')
+            'core.custom', 'diacamma.accounting', 'chartsAccountAddModify')
         self.assert_count_equal('COMPONENTS/*', 8)
         self.assert_xml_equal('COMPONENTS/EDIT[@name="code"]', '2301')
         self.assert_xml_equal(
@@ -306,7 +306,7 @@ class ChartsAccountTest(LucteriosTest):
         self.call('/diacamma.accounting/chartsAccountAddModify',
                   {'year': '1', 'type_of_account': '-1', 'code': '3015'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'chartsAccountAddModify')
+            'core.custom', 'diacamma.accounting', 'chartsAccountAddModify')
         self.assert_count_equal('COMPONENTS/*', 8)
         self.assert_xml_equal('COMPONENTS/EDIT[@name="code"]', '3015!')
         self.assert_xml_equal('COMPONENTS/EDIT[@name="name"]', None)
@@ -319,7 +319,7 @@ class ChartsAccountTest(LucteriosTest):
         self.call('/diacamma.accounting/chartsAccountAddModify',
                   {'year': '1', 'type_of_account': '-1', 'code': 'abcd'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'chartsAccountAddModify')
+            'core.custom', 'diacamma.accounting', 'chartsAccountAddModify')
         self.assert_count_equal('COMPONENTS/*', 8)
         self.assert_xml_equal('COMPONENTS/EDIT[@name="code"]', 'abcd!')
         self.assert_xml_equal('COMPONENTS/EDIT[@name="name"]', None)
@@ -333,7 +333,7 @@ class ChartsAccountTest(LucteriosTest):
         self.call('/diacamma.accounting/chartsAccountAddModify',
                   {'year': '1', 'type_of_account': '-1', 'chartsaccount': '10'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'chartsAccountAddModify')
+            'core.custom', 'diacamma.accounting', 'chartsAccountAddModify')
         self.assert_count_equal('COMPONENTS/*', 8)
         self.assert_xml_equal('COMPONENTS/EDIT[@name="code"]', '707000')
         self.assert_xml_equal('COMPONENTS/EDIT[@name="name"]', '707000')
@@ -346,7 +346,7 @@ class ChartsAccountTest(LucteriosTest):
         self.call('/diacamma.accounting/chartsAccountAddModify',
                   {'year': '1', 'type_of_account': '-1', 'chartsaccount': '10', 'code': '7061'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'chartsAccountAddModify')
+            'core.custom', 'diacamma.accounting', 'chartsAccountAddModify')
         self.assert_count_equal('COMPONENTS/*', 8)
         self.assert_xml_equal('COMPONENTS/EDIT[@name="code"]', '7061')
         self.assert_xml_equal('COMPONENTS/EDIT[@name="name"]', '707000')
@@ -359,7 +359,7 @@ class ChartsAccountTest(LucteriosTest):
         self.call('/diacamma.accounting/chartsAccountAddModify',
                   {'year': '1', 'type_of_account': '-1', 'chartsaccount': '10', 'code': '3015'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'chartsAccountAddModify')
+            'core.custom', 'diacamma.accounting', 'chartsAccountAddModify')
         self.assert_count_equal('COMPONENTS/*', 8)
         self.assert_xml_equal('COMPONENTS/EDIT[@name="code"]', '3015!')
         self.assert_xml_equal('COMPONENTS/EDIT[@name="name"]', '707000')
@@ -372,7 +372,7 @@ class ChartsAccountTest(LucteriosTest):
         self.call('/diacamma.accounting/chartsAccountAddModify',
                   {'year': '1', 'type_of_account': '-1', 'chartsaccount': '10', 'code': 'abcd'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'chartsAccountAddModify')
+            'core.custom', 'diacamma.accounting', 'chartsAccountAddModify')
         self.assert_count_equal('COMPONENTS/*', 8)
         self.assert_xml_equal('COMPONENTS/EDIT[@name="code"]', 'abcd!')
         self.assert_xml_equal('COMPONENTS/EDIT[@name="name"]', '707000')
@@ -385,7 +385,7 @@ class ChartsAccountTest(LucteriosTest):
         self.call('/diacamma.accounting/chartsAccountAddModify',
                   {'year': '1', 'type_of_account': '-1', 'chartsaccount': '10', 'code': '6125'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'chartsAccountAddModify')
+            'core.custom', 'diacamma.accounting', 'chartsAccountAddModify')
         self.assert_count_equal('COMPONENTS/*', 8)
         self.assert_xml_equal('COMPONENTS/EDIT[@name="code"]', '6125!')
         self.assert_xml_equal('COMPONENTS/EDIT[@name="name"]', '707000')
@@ -399,7 +399,7 @@ class ChartsAccountTest(LucteriosTest):
         self.call('/diacamma.accounting/chartsAccountListing',
                   {'year': '1', 'type_of_account': '-1', 'PRINT_MODE': '4', 'MODEL': 6}, False)
         self.assert_observer(
-            'Core.Print', 'diacamma.accounting', 'chartsAccountListing')
+            'core.print', 'diacamma.accounting', 'chartsAccountListing')
         csv_value = b64decode(
             six.text_type(self.get_first_xpath('PRINT').text)).decode("utf-8")
         content_csv = csv_value.split('\n')
@@ -418,7 +418,7 @@ class ChartsAccountTest(LucteriosTest):
         self.call('/diacamma.accounting/chartsAccountListing',
                   {'year': '1', 'type_of_account': '4', 'PRINT_MODE': '4', 'MODEL': 6}, False)
         self.assert_observer(
-            'Core.Print', 'diacamma.accounting', 'chartsAccountListing')
+            'core.print', 'diacamma.accounting', 'chartsAccountListing')
         csv_value = b64decode(
             six.text_type(self.get_first_xpath('PRINT').text)).decode("utf-8")
         content_csv = csv_value.split('\n')
@@ -444,7 +444,7 @@ class FiscalYearWorkflowTest(LucteriosTest):
         self.call('/diacamma.accounting/chartsAccountList',
                   {'year': '1', 'type_of_account': '-1'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'chartsAccountList')
+            'core.custom', 'diacamma.accounting', 'chartsAccountList')
         self.assert_count_equal('COMPONENTS/*', 9)
         self.assert_count_equal('ACTIONS/ACTION', 3)
         self.assert_action_equal(
@@ -454,7 +454,7 @@ class FiscalYearWorkflowTest(LucteriosTest):
         self.call('/diacamma.accounting/fiscalYearBegin',
                   {'year': '1', 'type_of_account': '-1'}, False)
         self.assert_observer(
-            'Core.DialogBox', 'diacamma.accounting', 'fiscalYearBegin')
+            'core.dialogbox', 'diacamma.accounting', 'fiscalYearBegin')
         self.assert_xml_equal(
             'TEXT', "Voulez-vous commencer 'Exercice du 1 janvier 2015 au 31 décembre 2015", True)
 
@@ -462,7 +462,7 @@ class FiscalYearWorkflowTest(LucteriosTest):
         self.call('/diacamma.accounting/fiscalYearBegin',
                   {'CONFIRME': 'YES', 'year': '1', 'type_of_account': '-1'}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'fiscalYearBegin')
+            'core.acknowledge', 'diacamma.accounting', 'fiscalYearBegin')
 
         self.assertEqual(
             FiscalYear.objects.get(id=1).status, 1)
@@ -471,7 +471,7 @@ class FiscalYearWorkflowTest(LucteriosTest):
         self.call('/diacamma.accounting/chartsAccountList',
                   {'year': '1', 'type_of_account': '-1'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'chartsAccountList')
+            'core.custom', 'diacamma.accounting', 'chartsAccountList')
         self.assert_count_equal('ACTIONS/ACTION', 3)
         self.assert_action_equal(
             'ACTIONS/ACTION[1]', ('Clôturer', 'images/ok.png', 'diacamma.accounting', 'fiscalYearClose', 0, 1, 1))
@@ -486,7 +486,7 @@ class FiscalYearWorkflowTest(LucteriosTest):
         self.call('/diacamma.accounting/fiscalYearBegin',
                   {'year': '1', 'type_of_account': '-1'}, False)
         self.assert_observer(
-            'CORE.Exception', 'diacamma.accounting', 'fiscalYearBegin')
+            'core.exception', 'diacamma.accounting', 'fiscalYearBegin')
         self.assert_xml_equal(
             'EXCEPTION/MESSAGE', "Des écritures de report à nouveau ne sont pas validées!")
 
@@ -496,7 +496,7 @@ class FiscalYearWorkflowTest(LucteriosTest):
         self.call('/diacamma.accounting/fiscalYearBegin',
                   {'CONFIRME': 'YES', 'year': '1', 'type_of_account': '-1'}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'fiscalYearBegin')
+            'core.acknowledge', 'diacamma.accounting', 'fiscalYearBegin')
         self.assertEqual(
             FiscalYear.objects.get(id=1).status, 1)
 
@@ -510,7 +510,7 @@ class FiscalYearWorkflowTest(LucteriosTest):
         self.call('/diacamma.accounting/chartsAccountList',
                   {'year': '1', 'type_of_account': '2'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'chartsAccountList')
+            'core.custom', 'diacamma.accounting', 'chartsAccountList')
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="chartsaccount"]/RECORD', 3)
         self.assert_xml_equal(
@@ -526,7 +526,7 @@ class FiscalYearWorkflowTest(LucteriosTest):
         self.call('/diacamma.accounting/fiscalYearBegin',
                   {'year': '1', 'type_of_account': '-1'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'fiscalYearBegin')
+            'core.custom', 'diacamma.accounting', 'fiscalYearBegin')
         self.assert_count_equal('COMPONENTS/*', 4)
         self.assert_xml_equal(
             'COMPONENTS/LABELFORM[@name="info"]', "{[i]}Vous avez un bénéfice de 123.45€.{[br/]}", True)
@@ -539,7 +539,7 @@ class FiscalYearWorkflowTest(LucteriosTest):
         self.call('/diacamma.accounting/fiscalYearBegin',
                   {'profit_account': '5', 'year': '1', 'type_of_account': '-1'}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'fiscalYearBegin')
+            'core.acknowledge', 'diacamma.accounting', 'fiscalYearBegin')
 
         self.assertEqual(
             FiscalYear.objects.get(id=1).status, 1)
@@ -548,7 +548,7 @@ class FiscalYearWorkflowTest(LucteriosTest):
         self.call('/diacamma.accounting/chartsAccountList',
                   {'year': '1', 'type_of_account': '2'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'chartsAccountList')
+            'core.custom', 'diacamma.accounting', 'chartsAccountList')
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="chartsaccount"]/RECORD', 3)
         self.assert_xml_equal(
@@ -565,7 +565,7 @@ class FiscalYearWorkflowTest(LucteriosTest):
         self.call('/diacamma.accounting/fiscalYearBegin',
                   {'CONFIRME': 'YES', 'year': '1', 'type_of_account': '-1'}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'fiscalYearBegin')
+            'core.acknowledge', 'diacamma.accounting', 'fiscalYearBegin')
         self.assertEqual(
             FiscalYear.objects.get(id=1).status, 1)
 
@@ -573,7 +573,7 @@ class FiscalYearWorkflowTest(LucteriosTest):
         self.call('/diacamma.accounting/entryAccountEdit',
                   {'year': '1', 'journal': '1'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'entryAccountEdit')
+            'core.custom', 'diacamma.accounting', 'entryAccountEdit')
         self.assert_count_equal('COMPONENTS/*', 10)
         self.assert_count_equal("COMPONENTS/SELECT[@name='journal']/CASE", 4)
         self.assert_xml_equal("COMPONENTS/SELECT[@name='journal']", '2')
@@ -590,7 +590,7 @@ class FiscalYearWorkflowTest(LucteriosTest):
         self.call('/diacamma.accounting/fiscalYearImport',
                   {'CONFIRME': 'YES', 'year': '1', 'type_of_account': '-1'}, False)
         self.assert_observer(
-            'CORE.Exception', 'diacamma.accounting', 'fiscalYearImport')
+            'core.exception', 'diacamma.accounting', 'fiscalYearImport')
         self.assert_xml_equal(
             'EXCEPTION/MESSAGE', "Cet exercice n'a pas d'exercice précédent!")
 
@@ -598,7 +598,7 @@ class FiscalYearWorkflowTest(LucteriosTest):
         self.call('/diacamma.accounting/chartsAccountList',
                   {'year': '1', 'type_of_account': '-1'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'chartsAccountList')
+            'core.custom', 'diacamma.accounting', 'chartsAccountList')
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="chartsaccount"]/RECORD', 15)
         self.assert_count_equal(
@@ -608,7 +608,7 @@ class FiscalYearWorkflowTest(LucteriosTest):
         self.call('/diacamma.accounting/chartsAccountList',
                   {'year': '2', 'type_of_account': '-1'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'chartsAccountList')
+            'core.custom', 'diacamma.accounting', 'chartsAccountList')
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="chartsaccount"]/RECORD', 0)
         self.assert_count_equal(
@@ -620,13 +620,13 @@ class FiscalYearWorkflowTest(LucteriosTest):
         self.call('/diacamma.accounting/fiscalYearImport',
                   {'CONFIRME': 'YES', 'year': '2', 'type_of_account': '-1'}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'fiscalYearImport')
+            'core.acknowledge', 'diacamma.accounting', 'fiscalYearImport')
 
         self.factory.xfer = ChartsAccountList()
         self.call('/diacamma.accounting/chartsAccountList',
                   {'year': '2', 'type_of_account': '-1'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'chartsAccountList')
+            'core.custom', 'diacamma.accounting', 'chartsAccountList')
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="chartsaccount"]/RECORD', 15)
 
@@ -634,13 +634,13 @@ class FiscalYearWorkflowTest(LucteriosTest):
         self.call('/diacamma.accounting/fiscalYearImport',
                   {'CONFIRME': 'YES', 'year': '2', 'type_of_account': '-1'}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'fiscalYearImport')
+            'core.acknowledge', 'diacamma.accounting', 'fiscalYearImport')
 
         self.factory.xfer = ChartsAccountList()
         self.call('/diacamma.accounting/chartsAccountList',
                   {'year': '2', 'type_of_account': '-1'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'chartsAccountList')
+            'core.custom', 'diacamma.accounting', 'chartsAccountList')
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="chartsaccount"]/RECORD', 15)
 
@@ -651,7 +651,7 @@ class FiscalYearWorkflowTest(LucteriosTest):
         self.call('/diacamma.accounting/fiscalYearImport',
                   {'year': '1', 'type_of_account': '-1'}, False)
         self.assert_observer(
-            'CORE.Exception', 'diacamma.accounting', 'fiscalYearImport')
+            'core.exception', 'diacamma.accounting', 'fiscalYearImport')
         self.assert_xml_equal(
             'EXCEPTION/MESSAGE', "Cet exercice n'est pas 'en cours'!")
 
@@ -659,7 +659,7 @@ class FiscalYearWorkflowTest(LucteriosTest):
         self.call('/diacamma.accounting/fiscalYearBegin',
                   {'CONFIRME': 'YES', 'year': '1', 'type_of_account': '-1'}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'fiscalYearBegin')
+            'core.acknowledge', 'diacamma.accounting', 'fiscalYearBegin')
         self.assertEqual(
             FiscalYear.objects.get(id=1).status, 1)
 
@@ -667,7 +667,7 @@ class FiscalYearWorkflowTest(LucteriosTest):
         self.call('/diacamma.accounting/fiscalYearImport',
                   {'year': '1', 'type_of_account': '-1'}, False)
         self.assert_observer(
-            'CORE.Exception', 'diacamma.accounting', 'fiscalYearImport')
+            'core.exception', 'diacamma.accounting', 'fiscalYearImport')
         self.assert_xml_equal(
             'EXCEPTION/MESSAGE', "Cet exercice a des écritures non-validées et pas d'exercice suivant!")
 
@@ -678,7 +678,7 @@ class FiscalYearWorkflowTest(LucteriosTest):
         self.call('/diacamma.accounting/fiscalYearClose',
                   {'year': '1', 'type_of_account': '-1'}, False)
         self.assert_observer(
-            'Core.DialogBox', 'diacamma.accounting', 'fiscalYearClose')
+            'core.dialogbox', 'diacamma.accounting', 'fiscalYearClose')
         text_value = self.get_first_xpath('TEXT').text
 
         self.assertTrue(
@@ -690,7 +690,7 @@ class FiscalYearWorkflowTest(LucteriosTest):
         self.call('/diacamma.accounting/entryLineAccountList',
                   {'year': '1', 'journal': '-1', 'filter': '0'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'entryLineAccountList')
+            'core.custom', 'diacamma.accounting', 'entryLineAccountList')
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD', 23)
         self.assert_xml_equal(
@@ -700,7 +700,7 @@ class FiscalYearWorkflowTest(LucteriosTest):
         self.call('/diacamma.accounting/entryLineAccountList',
                   {'year': '2', 'journal': '-1', 'filter': '0'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'entryLineAccountList')
+            'core.custom', 'diacamma.accounting', 'entryLineAccountList')
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD', 0)
         self.assert_xml_equal(
@@ -710,7 +710,7 @@ class FiscalYearWorkflowTest(LucteriosTest):
         self.call('/diacamma.accounting/fiscalYearClose',
                   {'CONFIRME': 'YES', 'year': '1', 'type_of_account': '-1'}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'fiscalYearClose')
+            'core.acknowledge', 'diacamma.accounting', 'fiscalYearClose')
 
         self.assertEqual(
             FiscalYear.objects.get(id=1).status, 2)
@@ -719,7 +719,7 @@ class FiscalYearWorkflowTest(LucteriosTest):
         self.call('/diacamma.accounting/entryLineAccountList',
                   {'year': '1', 'journal': '-1', 'filter': '0'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'entryLineAccountList')
+            'core.custom', 'diacamma.accounting', 'entryLineAccountList')
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD', 18)
         self.assert_xml_equal(
@@ -729,7 +729,7 @@ class FiscalYearWorkflowTest(LucteriosTest):
         self.call('/diacamma.accounting/entryLineAccountList',
                   {'year': '2', 'journal': '-1', 'filter': '0'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'entryLineAccountList')
+            'core.custom', 'diacamma.accounting', 'entryLineAccountList')
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD', 8)
         self.assert_xml_equal(
@@ -739,7 +739,7 @@ class FiscalYearWorkflowTest(LucteriosTest):
         self.call('/diacamma.accounting/chartsAccountList',
                   {'year': '1', 'type_of_account': '-1'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'chartsAccountList')
+            'core.custom', 'diacamma.accounting', 'chartsAccountList')
         self.assert_count_equal('COMPONENTS/*', 9)
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="chartsaccount"]/RECORD', 17)
@@ -767,14 +767,14 @@ class FiscalYearWorkflowTest(LucteriosTest):
         self.call('/diacamma.accounting/fiscalYearBegin',
                   {'CONFIRME': 'YES', 'year': '1', 'type_of_account': '-1'}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'fiscalYearBegin')
+            'core.acknowledge', 'diacamma.accounting', 'fiscalYearBegin')
         self.assertEqual(
             FiscalYear.objects.get(id=1).status, 1)
         self.factory.xfer = FiscalYearClose()
         self.call('/diacamma.accounting/fiscalYearClose',
                   {'CONFIRME': 'YES', 'year': '1', 'type_of_account': '-1'}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'fiscalYearClose')
+            'core.acknowledge', 'diacamma.accounting', 'fiscalYearClose')
 
         self.assertEqual(
             FiscalYear.objects.get(id=1).status, 2)
@@ -785,7 +785,7 @@ class FiscalYearWorkflowTest(LucteriosTest):
         self.call('/diacamma.accounting/fiscalYearReportLastYear',
                   {'CONFIRME': 'YES', 'year': '2', 'type_of_account': '-1'}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'fiscalYearReportLastYear')
+            'core.acknowledge', 'diacamma.accounting', 'fiscalYearReportLastYear')
         self.assertEqual(
             FiscalYear.objects.get(id=2).status, 0)
 
@@ -793,7 +793,7 @@ class FiscalYearWorkflowTest(LucteriosTest):
         self.call('/diacamma.accounting/entryLineAccountList',
                   {'year': '2', 'journal': '-1', 'filter': '0'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'entryLineAccountList')
+            'core.custom', 'diacamma.accounting', 'entryLineAccountList')
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD', 15)
         self.assert_xml_equal(
@@ -803,7 +803,7 @@ class FiscalYearWorkflowTest(LucteriosTest):
         self.call('/diacamma.accounting/chartsAccountList',
                   {'year': '2', 'type_of_account': '-1'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'chartsAccountList')
+            'core.custom', 'diacamma.accounting', 'chartsAccountList')
         self.assert_count_equal('COMPONENTS/*', 9)
         self.assert_count_equal('ACTIONS/ACTION', 3)
         self.assert_count_equal(
@@ -825,5 +825,5 @@ class FiscalYearWorkflowTest(LucteriosTest):
         self.call('/diacamma.accounting/chartsAccountList',
                   {'year': '1', 'type_of_account': '-1'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'chartsAccountList')
+            'core.custom', 'diacamma.accounting', 'chartsAccountList')
         self.assert_count_equal('ACTIONS/ACTION', 2)

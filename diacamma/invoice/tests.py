@@ -41,7 +41,7 @@ class ConfigTest(LucteriosTest):
     def test_vat(self):
         self.factory.xfer = InvoiceConf()
         self.call('/diacamma.invoice/invoiceConf', {}, False)
-        self.assert_observer('Core.Custom', 'diacamma.invoice', 'invoiceConf')
+        self.assert_observer('core.custom', 'diacamma.invoice', 'invoiceConf')
         self.assert_count_equal('COMPONENTS/TAB', 2)
         self.assert_count_equal('COMPONENTS/*', 2 + 2 + 13 + 2)
 
@@ -58,14 +58,14 @@ class ConfigTest(LucteriosTest):
 
         self.factory.xfer = VatAddModify()
         self.call('/diacamma.invoice/vatAddModify', {}, False)
-        self.assert_observer('Core.Custom', 'diacamma.invoice', 'vatAddModify')
+        self.assert_observer('core.custom', 'diacamma.invoice', 'vatAddModify')
         self.assert_count_equal('COMPONENTS/*', 7)
 
         self.factory.xfer = VatAddModify()
         self.call('/diacamma.invoice/vatAddModify',
                   {'name': 'my vat', 'rate': '11.57', 'isactif': 1, 'SAVE': 'YES'}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.invoice', 'vatAddModify')
+            'core.acknowledge', 'diacamma.invoice', 'vatAddModify')
 
         self.factory.xfer = InvoiceConf()
         self.call('/diacamma.invoice/invoiceConf', {}, False)
@@ -81,7 +81,7 @@ class ConfigTest(LucteriosTest):
         self.factory.xfer = VatDel()
         self.call(
             '/diacamma.invoice/vatDel', {'vat': 1, 'CONFIRME': 'YES'}, False)
-        self.assert_observer('Core.Acknowledge', 'diacamma.invoice', 'vatDel')
+        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'vatDel')
 
         self.factory.xfer = InvoiceConf()
         self.call('/diacamma.invoice/invoiceConf', {}, False)
@@ -91,7 +91,7 @@ class ConfigTest(LucteriosTest):
     def test_article(self):
         self.factory.xfer = ArticleList()
         self.call('/diacamma.invoice/articleList', {}, False)
-        self.assert_observer('Core.Custom', 'diacamma.invoice', 'articleList')
+        self.assert_observer('core.custom', 'diacamma.invoice', 'articleList')
         self.assert_count_equal('COMPONENTS/*', 4)
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="article"]/HEADER', 4)
@@ -109,18 +109,18 @@ class ConfigTest(LucteriosTest):
         self.factory.xfer = ArticleAddModify()
         self.call('/diacamma.invoice/articleAddModify', {}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.invoice', 'articleAddModify')
+            'core.custom', 'diacamma.invoice', 'articleAddModify')
         self.assert_count_equal('COMPONENTS/*', 15)
 
         self.factory.xfer = ArticleAddModify()
         self.call('/diacamma.invoice/articleAddModify',
                   {'reference': 'ABC001', 'designation': 'My beautiful article', 'price': '43.72', 'SAVE': 'YES'}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.invoice', 'articleAddModify')
+            'core.acknowledge', 'diacamma.invoice', 'articleAddModify')
 
         self.factory.xfer = ArticleList()
         self.call('/diacamma.invoice/articleList', {}, False)
-        self.assert_observer('Core.Custom', 'diacamma.invoice', 'articleList')
+        self.assert_observer('core.custom', 'diacamma.invoice', 'articleList')
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="article"]/RECORD', 1)
         self.assert_xml_equal(
@@ -136,9 +136,9 @@ class ConfigTest(LucteriosTest):
         self.call('/diacamma.invoice/articleDel',
                   {'article': '1', 'CONFIRME': 'YES'}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.invoice', 'articleDel')
+            'core.acknowledge', 'diacamma.invoice', 'articleDel')
 
         self.factory.xfer = ArticleList()
         self.call('/diacamma.invoice/articleList', {}, False)
-        self.assert_observer('Core.Custom', 'diacamma.invoice', 'articleList')
+        self.assert_observer('core.custom', 'diacamma.invoice', 'articleList')
         self.assert_count_equal('COMPONENTS/GRID[@name="article"]/RECORD', 0)

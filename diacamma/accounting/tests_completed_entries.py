@@ -61,7 +61,7 @@ class CompletedEntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryLineAccountList',
                   {'year': '1', 'journal': journal, 'filter': filterlist}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'entryLineAccountList')
+            'core.custom', 'diacamma.accounting', 'entryLineAccountList')
         self.assert_count_equal('COMPONENTS/*', 11)
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/HEADER', 9)
@@ -283,7 +283,7 @@ class CompletedEntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryLineAccountList',
                   {'year': '1', 'journal': '-1', 'filter': '2'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'entryLineAccountList')
+            'core.custom', 'diacamma.accounting', 'entryLineAccountList')
         self.assert_count_equal('COMPONENTS/*', 11)
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/HEADER', 9)
@@ -299,7 +299,7 @@ class CompletedEntryTest(LucteriosTest):
     def test_summary(self):
         self.factory.xfer = StatusMenu()
         self.call('/CORE/statusMenu', {}, False)
-        self.assert_observer('Core.Custom', 'CORE', 'statusMenu')
+        self.assert_observer('core.custom', 'CORE', 'statusMenu')
         self.assert_xml_equal(
             "COMPONENTS/LABELFORM[@name='accounting_year']", "{[center]}Exercice du 1 janvier 2015 au 31 décembre 2015 [en création]{[/center]}")
         self.assert_xml_equal("COMPONENTS/LABELFORM[@name='accounting_result']",
@@ -312,7 +312,7 @@ class CompletedEntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryLineAccountListing',
                   {'PRINT_MODE': '4', 'MODEL': 7, 'year': '1', 'journal': '-1', 'filter': '0'}, False)
         self.assert_observer(
-            'Core.Print', 'diacamma.accounting', 'entryLineAccountListing')
+            'core.print', 'diacamma.accounting', 'entryLineAccountListing')
         csv_value = b64decode(
             six.text_type(self.get_first_xpath('PRINT').text)).decode("utf-8")
         content_csv = csv_value.split('\n')
@@ -329,7 +329,7 @@ class CompletedEntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryLineAccountListing',
                   {'PRINT_MODE': '4', 'MODEL': 7, 'year': '1', 'journal': '-1', 'filter': '1'}, False)
         self.assert_observer(
-            'Core.Print', 'diacamma.accounting', 'entryLineAccountListing')
+            'core.print', 'diacamma.accounting', 'entryLineAccountListing')
         csv_value = b64decode(
             six.text_type(self.get_first_xpath('PRINT').text)).decode("utf-8")
         content_csv = csv_value.split('\n')
@@ -339,7 +339,7 @@ class CompletedEntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryLineAccountListing',
                   {'PRINT_MODE': '4', 'MODEL': 7, 'year': '1', 'journal': '-1', 'filter': '2'}, False)
         self.assert_observer(
-            'Core.Print', 'diacamma.accounting', 'entryLineAccountListing')
+            'core.print', 'diacamma.accounting', 'entryLineAccountListing')
         csv_value = b64decode(
             six.text_type(self.get_first_xpath('PRINT').text)).decode("utf-8")
         content_csv = csv_value.split('\n')
@@ -349,7 +349,7 @@ class CompletedEntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryLineAccountListing',
                   {'PRINT_MODE': '4', 'MODEL': 7, 'year': '1', 'journal': '-1', 'filter': '3'}, False)
         self.assert_observer(
-            'Core.Print', 'diacamma.accounting', 'entryLineAccountListing')
+            'core.print', 'diacamma.accounting', 'entryLineAccountListing')
         csv_value = b64decode(
             six.text_type(self.get_first_xpath('PRINT').text)).decode("utf-8")
         content_csv = csv_value.split('\n')
@@ -359,7 +359,7 @@ class CompletedEntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryLineAccountListing',
                   {'PRINT_MODE': '4', 'MODEL': 7, 'year': '1', 'journal': '-1', 'filter': '4'}, False)
         self.assert_observer(
-            'Core.Print', 'diacamma.accounting', 'entryLineAccountListing')
+            'core.print', 'diacamma.accounting', 'entryLineAccountListing')
         csv_value = b64decode(
             six.text_type(self.get_first_xpath('PRINT').text)).decode("utf-8")
         content_csv = csv_value.split('\n')
@@ -369,7 +369,7 @@ class CompletedEntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryLineAccountListing',
                   {'PRINT_MODE': '4', 'MODEL': 7, 'year': '1', 'journal': '4', 'filter': '0'}, False)
         self.assert_observer(
-            'Core.Print', 'diacamma.accounting', 'entryLineAccountListing')
+            'core.print', 'diacamma.accounting', 'entryLineAccountListing')
         csv_value = b64decode(
             six.text_type(self.get_first_xpath('PRINT').text)).decode("utf-8")
         content_csv = csv_value.split('\n')
@@ -380,7 +380,7 @@ class CompletedEntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryAccountEdit',
                   {'year': '1', 'journal': '2'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'entryAccountEdit')
+            'core.custom', 'diacamma.accounting', 'entryAccountEdit')
         self.assert_count_equal('COMPONENTS/*', 10)
         self.assert_xml_equal("COMPONENTS/SELECT[@name='costaccounting']", '0')
         self.assert_count_equal(
@@ -390,7 +390,7 @@ class CompletedEntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryAccountShow',
                   {'year': '1', 'journal': '2', 'entryaccount': '2'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'entryAccountShow')
+            'core.custom', 'diacamma.accounting', 'entryAccountShow')
         self.assert_count_equal('COMPONENTS/*', 20)
         self.assert_xml_equal(
             "COMPONENTS/LABELFORM[@name='designation']", 'depense 1')
@@ -403,7 +403,7 @@ class CompletedEntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryAccountShow',
                   {'year': '1', 'journal': '2', 'entryaccount': '11'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'entryAccountShow')
+            'core.custom', 'diacamma.accounting', 'entryAccountShow')
         self.assert_count_equal('COMPONENTS/*', 16)
         self.assert_xml_equal(
             "COMPONENTS/LABELFORM[@name='designation']", 'Frais bancaire')
@@ -415,7 +415,7 @@ class CompletedEntryTest(LucteriosTest):
         self.factory.xfer = CostAccountingList()
         self.call('/diacamma.accounting/costAccountingList', {}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'costAccountingList')
+            'core.custom', 'diacamma.accounting', 'costAccountingList')
         self.assert_count_equal('COMPONENTS/*', 6)
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="costaccounting"]/HEADER', 6)
@@ -438,7 +438,7 @@ class CompletedEntryTest(LucteriosTest):
         self.call('/diacamma.accounting/costAccountingClose',
                   {'costaccounting': 2}, False)
         self.assert_observer(
-            'CORE.Exception', 'diacamma.accounting', 'costAccountingClose')
+            'core.exception', 'diacamma.accounting', 'costAccountingClose')
         self.assert_xml_equal(
             'EXCEPTION/MESSAGE', 'Cette comptabilité a des écritures non validées!')
 
@@ -446,18 +446,18 @@ class CompletedEntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryAccountClose',
                   {'CONFIRME': 'YES', 'year': '1', 'journal': '2', "entrylineaccount": "8"}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'entryAccountClose')
+            'core.acknowledge', 'diacamma.accounting', 'entryAccountClose')
 
         self.factory.xfer = CostAccountingClose()
         self.call('/diacamma.accounting/costAccountingClose',
                   {'CONFIRME': 'YES', 'costaccounting': 2}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'costAccountingClose')
+            'core.acknowledge', 'diacamma.accounting', 'costAccountingClose')
 
         self.factory.xfer = CostAccountingList()
         self.call('/diacamma.accounting/costAccountingList', {}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'costAccountingList')
+            'core.custom', 'diacamma.accounting', 'costAccountingList')
         self.assert_count_equal('COMPONENTS/*', 6)
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="costaccounting"]/HEADER', 6)
@@ -468,7 +468,7 @@ class CompletedEntryTest(LucteriosTest):
         self.call(
             '/diacamma.accounting/costAccountingList', {'all_cost': True}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'costAccountingList')
+            'core.custom', 'diacamma.accounting', 'costAccountingList')
         self.assert_count_equal('COMPONENTS/*', 6)
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="costaccounting"]/HEADER', 6)
@@ -479,7 +479,7 @@ class CompletedEntryTest(LucteriosTest):
         self.factory.xfer = CostAccountingList()
         self.call('/diacamma.accounting/costAccountingList', {}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'costAccountingList')
+            'core.custom', 'diacamma.accounting', 'costAccountingList')
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="costaccounting"]/RECORD', 1)
         self.assert_xml_equal(
@@ -493,7 +493,7 @@ class CompletedEntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryAccountCostAccounting',
                   {'entrylineaccount': '9;13;19'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'entryAccountCostAccounting')
+            'core.custom', 'diacamma.accounting', 'entryAccountCostAccounting')
 
         self.assert_count_equal('COMPONENTS/*', 3)
         self.assert_xml_equal("COMPONENTS/SELECT[@name='costaccounting']", '0')
@@ -505,12 +505,12 @@ class CompletedEntryTest(LucteriosTest):
                   {"SAVE": "YES", 'entrylineaccount': '9;13;19', 'costaccounting': '2'}, False)  # -78.24 / +125.97
 
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'entryAccountCostAccounting')
+            'core.acknowledge', 'diacamma.accounting', 'entryAccountCostAccounting')
 
         self.factory.xfer = CostAccountingList()
         self.call('/diacamma.accounting/costAccountingList', {}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'costAccountingList')
+            'core.custom', 'diacamma.accounting', 'costAccountingList')
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="costaccounting"]/RECORD', 1)
         self.assert_xml_equal(
@@ -525,12 +525,12 @@ class CompletedEntryTest(LucteriosTest):
                   {"SAVE": "YES", 'entrylineaccount': '9;13;19', 'costaccounting': '0'}, False)  # - -194.08 / 0
 
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'entryAccountCostAccounting')
+            'core.acknowledge', 'diacamma.accounting', 'entryAccountCostAccounting')
 
         self.factory.xfer = CostAccountingList()
         self.call('/diacamma.accounting/costAccountingList', {}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'costAccountingList')
+            'core.custom', 'diacamma.accounting', 'costAccountingList')
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="costaccounting"]/RECORD', 1)
         self.assert_xml_equal(
@@ -542,28 +542,28 @@ class CompletedEntryTest(LucteriosTest):
         self.factory.xfer = FiscalYearBalanceSheet()
         self.call('/diacamma.accounting/fiscalYearBalanceSheet', {}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'fiscalYearBalanceSheet')
+            'core.custom', 'diacamma.accounting', 'fiscalYearBalanceSheet')
         self._check_result()
 
     def test_fiscalyear_incomestatement(self):
         self.factory.xfer = FiscalYearIncomeStatement()
         self.call('/diacamma.accounting/fiscalYearIncomeStatement', {}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'fiscalYearIncomeStatement')
+            'core.custom', 'diacamma.accounting', 'fiscalYearIncomeStatement')
         self._check_result()
 
     def test_fiscalyear_ledger(self):
         self.factory.xfer = FiscalYearLedger()
         self.call('/diacamma.accounting/fiscalYearLedger', {}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'fiscalYearLedger')
+            'core.custom', 'diacamma.accounting', 'fiscalYearLedger')
         self._check_result()
 
     def test_fiscalyear_trialbalance(self):
         self.factory.xfer = FiscalYearTrialBalance()
         self.call('/diacamma.accounting/fiscalYearTrialBalance', {}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'fiscalYearTrialBalance')
+            'core.custom', 'diacamma.accounting', 'fiscalYearTrialBalance')
         self._check_result()
 
     def test_export(self):
@@ -572,6 +572,6 @@ class CompletedEntryTest(LucteriosTest):
         self.factory.xfer = FiscalYearExport()
         self.call('/diacamma.accounting/fiscalYearExport', {}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'fiscalYearExport')
+            'core.custom', 'diacamma.accounting', 'fiscalYearExport')
         self.assertTrue(
             exists(get_user_path('accounting', 'fiscalyear_export_1.xml')))

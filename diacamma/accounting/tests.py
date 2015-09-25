@@ -61,12 +61,12 @@ class ThirdTest(LucteriosTest):
         self.factory.xfer = ThirdList()
         self.call('/diacamma.accounting/thirdListing', {}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'thirdListing')
+            'core.custom', 'diacamma.accounting', 'thirdListing')
         self.assert_count_equal('COMPONENTS/GRID[@name="third"]/RECORD', 0)
 
         self.factory.xfer = ThirdAdd()
         self.call('/diacamma.accounting/thirdAdd', {}, False)
-        self.assert_observer('Core.Custom', 'diacamma.accounting', 'thirdAdd')
+        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdAdd')
         self.assert_comp_equal(
             'COMPONENTS/SELECT[@name="modelname"]', 'contacts.AbstractContact', (2, 0, 3, 1))
         self.assert_count_equal('COMPONENTS/SELECT[@name="modelname"]/CASE', 3)
@@ -79,14 +79,14 @@ class ThirdTest(LucteriosTest):
         self.call('/diacamma.accounting/thirdSave',
                   {'pkname': 'abstractcontact', 'abstractcontact': 5}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'thirdSave')
+            'core.acknowledge', 'diacamma.accounting', 'thirdSave')
         self.assert_attrib_equal('ACTION', 'action', 'thirdShow')
         self.assert_xml_equal('ACTION/PARAM[@name="third"]', '1')
 
         self.factory.xfer = ThirdList()
         self.call('/diacamma.accounting/thirdListing', {}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'thirdListing')
+            'core.custom', 'diacamma.accounting', 'thirdListing')
         self.assert_count_equal('COMPONENTS/GRID[@name="third"]/RECORD', 1)
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="third"]/RECORD[1]/VALUE[@name="contact"]', 'Dalton Joe')
@@ -95,13 +95,13 @@ class ThirdTest(LucteriosTest):
         self.factory.xfer = ThirdList()
         self.call('/diacamma.accounting/thirdListing', {}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'thirdListing')
+            'core.custom', 'diacamma.accounting', 'thirdListing')
         self.assert_count_equal('COMPONENTS/GRID[@name="third"]/RECORD', 0)
 
         self.factory.xfer = ThirdAdd()
         self.call('/diacamma.accounting/thirdAdd',
                   {'modelname': 'contacts.LegalEntity'}, False)
-        self.assert_observer('Core.Custom', 'diacamma.accounting', 'thirdAdd')
+        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdAdd')
         self.assert_comp_equal(
             'COMPONENTS/SELECT[@name="modelname"]', 'contacts.LegalEntity', (2, 0, 3, 1))
         self.assert_count_equal(
@@ -113,21 +113,21 @@ class ThirdTest(LucteriosTest):
         self.call('/diacamma.accounting/thirdSave',
                   {'pkname': 'legalentity', 'legalentity': 7}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'thirdSave')
+            'core.acknowledge', 'diacamma.accounting', 'thirdSave')
         self.assert_attrib_equal('ACTION', 'action', 'thirdShow')
         self.assert_xml_equal('ACTION/PARAM[@name="third"]', '1')
 
         self.factory.xfer = ThirdList()
         self.call('/diacamma.accounting/thirdListing', {}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'thirdListing')
+            'core.custom', 'diacamma.accounting', 'thirdListing')
         self.assert_count_equal('COMPONENTS/GRID[@name="third"]/RECORD', 1)
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="third"]/RECORD[1]/VALUE[@name="contact"]', 'Minimum')
 
         self.factory.xfer = ThirdShow()
         self.call('/diacamma.accounting/thirdShow', {"third": 1}, False)
-        self.assert_observer('Core.Custom', 'diacamma.accounting', 'thirdShow')
+        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdShow')
         self.assert_xml_equal(
             'COMPONENTS/LABELFORM[@name="contact"]', 'Minimum')
         self.assert_attrib_equal(
@@ -141,13 +141,13 @@ class ThirdTest(LucteriosTest):
         self.factory.xfer = ThirdList()
         self.call('/diacamma.accounting/thirdListing', {}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'thirdListing')
+            'core.custom', 'diacamma.accounting', 'thirdListing')
         self.assert_count_equal('COMPONENTS/GRID[@name="third"]/RECORD', 0)
 
         self.factory.xfer = ThirdAdd()
         self.call('/diacamma.accounting/thirdAdd',
                   {'modelname': 'contacts.Individual'}, False)
-        self.assert_observer('Core.Custom', 'diacamma.accounting', 'thirdAdd')
+        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdAdd')
         self.assert_comp_equal(
             'COMPONENTS/SELECT[@name="modelname"]', 'contacts.Individual', (2, 0, 3, 1))
         self.assert_count_equal(
@@ -159,21 +159,21 @@ class ThirdTest(LucteriosTest):
         self.call('/diacamma.accounting/thirdSave',
                   {'pkname': 'individual', 'individual': 3}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'thirdSave')
+            'core.acknowledge', 'diacamma.accounting', 'thirdSave')
         self.assert_attrib_equal('ACTION', 'action', 'thirdShow')
         self.assert_xml_equal('ACTION/PARAM[@name="third"]', '1')
 
         self.factory.xfer = ThirdList()
         self.call('/diacamma.accounting/thirdListing', {}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'thirdListing')
+            'core.custom', 'diacamma.accounting', 'thirdListing')
         self.assert_count_equal('COMPONENTS/GRID[@name="third"]/RECORD', 1)
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="third"]/RECORD[1]/VALUE[@name="contact"]', 'Dalton William')
 
         self.factory.xfer = ThirdShow()
         self.call('/diacamma.accounting/thirdShow', {"third": 1}, False)
-        self.assert_observer('Core.Custom', 'diacamma.accounting', 'thirdShow')
+        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdShow')
         self.assert_xml_equal(
             'COMPONENTS/LABELFORM[@name="contact"]', 'Dalton William')
         self.assert_attrib_equal(
@@ -187,14 +187,14 @@ class ThirdTest(LucteriosTest):
         self.factory.xfer = ThirdList()
         self.call('/diacamma.accounting/thirdListing', {}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'thirdListing')
+            'core.custom', 'diacamma.accounting', 'thirdListing')
         self.assert_count_equal('COMPONENTS/GRID[@name="third"]/RECORD', 0)
 
         self.factory.xfer = ThirdSave()
         self.call('/diacamma.accounting/thirdSave',
                   {'pkname': 'abstractcontact', 'abstractcontact': 5}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'thirdSave')
+            'core.acknowledge', 'diacamma.accounting', 'thirdSave')
         self.assert_attrib_equal('ACTION', 'action', 'thirdShow')
         self.assert_xml_equal('ACTION/PARAM[@name="third"]', '1')
 
@@ -202,7 +202,7 @@ class ThirdTest(LucteriosTest):
         self.call('/diacamma.accounting/thirdSave',
                   {'pkname': 'abstractcontact', 'abstractcontact': 5}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'thirdSave')
+            'core.acknowledge', 'diacamma.accounting', 'thirdSave')
         self.assert_attrib_equal('ACTION', 'action', 'thirdShow')
         self.assert_xml_equal('ACTION/PARAM[@name="third"]', '1')
 
@@ -210,21 +210,21 @@ class ThirdTest(LucteriosTest):
         self.call('/diacamma.accounting/thirdSave',
                   {'pkname': 'abstractcontact', 'abstractcontact': 5}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'thirdSave')
+            'core.acknowledge', 'diacamma.accounting', 'thirdSave')
         self.assert_attrib_equal('ACTION', 'action', 'thirdShow')
         self.assert_xml_equal('ACTION/PARAM[@name="third"]', '1')
 
         self.factory.xfer = ThirdList()
         self.call('/diacamma.accounting/thirdListing', {}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'thirdListing')
+            'core.custom', 'diacamma.accounting', 'thirdListing')
         self.assert_count_equal('COMPONENTS/GRID[@name="third"]/RECORD', 1)
 
     def test_show(self):
         create_third([3])
         self.factory.xfer = ThirdShow()
         self.call('/diacamma.accounting/thirdShow', {"third": 1}, False)
-        self.assert_observer('Core.Custom', 'diacamma.accounting', 'thirdShow')
+        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdShow')
         self.assert_count_equal('COMPONENTS/TAB', 1)
         self.assert_count_equal('COMPONENTS/*', 16 + 7)
         self.assert_xml_equal(
@@ -244,7 +244,7 @@ class ThirdTest(LucteriosTest):
         self.call(
             '/diacamma.accounting/accountThirdAddModify', {"third": 1}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'accountThirdAddModify')
+            'core.custom', 'diacamma.accounting', 'accountThirdAddModify')
         self.assert_count_equal('COMPONENTS/*', 3)
         self.assert_xml_equal('COMPONENTS/EDIT[@name="code"]', None)
 
@@ -252,11 +252,11 @@ class ThirdTest(LucteriosTest):
         self.call('/diacamma.accounting/accountThirdAddModify',
                   {'SAVE': 'YES', "third": 1, 'code': '411000'}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'accountThirdAddModify')
+            'core.acknowledge', 'diacamma.accounting', 'accountThirdAddModify')
 
         self.factory.xfer = ThirdShow()
         self.call('/diacamma.accounting/thirdShow', {"third": 1}, False)
-        self.assert_observer('Core.Custom', 'diacamma.accounting', 'thirdShow')
+        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdShow')
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="accountthird"]/HEADER', 2)
         self.assert_count_equal(
@@ -271,11 +271,11 @@ class ThirdTest(LucteriosTest):
         self.call('/diacamma.accounting/accountThirdDel',
                   {'CONFIRME': 'YES', "accountthird": 1}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'accountThirdDel')
+            'core.acknowledge', 'diacamma.accounting', 'accountThirdDel')
 
         self.factory.xfer = ThirdShow()
         self.call('/diacamma.accounting/thirdShow', {"third": 1}, False)
-        self.assert_observer('Core.Custom', 'diacamma.accounting', 'thirdShow')
+        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdShow')
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="accountthird"]/HEADER', 2)
         self.assert_count_equal(
@@ -287,7 +287,7 @@ class ThirdTest(LucteriosTest):
         fill_entries(1)
         self.factory.xfer = ThirdShow()
         self.call('/diacamma.accounting/thirdShow', {"third": 4}, False)
-        self.assert_observer('Core.Custom', 'diacamma.accounting', 'thirdShow')
+        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdShow')
         self.assert_count_equal('COMPONENTS/TAB', 2)
         self.assert_count_equal('COMPONENTS/*', 16 + 7 + 4)
         self.assert_xml_equal(
@@ -348,7 +348,7 @@ class ThirdTest(LucteriosTest):
         self.call(
             '/diacamma.accounting/accountThirdDel', {"accountthird": 6}, False)
         self.assert_observer(
-            'CORE.Exception', 'diacamma.accounting', 'accountThirdDel')
+            'core.exception', 'diacamma.accounting', 'accountThirdDel')
         self.assert_xml_equal(
             'EXCEPTION/MESSAGE', "Ce compte comporte des écritures!")
 
@@ -360,7 +360,7 @@ class ThirdTest(LucteriosTest):
         self.factory.xfer = ThirdShow()
         self.call('/diacamma.accounting/thirdShow',
                   {"third": 4, 'lines_filter': 0}, False)
-        self.assert_observer('Core.Custom', 'diacamma.accounting', 'thirdShow')
+        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdShow')
         self.assert_count_equal('COMPONENTS/TAB', 2)
         self.assert_count_equal('COMPONENTS/*', 16 + 7 + 4)
         self.assert_xml_equal('COMPONENTS/SELECT[@name="lines_filter"]', '0')
@@ -374,7 +374,7 @@ class ThirdTest(LucteriosTest):
         self.factory.xfer = ThirdShow()
         self.call('/diacamma.accounting/thirdShow',
                   {"third": 4, 'lines_filter': 1}, False)
-        self.assert_observer('Core.Custom', 'diacamma.accounting', 'thirdShow')
+        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdShow')
         self.assert_count_equal('COMPONENTS/TAB', 2)
         self.assert_count_equal('COMPONENTS/*', 16 + 7 + 4)
         self.assert_xml_equal('COMPONENTS/SELECT[@name="lines_filter"]', '1')
@@ -390,7 +390,7 @@ class ThirdTest(LucteriosTest):
         self.factory.xfer = ThirdShow()
         self.call('/diacamma.accounting/thirdShow',
                   {"third": 4, 'lines_filter': 0}, False)
-        self.assert_observer('Core.Custom', 'diacamma.accounting', 'thirdShow')
+        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdShow')
         self.assert_count_equal('COMPONENTS/TAB', 2)
         self.assert_count_equal('COMPONENTS/*', 16 + 7 + 4)
         self.assert_xml_equal('COMPONENTS/SELECT[@name="lines_filter"]', '0')
@@ -404,7 +404,7 @@ class ThirdTest(LucteriosTest):
         self.factory.xfer = ThirdShow()
         self.call('/diacamma.accounting/thirdShow',
                   {"third": 4, 'lines_filter': 2}, False)
-        self.assert_observer('Core.Custom', 'diacamma.accounting', 'thirdShow')
+        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdShow')
         self.assert_count_equal('COMPONENTS/TAB', 2)
         self.assert_count_equal('COMPONENTS/*', 16 + 7 + 4)
         self.assert_xml_equal('COMPONENTS/SELECT[@name="lines_filter"]', '2')
@@ -421,7 +421,7 @@ class ThirdTest(LucteriosTest):
         self.factory.xfer = ThirdList()
         self.call('/diacamma.accounting/thirdListing', {}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'thirdListing')
+            'core.custom', 'diacamma.accounting', 'thirdListing')
         self.assert_count_equal('COMPONENTS/*', 8)
         self.assert_count_equal('COMPONENTS/GRID[@name="third"]/HEADER', 2)
         self.assert_xml_equal(
@@ -464,7 +464,7 @@ class ThirdTest(LucteriosTest):
         self.call(
             '/diacamma.accounting/thirdListing', {'filter': 'joe'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'thirdListing')
+            'core.custom', 'diacamma.accounting', 'thirdListing')
         self.assert_count_equal('COMPONENTS/*', 8)
         self.assert_count_equal('COMPONENTS/GRID[@name="third"]/HEADER', 2)
         self.assert_xml_equal(
@@ -485,7 +485,7 @@ class ThirdTest(LucteriosTest):
         self.call(
             '/diacamma.accounting/thirdListing', {'show_filter': '1'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'thirdListing')
+            'core.custom', 'diacamma.accounting', 'thirdListing')
         self.assert_count_equal('COMPONENTS/*', 8)
         self.assert_count_equal('COMPONENTS/GRID[@name="third"]/HEADER', 3)
         self.assert_xml_equal(
@@ -518,7 +518,7 @@ class ThirdTest(LucteriosTest):
         self.call(
             '/diacamma.accounting/thirdListing', {'show_filter': '2'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'thirdListing')
+            'core.custom', 'diacamma.accounting', 'thirdListing')
         self.assert_count_equal('COMPONENTS/*', 8)
         self.assert_count_equal('COMPONENTS/GRID[@name="third"]/HEADER', 3)
         self.assert_xml_equal(
@@ -554,7 +554,7 @@ class ThirdTest(LucteriosTest):
         self.factory.xfer = ThirdListing()
         self.call('/diacamma.accounting/thirdListing', {}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'thirdListing')
+            'core.custom', 'diacamma.accounting', 'thirdListing')
         self.assert_count_equal('COMPONENTS/*', 4)
         self.assert_comp_equal(
             'COMPONENTS/SELECT[@name="PRINT_MODE"]', "3", (1, 0, 1, 1))
@@ -569,7 +569,7 @@ class ThirdTest(LucteriosTest):
         self.call('/diacamma.accounting/thirdListing',
                   {'PRINT_MODE': '4', 'MODEL': 5}, False)
         self.assert_observer(
-            'Core.Print', 'diacamma.accounting', 'thirdListing')
+            'core.print', 'diacamma.accounting', 'thirdListing')
         csv_value = b64decode(
             six.text_type(self.get_first_xpath('PRINT').text)).decode("utf-8")
         content_csv = csv_value.split('\n')
@@ -595,7 +595,7 @@ class ThirdTest(LucteriosTest):
         self.call('/diacamma.accounting/individualListing',
                   {'PRINT_MODE': '4', 'MODEL': 5, 'filter': 'joe'}, False)
         self.assert_observer(
-            'Core.Print', 'diacamma.accounting', 'individualListing')
+            'core.print', 'diacamma.accounting', 'individualListing')
         csv_value = b64decode(
             six.text_type(self.get_first_xpath('PRINT').text)).decode("utf-8")
         content_csv = csv_value.split('\n')
@@ -609,7 +609,7 @@ class ThirdTest(LucteriosTest):
         self.call('/diacamma.accounting/individualListing',
                   {'PRINT_MODE': '4', 'MODEL': 5, 'show_filter': '2'}, False)
         self.assert_observer(
-            'Core.Print', 'diacamma.accounting', 'individualListing')
+            'core.print', 'diacamma.accounting', 'individualListing')
         csv_value = b64decode(
             six.text_type(self.get_first_xpath('PRINT').text)).decode("utf-8")
         content_csv = csv_value.split('\n')
@@ -631,26 +631,26 @@ class ThirdTest(LucteriosTest):
         self.call(
             '/diacamma.accounting/thirdListing', {'show_filter': '1'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'thirdListing')
+            'core.custom', 'diacamma.accounting', 'thirdListing')
         self.assert_count_equal('COMPONENTS/GRID[@name="third"]/RECORD', 7)
 
         self.factory.xfer = ThirdDisable()
         self.call('/diacamma.accounting/thirdDisable', {}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'thirdDisable')
+            'core.custom', 'diacamma.accounting', 'thirdDisable')
         self.assert_count_equal('COMPONENTS/*', 3)
 
         self.factory.xfer = ThirdDisable()
         self.call('/diacamma.accounting/thirdDisable',
                   {'limit_date': '2015-02-18'}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'thirdDisable')
+            'core.acknowledge', 'diacamma.accounting', 'thirdDisable')
 
         self.factory.xfer = ThirdList()
         self.call(
             '/diacamma.accounting/thirdListing', {'show_filter': '1'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'thirdListing')
+            'core.custom', 'diacamma.accounting', 'thirdListing')
         self.assert_count_equal('COMPONENTS/GRID[@name="third"]/RECORD', 4)
 
 
@@ -664,7 +664,7 @@ class AdminTest(LucteriosTest):
     def test_summary(self):
         self.factory.xfer = StatusMenu()
         self.call('/CORE/statusMenu', {}, False)
-        self.assert_observer('Core.Custom', 'CORE', 'statusMenu')
+        self.assert_observer('core.custom', 'CORE', 'statusMenu')
         self.assert_xml_equal(
             "COMPONENTS/LABELFORM[@name='accountingtitle']", "{[center]}{[u]}{[b]}Financier{[/b]}{[/u]}{[/center]}")
         self.assert_xml_equal(
@@ -676,7 +676,7 @@ class AdminTest(LucteriosTest):
         self.factory.xfer = Configuration()
         self.call('/diacamma.accounting/configuration', {}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'configuration')
+            'core.custom', 'diacamma.accounting', 'configuration')
         self.assert_count_equal('COMPONENTS/TAB', 3)
         self.assert_count_equal('COMPONENTS/*', 2 + 3 + 4 + 1 + 7)
 
@@ -722,7 +722,7 @@ class AdminTest(LucteriosTest):
         self.call(
             '/diacamma.accounting/journalAddModify', {'journal': '2'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'journalAddModify')
+            'core.custom', 'diacamma.accounting', 'journalAddModify')
         self.assert_count_equal('COMPONENTS/*', 3)
         self.assert_xml_equal('COMPONENTS/EDIT[@name="name"]', 'Achat')
 
@@ -730,7 +730,7 @@ class AdminTest(LucteriosTest):
         self.call('/diacamma.accounting/journalAddModify',
                   {'SAVE': 'YES', 'journal': '2', 'name': 'Dépense'}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'journalAddModify')
+            'core.acknowledge', 'diacamma.accounting', 'journalAddModify')
 
         self.factory.xfer = Configuration()
         self.call('/diacamma.accounting/configuration', {}, False)
@@ -742,7 +742,7 @@ class AdminTest(LucteriosTest):
         self.call('/diacamma.accounting/journalAddModify',
                   {'SAVE': 'YES', 'name': 'Caisse'}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'journalAddModify')
+            'core.acknowledge', 'diacamma.accounting', 'journalAddModify')
 
         self.factory.xfer = Configuration()
         self.call('/diacamma.accounting/configuration', {}, False)
@@ -754,14 +754,14 @@ class AdminTest(LucteriosTest):
         self.call(
             '/diacamma.accounting/journalAddModify', {'journal': '2'}, False)
         self.assert_observer(
-            'CORE.Exception', 'diacamma.accounting', 'journalAddModify')
+            'core.exception', 'diacamma.accounting', 'journalAddModify')
         self.assert_xml_equal('EXCEPTION/MESSAGE', 'journal réservé!')
 
         self.factory.xfer = JournalDel()
         self.call('/diacamma.accounting/journalAddModify',
                   {'CONFIRME': 'YES', 'journal': '6'}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'journalAddModify')
+            'core.acknowledge', 'diacamma.accounting', 'journalAddModify')
 
         self.factory.xfer = Configuration()
         self.call('/diacamma.accounting/configuration', {}, False)
@@ -775,7 +775,7 @@ class AdminTest(LucteriosTest):
         self.factory.xfer = FiscalYearAddModify()
         self.call('/diacamma.accounting/fiscalYearAddModify', {}, False)
         self.assert_observer(
-            'CORE.Exception', 'diacamma.accounting', 'fiscalYearAddModify')
+            'core.exception', 'diacamma.accounting', 'fiscalYearAddModify')
         self.assert_xml_equal(
             'EXCEPTION/MESSAGE', "Système comptable non défini!")
 
@@ -784,7 +784,7 @@ class AdminTest(LucteriosTest):
         self.factory.xfer = FiscalYearAddModify()
         self.call('/diacamma.accounting/fiscalYearAddModify', {}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'fiscalYearAddModify')
+            'core.custom', 'diacamma.accounting', 'fiscalYearAddModify')
         self.assert_count_equal('COMPONENTS/*', 7)
         self.assert_xml_equal(
             'COMPONENTS/LABELFORM[@name="status"]', 'en création')
@@ -797,12 +797,12 @@ class AdminTest(LucteriosTest):
         self.call('/diacamma.accounting/fiscalYearAddModify',
                   {'SAVE': 'YES', 'begin': '2015-07-01', 'end': '2016-06-30'}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'fiscalYearAddModify')
+            'core.acknowledge', 'diacamma.accounting', 'fiscalYearAddModify')
 
         self.factory.xfer = Configuration()
         self.call('/diacamma.accounting/configuration', {}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'configuration')
+            'core.custom', 'diacamma.accounting', 'configuration')
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="fiscalyear"]/HEADER', 4)
         self.assert_count_equal(
@@ -821,7 +821,7 @@ class AdminTest(LucteriosTest):
         self.factory.xfer = FiscalYearAddModify()
         self.call('/diacamma.accounting/fiscalYearAddModify', {}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'fiscalYearAddModify')
+            'core.custom', 'diacamma.accounting', 'fiscalYearAddModify')
         self.assert_count_equal('COMPONENTS/*', 7)
         self.assert_xml_equal("CONTEXT/PARAM[@name='begin']", "2016-07-01")
         self.assert_xml_equal(
@@ -834,12 +834,12 @@ class AdminTest(LucteriosTest):
         self.call('/diacamma.accounting/fiscalYearAddModify',
                   {'SAVE': 'YES', 'begin': '2016-07-01', 'end': '2017-06-30'}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'fiscalYearAddModify')
+            'core.acknowledge', 'diacamma.accounting', 'fiscalYearAddModify')
 
         self.factory.xfer = Configuration()
         self.call('/diacamma.accounting/configuration', {}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'configuration')
+            'core.custom', 'diacamma.accounting', 'configuration')
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="fiscalyear"]/HEADER', 4)
         self.assert_count_equal(
@@ -859,12 +859,12 @@ class AdminTest(LucteriosTest):
         self.call(
             '/diacamma.accounting/fiscalYearActive', {'fiscalyear': '2'}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'fiscalYearActive')
+            'core.acknowledge', 'diacamma.accounting', 'fiscalYearActive')
 
         self.factory.xfer = Configuration()
         self.call('/diacamma.accounting/configuration', {}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'configuration')
+            'core.custom', 'diacamma.accounting', 'configuration')
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="fiscalyear"]/RECORD', 2)
         self.assert_xml_equal(
@@ -876,7 +876,7 @@ class AdminTest(LucteriosTest):
         self.call(
             '/diacamma.accounting/fiscalYearAddModify', {'fiscalyear': '1'}, False)
         self.assert_observer(
-            'CORE.Exception', 'diacamma.accounting', 'fiscalYearAddModify')
+            'core.exception', 'diacamma.accounting', 'fiscalYearAddModify')
         self.assert_xml_equal(
             'EXCEPTION/MESSAGE', "Cet exercice n'est pas le dernier!")
 
@@ -884,7 +884,7 @@ class AdminTest(LucteriosTest):
         self.call(
             '/diacamma.accounting/fiscalYearAddModify', {'fiscalyear': '2'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'fiscalYearAddModify')
+            'core.custom', 'diacamma.accounting', 'fiscalYearAddModify')
         self.assert_count_equal('COMPONENTS/*', 7)
         self.assert_xml_equal(
             'COMPONENTS/LABELFORM[@name="status"]', 'en création')
@@ -907,7 +907,7 @@ class AdminTest(LucteriosTest):
         self.factory.xfer = Configuration()
         self.call('/diacamma.accounting/configuration', {}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'configuration')
+            'core.custom', 'diacamma.accounting', 'configuration')
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="fiscalyear"]/RECORD', 3)
 
@@ -915,7 +915,7 @@ class AdminTest(LucteriosTest):
         self.call(
             '/diacamma.accounting/fiscalYearDel', {'fiscalyear': '1'}, False)
         self.assert_observer(
-            'CORE.Exception', 'diacamma.accounting', 'fiscalYearDel')
+            'core.exception', 'diacamma.accounting', 'fiscalYearDel')
         self.assert_xml_equal(
             'EXCEPTION/MESSAGE', "Cet exercice n'est pas le dernier!")
 
@@ -923,7 +923,7 @@ class AdminTest(LucteriosTest):
         self.call(
             '/diacamma.accounting/fiscalYearDel', {'fiscalyear': '2'}, False)
         self.assert_observer(
-            'CORE.Exception', 'diacamma.accounting', 'fiscalYearDel')
+            'core.exception', 'diacamma.accounting', 'fiscalYearDel')
         self.assert_xml_equal(
             'EXCEPTION/MESSAGE', "Cet exercice n'est pas le dernier!")
 
@@ -931,12 +931,12 @@ class AdminTest(LucteriosTest):
         self.call('/diacamma.accounting/fiscalYearDel',
                   {'CONFIRME': 'YES', 'fiscalyear': '3'}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'fiscalYearDel')
+            'core.acknowledge', 'diacamma.accounting', 'fiscalYearDel')
 
         self.factory.xfer = Configuration()
         self.call('/diacamma.accounting/configuration', {}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'configuration')
+            'core.custom', 'diacamma.accounting', 'configuration')
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="fiscalyear"]/RECORD', 2)
 
@@ -944,13 +944,13 @@ class AdminTest(LucteriosTest):
         self.call('/diacamma.accounting/fiscalYearDel',
                   {'CONFIRME': 'YES', 'fiscalyear': '2'}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'fiscalYearDel')
+            'core.acknowledge', 'diacamma.accounting', 'fiscalYearDel')
 
         self.factory.xfer = FiscalYearDel()
         self.call(
             '/diacamma.accounting/fiscalYearDel', {'fiscalyear': '1'}, False)
         self.assert_observer(
-            'CORE.Exception', 'diacamma.accounting', 'fiscalYearDel')
+            'core.exception', 'diacamma.accounting', 'fiscalYearDel')
         self.assert_xml_equal('EXCEPTION/MESSAGE', "Cet exercice est terminé!")
 
     def test_system_accounting(self):
@@ -984,7 +984,7 @@ class ModelTest(LucteriosTest):
         self.factory.xfer = ModelEntryList()
         self.call('/diacamma.accounting/modelEntryList', {}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'modelEntryList')
+            'core.custom', 'diacamma.accounting', 'modelEntryList')
         self.assert_count_equal('COMPONENTS/*', 4)
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="modelentry"]/HEADER', 3)
@@ -1000,7 +1000,7 @@ class ModelTest(LucteriosTest):
         self.factory.xfer = ModelEntryAddModify()
         self.call('/diacamma.accounting/modelEntryAddModify', {}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'modelEntryAddModify')
+            'core.custom', 'diacamma.accounting', 'modelEntryAddModify')
         self.assert_count_equal('COMPONENTS/*', 5)
         self.assert_count_equal('COMPONENTS/SELECT[@name="journal"]/CASE', 4)
 
@@ -1008,12 +1008,12 @@ class ModelTest(LucteriosTest):
         self.call('/diacamma.accounting/modelEntryAddModify',
                   {'SAVE': 'YES', 'journal': '2', 'designation': 'foo'}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'modelEntryAddModify')
+            'core.acknowledge', 'diacamma.accounting', 'modelEntryAddModify')
 
         self.factory.xfer = ModelEntryList()
         self.call('/diacamma.accounting/modelEntryList', {}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'modelEntryList')
+            'core.custom', 'diacamma.accounting', 'modelEntryList')
         self.assert_count_equal('COMPONENTS/*', 4)
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="modelentry"]/HEADER', 3)
@@ -1031,13 +1031,13 @@ class ModelTest(LucteriosTest):
         self.call('/diacamma.accounting/modelEntryAddModify',
                   {'SAVE': 'YES', 'journal': '2', 'designation': 'foo'}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'modelEntryAddModify')
+            'core.acknowledge', 'diacamma.accounting', 'modelEntryAddModify')
 
         self.factory.xfer = ModelLineEntryAddModify()
         self.call('/diacamma.accounting/modelLineEntryAddModify',
                   {'modelentry': '1'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'modelLineEntryAddModify')
+            'core.custom', 'diacamma.accounting', 'modelLineEntryAddModify')
         self.assert_count_equal('COMPONENTS/*', 7)
         self.assert_xml_equal('COMPONENTS/EDIT[@name="code"]', None)
         self.assert_xml_equal('COMPONENTS/FLOAT[@name="credit_val"]', '0.00')
@@ -1047,7 +1047,7 @@ class ModelTest(LucteriosTest):
         self.call('/diacamma.accounting/modelLineEntryAddModify',
                   {'modelentry': '1', 'code': '411'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'modelLineEntryAddModify')
+            'core.custom', 'diacamma.accounting', 'modelLineEntryAddModify')
         self.assert_count_equal('COMPONENTS/*', 9)
         self.assert_xml_equal('COMPONENTS/EDIT[@name="code"]', '411')
         self.assert_xml_equal('COMPONENTS/SELECT[@name="third"]', '0')
@@ -1059,12 +1059,12 @@ class ModelTest(LucteriosTest):
                   {'SAVE': 'YES', 'model': '1', 'modelentry': '1', 'code': '411', 'third': '3', 'credit_val': '19.37', 'debit_val': '0.0'}, False)
 
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'modelLineEntryAddModify')
+            'core.acknowledge', 'diacamma.accounting', 'modelLineEntryAddModify')
 
         self.factory.xfer = ModelEntryList()
         self.call('/diacamma.accounting/modelEntryList', {}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'modelEntryList')
+            'core.custom', 'diacamma.accounting', 'modelEntryList')
         self.assert_count_equal('COMPONENTS/*', 4)
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="modelentry"]/HEADER', 3)
@@ -1082,7 +1082,7 @@ class ModelTest(LucteriosTest):
         self.factory.xfer = ModelEntrySelector()
         self.call('/diacamma.accounting/modelEntrySelector', {}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'modelEntrySelector')
+            'core.custom', 'diacamma.accounting', 'modelEntrySelector')
         self.assert_count_equal('COMPONENTS/*', 5)
         self.assert_count_equal('COMPONENTS/SELECT[@name="model"]/CASE', 2)
         self.assert_xml_equal('COMPONENTS/FLOAT[@name="factor"]', '1.00')
@@ -1091,7 +1091,7 @@ class ModelTest(LucteriosTest):
         self.call(
             '/diacamma.accounting/modelEntrySelector', {'journal': 2}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'modelEntrySelector')
+            'core.custom', 'diacamma.accounting', 'modelEntrySelector')
         self.assert_count_equal('COMPONENTS/*', 5)
         self.assert_count_equal('COMPONENTS/SELECT[@name="model"]/CASE', 1)
         self.assert_xml_equal('COMPONENTS/FLOAT[@name="factor"]', '1.00')
@@ -1102,7 +1102,7 @@ class ModelTest(LucteriosTest):
         self.call('/diacamma.accounting/modelEntrySelector',
                   {'SAVE': 'YES', 'journal': '2', 'model': 1, 'factor': 2.50}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'modelEntrySelector')
+            'core.acknowledge', 'diacamma.accounting', 'modelEntrySelector')
         self.assert_count_equal("CONTEXT/*", 2)
         self.assert_xml_equal("CONTEXT/PARAM[@name='entryaccount']", "1")
         self.assert_xml_equal("CONTEXT/PARAM[@name='journal']", "2")

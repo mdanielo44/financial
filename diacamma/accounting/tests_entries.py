@@ -55,7 +55,7 @@ class EntryTest(LucteriosTest):
         self.factory.xfer = EntryLineAccountList()
         self.call('/diacamma.accounting/entryLineAccountList', {}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'entryLineAccountList')
+            'core.custom', 'diacamma.accounting', 'entryLineAccountList')
         self.assert_count_equal('COMPONENTS/*', 11)
         self.assert_xml_equal("COMPONENTS/SELECT[@name='year']", '1')
         self.assert_count_equal("COMPONENTS/SELECT[@name='year']/CASE", 1)
@@ -75,7 +75,7 @@ class EntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryAccountEdit',
                   {'year': '1', 'journal': '2'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'entryAccountEdit')
+            'core.custom', 'diacamma.accounting', 'entryAccountEdit')
         self.assert_count_equal('COMPONENTS/*', 10)
         self.assert_xml_equal("COMPONENTS/SELECT[@name='journal']", '2')
         self.assert_xml_equal(
@@ -90,7 +90,7 @@ class EntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryAccountEdit', {'SAVE': 'YES', 'year': '1', 'journal': '2',
                                                             'date_value': '2015-02-13', 'designation': 'un plein cadie'}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'entryAccountEdit')
+            'core.acknowledge', 'diacamma.accounting', 'entryAccountEdit')
         self.assert_attrib_equal(
             "ACTION", "id", "diacamma.accounting/entryAccountAfterSave")
         self.assert_count_equal("ACTION/PARAM", 1)
@@ -108,7 +108,7 @@ class EntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryAccountAfterSave', {'SAVE': 'YES', 'year': '1', 'journal': '2',
                                                                  'date_value': '2015-02-13', 'designation': 'un plein cadie', 'entryaccount': "1"}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'entryAccountAfterSave')
+            'core.acknowledge', 'diacamma.accounting', 'entryAccountAfterSave')
         self.assert_attrib_equal(
             "ACTION", "id", "diacamma.accounting/entryAccountEdit")
         self.assert_count_equal("ACTION/PARAM", 0)
@@ -122,14 +122,14 @@ class EntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryAccountEdit', {'SAVE': 'YES', 'year': '1', 'journal': '2',
                                                             'date_value': '2017-04-20', 'designation': 'Truc'}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'entryAccountEdit')
+            'core.acknowledge', 'diacamma.accounting', 'entryAccountEdit')
         self.assert_xml_equal("ACTION/PARAM[@name='entryaccount']", "1")
 
         self.factory.xfer = EntryAccountEdit()
         self.call('/diacamma.accounting/entryAccountEdit',
                   {'year': '1', 'journal': '2', 'entryaccount': '1'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'entryAccountEdit')
+            'core.custom', 'diacamma.accounting', 'entryAccountEdit')
         self.assert_count_equal('COMPONENTS/*', 22)
         self.assert_xml_equal("COMPONENTS/SELECT[@name='journal']", '2')
         self.assert_xml_equal(
@@ -140,14 +140,14 @@ class EntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryAccountEdit', {'SAVE': 'YES', 'year': '1', 'journal': '2',
                                                             'date_value': '2010-04-20', 'designation': 'Machin'}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'entryAccountEdit')
+            'core.acknowledge', 'diacamma.accounting', 'entryAccountEdit')
         self.assert_xml_equal("ACTION/PARAM[@name='entryaccount']", "2")
 
         self.factory.xfer = EntryAccountEdit()
         self.call('/diacamma.accounting/entryAccountEdit',
                   {'year': '1', 'journal': '2', 'entryaccount': '2'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'entryAccountEdit')
+            'core.custom', 'diacamma.accounting', 'entryAccountEdit')
         self.assert_count_equal('COMPONENTS/*', 22)
         self.assert_xml_equal("COMPONENTS/SELECT[@name='journal']", '2')
         self.assert_xml_equal(
@@ -159,13 +159,13 @@ class EntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryAccountEdit', {'SAVE': 'YES', 'year': '1', 'journal': '2',
                                                             'date_value': '2015-02-13', 'designation': 'un plein cadie'}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'entryAccountEdit')
+            'core.acknowledge', 'diacamma.accounting', 'entryAccountEdit')
 
         self.factory.xfer = EntryAccountEdit()
         self.call('/diacamma.accounting/entryAccountEdit',
                   {'year': '1', 'journal': '2', 'entryaccount': '1'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'entryAccountEdit')
+            'core.custom', 'diacamma.accounting', 'entryAccountEdit')
         self.assert_count_equal('COMPONENTS/*', 22)
 
         self.assert_xml_equal("COMPONENTS/SELECT[@name='journal']", '2')
@@ -188,7 +188,7 @@ class EntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryAccountEdit',
                   {'year': '1', 'journal': '2', 'entryaccount': '1', 'num_cpt_txt': '401'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'entryAccountEdit')
+            'core.custom', 'diacamma.accounting', 'entryAccountEdit')
         self.assert_count_equal('COMPONENTS/*', 25)
 
         self.assert_xml_equal("COMPONENTS/EDIT[@name='num_cpt_txt']", '401')
@@ -206,7 +206,7 @@ class EntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryLineAccountAddModify', {'year': '1', 'journal': '2', 'entryaccount': '1', 'num_cpt_txt': '401',
                                                                      'num_cpt': '4', 'third': 0, 'debit_val': '0.0', 'credit_val': '152.34'}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'entryLineAccountAddModify')
+            'core.acknowledge', 'diacamma.accounting', 'entryLineAccountAddModify')
         self.assert_attrib_equal(
             "ACTION", "id", "diacamma.accounting/entryAccountEdit")
         self.assert_count_equal("ACTION/PARAM", 1)
@@ -221,7 +221,7 @@ class EntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryAccountEdit',
                   {'year': '1', 'journal': '2', 'entryaccount': '1', 'serial_entry': "-1|4|0|152.340000|None|"}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'entryAccountEdit')
+            'core.custom', 'diacamma.accounting', 'entryAccountEdit')
         self.assert_count_equal('COMPONENTS/*', 22)
 
         self.assert_count_equal(
@@ -241,13 +241,13 @@ class EntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryAccountEdit', {'SAVE': 'YES', 'year': '1', 'journal': '2',
                                                             'date_value': '2015-02-13', 'designation': 'un plein cadie'}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'entryAccountEdit')
+            'core.acknowledge', 'diacamma.accounting', 'entryAccountEdit')
 
         self.factory.xfer = EntryAccountEdit()
         self.call('/diacamma.accounting/entryAccountEdit',
                   {'year': '1', 'journal': '2', 'entryaccount': '1', 'serial_entry': "-1|4|0|152.340000|None|", 'num_cpt_txt': '60'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'entryAccountEdit')
+            'core.custom', 'diacamma.accounting', 'entryAccountEdit')
         self.assert_count_equal('COMPONENTS/*', 23)
 
         self.assert_count_equal(
@@ -263,7 +263,7 @@ class EntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryLineAccountAddModify', {'year': '1', 'journal': '2', 'entryaccount': '1', 'serial_entry': "-1|4|0|152.340000|None|",
                                                                      'num_cpt_txt': '60', 'num_cpt': '12', 'debit_val': '152.34', 'credit_val': '0.0'}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'entryLineAccountAddModify')
+            'core.acknowledge', 'diacamma.accounting', 'entryLineAccountAddModify')
         self.assert_attrib_equal(
             "ACTION", "id", "diacamma.accounting/entryAccountEdit")
         self.assert_count_equal("ACTION/PARAM", 1)
@@ -280,7 +280,7 @@ class EntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryAccountEdit',
                   {'year': '1', 'journal': '2', 'entryaccount': '1', 'serial_entry': "-1|4|0|152.340000|None|\n-2|12|0|152.340000|None|"}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'entryAccountEdit')
+            'core.custom', 'diacamma.accounting', 'entryAccountEdit')
         self.assert_count_equal('COMPONENTS/*', 22)
 
         self.assert_count_equal(
@@ -311,13 +311,13 @@ class EntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryAccountEdit', {'SAVE': 'YES', 'year': '1', 'journal': '2',
                                                             'date_value': '2015-02-13', 'designation': 'un plein cadie'}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'entryAccountEdit')
+            'core.acknowledge', 'diacamma.accounting', 'entryAccountEdit')
 
         self.factory.xfer = EntryLineAccountEdit()
         self.call('/diacamma.accounting/entryLineAccountEdit', {'year': '1', 'journal': '2', 'entryaccount': '1',
                                                                 'serial_entry': "-1|4|0|152.340000|None|\n-2|12|0|152.340000|None|", 'entrylineaccount_serial': '-1'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'entryLineAccountEdit')
+            'core.custom', 'diacamma.accounting', 'entryLineAccountEdit')
         self.assert_count_equal('COMPONENTS/*', 9)
 
         self.assert_xml_equal(
@@ -336,7 +336,7 @@ class EntryTest(LucteriosTest):
                                                                      'serial_entry': "-1|4|0|152.340000|None|\n-2|12|0|152.340000|None|", 'debit_val': '0.0',
                                                                      'credit_val': '152.34', 'entrylineaccount_serial': '-1', 'third': '3', 'num_cpt': '4'}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'entryLineAccountAddModify')
+            'core.acknowledge', 'diacamma.accounting', 'entryLineAccountAddModify')
         self.assert_attrib_equal(
             "ACTION", "id", "diacamma.accounting/entryAccountEdit")
         self.assert_count_equal("ACTION/PARAM", 1)
@@ -353,7 +353,7 @@ class EntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryAccountEdit',
                   {'year': '1', 'journal': '2', 'entryaccount': '1', 'serial_entry': "-2|12|0|152.340000|None|\n-3|4|3|152.340000|None|"}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'entryAccountEdit')
+            'core.custom', 'diacamma.accounting', 'entryAccountEdit')
         self.assert_count_equal('COMPONENTS/*', 22)
 
         self.assert_count_equal(
@@ -382,7 +382,7 @@ class EntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryLineAccountEdit', {'year': '1', 'journal': '2', 'entryaccount': '1',
                                                                 'serial_entry': "-1|4|3|152.340000|None|\n-2|12|0|152.340000|None|", 'entrylineaccount_serial': '-1'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'entryLineAccountEdit')
+            'core.custom', 'diacamma.accounting', 'entryLineAccountEdit')
         self.assert_count_equal('COMPONENTS/*', 9)
 
         self.assert_xml_equal(
@@ -401,18 +401,18 @@ class EntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryAccountEdit', {'SAVE': 'YES', 'year': '1', 'journal': '2',
                                                             'date_value': '2015-02-13', 'designation': 'un plein cadie'}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'entryAccountEdit')
+            'core.acknowledge', 'diacamma.accounting', 'entryAccountEdit')
         self.factory.xfer = EntryAccountValidate()
         self.call('/diacamma.accounting/entryAccountValidate',
                   {'year': '1', 'journal': '2', 'entryaccount': '1', 'serial_entry': "-2|12|0|152.340000|None|\n-3|4|3|152.340000|None|"}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'entryAccountValidate')
+            'core.acknowledge', 'diacamma.accounting', 'entryAccountValidate')
 
         self.factory.xfer = EntryLineAccountList()
         self.call('/diacamma.accounting/entryLineAccountList',
                   {'year': '1', 'journal': '2', 'filter': '0'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'entryLineAccountList')
+            'core.custom', 'diacamma.accounting', 'entryLineAccountList')
         self.assert_count_equal('COMPONENTS/*', 11)
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/HEADER', 9)
@@ -457,7 +457,7 @@ class EntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryAccountOpenFromLine',
                   {'year': '1', 'journal': '2', 'filter': '0', 'entrylineaccount': '2'}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'entryAccountOpenFromLine')
+            'core.acknowledge', 'diacamma.accounting', 'entryAccountOpenFromLine')
         self.assert_attrib_equal(
             "ACTION", "id", "diacamma.accounting/entryAccountEdit")
         self.assert_count_equal("ACTION/PARAM", 1)
@@ -471,13 +471,13 @@ class EntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryAccountClose',
                   {'CONFIRME': 'YES', 'year': '1', 'journal': '2', "entrylineaccount": "1"}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'entryAccountClose')
+            'core.acknowledge', 'diacamma.accounting', 'entryAccountClose')
 
         self.factory.xfer = EntryLineAccountList()
         self.call('/diacamma.accounting/entryLineAccountList',
                   {'year': '1', 'journal': '2', 'filter': '0'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'entryLineAccountList')
+            'core.custom', 'diacamma.accounting', 'entryLineAccountList')
         self.assert_count_equal('COMPONENTS/*', 11)
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/HEADER', 9)
@@ -522,7 +522,7 @@ class EntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryAccountOpenFromLine',
                   {'year': '1', 'journal': '2', 'filter': '0', 'entrylineaccount': '2'}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'entryAccountOpenFromLine')
+            'core.acknowledge', 'diacamma.accounting', 'entryAccountOpenFromLine')
         self.assert_attrib_equal(
             "ACTION", "id", "diacamma.accounting/entryAccountShow")
         self.assert_count_equal("ACTION/PARAM", 1)
@@ -536,7 +536,7 @@ class EntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryAccountShow',
                   {'year': '1', 'journal': '2', 'filter': '0', 'entryaccount': '1'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'entryAccountShow')
+            'core.custom', 'diacamma.accounting', 'entryAccountShow')
         self.assert_count_equal('COMPONENTS/*', 17)
         self.assert_xml_equal("COMPONENTS/LABELFORM[@name='num']", '1')
         self.assert_xml_equal("COMPONENTS/LABELFORM[@name='journal']", 'Achat')
@@ -559,18 +559,18 @@ class EntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryAccountEdit', {'SAVE': 'YES', 'year': '1', 'journal': '2',
                                                             'date_value': '2015-02-13', 'designation': 'un plein cadie'}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'entryAccountEdit')
+            'core.acknowledge', 'diacamma.accounting', 'entryAccountEdit')
         self.factory.xfer = EntryAccountValidate()
         self.call('/diacamma.accounting/entryAccountValidate',
                   {'year': '1', 'journal': '2', 'entryaccount': '1', 'serial_entry': "-2|12|0|152.340000|None|\n-3|4|3|152.340000|None|"}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'entryAccountValidate')
+            'core.acknowledge', 'diacamma.accounting', 'entryAccountValidate')
 
         self.factory.xfer = EntryAccountEdit()
         self.call('/diacamma.accounting/entryAccountEdit',
                   {'year': '1', 'journal': '2', 'entryaccount': '1'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'entryAccountEdit')
+            'core.custom', 'diacamma.accounting', 'entryAccountEdit')
         self.assert_count_equal('COMPONENTS/*', 22)
 
         self.assert_count_equal('ACTIONS/ACTION', 3)
@@ -583,13 +583,13 @@ class EntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryAccountReverse',
                   {'year': '1', 'journal': '2', 'entryaccount': '1'}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'entryAccountReverse')
+            'core.acknowledge', 'diacamma.accounting', 'entryAccountReverse')
 
         self.factory.xfer = EntryAccountEdit()
         self.call('/diacamma.accounting/entryAccountEdit',
                   {'year': '1', 'journal': '2', 'entryaccount': '1'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'entryAccountEdit')
+            'core.custom', 'diacamma.accounting', 'entryAccountEdit')
         self.assert_count_equal('COMPONENTS/*', 23)
 
         self.assert_xml_equal(
@@ -600,18 +600,18 @@ class EntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryAccountEdit', {'SAVE': 'YES', 'year': '1', 'journal': '2',
                                                             'date_value': '2015-02-13', 'designation': 'un plein cadie'}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'entryAccountEdit')
+            'core.acknowledge', 'diacamma.accounting', 'entryAccountEdit')
         self.factory.xfer = EntryAccountValidate()
         self.call('/diacamma.accounting/entryAccountValidate',
                   {'year': '1', 'journal': '2', 'entryaccount': '1', 'serial_entry': "-2|12|0|152.340000|None|\n-3|4|3|152.340000|None|"}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'entryAccountValidate')
+            'core.acknowledge', 'diacamma.accounting', 'entryAccountValidate')
 
         self.factory.xfer = EntryAccountCreateLinked()
         self.call('/diacamma.accounting/entryAccountCreateLinked',
                   {'year': '1', 'journal': '2', 'entryaccount': '1'}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'entryAccountCreateLinked')
+            'core.acknowledge', 'diacamma.accounting', 'entryAccountCreateLinked')
         self.assert_attrib_equal(
             "ACTION", "id", "diacamma.accounting/entryAccountEdit")
         self.assert_count_equal("ACTION/PARAM", 4)
@@ -629,7 +629,7 @@ class EntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryAccountEdit', {'year': '1', 'journal': '4', 'entryaccount': '2',
                                                             'serial_entry': "-3|4|3|-152.340000|None|", 'num_cpt_txt': '5'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'entryAccountEdit')
+            'core.custom', 'diacamma.accounting', 'entryAccountEdit')
         self.assert_count_equal('COMPONENTS/*', 28)
         self.assert_xml_equal("COMPONENTS/SELECT[@name='journal']", '4')
         self.assert_xml_equal(
@@ -699,7 +699,7 @@ class EntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryAccountEdit', {'year': '1', 'journal': '2', 'entryaccount': '2',
                                                             'serial_entry': "-3|4|3|-152.340000|None|\n-4|2|0|-152.340000|Ch N°12345|"}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'entryAccountEdit')
+            'core.custom', 'diacamma.accounting', 'entryAccountEdit')
         self.assert_count_equal('COMPONENTS/*', 25)
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD', 2)
@@ -725,13 +725,13 @@ class EntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryAccountValidate',
                   {'year': '1', 'journal': '2', 'entryaccount': '2', 'serial_entry': "-3|4|3|-152.340000|None||\n-4|2|0|-152.340000|Ch N°12345|"}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'entryAccountValidate')
+            'core.acknowledge', 'diacamma.accounting', 'entryAccountValidate')
 
         self.factory.xfer = EntryLineAccountList()
         self.call('/diacamma.accounting/entryLineAccountList',
                   {'year': '1', 'journal': '-1', 'filter': '0'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'entryLineAccountList')
+            'core.custom', 'diacamma.accounting', 'entryLineAccountList')
         self.assert_count_equal('COMPONENTS/*', 11)
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/HEADER', 9)
@@ -809,12 +809,12 @@ class EntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryAccountEdit', {'SAVE': 'YES', 'year': '1', 'journal': '2',
                                                             'date_value': '2015-02-13', 'designation': 'un plein cadie'}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'entryAccountEdit')
+            'core.acknowledge', 'diacamma.accounting', 'entryAccountEdit')
         self.factory.xfer = EntryAccountValidate()
         self.call('/diacamma.accounting/entryAccountValidate',
                   {'year': '1', 'journal': '2', 'entryaccount': '1', 'serial_entry': "-2|12|0|152.340000|None|\n-3|4|3|152.340000|None|"}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'entryAccountValidate')
+            'core.acknowledge', 'diacamma.accounting', 'entryAccountValidate')
 
         self.assertEqual(
             1, EntryAccount.objects.all().count())
@@ -823,7 +823,7 @@ class EntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryAccountCreateLinked',
                   {'year': '1', 'journal': '2', 'entryaccount': '1'}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'entryAccountCreateLinked')
+            'core.acknowledge', 'diacamma.accounting', 'entryAccountCreateLinked')
         self.assert_attrib_equal(
             "ACTION", "id", "diacamma.accounting/entryAccountEdit")
         self.assert_count_equal("ACTION/PARAM", 4)
@@ -838,14 +838,14 @@ class EntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryAccountEdit', {'year': '1', 'journal': '4', 'entryaccount': '2',
                                                             'serial_entry': "-3|4|3|-152.340000|None|", 'num_cpt_txt': '5'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'entryAccountEdit')
+            'core.custom', 'diacamma.accounting', 'entryAccountEdit')
         self.assert_count_equal('COMPONENTS/*', 28)
 
         self.factory.xfer = EntryAccountUnlock()
         self.call('/diacamma.accounting/entryAccountUnlock', {'year': '1', 'journal': '4', 'entryaccount': '2',
                                                               'serial_entry': "-3|4|3|-152.340000|None|", 'num_cpt_txt': '5'}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'entryAccountUnlock')
+            'core.acknowledge', 'diacamma.accounting', 'entryAccountUnlock')
 
         self.assertEqual(
             1, EntryAccount.objects.all().count())
@@ -854,7 +854,7 @@ class EntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryLineAccountList',
                   {'year': '1', 'journal': '-1', 'filter': '0'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'entryLineAccountList')
+            'core.custom', 'diacamma.accounting', 'entryLineAccountList')
         self.assert_count_equal('COMPONENTS/*', 11)
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/HEADER', 9)
@@ -898,29 +898,29 @@ class EntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryAccountEdit', {'SAVE': 'YES', 'year': '1', 'journal': '2',
                                                             'date_value': '2015-04-27', 'designation': 'Une belle facture'}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'entryAccountEdit')
+            'core.acknowledge', 'diacamma.accounting', 'entryAccountEdit')
         self.factory.xfer = EntryAccountValidate()
         self.call('/diacamma.accounting/entryAccountValidate',
                   {'year': '1', 'journal': '2', 'entryaccount': '1', 'serial_entry': "-6|9|0|364.91|None|\n-7|1|5|364.91|None|"}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'entryAccountValidate')
+            'core.acknowledge', 'diacamma.accounting', 'entryAccountValidate')
 
         self.factory.xfer = EntryAccountEdit()
         self.call('/diacamma.accounting/entryAccountEdit', {'SAVE': 'YES', 'year': '1', 'journal': '4',
                                                             'date_value': '2015-05-03', 'designation': 'Règlement de belle facture'}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'entryAccountEdit')
+            'core.acknowledge', 'diacamma.accounting', 'entryAccountEdit')
         self.factory.xfer = EntryAccountValidate()
         self.call('/diacamma.accounting/entryAccountValidate',
                   {'year': '1', 'journal': '4', 'entryaccount': '2', 'serial_entry': "-9|1|5|-364.91|None|\n-8|2|0|364.91|BP N°987654|"}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'entryAccountValidate')
+            'core.acknowledge', 'diacamma.accounting', 'entryAccountValidate')
 
         self.factory.xfer = EntryLineAccountList()
         self.call('/diacamma.accounting/entryLineAccountList',
                   {'year': '1', 'journal': '-1', 'filter': '0'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'entryLineAccountList')
+            'core.custom', 'diacamma.accounting', 'entryLineAccountList')
         self.assert_count_equal('COMPONENTS/*', 11)
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/HEADER', 9)
@@ -997,12 +997,12 @@ class EntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryAccountValidate',
                   {'year': '1', 'journal': '-1', 'filter': '0', 'entrylineaccount': '1;4'}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'entryAccountValidate')
+            'core.acknowledge', 'diacamma.accounting', 'entryAccountValidate')
         self.factory.xfer = EntryLineAccountList()
         self.call('/diacamma.accounting/entryLineAccountList',
                   {'year': '1', 'journal': '-1', 'filter': '0'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'entryLineAccountList')
+            'core.custom', 'diacamma.accounting', 'entryLineAccountList')
         self.assert_count_equal('COMPONENTS/*', 11)
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/HEADER', 9)
@@ -1021,12 +1021,12 @@ class EntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryAccountLink',
                   {'CONFIRME': 'YES', 'year': '1', 'journal': '-1', 'filter': '0', 'entrylineaccount': '2'}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'entryAccountLink')
+            'core.acknowledge', 'diacamma.accounting', 'entryAccountLink')
         self.factory.xfer = EntryLineAccountList()
         self.call('/diacamma.accounting/entryLineAccountList',
                   {'year': '1', 'journal': '-1', 'filter': '0'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'entryLineAccountList')
+            'core.custom', 'diacamma.accounting', 'entryLineAccountList')
         self.assert_count_equal('COMPONENTS/*', 11)
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/HEADER', 9)
@@ -1046,18 +1046,18 @@ class EntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryAccountEdit', {'SAVE': 'YES', 'year': '1', 'journal': '2',
                                                             'date_value': '2015-04-27', 'designation': 'Une belle facture'}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'entryAccountEdit')
+            'core.acknowledge', 'diacamma.accounting', 'entryAccountEdit')
         self.factory.xfer = EntryAccountValidate()
         self.call('/diacamma.accounting/entryAccountValidate',
                   {'year': '1', 'journal': '2', 'entryaccount': '1', 'serial_entry': "-6|9|0|364.91|None|\n-7|1|5|364.91|None|"}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'entryAccountValidate')
+            'core.acknowledge', 'diacamma.accounting', 'entryAccountValidate')
 
         self.factory.xfer = EntryAccountEdit()
         self.call('/diacamma.accounting/entryAccountEdit',
                   {'year': '1', 'journal': '2', 'entryaccount': '1'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'entryAccountEdit')
+            'core.custom', 'diacamma.accounting', 'entryAccountEdit')
         self.assert_count_equal('COMPONENTS/*', 22)
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD', 2)
@@ -1067,7 +1067,7 @@ class EntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryLineAccountDel', {'year': '1', 'journal': '2', 'entryaccount': '1',
                                                                'serial_entry': "1|9|0|364.91|None|\n2|1|5|364.91|None|", "entrylineaccount_serial": '2'}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'entryLineAccountDel')
+            'core.acknowledge', 'diacamma.accounting', 'entryLineAccountDel')
         self.assert_attrib_equal(
             "ACTION", "id", "diacamma.accounting/entryAccountEdit")
         self.assert_count_equal("ACTION/PARAM", 1)
@@ -1082,7 +1082,7 @@ class EntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryAccountEdit',
                   {'year': '1', 'journal': '2', 'entryaccount': '1', "entrylineaccount_serial": '2', 'serial_entry': "1|9|0|364.91|None|"}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'entryAccountEdit')
+            'core.custom', 'diacamma.accounting', 'entryAccountEdit')
         self.assert_count_equal('COMPONENTS/*', 22)
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD', 1)
@@ -1093,35 +1093,35 @@ class EntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryAccountEdit', {'SAVE': 'YES', 'year': '1', 'journal': '2',
                                                             'date_value': '2015-04-27', 'designation': 'Une belle facture'}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'entryAccountEdit')
+            'core.acknowledge', 'diacamma.accounting', 'entryAccountEdit')
         self.factory.xfer = EntryAccountValidate()
         self.call('/diacamma.accounting/entryAccountValidate',
                   {'year': '1', 'journal': '2', 'entryaccount': '1', 'serial_entry': "-6|9|0|364.91|None|\n-7|1|5|364.91|None|"}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'entryAccountValidate')
+            'core.acknowledge', 'diacamma.accounting', 'entryAccountValidate')
 
         self.factory.xfer = EntryAccountEdit()
         self.call('/diacamma.accounting/entryAccountEdit', {'SAVE': 'YES', 'year': '1', 'journal': '4',
                                                             'date_value': '2015-05-03', 'designation': 'Règlement de belle facture'}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'entryAccountEdit')
+            'core.acknowledge', 'diacamma.accounting', 'entryAccountEdit')
         self.factory.xfer = EntryAccountValidate()
         self.call('/diacamma.accounting/entryAccountValidate',
                   {'year': '1', 'journal': '4', 'entryaccount': '2', 'serial_entry': "-9|1|5|-364.91|None|\n-8|2|0|364.91|BP N°987654|"}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'entryAccountValidate')
+            'core.acknowledge', 'diacamma.accounting', 'entryAccountValidate')
 
         self.factory.xfer = EntryAccountLink()
         self.call('/diacamma.accounting/entryAccountLink',
                   {'year': '1', 'journal': '-1', 'filter': '0', 'entrylineaccount': '2;4'}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'entryAccountLink')
+            'core.acknowledge', 'diacamma.accounting', 'entryAccountLink')
 
         self.factory.xfer = EntryLineAccountList()
         self.call('/diacamma.accounting/entryLineAccountList',
                   {'year': '1', 'journal': '-1', 'filter': '0'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'entryLineAccountList')
+            'core.custom', 'diacamma.accounting', 'entryLineAccountList')
         self.assert_count_equal('COMPONENTS/*', 11)
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/HEADER', 9)
@@ -1148,19 +1148,19 @@ class EntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryAccountDel',
                   {'CONFIRME': 'YES', 'year': '1', 'journal': '-1', 'filter': '0', 'entrylineaccount': '2'}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'entryAccountDel')
+            'core.acknowledge', 'diacamma.accounting', 'entryAccountDel')
 
         self.factory.xfer = EntryAccountClose()
         self.call('/diacamma.accounting/entryAccountClose',
                   {'CONFIRME': 'YES', 'year': '1', 'journal': '-1', 'filter': '0', "entrylineaccount": "3"}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'entryAccountClose')
+            'core.acknowledge', 'diacamma.accounting', 'entryAccountClose')
 
         self.factory.xfer = EntryLineAccountList()
         self.call('/diacamma.accounting/entryLineAccountList',
                   {'year': '1', 'journal': '-1', 'filter': '0'}, False)
         self.assert_observer(
-            'Core.Custom', 'diacamma.accounting', 'entryLineAccountList')
+            'core.custom', 'diacamma.accounting', 'entryLineAccountList')
         self.assert_count_equal('COMPONENTS/*', 11)
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/HEADER', 9)
@@ -1197,7 +1197,7 @@ class EntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryAccountDel',
                   {'year': '1', 'journal': '-1', 'filter': '0', 'entrylineaccount': '4'}, False)
         self.assert_observer(
-            'CORE.Exception', 'diacamma.accounting', 'entryAccountDel')
+            'core.exception', 'diacamma.accounting', 'entryAccountDel')
         self.assert_xml_equal('EXCEPTION/MESSAGE', 'écriture validée!')
 
     def test_buyingselling_in_report(self):
@@ -1205,13 +1205,13 @@ class EntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryAccountEdit', {'SAVE': 'YES', 'year': '1', 'journal': '1',
                                                             'date_value': '2015-03-21', 'designation': 'mauvais report'}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'entryAccountEdit')
+            'core.acknowledge', 'diacamma.accounting', 'entryAccountEdit')
 
         self.factory.xfer = EntryLineAccountAddModify()
         self.call('/diacamma.accounting/entryLineAccountAddModify', {'year': '1', 'journal': '1', 'entryaccount': '1', 'num_cpt_txt': '70',
                                                                      'num_cpt': '9', 'third': 0, 'debit_val': '0.0', 'credit_val': '152.34'}, False)
         self.assert_observer(
-            'CORE.Exception', 'diacamma.accounting', 'entryLineAccountAddModify')
+            'core.exception', 'diacamma.accounting', 'entryLineAccountAddModify')
         self.assert_xml_equal(
             'EXCEPTION/MESSAGE', "Ce type d'écriture n'est pas permis dans ce journal")
 
@@ -1219,7 +1219,7 @@ class EntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryLineAccountAddModify', {'year': '1', 'journal': '1', 'entryaccount': '1', 'num_cpt_txt': '60',
                                                                      'num_cpt': '13', 'third': 0, 'debit_val': '0.0', 'credit_val': '152.34'}, False)
         self.assert_observer(
-            'CORE.Exception', 'diacamma.accounting', 'entryLineAccountAddModify')
+            'core.exception', 'diacamma.accounting', 'entryLineAccountAddModify')
         self.assert_xml_equal(
             'EXCEPTION/MESSAGE', "Ce type d'écriture n'est pas permis dans ce journal")
 
@@ -1227,4 +1227,4 @@ class EntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryLineAccountAddModify', {'year': '1', 'journal': '1', 'entryaccount': '1', 'num_cpt_txt': '401',
                                                                      'num_cpt': '4', 'third': 0, 'debit_val': '0.0', 'credit_val': '152.34'}, False)
         self.assert_observer(
-            'Core.Acknowledge', 'diacamma.accounting', 'entryLineAccountAddModify')
+            'core.acknowledge', 'diacamma.accounting', 'entryLineAccountAddModify')
