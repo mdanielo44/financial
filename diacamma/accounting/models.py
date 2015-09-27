@@ -345,6 +345,17 @@ class FiscalYear(LucteriosModel):
             'status'))
         return _("Fiscal year from %(begin)s to %(end)s [%(status)s]") % {'begin': get_value_converted(self.begin), 'end': get_value_converted(self.end), 'status': status}
 
+    @property
+    def letter(self):
+        nb_year = FiscalYear.objects.filter(id__lt=self.id).count()
+        letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+        res = ''
+        while nb_year >= 26:
+            div, mod = divmod(nb_year, 26)
+            res = letters[mod] + res
+            nb_year = int(div) - 1
+        return letters[nb_year] + res
+
     class Meta(object):
 
         verbose_name = _('fiscal year')
@@ -476,6 +487,14 @@ class ChartsAccount(LucteriosModel):
     def is_cash(self):
         return match(current_system_account().get_cash_mask(), self.code) is not None
 
+    @classmethod
+    def get_account(cls, code, year):
+        accounts = ChartsAccount.objects.filter(year=year, code=code)
+        if len(accounts) == 0:
+            return None
+        else:
+            return accounts[0]
+            
     class Meta(object):
 
         verbose_name = _('charts of account')
@@ -713,7 +732,6 @@ class EntryAccount(LucteriosModel):
         return self.entrylineaccount_set.filter(account__code__regex=current_system_account().get_cash_mask()).count() > 0
 
     class Meta(object):
-
         verbose_name = _('entry of account')
         verbose_name_plural = _('entries of account')
 

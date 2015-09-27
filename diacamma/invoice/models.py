@@ -28,10 +28,15 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django.utils import six
 
-from lucterios.framework.models import LucteriosModel
-from diacamma.accounting.models import FiscalYear, Third, EntryAccount,\
-    CostAccounting
+from lucterios.framework.models import LucteriosModel, get_value_if_choices, \
+    get_value_converted
+from diacamma.accounting.models import FiscalYear, Third, EntryAccount, \
+    CostAccounting, Journal, EntryLineAccount, ChartsAccount
 from django.core.validators import MaxValueValidator, MinValueValidator
+from diacamma.accounting.tools import current_system_account, format_devise, currency_round
+from django.db.models.aggregates import Max
+from lucterios.framework.error import LucteriosException, IMPORTANT
+from lucterios.CORE.parameters import Params
 
 
 class Vat(LucteriosModel):
@@ -66,11 +71,11 @@ class Article(LucteriosModel):
         Vat, verbose_name=_('vat'), null=True, default=None, on_delete=models.PROTECT)
 
     def __str__(self):
-        return "[%s] %s" % (six.text_type(self.reference), six.text_type(self.designation))
+        return six.text_type(self.reference)
 
     @classmethod
     def get_default_fields(cls):
-        return ["reference", "designation", "price", "isdisabled"]
+        return ["reference", "designation", (_('price'), "price_txt"), 'unit', "isdisabled", 'sell_account']
 
     @classmethod
     def get_edit_fields(cls):
@@ -79,6 +84,10 @@ class Article(LucteriosModel):
     @classmethod
     def get_show_fields(cls):
         return ["reference", "designation", ("price", "unit"), ("sell_account", 'vat'), "isdisabled"]
+
+    @property
+    def price_txt(self):
+        return format_devise(self.price, 5)
 
     class Meta(object):
         verbose_name = _('article')
@@ -89,26 +98,26 @@ class Bill(LucteriosModel):
     fiscal_year = models.ForeignKey(
         FiscalYear, verbose_name=_('fiscal year'), null=True, default=None, db_index=True, on_delete=models.PROTECT)
     bill_type = models.IntegerField(verbose_name=_('bill type'),
-                                    choices=((0, 'quotation'), (1, 'bill'), (2, 'asset'), (3, 'batch bill'),
-                                             (4, 'receipt')), null=True, db_index=True)
+                                    choices=((0, _('quotation')), (1, _('bill')), (2, _('asset')), (3, _('receipt'))), null=False, default=0, db_index=True)
     num = models.IntegerField(verbose_name=_('numeros'), null=True)
-    date = models.DateField(verbose_name=_('date'), null=True)
+    date = models.DateField(verbose_name=_('date'), null=False)
     third = models.ForeignKey(
         Third, verbose_name=_('third'), null=True, default=None, db_index=True, on_delete=models.PROTECT)
-    comment = models.TextField(_('comment'), default="")
+    comment = models.TextField(_('comment'), null=True, default="")
     status = models.IntegerField(verbose_name=_('status'),
-                                 choices=((0, 'building'), (1, 'valid'), (2, 'cancel'), (3, 'close')), null=True, db_index=True)
+                                 choices=((0, _('building')), (1, _('valid')), (2, _('cancel')), (3, _('archive'))), null=False, default=0, db_index=True)
     entry = models.ForeignKey(
         EntryAccount, verbose_name=_('entry'), null=True, default=None, db_index=True, on_delete=models.PROTECT)
     cost_accounting = models.ForeignKey(
         CostAccounting, verbose_name=_('cost accounting'), null=True, default=None, db_index=True, on_delete=models.PROTECT)
 
     def __str__(self):
-        return "[%s] %s %d" % (self.bill_type, self.date, self.num)
+        billtype = get_value_if_choices(self.bill_type, self.get_field_by_name('bill_type'))
+        return "%s %s - %s" % (billtype, self.num_txt, get_value_converted(self.date))
 
     @classmethod
     def get_default_fields(cls):
-        return ["bill_type", "date", "status", "num", "third"]
+        return ["bill_type", (_('numeros'), "num_txt"), "date", "third", "comment", (_('total'), 'total'), "status"]
 
     @classmethod
     def get_edit_fields(cls):
@@ -116,7 +125,109 @@ class Bill(LucteriosModel):
 
     @classmethod
     def get_show_fields(cls):
-        return [("bill_type", "status"), ("date", "num"), "third", "detail_set", "comment"]
+        return [((_('numeros'), "num_txt"), "date"), "third", "detail_set", "comment", ("status", (_('total'), 'total')), 'fiscal_year']
+
+    def get_total(self):
+        val = 0
+        for detail in self.detail_set.all():
+            val += detail.get_total()
+        return val
+
+    @property
+    def total(self):
+        return format_devise(self.get_total(), 5)
+
+    @property
+    def num_txt(self):
+        if (self.fiscal_year is None) or (self.num is None):
+            return None
+        else:
+            return "%s-%d" % (self.fiscal_year.letter, self.num)
+    
+    def get_info_state(self):
+        info = []
+        if self.status == 0:
+            if self.third is None:
+                info.append(six.text_type(_("no third selected")))
+            else:
+                accounts = self.third.accountthird_set.filter(code__regex=current_system_account().get_customer_mask())
+                if len(accounts) == 0:
+                    info.append(six.text_type(_("third has not customer account")))
+        details = self.detail_set.all()
+        if len(details) == 0:
+            info.append(six.text_type(_("no detail")))
+        else:
+            pass
+        fiscal_year = FiscalYear.get_current()
+        if (fiscal_year.begin > self.date) or (fiscal_year.end < self.date):
+            info.append(six.text_type(_("date not include in current fiscal year")))
+        return "{[br/]}".join(info)
+    
+    def can_delete(self):
+        if self.status != 0:
+            return _('"%s" cannot be deleted!') % six.text_type(self)
+        return ''
+    
+    def generate_entry(self):
+        if self.bill_type == 2:
+            is_bill = -1
+        else:
+            is_bill = 1
+        self.entry = EntryAccount.objects.create(
+                year=self.fiscal_year, date_value=self.date, designation=self.__str__(),
+                journal=Journal.objects.get(id=3))
+        accounts = self.third.accountthird_set.filter(code__regex=current_system_account().get_customer_mask())
+        if len(accounts) == 0:
+            raise LucteriosException(IMPORTANT, _("third has not customer account"))
+        third_account = ChartsAccount.get_account(accounts[0].code, self.fiscal_year)
+        if third_account is None:
+            raise LucteriosException(IMPORTANT, _("third has not customer account"))
+        EntryLineAccount.objects.create(account=third_account, amount=is_bill * self.get_total(), third=self.third, entry=self.entry)
+
+        remise_total = 0
+        detail_list = {}
+        for detail in self.detail_set.all():
+            if detail.article is not None:
+                detail_code = detail.article.sell_account
+            else:
+                detail_code = Params.getvalue("invoice-default-sell-account")
+            detail_account = ChartsAccount.get_account(detail_code, self.fiscal_year)
+            if detail_account is None:
+                raise LucteriosException(IMPORTANT, _("article has code account unknown!"))
+            if detail_account.id not in detail_list.keys():
+                detail_list[detail_account.id] = [detail_account, 0]
+            detail_list[detail_account.id][1] += currency_round(detail.price * detail.quantity)
+            remise_total += currency_round(detail.reduce)
+        if remise_total > 0.001:
+            remise_code = Params.getvalue("invoice-reduce-account")
+            remise_account = ChartsAccount.get_account(remise_code, self.fiscal_year)
+            EntryLineAccount.objects.create(account=remise_account, amount=-1 * is_bill * remise_total, entry=self.entry)
+        for detail_item in detail_list.values():
+            EntryLineAccount.objects.create(account=detail_item[0], amount=is_bill * detail_item[1], entry=self.entry)
+
+    def valid(self):
+        if self.status == 0:
+            self.fiscal_year = FiscalYear.get_current()
+            bill_list = self.fiscal_year.bill_set.filter(bill_type=self.bill_type).exclude(status=0)
+            val = bill_list.aggregate(Max('num'))
+            if val['num__max'] is None:
+                self.num = 1
+            else:
+                self.num = val['num__max'] + 1
+            self.status = 1
+            if self.bill_type != 0:
+                self.generate_entry()
+            self.save()
+
+    def cancel(self):
+        if self.status == 1:
+            self.status = 2
+            self.save()
+
+    def archive(self):
+        if self.status == 1:
+            self.status = 3
+            self.save()
 
     class Meta(object):
         verbose_name = _('bill')
@@ -127,47 +238,50 @@ class Detail(LucteriosModel):
     bill = models.ForeignKey(
         Bill, verbose_name=_('bill'), null=False, db_index=True, on_delete=models.CASCADE)
     article = models.ForeignKey(
-        Article, verbose_name=_('fiscal year'), null=True, default=None, db_index=True, on_delete=models.PROTECT)
-    designation = models.TextField(_('designation'))
-    price = models.DecimalField(_('price'), max_digits=10, decimal_places=3, default=10.0, validators=[
+        Article, verbose_name=_('article'), null=True, default=None, db_index=True, on_delete=models.PROTECT)
+    designation = models.TextField(verbose_name=_('designation'))
+    price = models.DecimalField(verbose_name=_('price'), max_digits=10, decimal_places=3, default=0.0, validators=[
         MinValueValidator(0.0), MaxValueValidator(9999999.999)])
-    unit = models.CharField(_('unit'), max_length=10)
-    quantity = models.FloatField(_('quantity'))
-    reduce = models.FloatField(_('reduce'))
+    unit = models.CharField(verbose_name=_('unit'), null=False, default='', max_length=10)
+    quantity = models.DecimalField(verbose_name=_('quantity'), max_digits=10, decimal_places=2, default=1.0, validators=[
+        MinValueValidator(0.0), MaxValueValidator(9999999.99)])
+    reduce = models.DecimalField(verbose_name=_('reduce'), max_digits=10, decimal_places=3, default=0.0, validators=[
+        MinValueValidator(0.0), MaxValueValidator(9999999.999)])
 
     def __str__(self):
         return "[%s] %s:%f" % (six.text_type(self.reference), six.text_type(self.designation), self.price)
 
     @classmethod
     def get_default_fields(cls):
-        return ["article", "desingation", "price", "unit", "quantity", "reduce"]
+        return ["article", "designation", (_('price'), "price_txt"), "unit", "quantity", (_('reduce'), "reduce_txt"), (_('total'), 'total')]
 
     @classmethod
     def get_edit_fields(cls):
-        return ["article", "desingation", "price", "unit", "quantity", "reduce"]
+        return ["article", "designation", "price", "unit", "quantity", "reduce"]
 
     @classmethod
     def get_show_fields(cls):
-        return ["article", "desingation", "price", "unit", "quantity", "reduce"]
+        return ["article", "designation", (_('price'), "price_txt"), "unit", "quantity", (_('reduce'), "reduce_txt")]
+
+    @property
+    def price_txt(self):
+        return format_devise(self.price, 5)
+
+    @property
+    def reduce_txt(self):
+        if self.reduce > 0.0001:
+            return "%s(%.2f%%)" % (format_devise(self.reduce, 5), 100 * self.reduce / (self.price * self.quantity))
+        else:
+            return None
+
+    def get_total(self):
+        return currency_round(self.price * self.quantity - self.reduce)
+
+    @property
+    def total(self):
+        return format_devise(self.get_total(), 5)
 
     class Meta(object):
         verbose_name = _('detail')
         verbose_name_plural = _('details')
-        default_permissions = []
-
-
-class BatchBill(Bill):
-    thirds = models.ManyToManyField(Third, verbose_name=_('thirds'))
-
-    @classmethod
-    def get_default_fields(cls):
-        return ["bill_type", "date", "status", "num", "thirds"]
-
-    @classmethod
-    def get_show_fields(cls):
-        return [("bill_type", "status"), ("date", "num"), "thirds", "detail_set", "comment"]
-
-    class Meta(object):
-        verbose_name = _('bill batch')
-        verbose_name_plural = _('bill batches')
         default_permissions = []

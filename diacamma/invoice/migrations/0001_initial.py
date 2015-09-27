@@ -107,14 +107,14 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(
                     auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('bill_type', models.IntegerField(null=True, db_index=True, verbose_name='bill type', choices=[
-                 (0, 'quotation'), (1, 'bill'), (2, 'asset'), (3, 'batch bill'), (4, 'receipt')])),
+                ('bill_type', models.IntegerField(null=False, default=0, db_index=True, verbose_name='bill type', choices=[
+                 (0, 'quotation'), (1, 'bill'), (2, 'asset'), (3, 'receipt')])),
                 ('num', models.IntegerField(
                     null=True, verbose_name='numeros')),
-                ('date', models.DateField(null=True, verbose_name='date')),
+                ('date', models.DateField(null=False, verbose_name='date')),
                 ('comment', models.TextField(
-                    verbose_name='comment', default='')),
-                ('status', models.IntegerField(null=True, db_index=True, verbose_name='status', choices=[
+                    verbose_name='comment', null=True, default='')),
+                ('status', models.IntegerField(null=False, default=0, db_index=True, verbose_name='status', choices=[
                  (0, 'building'), (1, 'valid'), (2, 'cancel'), (3, 'close')])),
                 ('cost_accounting', models.ForeignKey(to='accounting.CostAccounting', null=True,
                                                       on_delete=django.db.models.deletion.PROTECT, verbose_name='cost accounting', default=None)),
@@ -151,21 +151,6 @@ class Migration(migrations.Migration):
                 'default_permissions': [],
                 'verbose_name': 'detail'
             },
-        ),
-        migrations.CreateModel(
-            name='BatchBill',
-            fields=[
-                ('bill_ptr', models.OneToOneField(to='invoice.Bill', primary_key=True,
-                                                  auto_created=True, serialize=False, parent_link=True)),
-                ('thirds', models.ManyToManyField(
-                    to='accounting.Third', verbose_name='thirds')),
-            ],
-            options={
-                'verbose_name_plural': 'bill batches',
-                'default_permissions': [],
-                'verbose_name': 'bill batch'
-            },
-            bases=('invoice.bill',),
         ),
         migrations.RunPython(initial_values),
     ]
