@@ -92,17 +92,21 @@ class ConfigTest(LucteriosTest):
         self.factory.xfer = ArticleList()
         self.call('/diacamma.invoice/articleList', {}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'articleList')
-        self.assert_count_equal('COMPONENTS/*', 4)
+        self.assert_count_equal('COMPONENTS/*', 6)
         self.assert_count_equal(
-            'COMPONENTS/GRID[@name="article"]/HEADER', 4)
+            'COMPONENTS/GRID[@name="article"]/HEADER', 6)
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="article"]/HEADER[@name="reference"]', "référence")
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="article"]/HEADER[@name="designation"]', "désignation")
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="article"]/HEADER[@name="price"]', "prix")
+            'COMPONENTS/GRID[@name="article"]/HEADER[@name="price_txt"]', "prix")
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="article"]/HEADER[@name="unit"]', "unité")
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="article"]/HEADER[@name="isdisabled"]', "désactivé?")
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="article"]/HEADER[@name="sell_account"]', "compte de vente")
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="article"]/RECORD', 0)
 
@@ -114,7 +118,7 @@ class ConfigTest(LucteriosTest):
 
         self.factory.xfer = ArticleAddModify()
         self.call('/diacamma.invoice/articleAddModify',
-                  {'reference': 'ABC001', 'designation': 'My beautiful article', 'price': '43.72', 'SAVE': 'YES'}, False)
+                  {'reference': 'ABC001', 'designation': 'My beautiful article', 'price': '43.72', 'sell_account':'705', 'SAVE': 'YES'}, False)
         self.assert_observer(
             'core.acknowledge', 'diacamma.invoice', 'articleAddModify')
 
@@ -128,9 +132,13 @@ class ConfigTest(LucteriosTest):
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="article"]/RECORD[1]/VALUE[@name="designation"]', "My beautiful article")
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="article"]/RECORD[1]/VALUE[@name="price"]', "43.720")
+            'COMPONENTS/GRID[@name="article"]/RECORD[1]/VALUE[@name="price_txt"]', "43.72€")
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="article"]/RECORD[1]/VALUE[@name="unit"]', None)
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="article"]/RECORD[1]/VALUE[@name="isdisabled"]', "0")
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="article"]/RECORD[1]/VALUE[@name="sell_account"]', "705")
 
         self.factory.xfer = ArticleDel()
         self.call('/diacamma.invoice/articleDel',

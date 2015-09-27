@@ -95,8 +95,7 @@ class EntryTest(LucteriosTest):
             "ACTION", "id", "diacamma.accounting/entryAccountAfterSave")
         self.assert_count_equal("ACTION/PARAM", 1)
         self.assert_xml_equal("ACTION/PARAM[@name='entryaccount']", "1")
-        self.assert_count_equal("CONTEXT/*", 5)
-        self.assert_xml_equal("CONTEXT/PARAM[@name='SAVE']", "YES")
+        self.assert_count_equal("CONTEXT/*", 4)
         self.assert_xml_equal("CONTEXT/PARAM[@name='year']", "1")
         self.assert_xml_equal("CONTEXT/PARAM[@name='journal']", "2")
         self.assert_xml_equal(
