@@ -494,7 +494,7 @@ class ChartsAccount(LucteriosModel):
             return None
         else:
             return accounts[0]
-            
+
     class Meta(object):
 
         verbose_name = _('charts of account')

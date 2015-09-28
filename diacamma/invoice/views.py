@@ -37,7 +37,7 @@ class ArticleList(XferListEditor):
         lbl.set_location(0, 3)
         self.add_component(lbl)
         edt = XferCompSelect("show_filter")
-        edt.set_select([(0, _('Only activate')), (1, _('All'))])        
+        edt.set_select([(0, _('Only activate')), (1, _('All'))])
         edt.set_value(show_filter)
         edt.set_location(1, 3)
         edt.set_action(self.request, self.get_action(),
@@ -85,7 +85,7 @@ class BillList(XferListEditor):
         sel_list = list(dep_field.choices)
         sel_list.insert(0, (-1, _('building+valid')))
         edt = XferCompSelect("status_filter")
-        edt.set_select(sel_list)        
+        edt.set_select(sel_list)
         edt.set_value(status_filter)
         edt.set_location(1, 3)
         edt.set_action(self.request, self.get_action(),
@@ -102,11 +102,13 @@ class BillList(XferListEditor):
         elif status_filter == -1:
             self.filter = Q(status=0) | Q(status=1)
         if status_filter >= 1:
-            self.action_grid = [('show', _("Edit"), "images/show.png", SELECT_SINGLE)]
+            self.action_grid = [
+                ('show', _("Edit"), "images/show.png", SELECT_SINGLE)]
 
     def fillresponse(self):
         XferListEditor.fillresponse(self)
         self.get_components(self.field_id).colspan = 3
+
 
 @ActionsManage.affect('Bill', 'modify', 'add')
 @MenuManage.describ('invoice.add_bill')
@@ -125,16 +127,19 @@ class BillShow(XferShowEditor):
     icon = "bill.png"
     model = Bill
     field_id = 'bill'
-    
+
     def fillresponse(self):
         if (self.item.status == 0) and (self.item.get_info_state() == ''):
-            self.action_list.insert(0, ('valid', _("Valid"), "images/ok.png", CLOSE_NO))
+            self.action_list.insert(
+                0, ('valid', _("Valid"), "images/ok.png", CLOSE_NO))
         elif self.item.status != 0:
             self.action_list = []
         if self.item.status == 1:
             self.action_list = []
-            self.action_list.insert(0, ('archive', _("Archive"), "images/ok.png", CLOSE_NO))
-            self.action_list.insert(1, ('cancel', _("Cancel"), "images/cancel.png", CLOSE_NO))
+            self.action_list.insert(
+                0, ('archive', _("Archive"), "images/ok.png", CLOSE_NO))
+            self.action_list.insert(
+                1, ('cancel', _("Cancel"), "images/cancel.png", CLOSE_NO))
         XferShowEditor.fillresponse(self)
 
 
@@ -145,7 +150,7 @@ class BillValid(XferContainerAcknowledge):
     icon = "bill.png"
     model = Bill
     field_id = 'bill'
-    
+
     def fillresponse(self):
         self.item.valid()
 
@@ -157,9 +162,10 @@ class BillCancel(XferContainerAcknowledge):
     icon = "bill.png"
     model = Bill
     field_id = 'bill'
-    
+
     def fillresponse(self):
         self.item.cancel()
+
 
 @ActionsManage.affect('Bill', 'archive')
 @MenuManage.describ('contacts.change_bill')
@@ -168,9 +174,10 @@ class BillArchive(XferContainerAcknowledge):
     icon = "bill.png"
     model = Bill
     field_id = 'bill'
-    
+
     def fillresponse(self):
         self.item.archive()
+
 
 @ActionsManage.affect('Bill', 'delete')
 @MenuManage.describ('invoice.delete_bill')
@@ -213,11 +220,11 @@ class BillThird(XferListEditor):
                 contact__individual__lastname__contains=contact_filter))
             self.filter &= (q_legalentity | q_individual)
 
-
     def fillresponse(self):
         XferListEditor.fillresponse(self)
         grid = self.get_components(self.field_id)
-        grid.add_action(self.request, BillThirdValid.get_action(_('select'), 'images/ok.png'), {'modal': FORMTYPE_MODAL, 'close': CLOSE_YES, 'unique':SELECT_SINGLE}, 0)
+        grid.add_action(self.request, BillThirdValid.get_action(
+            _('select'), 'images/ok.png'), {'modal': FORMTYPE_MODAL, 'close': CLOSE_YES, 'unique': SELECT_SINGLE}, 0)
 
 
 @MenuManage.describ('invoice.change_bill')
@@ -245,7 +252,9 @@ class DetailAddModify(XferAddEditor):
                 self.item.price = self.item.article.price
                 self.item.unit = self.item.article.unit
         XferAddEditor.fillresponse(self)
-        self.get_components('article').set_select_query(Article.objects.filter(isdisabled=False))
+        self.get_components('article').set_select_query(
+            Article.objects.filter(isdisabled=False))
+
 
 @ActionsManage.affect('Detail', 'delete')
 @MenuManage.describ('invoice.add_bill')

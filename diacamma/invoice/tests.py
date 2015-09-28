@@ -118,7 +118,7 @@ class ConfigTest(LucteriosTest):
 
         self.factory.xfer = ArticleAddModify()
         self.call('/diacamma.invoice/articleAddModify',
-                  {'reference': 'ABC001', 'designation': 'My beautiful article', 'price': '43.72', 'sell_account':'705', 'SAVE': 'YES'}, False)
+                  {'reference': 'ABC001', 'designation': 'My beautiful article', 'price': '43.72', 'sell_account': '705', 'SAVE': 'YES'}, False)
         self.assert_observer(
             'core.acknowledge', 'diacamma.invoice', 'articleAddModify')
 

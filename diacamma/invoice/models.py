@@ -112,7 +112,8 @@ class Bill(LucteriosModel):
         CostAccounting, verbose_name=_('cost accounting'), null=True, default=None, db_index=True, on_delete=models.PROTECT)
 
     def __str__(self):
-        billtype = get_value_if_choices(self.bill_type, self.get_field_by_name('bill_type'))
+        billtype = get_value_if_choices(
+            self.bill_type, self.get_field_by_name('bill_type'))
         return "%s %s - %s" % (billtype, self.num_txt, get_value_converted(self.date))
 
     @classmethod
@@ -143,16 +144,18 @@ class Bill(LucteriosModel):
             return None
         else:
             return "%s-%d" % (self.fiscal_year.letter, self.num)
-    
+
     def get_info_state(self):
         info = []
         if self.status == 0:
             if self.third is None:
                 info.append(six.text_type(_("no third selected")))
             else:
-                accounts = self.third.accountthird_set.filter(code__regex=current_system_account().get_customer_mask())
+                accounts = self.third.accountthird_set.filter(
+                    code__regex=current_system_account().get_customer_mask())
                 if len(accounts) == 0:
-                    info.append(six.text_type(_("third has not customer account")))
+                    info.append(
+                        six.text_type(_("third has not customer account")))
         details = self.detail_set.all()
         if len(details) == 0:
             info.append(six.text_type(_("no detail")))
@@ -160,29 +163,35 @@ class Bill(LucteriosModel):
             pass
         fiscal_year = FiscalYear.get_current()
         if (fiscal_year.begin > self.date) or (fiscal_year.end < self.date):
-            info.append(six.text_type(_("date not include in current fiscal year")))
+            info.append(
+                six.text_type(_("date not include in current fiscal year")))
         return "{[br/]}".join(info)
-    
+
     def can_delete(self):
         if self.status != 0:
             return _('"%s" cannot be deleted!') % six.text_type(self)
         return ''
-    
+
     def generate_entry(self):
         if self.bill_type == 2:
             is_bill = -1
         else:
             is_bill = 1
         self.entry = EntryAccount.objects.create(
-                year=self.fiscal_year, date_value=self.date, designation=self.__str__(),
-                journal=Journal.objects.get(id=3))
-        accounts = self.third.accountthird_set.filter(code__regex=current_system_account().get_customer_mask())
+            year=self.fiscal_year, date_value=self.date, designation=self.__str__(),
+            journal=Journal.objects.get(id=3))
+        accounts = self.third.accountthird_set.filter(
+            code__regex=current_system_account().get_customer_mask())
         if len(accounts) == 0:
-            raise LucteriosException(IMPORTANT, _("third has not customer account"))
-        third_account = ChartsAccount.get_account(accounts[0].code, self.fiscal_year)
+            raise LucteriosException(
+                IMPORTANT, _("third has not customer account"))
+        third_account = ChartsAccount.get_account(
+            accounts[0].code, self.fiscal_year)
         if third_account is None:
-            raise LucteriosException(IMPORTANT, _("third has not customer account"))
-        EntryLineAccount.objects.create(account=third_account, amount=is_bill * self.get_total(), third=self.third, entry=self.entry)
+            raise LucteriosException(
+                IMPORTANT, _("third has not customer account"))
+        EntryLineAccount.objects.create(
+            account=third_account, amount=is_bill * self.get_total(), third=self.third, entry=self.entry)
 
         remise_total = 0
         detail_list = {}
@@ -191,24 +200,31 @@ class Bill(LucteriosModel):
                 detail_code = detail.article.sell_account
             else:
                 detail_code = Params.getvalue("invoice-default-sell-account")
-            detail_account = ChartsAccount.get_account(detail_code, self.fiscal_year)
+            detail_account = ChartsAccount.get_account(
+                detail_code, self.fiscal_year)
             if detail_account is None:
-                raise LucteriosException(IMPORTANT, _("article has code account unknown!"))
+                raise LucteriosException(
+                    IMPORTANT, _("article has code account unknown!"))
             if detail_account.id not in detail_list.keys():
                 detail_list[detail_account.id] = [detail_account, 0]
-            detail_list[detail_account.id][1] += currency_round(detail.price * detail.quantity)
+            detail_list[detail_account.id][
+                1] += currency_round(detail.price * detail.quantity)
             remise_total += currency_round(detail.reduce)
         if remise_total > 0.001:
             remise_code = Params.getvalue("invoice-reduce-account")
-            remise_account = ChartsAccount.get_account(remise_code, self.fiscal_year)
-            EntryLineAccount.objects.create(account=remise_account, amount=-1 * is_bill * remise_total, entry=self.entry)
+            remise_account = ChartsAccount.get_account(
+                remise_code, self.fiscal_year)
+            EntryLineAccount.objects.create(
+                account=remise_account, amount=-1 * is_bill * remise_total, entry=self.entry)
         for detail_item in detail_list.values():
-            EntryLineAccount.objects.create(account=detail_item[0], amount=is_bill * detail_item[1], entry=self.entry)
+            EntryLineAccount.objects.create(
+                account=detail_item[0], amount=is_bill * detail_item[1], entry=self.entry)
 
     def valid(self):
         if self.status == 0:
             self.fiscal_year = FiscalYear.get_current()
-            bill_list = self.fiscal_year.bill_set.filter(bill_type=self.bill_type).exclude(status=0)
+            bill_list = self.fiscal_year.bill_set.filter(
+                bill_type=self.bill_type).exclude(status=0)
             val = bill_list.aggregate(Max('num'))
             if val['num__max'] is None:
                 self.num = 1
@@ -242,7 +258,8 @@ class Detail(LucteriosModel):
     designation = models.TextField(verbose_name=_('designation'))
     price = models.DecimalField(verbose_name=_('price'), max_digits=10, decimal_places=3, default=0.0, validators=[
         MinValueValidator(0.0), MaxValueValidator(9999999.999)])
-    unit = models.CharField(verbose_name=_('unit'), null=False, default='', max_length=10)
+    unit = models.CharField(
+        verbose_name=_('unit'), null=False, default='', max_length=10)
     quantity = models.DecimalField(verbose_name=_('quantity'), max_digits=10, decimal_places=2, default=1.0, validators=[
         MinValueValidator(0.0), MaxValueValidator(9999999.99)])
     reduce = models.DecimalField(verbose_name=_('reduce'), max_digits=10, decimal_places=3, default=0.0, validators=[
