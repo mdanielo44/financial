@@ -37,6 +37,7 @@ from diacamma.accounting.tools import current_system_account, format_devise, cur
 from django.db.models.aggregates import Max
 from lucterios.framework.error import LucteriosException, IMPORTANT
 from lucterios.CORE.parameters import Params
+from re import match
 
 
 class Vat(LucteriosModel):
@@ -126,7 +127,7 @@ class Bill(LucteriosModel):
 
     @classmethod
     def get_show_fields(cls):
-        return [((_('numeros'), "num_txt"), "date"), "third", "detail_set", "comment", ("status", (_('total'), 'total')), 'fiscal_year']
+        return [((_('numeros'), "num_txt"), "date"), "third", "detail_set", "comment", ("status", (_('total'), 'total'))]
 
     def get_total(self):
         val = 0
@@ -153,14 +154,27 @@ class Bill(LucteriosModel):
             else:
                 accounts = self.third.accountthird_set.filter(
                     code__regex=current_system_account().get_customer_mask())
-                if len(accounts) == 0:
+                if (len(accounts) == 0) or (ChartsAccount.get_account(accounts[0].code, FiscalYear.get_current()) is None):
                     info.append(
                         six.text_type(_("third has not customer account")))
         details = self.detail_set.all()
         if len(details) == 0:
             info.append(six.text_type(_("no detail")))
         else:
-            pass
+            for detail in details:
+                if detail.article is not None:
+                    detail_code = detail.article.sell_account
+                else:
+                    detail_code = Params.getvalue(
+                        "invoice-default-sell-account")
+                if match(current_system_account().get_revenue_mask(), detail_code) is not None:
+                    detail_account = ChartsAccount.get_account(
+                        detail_code, FiscalYear.get_current())
+                else:
+                    detail_account = None
+                if detail_account is None:
+                    info.append(
+                        six.text_type(_("article has code account unknown!")))
         fiscal_year = FiscalYear.get_current()
         if (fiscal_year.begin > self.date) or (fiscal_year.end < self.date):
             info.append(
@@ -214,6 +228,9 @@ class Bill(LucteriosModel):
             remise_code = Params.getvalue("invoice-reduce-account")
             remise_account = ChartsAccount.get_account(
                 remise_code, self.fiscal_year)
+            if remise_account is None:
+                raise LucteriosException(
+                    IMPORTANT, _("reduce-account is not defined!"))
             EntryLineAccount.objects.create(
                 account=remise_account, amount=-1 * is_bill * remise_total, entry=self.entry)
         for detail_item in detail_list.values():
@@ -221,7 +238,7 @@ class Bill(LucteriosModel):
                 account=detail_item[0], amount=is_bill * detail_item[1], entry=self.entry)
 
     def valid(self):
-        if self.status == 0:
+        if (self.status == 0) and (self.get_info_state() == ''):
             self.fiscal_year = FiscalYear.get_current()
             bill_list = self.fiscal_year.bill_set.filter(
                 bill_type=self.bill_type).exclude(status=0)

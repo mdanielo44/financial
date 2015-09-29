@@ -114,8 +114,8 @@ class Migration(migrations.Migration):
                 ('date', models.DateField(null=False, verbose_name='date')),
                 ('comment', models.TextField(
                     verbose_name='comment', null=True, default='')),
-                ('status', models.IntegerField(null=False, default=0, db_index=True, verbose_name='status', choices=[
-                 (0, 'building'), (1, 'valid'), (2, 'cancel'), (3, 'close')])),
+                ('status', models.IntegerField(verbose_name='status', db_index=True, default=0, choices=[
+                 (0, 'building'), (1, 'valid'), (2, 'cancel'), (3, 'archive')])),
                 ('cost_accounting', models.ForeignKey(to='accounting.CostAccounting', null=True,
                                                       on_delete=django.db.models.deletion.PROTECT, verbose_name='cost accounting', default=None)),
                 ('entry', models.ForeignKey(to='accounting.EntryAccount', null=True,
@@ -136,13 +136,16 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(
                     auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('designation', models.TextField(verbose_name='designation')),
-                ('price', models.DecimalField(validators=[MinValueValidator(0.0), MaxValueValidator(
-                    9999999.999)], decimal_places=3, max_digits=10, verbose_name='price', default=10.0)),
-                ('unit', models.CharField(verbose_name='unit', max_length=10)),
-                ('quantity', models.FloatField(verbose_name='quantity')),
-                ('reduce', models.FloatField(verbose_name='reduce')),
-                ('article', models.ForeignKey(to='invoice.Article', null=True,
-                                              on_delete=django.db.models.deletion.PROTECT, verbose_name='fiscal year', default=None)),
+                ('price', models.DecimalField(verbose_name='price', max_digits=10, default=0.0,
+                                              decimal_places=3, validators=[MinValueValidator(0.0), MaxValueValidator(9999999.999)])),
+                ('unit', models.CharField(
+                    verbose_name='unit', default='', max_length=10)),
+                ('quantity', models.DecimalField(validators=[MinValueValidator(0.0), MaxValueValidator(
+                    9999999.99)], decimal_places=2, verbose_name='quantity', default=1.0, max_digits=10)),
+                ('reduce', models.DecimalField(validators=[MinValueValidator(0.0), MaxValueValidator(
+                    9999999.999)], decimal_places=3, verbose_name='reduce', default=0.0, max_digits=10)),
+                ('article', models.ForeignKey(null=True, default=None, to='invoice.Article',
+                                              on_delete=django.db.models.deletion.PROTECT, verbose_name='article')),
                 ('bill', models.ForeignKey(
                     to='invoice.Bill', verbose_name='bill')),
             ],

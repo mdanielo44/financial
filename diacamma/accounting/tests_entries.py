@@ -226,7 +226,7 @@ class EntryTest(LucteriosTest):
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD', 1)
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="entry_account"]', '[401000] 401000')
+            'COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="entry_account"]', '[401] 401')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="debit"]', None)
         self.assert_xml_equal(
@@ -285,7 +285,7 @@ class EntryTest(LucteriosTest):
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD', 2)
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="entry_account"]', '[401000] 401000')
+            'COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="entry_account"]', '[401] 401')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="debit"]', None)
         self.assert_xml_equal(
@@ -293,7 +293,7 @@ class EntryTest(LucteriosTest):
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="reference"]', '---')
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[2]/VALUE[@name="entry_account"]', '[602000] 602000')
+            'COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[2]/VALUE[@name="entry_account"]', '[602] 602')
 
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[2]/VALUE[@name="debit"]', '152.34€')
@@ -320,7 +320,7 @@ class EntryTest(LucteriosTest):
         self.assert_count_equal('COMPONENTS/*', 9)
 
         self.assert_xml_equal(
-            "COMPONENTS/LABELFORM[@name='account']", '[401000] 401000')
+            "COMPONENTS/LABELFORM[@name='account']", '[401] 401')
         self.assert_xml_equal("COMPONENTS/FLOAT[@name='debit_val']", '0.00')
         self.assert_xml_equal("COMPONENTS/FLOAT[@name='credit_val']", '152.34')
         self.assert_xml_equal("COMPONENTS/SELECT[@name='third']", '0')
@@ -358,7 +358,7 @@ class EntryTest(LucteriosTest):
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD', 2)
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="entry_account"]', '[602000] 602000')
+            'COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="entry_account"]', '[602] 602')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="debit"]', '152.34€')
         self.assert_xml_equal(
@@ -366,7 +366,7 @@ class EntryTest(LucteriosTest):
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="reference"]', '---')
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[2]/VALUE[@name="entry_account"]', '[401000 Luke Lucky]')
+            'COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[2]/VALUE[@name="entry_account"]', '[401 Luke Lucky]')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[2]/VALUE[@name="debit"]', None)
         self.assert_xml_equal(
@@ -385,7 +385,7 @@ class EntryTest(LucteriosTest):
         self.assert_count_equal('COMPONENTS/*', 9)
 
         self.assert_xml_equal(
-            "COMPONENTS/LABELFORM[@name='account']", '[401000] 401000')
+            "COMPONENTS/LABELFORM[@name='account']", '[401] 401')
         self.assert_xml_equal("COMPONENTS/FLOAT[@name='debit_val']", '0.00')
         self.assert_xml_equal("COMPONENTS/FLOAT[@name='credit_val']", '152.34')
         self.assert_xml_equal("COMPONENTS/SELECT[@name='third']", '3')
@@ -424,7 +424,7 @@ class EntryTest(LucteriosTest):
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="entry.date_value"]', '13 février 2015')
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="entry_account"]', '[602000] 602000')
+            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="entry_account"]', '[602] 602')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="entry.designation"]', 'un plein cadie')
         self.assert_xml_equal(
@@ -440,7 +440,7 @@ class EntryTest(LucteriosTest):
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="entry.date_value"]', '13 février 2015')
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="entry_account"]', '[401000 Luke Lucky]')
+            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="entry_account"]', '[401 Luke Lucky]')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="entry.designation"]', 'un plein cadie')
         self.assert_xml_equal(
@@ -489,7 +489,7 @@ class EntryTest(LucteriosTest):
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="entry.date_value"]', '13 février 2015')
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="entry_account"]', '[602000] 602000')
+            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="entry_account"]', '[602] 602')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="entry.designation"]', 'un plein cadie')
         self.assert_xml_equal(
@@ -505,7 +505,7 @@ class EntryTest(LucteriosTest):
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="entry.date_value"]', '13 février 2015')
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="entry_account"]', '[401000 Luke Lucky]')
+            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="entry_account"]', '[401 Luke Lucky]')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="entry.designation"]', 'un plein cadie')
         self.assert_xml_equal(
@@ -648,7 +648,7 @@ class EntryTest(LucteriosTest):
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD', 1)
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="entry_account"]', '[401000 Luke Lucky]')
+            'COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="entry_account"]', '[401 Luke Lucky]')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="debit"]', '152.34€')
         self.assert_xml_equal(
@@ -667,7 +667,7 @@ class EntryTest(LucteriosTest):
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount_link"]/RECORD[1]/VALUE[@name="entry.date_value"]', '13 février 2015')
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount_link"]/RECORD[1]/VALUE[@name="entry_account"]', '[602000] 602000')
+            'COMPONENTS/GRID[@name="entrylineaccount_link"]/RECORD[1]/VALUE[@name="entry_account"]', '[602] 602')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount_link"]/RECORD[1]/VALUE[@name="entry.designation"]', 'un plein cadie')
         self.assert_xml_equal(
@@ -683,7 +683,7 @@ class EntryTest(LucteriosTest):
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount_link"]/RECORD[2]/VALUE[@name="entry.date_value"]', '13 février 2015')
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount_link"]/RECORD[2]/VALUE[@name="entry_account"]', '[401000 Luke Lucky]')
+            'COMPONENTS/GRID[@name="entrylineaccount_link"]/RECORD[2]/VALUE[@name="entry_account"]', '[401 Luke Lucky]')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount_link"]/RECORD[2]/VALUE[@name="entry.designation"]', 'un plein cadie')
         self.assert_xml_equal(
@@ -703,7 +703,7 @@ class EntryTest(LucteriosTest):
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD', 2)
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="entry_account"]', '[401000 Luke Lucky]')
+            'COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="entry_account"]', '[401 Luke Lucky]')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="debit"]', '152.34€')
         self.assert_xml_equal(
@@ -711,7 +711,7 @@ class EntryTest(LucteriosTest):
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="reference"]', '---')
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[2]/VALUE[@name="entry_account"]', '[512000] 512000')
+            'COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[2]/VALUE[@name="entry_account"]', '[512] 512')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[2]/VALUE[@name="debit"]', None)
         self.assert_xml_equal(
@@ -743,7 +743,7 @@ class EntryTest(LucteriosTest):
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="entry.date_value"]', '13 février 2015')
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="entry_account"]', '[602000] 602000')
+            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="entry_account"]', '[602] 602')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="entry.designation"]', 'un plein cadie')
         self.assert_xml_equal(
@@ -759,7 +759,7 @@ class EntryTest(LucteriosTest):
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="entry.date_value"]', '13 février 2015')
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="entry_account"]', '[401000 Luke Lucky]')
+            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="entry_account"]', '[401 Luke Lucky]')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="entry.designation"]', 'un plein cadie')
         self.assert_xml_equal(
@@ -775,7 +775,7 @@ class EntryTest(LucteriosTest):
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[3]/VALUE[@name="entry.date_value"]', formats.date_format(date.today(), "DATE_FORMAT"))
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[3]/VALUE[@name="entry_account"]', '[401000 Luke Lucky]')
+            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[3]/VALUE[@name="entry_account"]', '[401 Luke Lucky]')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[3]/VALUE[@name="entry.designation"]', 'règlement de un plein cadie')
         self.assert_xml_equal(
@@ -791,7 +791,7 @@ class EntryTest(LucteriosTest):
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[4]/VALUE[@name="entry.date_value"]', formats.date_format(date.today(), "DATE_FORMAT"))
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[4]/VALUE[@name="entry_account"]', '[512000] 512000')
+            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[4]/VALUE[@name="entry_account"]', '[512] 512')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[4]/VALUE[@name="entry.designation"]', 'règlement de un plein cadie')
         self.assert_xml_equal(
@@ -866,7 +866,7 @@ class EntryTest(LucteriosTest):
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="entry.date_value"]', '13 février 2015')
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="entry_account"]', '[602000] 602000')
+            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="entry_account"]', '[602] 602')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="entry.designation"]', 'un plein cadie')
         self.assert_xml_equal(
@@ -882,7 +882,7 @@ class EntryTest(LucteriosTest):
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="entry.date_value"]', '13 février 2015')
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="entry_account"]', '[401000 Luke Lucky]')
+            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="entry_account"]', '[401 Luke Lucky]')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="entry.designation"]', 'un plein cadie')
         self.assert_xml_equal(
@@ -932,7 +932,7 @@ class EntryTest(LucteriosTest):
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="entry.date_value"]', '27 avril 2015')
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="entry_account"]', '[706000] 706000')
+            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="entry_account"]', '[706] 706')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="entry.designation"]', 'Une belle facture')
         self.assert_xml_equal(
@@ -948,7 +948,7 @@ class EntryTest(LucteriosTest):
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="entry.date_value"]', '27 avril 2015')
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="entry_account"]', '[411000 Dalton William]')
+            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="entry_account"]', '[411 Dalton William]')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="entry.designation"]', 'Une belle facture')
         self.assert_xml_equal(
@@ -964,7 +964,7 @@ class EntryTest(LucteriosTest):
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[3]/VALUE[@name="entry.date_value"]', '3 mai 2015')
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[3]/VALUE[@name="entry_account"]', '[411000 Dalton William]')
+            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[3]/VALUE[@name="entry_account"]', '[411 Dalton William]')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[3]/VALUE[@name="entry.designation"]', 'Règlement de belle facture')
         self.assert_xml_equal(
@@ -980,7 +980,7 @@ class EntryTest(LucteriosTest):
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[4]/VALUE[@name="entry.date_value"]', '3 mai 2015')
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[4]/VALUE[@name="entry_account"]', '[512000] 512000')
+            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[4]/VALUE[@name="entry_account"]', '[512] 512')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[4]/VALUE[@name="entry.designation"]', 'Règlement de belle facture')
         self.assert_xml_equal(
@@ -1127,19 +1127,19 @@ class EntryTest(LucteriosTest):
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD', 4)
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="entry_account"]', '[706000] 706000')
+            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="entry_account"]', '[706] 706')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="entry.link"]', 'A')
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="entry_account"]', '[411000 Dalton William]')
+            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="entry_account"]', '[411 Dalton William]')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="entry.link"]', 'A')
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[3]/VALUE[@name="entry_account"]', '[411000 Dalton William]')
+            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[3]/VALUE[@name="entry_account"]', '[411 Dalton William]')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[3]/VALUE[@name="entry.link"]', 'A')
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[4]/VALUE[@name="entry_account"]', '[512000] 512000')
+            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[4]/VALUE[@name="entry_account"]', '[512] 512')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[4]/VALUE[@name="entry.link"]', 'A')
 
@@ -1168,7 +1168,7 @@ class EntryTest(LucteriosTest):
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="entry.num"]', '1')
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="entry_account"]', '[411000 Dalton William]')
+            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="entry_account"]', '[411 Dalton William]')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="entry.designation"]', 'Règlement de belle facture')
         self.assert_xml_equal(
@@ -1180,7 +1180,7 @@ class EntryTest(LucteriosTest):
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="entry.num"]', '1')
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="entry_account"]', '[512000] 512000')
+            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="entry_account"]', '[512] 512')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="entry.designation"]', 'Règlement de belle facture')
         self.assert_xml_equal(

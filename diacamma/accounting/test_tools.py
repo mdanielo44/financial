@@ -98,9 +98,9 @@ def create_account(codes, type_of_account, year=None):
 
 
 def fill_thirds():
-    create_third([2, 8], ['401000'])  # 1 2
-    create_third([6, 7], ['411000', '401000'])  # 3 4
-    create_third([3, 4, 5], ['411000'])  # 5 6 7
+    create_third([2, 8], ['401'])  # 1 2
+    create_third([6, 7], ['411', '401'])  # 3 4
+    create_third([3, 4, 5], ['411'])  # 5 6 7
 
 
 def initial_thirds():
@@ -109,27 +109,27 @@ def initial_thirds():
 
 
 def fill_accounts(year=None):
-    create_account(['411000', '512000', '531000'], 0, year)  # 1 2 3
-    create_account(['401000'], 1, year)  # 4
-    create_account(['106000', '110000', '119000'], 2, year)  # 5 6 7
-    create_account(['701000', '706000', '707000'], 3, year)  # 8 9 10
+    create_account(['411', '512', '531'], 0, year)  # 1 2 3
+    create_account(['401'], 1, year)  # 4
+    create_account(['106', '110', '119'], 2, year)  # 5 6 7
+    create_account(['701', '706', '707'], 3, year)  # 8 9 10
     # 11 12 13 14 15
-    create_account(['601000', '602000', '604000', '607000', '627000'], 4, year)
+    create_account(['601', '602', '604', '607', '627'], 4, year)
 
 
 def add_models():
     model1 = ModelEntry.objects.create(journal=Journal.objects.get(
         id=2), designation='achat')
-    ModelLineEntry.objects.create(model=model1, code='411000', third=Third.objects.get(
+    ModelLineEntry.objects.create(model=model1, code='411', third=Third.objects.get(
         id=3), amount=19.37)
     ModelLineEntry.objects.create(
-        model=model1, code='512000', amount=-19.37)
+        model=model1, code='512', amount=-19.37)
     model2 = ModelEntry.objects.create(journal=Journal.objects.get(
         id=3), designation='vente')
-    ModelLineEntry.objects.create(model=model2, code='401000', third=Third.objects.get(
+    ModelLineEntry.objects.create(model=model2, code='401', third=Third.objects.get(
         id=6), amount=-68.47)
     ModelLineEntry.objects.create(
-        model=model2, code='531000', amount=68.47)
+        model=model2, code='531', amount=68.47)
 
 
 def set_accounting_system():

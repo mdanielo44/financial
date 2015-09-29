@@ -250,7 +250,7 @@ class ThirdTest(LucteriosTest):
 
         self.factory.xfer = AccountThirdAddModify()
         self.call('/diacamma.accounting/accountThirdAddModify',
-                  {'SAVE': 'YES', "third": 1, 'code': '411000'}, False)
+                  {'SAVE': 'YES', "third": 1, 'code': '411'}, False)
         self.assert_observer(
             'core.acknowledge', 'diacamma.accounting', 'accountThirdAddModify')
 
@@ -262,7 +262,7 @@ class ThirdTest(LucteriosTest):
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="accountthird"]/RECORD', 1)
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="accountthird"]/RECORD[1]/VALUE[@name="code"]', '411000')
+            'COMPONENTS/GRID[@name="accountthird"]/RECORD[1]/VALUE[@name="code"]', '411')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="accountthird"]/RECORD[1]/VALUE[@name="total_txt"]', '{[font color="green"]}Crédit: 0.00€{[/font]}')
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="total"]', '0.00€')
@@ -306,14 +306,14 @@ class ThirdTest(LucteriosTest):
             'COMPONENTS/GRID[@name="accountthird"]/RECORD[1]', 'id', '5')
 
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="accountthird"]/RECORD[1]/VALUE[@name="code"]', '411000')
+            'COMPONENTS/GRID[@name="accountthird"]/RECORD[1]/VALUE[@name="code"]', '411')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="accountthird"]/RECORD[1]/VALUE[@name="total_txt"]', '{[font color="blue"]}Débit: 34.01€{[/font]}')
         self.assert_attrib_equal(
             'COMPONENTS/GRID[@name="accountthird"]/RECORD[2]', 'id', '6')
 
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="accountthird"]/RECORD[2]/VALUE[@name="code"]', '401000')
+            'COMPONENTS/GRID[@name="accountthird"]/RECORD[2]/VALUE[@name="code"]', '401')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="accountthird"]/RECORD[2]/VALUE[@name="total_txt"]', '{[font color="green"]}Crédit: 0.00€{[/font]}')
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="total"]', '34.01€')
@@ -432,31 +432,31 @@ class ThirdTest(LucteriosTest):
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="third"]/RECORD[1]/VALUE[@name="contact"]', 'Dalton Avrel')
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="third"]/RECORD[1]/VALUE[@name="accountthird_set"]', '401000')
+            'COMPONENTS/GRID[@name="third"]/RECORD[1]/VALUE[@name="accountthird_set"]', '401')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="third"]/RECORD[2]/VALUE[@name="contact"]', 'Dalton Jack')
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="third"]/RECORD[2]/VALUE[@name="accountthird_set"]', '411000')
+            'COMPONENTS/GRID[@name="third"]/RECORD[2]/VALUE[@name="accountthird_set"]', '411')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="third"]/RECORD[3]/VALUE[@name="contact"]', 'Dalton Joe')
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="third"]/RECORD[3]/VALUE[@name="accountthird_set"]', '411000')
+            'COMPONENTS/GRID[@name="third"]/RECORD[3]/VALUE[@name="accountthird_set"]', '411')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="third"]/RECORD[4]/VALUE[@name="contact"]', 'Dalton William')
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="third"]/RECORD[4]/VALUE[@name="accountthird_set"]', '411000')
+            'COMPONENTS/GRID[@name="third"]/RECORD[4]/VALUE[@name="accountthird_set"]', '411')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="third"]/RECORD[5]/VALUE[@name="contact"]', 'Luke Lucky')
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="third"]/RECORD[5]/VALUE[@name="accountthird_set"]', '411000{[br/]}401000')
+            'COMPONENTS/GRID[@name="third"]/RECORD[5]/VALUE[@name="accountthird_set"]', '411{[br/]}401')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="third"]/RECORD[6]/VALUE[@name="contact"]', 'Maximum')
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="third"]/RECORD[6]/VALUE[@name="accountthird_set"]', '401000')
+            'COMPONENTS/GRID[@name="third"]/RECORD[6]/VALUE[@name="accountthird_set"]', '401')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="third"]/RECORD[7]/VALUE[@name="contact"]', 'Minimum')
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="third"]/RECORD[7]/VALUE[@name="accountthird_set"]', '411000{[br/]}401000')
+            'COMPONENTS/GRID[@name="third"]/RECORD[7]/VALUE[@name="accountthird_set"]', '411{[br/]}401')
 
     def test_list_withfilter(self):
         fill_thirds()
@@ -475,7 +475,7 @@ class ThirdTest(LucteriosTest):
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="third"]/RECORD[1]/VALUE[@name="contact"]', 'Dalton Joe')
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="third"]/RECORD[1]/VALUE[@name="accountthird_set"]', '411000')
+            'COMPONENTS/GRID[@name="third"]/RECORD[1]/VALUE[@name="accountthird_set"]', '411')
 
     def test_list_display(self):
         fill_thirds()
@@ -498,19 +498,19 @@ class ThirdTest(LucteriosTest):
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="third"]/RECORD[2]/VALUE[@name="contact"]', 'Dalton Jack')
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="third"]/RECORD[2]/VALUE[@name="accountthird_set"]', '411000')
+            'COMPONENTS/GRID[@name="third"]/RECORD[2]/VALUE[@name="accountthird_set"]', '411')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="third"]/RECORD[2]/VALUE[@name="total"]', '0.00€')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="third"]/RECORD[4]/VALUE[@name="contact"]', 'Dalton William')
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="third"]/RECORD[4]/VALUE[@name="accountthird_set"]', '411000')
+            'COMPONENTS/GRID[@name="third"]/RECORD[4]/VALUE[@name="accountthird_set"]', '411')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="third"]/RECORD[4]/VALUE[@name="total"]', '125.97€')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="third"]/RECORD[7]/VALUE[@name="contact"]', 'Minimum')
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="third"]/RECORD[7]/VALUE[@name="accountthird_set"]', '411000{[br/]}401000')
+            'COMPONENTS/GRID[@name="third"]/RECORD[7]/VALUE[@name="accountthird_set"]', '411{[br/]}401')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="third"]/RECORD[7]/VALUE[@name="total"]', '34.01€')
 
@@ -531,19 +531,19 @@ class ThirdTest(LucteriosTest):
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="third"]/RECORD[1]/VALUE[@name="contact"]', 'Dalton William')
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="third"]/RECORD[1]/VALUE[@name="accountthird_set"]', '411000')
+            'COMPONENTS/GRID[@name="third"]/RECORD[1]/VALUE[@name="accountthird_set"]', '411')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="third"]/RECORD[1]/VALUE[@name="total"]', '125.97€')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="third"]/RECORD[2]/VALUE[@name="contact"]', 'Maximum')
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="third"]/RECORD[2]/VALUE[@name="accountthird_set"]', '401000')
+            'COMPONENTS/GRID[@name="third"]/RECORD[2]/VALUE[@name="accountthird_set"]', '401')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="third"]/RECORD[2]/VALUE[@name="total"]', '78.24€')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="third"]/RECORD[3]/VALUE[@name="contact"]', 'Minimum')
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="third"]/RECORD[3]/VALUE[@name="accountthird_set"]', '411000{[br/]}401000')
+            'COMPONENTS/GRID[@name="third"]/RECORD[3]/VALUE[@name="accountthird_set"]', '411{[br/]}401')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="third"]/RECORD[3]/VALUE[@name="total"]', '34.01€')
 
@@ -577,19 +577,19 @@ class ThirdTest(LucteriosTest):
         self.assertEqual(content_csv[1].strip(), '"Liste de tiers"')
         self.assertEqual(content_csv[3].strip(), '"contact";"compte";"total";')
         self.assertEqual(
-            content_csv[4].strip(), '"Dalton Avrel";"401000";"0.00€";')
+            content_csv[4].strip(), '"Dalton Avrel";"401";"0.00€";')
         self.assertEqual(
-            content_csv[5].strip(), '"Dalton Jack";"411000";"0.00€";')
+            content_csv[5].strip(), '"Dalton Jack";"411";"0.00€";')
         self.assertEqual(
-            content_csv[6].strip(), '"Dalton Joe";"411000";"0.00€";')
+            content_csv[6].strip(), '"Dalton Joe";"411";"0.00€";')
         self.assertEqual(
-            content_csv[7].strip(), '"Dalton William";"411000";"125.97€";')
+            content_csv[7].strip(), '"Dalton William";"411";"125.97€";')
         self.assertEqual(
-            content_csv[8].strip(), '"Luke Lucky";"411000 401000";"0.00€";')
+            content_csv[8].strip(), '"Luke Lucky";"411 401";"0.00€";')
         self.assertEqual(
-            content_csv[9].strip(), '"Maximum";"401000";"78.24€";')
+            content_csv[9].strip(), '"Maximum";"401";"78.24€";')
         self.assertEqual(
-            content_csv[10].strip(), '"Minimum";"411000 401000";"34.01€";')
+            content_csv[10].strip(), '"Minimum";"411 401";"34.01€";')
 
         self.factory.xfer = ThirdListing()
         self.call('/diacamma.accounting/individualListing',
@@ -603,7 +603,7 @@ class ThirdTest(LucteriosTest):
         self.assertEqual(content_csv[1].strip(), '"Liste de tiers"')
         self.assertEqual(content_csv[3].strip(), '"contact";"compte";"total";')
         self.assertEqual(
-            content_csv[4].strip(), '"Dalton Joe";"411000";"0.00€";')
+            content_csv[4].strip(), '"Dalton Joe";"411";"0.00€";')
 
         self.factory.xfer = ThirdListing()
         self.call('/diacamma.accounting/individualListing',
@@ -617,11 +617,11 @@ class ThirdTest(LucteriosTest):
         self.assertEqual(content_csv[1].strip(), '"Liste de tiers"')
         self.assertEqual(content_csv[3].strip(), '"contact";"compte";"total";')
         self.assertEqual(
-            content_csv[4].strip(), '"Dalton William";"411000";"125.97€";')
+            content_csv[4].strip(), '"Dalton William";"411";"125.97€";')
         self.assertEqual(
-            content_csv[5].strip(), '"Maximum";"401000";"78.24€";')
+            content_csv[5].strip(), '"Maximum";"401";"78.24€";')
         self.assertEqual(
-            content_csv[6].strip(), '"Minimum";"411000 401000";"34.01€";')
+            content_csv[6].strip(), '"Minimum";"411 401";"34.01€";')
 
     def test_list_disable(self):
         fill_thirds()
