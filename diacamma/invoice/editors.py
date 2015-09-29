@@ -40,7 +40,8 @@ class ArticleEditor(LucteriosEditor):
     def edit(self, xfer):
         currency_decimal = Params.getvalue("accounting-devise-prec")
         xfer.get_components('price').prec = currency_decimal
-        xfer.get_components('sell_account').mask = current_system_account().get_revenue_mask()
+        xfer.get_components(
+            'sell_account').mask = current_system_account().get_revenue_mask()
 
 
 class BillEditor(LucteriosEditor):
@@ -49,7 +50,8 @@ class BillEditor(LucteriosEditor):
         xfer.move(0, 0, 1)
         lbl = XferCompLabelForm('title')
         lbl.set_location(1, 0, 4)
-        lbl.set_value_as_title(get_value_if_choices(self.item.bill_type, self.item.get_field_by_name('bill_type')))
+        lbl.set_value_as_title(get_value_if_choices(
+            self.item.bill_type, self.item.get_field_by_name('bill_type')))
         xfer.add_component(lbl)
         if self.item.status == 0:
             third = xfer.get_components('third')
@@ -60,13 +62,13 @@ class BillEditor(LucteriosEditor):
             btn.set_action(xfer.request, ActionsManage.get_act_changed(modal_name, 'third', _('change'), ''),
                            {'modal': FORMTYPE_MODAL, 'close': CLOSE_NO})
             xfer.add_component(btn)
-            
+
             if self.item.third is not None:
                 btn = XferCompButton('show_third')
                 btn.set_location(third.col + third.colspan + 1, third.row)
                 modal_name = xfer.item.__class__.__name__
                 btn.set_action(xfer.request, ActionsManage.get_act_changed('Third', 'show', _('show'), ''),
-                               {'modal': FORMTYPE_MODAL, 'close': CLOSE_NO, 'params':{'third':self.item.third.id}})
+                               {'modal': FORMTYPE_MODAL, 'close': CLOSE_NO, 'params': {'third': self.item.third.id}})
                 xfer.add_component(btn)
             lbl = XferCompLabelForm('info')
             lbl.set_color('red')
@@ -82,6 +84,7 @@ class DetailEditor(LucteriosEditor):
 
     def edit(self, xfer):
         currency_decimal = Params.getvalue("accounting-devise-prec")
-        xfer.get_components("article").set_action(xfer.request, xfer.get_action('', ''), {'modal': FORMTYPE_REFRESH, 'close': CLOSE_NO, 'params':{'CHANGE_ART':'YES'}})
+        xfer.get_components("article").set_action(xfer.request, xfer.get_action('', ''), {
+            'modal': FORMTYPE_REFRESH, 'close': CLOSE_NO, 'params': {'CHANGE_ART': 'YES'}})
         xfer.get_components('price').prec = currency_decimal
         xfer.get_components('reduce').prec = currency_decimal
