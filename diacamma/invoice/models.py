@@ -38,6 +38,7 @@ from django.db.models.aggregates import Max
 from lucterios.framework.error import LucteriosException, IMPORTANT
 from lucterios.CORE.parameters import Params
 from re import match
+from datetime import date
 
 
 class Vat(LucteriosModel):
@@ -253,9 +254,18 @@ class Bill(LucteriosModel):
             self.save()
 
     def cancel(self):
-        if self.status == 1:
+        if (self.status == 1) and (self.bill_type in (1, 3)):
+            new_asset = Bill.objects.create(
+                bill_type=2, date=date.today(), third=self.third, status=0)
+            for detail in self.detail_set.all():
+                detail.id = None
+                detail.bill = new_asset
+                detail.save()
             self.status = 2
             self.save()
+            return new_asset.id
+        else:
+            return None
 
     def archive(self):
         if self.status == 1:

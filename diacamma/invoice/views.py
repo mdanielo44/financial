@@ -11,7 +11,8 @@ from lucterios.framework.xferadvance import XferDelete
 from lucterios.framework.xfercomponents import XferCompLabelForm, \
     XferCompSelect, XferCompEdit
 from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage, \
-    FORMTYPE_MODAL, CLOSE_YES, SELECT_SINGLE, FORMTYPE_REFRESH, CLOSE_NO
+    FORMTYPE_MODAL, CLOSE_YES, SELECT_SINGLE, FORMTYPE_REFRESH, CLOSE_NO,\
+    SELECT_MULTI
 
 from diacamma.invoice.models import Article, Bill, Detail
 from diacamma.accounting.models import Third, FiscalYear
@@ -104,6 +105,9 @@ class BillList(XferListEditor):
         if status_filter >= 1:
             self.action_grid = [
                 ('show', _("Edit"), "images/show.png", SELECT_SINGLE)]
+        if status_filter == 1:
+            self.action_grid.append(
+                ('archive', _("Archive"), "images/ok.png", SELECT_MULTI))
 
     def fillresponse(self):
         XferListEditor.fillresponse(self)
@@ -135,11 +139,11 @@ class BillShow(XferShowEditor):
         elif self.item.status != 0:
             self.action_list = []
         if self.item.status == 1:
-            self.action_list = []
             self.action_list.insert(
                 0, ('archive', _("Archive"), "images/ok.png", CLOSE_NO))
-            self.action_list.insert(
-                1, ('cancel', _("Cancel"), "images/cancel.png", CLOSE_NO))
+            if self.item.bill_type in (1, 3):
+                self.action_list.insert(
+                    1, ('cancel', _("Cancel"), "images/cancel.png", CLOSE_NO))
         XferShowEditor.fillresponse(self)
 
 
@@ -152,7 +156,8 @@ class BillValid(XferContainerAcknowledge):
     field_id = 'bill'
 
     def fillresponse(self):
-        self.item.valid()
+        if (self.item.status == 0) and self.confirme(_("Do you want validate '%s'?") % self.item):
+            self.item.valid()
 
 
 @ActionsManage.affect('Bill', 'cancel')
@@ -164,7 +169,11 @@ class BillCancel(XferContainerAcknowledge):
     field_id = 'bill'
 
     def fillresponse(self):
-        self.item.cancel()
+        if (self.item.status == 1) and (self.item.bill_type in (1, 3)) and self.confirme(_("Do you want cancel '%s'?") % self.item):
+            asset_id = self.item.cancel()
+            if asset_id is not None:
+                self.redirect_action(ActionsManage.get_act_changed(
+                    'Bill', 'show', '', ''), {'params': {self.field_id: asset_id}})
 
 
 @ActionsManage.affect('Bill', 'archive')
@@ -176,7 +185,9 @@ class BillArchive(XferContainerAcknowledge):
     field_id = 'bill'
 
     def fillresponse(self):
-        self.item.archive()
+        if self.confirme(_("Do you want archive this %d items?") % len(self.items)):
+            for item in self.items:
+                item.archive()
 
 
 @ActionsManage.affect('Bill', 'delete')
