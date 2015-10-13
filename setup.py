@@ -30,7 +30,7 @@ setup(
     name="diacamma-financial",
     version=__version__,
     author="Lucterios",
-    author_email="support@lucterios.org",
+    author_email="info@lucterios.org",
     url="http://www.lucterios.org",
     description="Diacamma financial modules for Lucterios framework.",
     long_description="""
