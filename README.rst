@@ -19,12 +19,12 @@ Featuring of Diacamma Financial modules
 ----------------------------------------
 
 * Accounting
-** Configuration
-** Charts account & fiscal year
-** Entry accounts
-** Reporting
+ * Configuration
+ * Charts account & fiscal year
+ * Entry accounts
+ * Reporting
 * Invoice
-** Configuration
-** Articles 
-** Create & modify of Bill, Avoid, quotation and receive
-** Accounting generation for Bill, Avoid and quotation
+ * Configuration
+ * Articles 
+ * Create & modify of Bill, Avoid, quotation and receive
+ * Accounting generation for Bill, Avoid and quotation
