@@ -9,7 +9,7 @@ from lucterios.framework.xferadvance import XferListEditor, XferShowEditor, \
 from lucterios.framework.xferadvance import XferAddEditor
 from lucterios.framework.xferadvance import XferDelete
 from lucterios.framework.xfercomponents import XferCompLabelForm, \
-    XferCompSelect, XferCompEdit
+    XferCompSelect, XferCompEdit, XferCompHeader
 from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage, \
     FORMTYPE_MODAL, CLOSE_YES, SELECT_SINGLE, FORMTYPE_REFRESH, CLOSE_NO,\
     SELECT_MULTI
@@ -17,55 +17,13 @@ from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManag
 from diacamma.invoice.models import Article, Bill, Detail
 from diacamma.accounting.models import Third, FiscalYear
 from django.utils import six
-from lucterios.framework.xfergraphic import XferContainerAcknowledge
+from lucterios.framework.xfergraphic import XferContainerAcknowledge,\
+    XferContainerCustom
+from lucterios.CORE.parameters import Params
+from lucterios.CORE.editors import XferSavedCriteriaSearchEditor
 
 MenuManage.add_sub("invoice", "financial", "diacamma.invoice/images/invoice.png",
                    _("invoice"), _("Manage of billing"), 20)
-
-
-@ActionsManage.affect('Article', 'list')
-@MenuManage.describ('invoice.change_article', FORMTYPE_NOMODAL, 'invoice', _('Management of article list'))
-class ArticleList(XferListEditor):
-    icon = "article.png"
-    model = Article
-    field_id = 'article'
-    caption = _("articles")
-
-    def fillresponse_header(self):
-        show_filter = self.getparam('show_filter', 0)
-        lbl = XferCompLabelForm('lbl_showing')
-        lbl.set_value_as_name(_('Show articles'))
-        lbl.set_location(0, 3)
-        self.add_component(lbl)
-        edt = XferCompSelect("show_filter")
-        edt.set_select([(0, _('Only activate')), (1, _('All'))])
-        edt.set_value(show_filter)
-        edt.set_location(1, 3)
-        edt.set_action(self.request, self.get_action(),
-                       {'modal': FORMTYPE_REFRESH, 'close': CLOSE_NO})
-        self.add_component(edt)
-        self.filter = Q()
-        if show_filter == 0:
-            self.filter = Q(isdisabled=False)
-
-
-@ActionsManage.affect('Article', 'edit', 'add')
-@MenuManage.describ('invoice.add_article')
-class ArticleAddModify(XferAddEditor):
-    icon = "article.png"
-    model = Article
-    field_id = 'article'
-    caption_add = _("Add article")
-    caption_modify = _("Modify article")
-
-
-@ActionsManage.affect('Article', 'delete')
-@MenuManage.describ('invoice.delete_article')
-class ArticleDel(XferDelete):
-    icon = "article.png"
-    model = Article
-    field_id = 'article'
-    caption = _("Delete article")
 
 
 @ActionsManage.affect('Bill', 'list')
@@ -74,7 +32,7 @@ class BillList(XferListEditor):
     icon = "bill.png"
     model = Bill
     field_id = 'bill'
-    caption = _("bill")
+    caption = _("Bill")
 
     def fillresponse_header(self):
         status_filter = self.getparam('status_filter', -1)
@@ -111,7 +69,23 @@ class BillList(XferListEditor):
 
     def fillresponse(self):
         XferListEditor.fillresponse(self)
-        self.get_components(self.field_id).colspan = 3
+        grid = self.get_components(self.field_id)
+        grid.colspan = 3
+        if Params.getvalue("invoice-vat-mode") == 1:
+            grid.headers[5] = XferCompHeader(grid.headers[5].name, _(
+                'total excl. taxes'), grid.headers[5].type, grid.headers[5].orderable)
+        elif Params.getvalue("invoice-vat-mode") == 2:
+            grid.headers[5] = XferCompHeader(grid.headers[5].name, _(
+                'total incl. taxes'), grid.headers[5].type, grid.headers[5].orderable)
+
+
+@ActionsManage.affect('Bill', 'search')
+@MenuManage.describ('invoice.change_bill', FORMTYPE_NOMODAL, 'invoice', _('To find a bill following a set of criteria.'))
+class BillSearch(XferSavedCriteriaSearchEditor):
+    icon = "bill.png"
+    model = Bill
+    field_id = 'bill'
+    caption = _("Search bill")
 
 
 @ActionsManage.affect('Bill', 'modify', 'add')
@@ -274,3 +248,57 @@ class DetailDel(XferDelete):
     model = Detail
     field_id = 'detail'
     caption = _("Delete detail")
+
+
+@ActionsManage.affect('Article', 'list')
+@MenuManage.describ('invoice.change_article', FORMTYPE_NOMODAL, 'invoice', _('Management of article list'))
+class ArticleList(XferListEditor):
+    icon = "article.png"
+    model = Article
+    field_id = 'article'
+    caption = _("Articles")
+
+    def fillresponse_header(self):
+        show_filter = self.getparam('show_filter', 0)
+        lbl = XferCompLabelForm('lbl_showing')
+        lbl.set_value_as_name(_('Show articles'))
+        lbl.set_location(0, 3)
+        self.add_component(lbl)
+        edt = XferCompSelect("show_filter")
+        edt.set_select([(0, _('Only activate')), (1, _('All'))])
+        edt.set_value(show_filter)
+        edt.set_location(1, 3)
+        edt.set_action(self.request, self.get_action(),
+                       {'modal': FORMTYPE_REFRESH, 'close': CLOSE_NO})
+        self.add_component(edt)
+        self.filter = Q()
+        if show_filter == 0:
+            self.filter = Q(isdisabled=False)
+
+
+@ActionsManage.affect('Article', 'edit', 'add')
+@MenuManage.describ('invoice.add_article')
+class ArticleAddModify(XferAddEditor):
+    icon = "article.png"
+    model = Article
+    field_id = 'article'
+    caption_add = _("Add article")
+    caption_modify = _("Modify article")
+
+
+@ActionsManage.affect('Article', 'delete')
+@MenuManage.describ('invoice.delete_article')
+class ArticleDel(XferDelete):
+    icon = "article.png"
+    model = Article
+    field_id = 'article'
+    caption = _("Delete article")
+
+
+@ActionsManage.affect('Article', 'statistic')
+@MenuManage.describ('invoice.change_bill', FORMTYPE_NOMODAL, 'invoice', _('Statistic of selling'))
+class BillStatistic(XferContainerCustom):
+    icon = "report.png"
+    model = Bill
+    field_id = 'bill'
+    caption = _("Statistic")

@@ -282,3 +282,9 @@ class AccountingMigrate(MigrateAbstract):
             import traceback
             traceback.print_exc()
             six.print_("*** Unexpected error: %s ****" % sys.exc_info()[0])
+        self.old_db.objectlinks['third'] = self.third_list
+        self.old_db.objectlinks['year'] = self.year_list
+        self.old_db.objectlinks['costaccounting'] = self.costaccounting_list
+        self.old_db.objectlinks['chartsaccount'] = self.chartsaccount_list
+        self.old_db.objectlinks['journal'] = self.journal_list
+        self.old_db.objectlinks['entryaccount'] = self.entryaccount_list

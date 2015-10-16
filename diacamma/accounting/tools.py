@@ -57,7 +57,7 @@ def get_amount_sum(val):
 
 def currency_round(amount):
     currency_decimal = Params.getvalue("accounting-devise-prec")
-    return round(amount, currency_decimal)
+    return round(float(amount), currency_decimal)
 
 
 def format_devise(amount, mode):

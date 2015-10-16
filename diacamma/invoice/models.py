@@ -23,22 +23,22 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
 from __future__ import unicode_literals
+from re import match
+from datetime import date
 
 from django.db import models
+from django.db.models.aggregates import Max
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.utils.translation import ugettext_lazy as _
 from django.utils import six
 
 from lucterios.framework.models import LucteriosModel, get_value_if_choices, \
     get_value_converted
+from lucterios.framework.error import LucteriosException, IMPORTANT, GRAVE
+from lucterios.CORE.parameters import Params
 from diacamma.accounting.models import FiscalYear, Third, EntryAccount, \
     CostAccounting, Journal, EntryLineAccount, ChartsAccount
-from django.core.validators import MaxValueValidator, MinValueValidator
 from diacamma.accounting.tools import current_system_account, format_devise, currency_round
-from django.db.models.aggregates import Max
-from lucterios.framework.error import LucteriosException, IMPORTANT
-from lucterios.CORE.parameters import Params
-from re import match
-from datetime import date
 
 
 class Vat(LucteriosModel):
@@ -127,18 +127,55 @@ class Bill(LucteriosModel):
         return ["bill_type", "date", "comment"]
 
     @classmethod
-    def get_show_fields(cls):
-        return [((_('numeros'), "num_txt"), "date"), "third", "detail_set", "comment", ("status", (_('total'), 'total'))]
+    def get_search_fields(cls):
+        search_fields = [
+            "bill_type", "fiscal_year", "num", "date", "comment", "status"]
+        for fieldname in Third.get_search_fields():
+            search_fields.append("third." + fieldname)
+        for det_field in ["article.reference", "article.designation", "article.sell_account", "article.vat", "designation", "price", "unit", "quantity"]:
+            search_fields.append("detail_set." + det_field)
+        return search_fields
 
-    def get_total(self):
-        val = 0
-        for detail in self.detail_set.all():
-            val += detail.get_total()
-        return val
+    @classmethod
+    def get_show_fields(cls):
+        return [((_('numeros'), "num_txt"), "date"), "third", "detail_set", "comment", ("status", (_('total'), 'total_excltax'))]
 
     @property
     def total(self):
-        return format_devise(self.get_total(), 5)
+        if Params.getvalue("invoice-vat-mode") == 2:
+            return self.total_incltax
+        else:
+            return self.total_excltax
+
+    def get_total_excltax(self):
+        val = 0
+        for detail in self.detail_set.all():
+            val += detail.get_total_excltax()
+        return val
+
+    @property
+    def total_excltax(self):
+        return format_devise(self.get_total_excltax(), 5)
+
+    def get_vta_sum(self):
+        val = 0
+        for detail in self.detail_set.all():
+            val += detail.get_vta()
+        return val
+
+    @property
+    def vta_sum(self):
+        return format_devise(self.get_vta_sum(), 5)
+
+    def get_total_incltax(self):
+        val = 0
+        for detail in self.detail_set.all():
+            val += detail.get_total_incltax()
+        return val
+
+    @property
+    def total_incltax(self):
+        return format_devise(self.get_total_incltax(), 5)
 
     @property
     def num_txt(self):
@@ -206,8 +243,7 @@ class Bill(LucteriosModel):
             raise LucteriosException(
                 IMPORTANT, _("third has not customer account"))
         EntryLineAccount.objects.create(
-            account=third_account, amount=is_bill * self.get_total(), third=self.third, entry=self.entry)
-
+            account=third_account, amount=is_bill * self.get_total_incltax(), third=self.third, entry=self.entry)
         remise_total = 0
         detail_list = {}
         for detail in self.detail_set.all():
@@ -223,8 +259,8 @@ class Bill(LucteriosModel):
             if detail_account.id not in detail_list.keys():
                 detail_list[detail_account.id] = [detail_account, 0]
             detail_list[detail_account.id][
-                1] += currency_round(detail.price * detail.quantity)
-            remise_total += currency_round(detail.reduce)
+                1] += detail.get_total_excltax() + detail.get_reduce_excltax()
+            remise_total += detail.get_reduce_excltax()
         if remise_total > 0.001:
             remise_code = Params.getvalue("invoice-reduce-account")
             remise_account = ChartsAccount.get_account(
@@ -237,6 +273,20 @@ class Bill(LucteriosModel):
         for detail_item in detail_list.values():
             EntryLineAccount.objects.create(
                 account=detail_item[0], amount=is_bill * detail_item[1], entry=self.entry)
+        if self.get_vta_sum() > 0.001:
+            vta_code = Params.getvalue("invoice-vatsell-account")
+            vta_account = ChartsAccount.get_account(
+                vta_code, self.fiscal_year)
+            if vta_account is None:
+                raise LucteriosException(
+                    IMPORTANT, _("vta-account is not defined!"))
+            EntryLineAccount.objects.create(
+                account=vta_account, amount=is_bill * self.get_vta_sum(), entry=self.entry)
+        no_change, debit_rest, credit_rest = self.entry.serial_control(
+            self.entry.get_serial())
+        if not no_change or (abs(debit_rest) > 0.001) or (abs(credit_rest) > 0.001):
+            raise LucteriosException(
+                GRAVE, _("Error in accounting generator!"))
 
     def valid(self):
         if (self.status == 0) and (self.get_info_state() == ''):
@@ -286,14 +336,16 @@ class Detail(LucteriosModel):
     price = models.DecimalField(verbose_name=_('price'), max_digits=10, decimal_places=3, default=0.0, validators=[
         MinValueValidator(0.0), MaxValueValidator(9999999.999)])
     unit = models.CharField(
-        verbose_name=_('unit'), null=False, default='', max_length=10)
+        verbose_name=_('unit'), null=True, default='', max_length=10)
     quantity = models.DecimalField(verbose_name=_('quantity'), max_digits=10, decimal_places=2, default=1.0, validators=[
         MinValueValidator(0.0), MaxValueValidator(9999999.99)])
     reduce = models.DecimalField(verbose_name=_('reduce'), max_digits=10, decimal_places=3, default=0.0, validators=[
         MinValueValidator(0.0), MaxValueValidator(9999999.999)])
+    vta_rate = models.DecimalField(_('vta rate'), max_digits=6, decimal_places=2, default=10.0, validators=[
+        MinValueValidator(0.0), MaxValueValidator(100.0)])
 
     def __str__(self):
-        return "[%s] %s:%f" % (six.text_type(self.reference), six.text_type(self.designation), self.price)
+        return "[%s] %s:%f" % (six.text_type(self.reference), six.text_type(self.designation), self.price_txt)
 
     @classmethod
     def get_default_fields(cls):
@@ -307,23 +359,90 @@ class Detail(LucteriosModel):
     def get_show_fields(cls):
         return ["article", "designation", (_('price'), "price_txt"), "unit", "quantity", (_('reduce'), "reduce_txt")]
 
+    def get_price(self):
+        if (Params.getvalue("invoice-vat-mode") == 2) and (self.vta_rate > 0.001):
+            return currency_round(self.price * self.vta_rate)
+        if (Params.getvalue("invoice-vat-mode") == 1) and (self.vta_rate < -0.001):
+            return currency_round(self.price * -1 * self.vta_rate / (1 - self.vta_rate))
+        return self.price
+
+    def get_reduce(self):
+        if (Params.getvalue("invoice-vat-mode") == 2) and (self.vta_rate > 0.001):
+            return currency_round(self.reduce * self.vta_rate)
+        if (Params.getvalue("invoice-vat-mode") == 1) and (self.vta_rate < -0.001):
+            return currency_round(self.reduce * -1 * self.vta_rate / (1 - self.vta_rate))
+        return self.reduce
+
     @property
     def price_txt(self):
-        return format_devise(self.price, 5)
+        return format_devise(self.get_price(), 5)
 
     @property
     def reduce_txt(self):
         if self.reduce > 0.0001:
-            return "%s(%.2f%%)" % (format_devise(self.reduce, 5), 100 * self.reduce / (self.price * self.quantity))
+            return "%s(%.2f%%)" % (format_devise(self.get_reduce(), 5), 100 * self.get_reduce() / (self.get_price() * self.quantity))
         else:
             return None
+
+    @property
+    def total(self):
+        if Params.getvalue("invoice-vat-mode") == 2:
+            return self.total_incltax
+        elif Params.getvalue("invoice-vat-mode") == 1:
+            return self.total_excltax
+        else:
+            return format_devise(self.get_total(), 5)
 
     def get_total(self):
         return currency_round(self.price * self.quantity - self.reduce)
 
+    def get_total_excltax(self):
+        if self.vta_rate < -0.001:
+            return self.get_total() - self.get_vta()
+        else:
+            return self.get_total()
+
+    def get_reduce_vat(self):
+        if self.vta_rate < -0.001:
+            return currency_round(self.reduce * -1 * self.vta_rate / (1 - self.vta_rate))
+        elif self.vta_rate > 0.001:
+            return currency_round(self.reduce * self.vta_rate)
+        else:
+            return 0
+
+    def get_reduce_excltax(self):
+        if self.vta_rate < -0.001:
+            return currency_round(self.reduce) - self.get_reduce_vat()
+        else:
+            return currency_round(self.reduce)
+
     @property
-    def total(self):
-        return format_devise(self.get_total(), 5)
+    def total_excltax(self):
+        return format_devise(self.get_total_excltax(), 5)
+
+    def get_total_incltax(self):
+        if self.vta_rate > 0.001:
+            return self.get_total() + self.get_vta()
+        else:
+            return self.get_total()
+
+    @property
+    def total_incltax(self):
+        return format_devise(self.get_total_incltax(), 5)
+
+    def get_vta(self):
+        val = 0
+        if self.vta_rate > 0.001:
+            val = currency_round(self.price * self.quantity * self.vta_rate)
+        elif self.vta_rate < -0.001:
+            val = currency_round(
+                self.price * self.quantity * -1 * self.vta_rate / (1 - self.vta_rate))
+        val -= self.get_reduce_vat()
+        return val
+
+    @property
+    def price_vta(self):
+        return format_devise(self.get_vta(), 5)
 
     class Meta(object):
         verbose_name = _('detail')

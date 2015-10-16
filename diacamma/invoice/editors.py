@@ -27,12 +27,14 @@ from __future__ import unicode_literals
 from django.utils.translation import ugettext_lazy as _
 
 from lucterios.framework.editors import LucteriosEditor
-from lucterios.framework.xfercomponents import XferCompButton, XferCompLabelForm
+from lucterios.framework.xfercomponents import XferCompButton, XferCompLabelForm,\
+    XferCompHeader
 from lucterios.framework.tools import ActionsManage, FORMTYPE_MODAL, CLOSE_NO, \
     FORMTYPE_REFRESH
 from lucterios.framework.models import get_value_if_choices
-from diacamma.accounting.tools import current_system_account
 from lucterios.CORE.parameters import Params
+
+from diacamma.accounting.tools import current_system_account
 
 
 class ArticleEditor(LucteriosEditor):
@@ -46,6 +48,10 @@ class ArticleEditor(LucteriosEditor):
 
 class BillEditor(LucteriosEditor):
 
+    def edit(self, xfer):
+        xfer.get_components('comment').with_hypertext = True
+        xfer.get_components('comment').set_size(100, 375)
+
     def show(self, xfer):
         xfer.move(0, 0, 1)
         lbl = XferCompLabelForm('title')
@@ -53,6 +59,22 @@ class BillEditor(LucteriosEditor):
         lbl.set_value_as_title(get_value_if_choices(
             self.item.bill_type, self.item.get_field_by_name('bill_type')))
         xfer.add_component(lbl)
+        details = xfer.get_components('detail')
+        if Params.getvalue("invoice-vat-mode") != 0:
+            if Params.getvalue("invoice-vat-mode") == 1:
+                details.headers[2] = XferCompHeader(details.headers[2].name, _(
+                    'price excl. taxes'), details.headers[2].type, details.headers[2].orderable)
+                details.headers[6] = XferCompHeader(details.headers[6].name, _(
+                    'total excl. taxes'), details.headers[6].type, details.headers[6].orderable)
+            elif Params.getvalue("invoice-vat-mode") == 2:
+                details.headers[2] = XferCompHeader(details.headers[2].name, _(
+                    'price incl. taxes'), details.headers[2].type, details.headers[2].orderable)
+                details.headers[6] = XferCompHeader(details.headers[6].name, _(
+                    'total incl. taxes'), details.headers[6].type, details.headers[6].orderable)
+            xfer.get_components('lbl_total_excltax').set_value_as_name(
+                _('total excl. taxes'))
+            xfer.filltab_from_model(1, xfer.get_max_row() + 1, True,
+                                    [((_('VTA sum'), 'vta_sum'), (_('total incl. taxes'), 'total_incltax'))])
         if self.item.status == 0:
             third = xfer.get_components('third')
             third.colspan -= 2
@@ -76,11 +98,19 @@ class BillEditor(LucteriosEditor):
             lbl.set_value(self.item.get_info_state())
             xfer.add_component(lbl)
         else:
-            xfer.get_components('detail').actions = []
+            details.actions = []
         return
 
 
 class DetailEditor(LucteriosEditor):
+
+    def before_save(self, xfer):
+        self.item.vta_rate = 0
+        if (Params.getvalue("invoice-vat-mode") != 0) and (self.item.article is not None) and (self.item.article.vat is not None):
+            self.item.vta_rate = float(self.item.article.vat.rate / 100)
+        if Params.getvalue("invoice-vat-mode") == 2:
+            self.item.vta_rate = -1 * self.item.vta_rate
+        return
 
     def edit(self, xfer):
         currency_decimal = Params.getvalue("accounting-devise-prec")

@@ -23,12 +23,12 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
 from __future__ import unicode_literals
+import sys
 
 from django.apps import apps
 from django.utils import six
 
 from lucterios.install.lucterios_migration import MigrateAbstract
-import sys
 from lucterios.CORE.models import Parameter
 from diacamma.accounting.from_v1 import convert_code
 
@@ -39,6 +39,8 @@ class InvoiceMigrate(MigrateAbstract):
         MigrateAbstract.__init__(self, old_db)
         self.vat_list = {}
         self.article_list = {}
+        self.bill_list = {}
+        self.detail_list = {}
 
     def _vat(self):
         vat_mdl = apps.get_model("invoice", "Vat")
@@ -64,10 +66,53 @@ class InvoiceMigrate(MigrateAbstract):
             if unit == 'NULL':
                 unit = None
             self.article_list[articleid] = article_mdl.objects.create(
-                reference=reference, designation=designation, price=prix, unit=unit, sell_account=compteVente, isdisabled=noactive == 'o')
+                reference=reference, designation=designation, price=prix, unit=unit, sell_account=convert_code(compteVente), isdisabled=noactive == 'o')
             if tva != 0:
                 self.article_list[articleid].vat = self.vat_list[tva]
                 self.article_list[articleid].save()
+
+    def _bill(self):
+        bill_mdl = apps.get_model("invoice", "Bill")
+        bill_mdl.objects.all().delete()
+        self.bill_list = {}
+        detail_mdl = apps.get_model("invoice", "Detail")
+        detail_mdl.objects.all().delete()
+        self.detail_list = {}
+        cur_b = self.old_db.open()
+        cur_b.execute(
+            "SELECT id,exercice,typeFact,num,date,tiers,comment,etat,operation,analytique FROM fr_sdlibre_facture_factures")
+        for billid, exercice, typeFact, num, factdate, tiers, comment, etat, operation, _ in cur_b.fetchall():
+            if typeFact != 3:
+                self.print_log(
+                    "=> bill ex:%s - type:%s - num:%s - date=%s", (exercice, typeFact, num, factdate))
+                if typeFact == 4:
+                    typeFact = 3
+                self.bill_list[billid] = bill_mdl.objects.create(
+                    bill_type=typeFact, date=factdate, comment=comment, status=etat, num=num)
+                if exercice in self.old_db.objectlinks['year'].keys():
+                    self.bill_list[billid].fiscal_year = self.old_db.objectlinks[
+                        'year'][exercice]
+                if tiers in self.old_db.objectlinks['third'].keys():
+                    self.bill_list[billid].third = self.old_db.objectlinks[
+                        'third'][tiers]
+                if operation in self.old_db.objectlinks['entryaccount'].keys():
+                    self.bill_list[billid].entry = self.old_db.objectlinks[
+                        'entryaccount'][operation]
+                self.bill_list[billid].save()
+        cur_d = self.old_db.open()
+        cur_d.execute(
+            "SELECT id,article,designation,prix,quantite,unit,factures,remise,taxe FROM fr_sdlibre_facture_details")
+        for detailid, article, designation, prix, quantite, unit, factures, remise, taxe in cur_d.fetchall():
+            if factures in self.bill_list.keys():
+                self.detail_list[detailid] = detail_mdl.objects.create(bill=self.bill_list[factures], designation=designation,
+                                                                       price=prix, unit=unit, quantity=quantite, reduce=remise)
+                if article in self.article_list.keys():
+                    self.detail_list[
+                        detailid].article = self.article_list[article]
+                if taxe > 0.0001:
+                    self.detail_list[
+                        detailid].vta_rate = taxe / (prix * quantite - remise)
+                self.detail_list[detailid].save()
 
     def _params(self):
         cur_p = self.old_db.open()
@@ -102,7 +147,10 @@ class InvoiceMigrate(MigrateAbstract):
             self._params()
             self._vat()
             self._article()
+            self._bill()
         except:
             import traceback
             traceback.print_exc()
             six.print_("*** Unexpected error: %s ****" % sys.exc_info()[0])
+        self.old_db.objectlinks['article'] = self.article_list
+        self.old_db.objectlinks['bill'] = self.bill_list
