@@ -642,7 +642,7 @@ class BillTest(LucteriosTest):
         self.call('/diacamma.invoice/billShow', {'bill': 2}, False)
         self.assert_observer(
             'core.custom', 'diacamma.invoice', 'billShow')
-        self.assert_count_equal('COMPONENTS/*', 19)
+        self.assert_count_equal('COMPONENTS/*', 21)
         self.assert_xml_equal(
             'COMPONENTS/LABELFORM[@name="total_excltax"]', "107.45€")
         self.assert_xml_equal(
@@ -734,15 +734,21 @@ class BillTest(LucteriosTest):
         self.factory.xfer = BillList()
         self.call('/diacamma.invoice/billList', {'status_filter': 2}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'billList')
+        self.assert_count_equal('COMPONENTS/GRID[@name="bill"]/RECORD', 0)
+        self.factory.xfer = BillList()
+        self.call('/diacamma.invoice/billList', {'status_filter': 3}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'billList')
         self.assert_count_equal('COMPONENTS/GRID[@name="bill"]/RECORD', 1)
 
         self.factory.xfer = BillShow()
         self.call('/diacamma.invoice/billShow', {'bill': 2}, False)
         self.assert_observer(
             'core.custom', 'diacamma.invoice', 'billShow')
-        self.assert_count_equal('COMPONENTS/*', 19)
+        self.assert_count_equal('COMPONENTS/*', 21)
         self.assert_xml_equal(
-            'COMPONENTS/LABELFORM[@name="total_excltax"]', "107.45€")
+            'COMPONENTS/LABELFORM[@name="cost_accounting"]', "open")
+        self.assert_xml_equal(
+            'COMPONENTS/LABELFORM[@name="total_excltax"]', "62.50€")
         self.assert_xml_equal(
             'COMPONENTS/LABELFORM[@name="num_txt"]', "---")
         self.assert_xml_equal(
