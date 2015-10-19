@@ -56,8 +56,8 @@ class ChartsAccountList(XferListEditor):
         select_type = self.getparam('type_of_account', 0)
         self.item.year = FiscalYear.get_current(select_year)
         self.fill_from_model(0, 1, False, ['year', 'type_of_account'])
-        self.get_components('year').set_action(self.request, ChartsAccountList.get_action(
-        ), {'close': CLOSE_NO, 'modal': FORMTYPE_REFRESH})
+        self.get_components('year').set_action(self.request, self.get_action(),
+                                               {'close': CLOSE_NO, 'modal': FORMTYPE_REFRESH})
         type_of_account = self.get_components('type_of_account')
         type_of_account.select_list.append((-1, '---'))
         type_of_account.set_value(select_type)

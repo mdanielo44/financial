@@ -28,6 +28,7 @@ from datetime import date
 
 from django.db import models
 from django.db.models.aggregates import Max
+from django.db.models import Q
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.utils.translation import ugettext_lazy as _
 from django.utils import six
@@ -124,7 +125,7 @@ class Bill(LucteriosModel):
 
     @classmethod
     def get_edit_fields(cls):
-        return ["bill_type", "date", "comment"]
+        return ["bill_type", "cost_accounting", "date", "comment"]
 
     @classmethod
     def get_search_fields(cls):
@@ -138,7 +139,7 @@ class Bill(LucteriosModel):
 
     @classmethod
     def get_show_fields(cls):
-        return [((_('numeros'), "num_txt"), "date"), "third", "detail_set", "comment", ("status", (_('total'), 'total_excltax'))]
+        return [((_('numeros'), "num_txt"), "date"), "third", "detail_set", "comment", "cost_accounting", ("status", (_('total'), 'total_excltax'))]
 
     @property
     def total(self):
@@ -231,7 +232,7 @@ class Bill(LucteriosModel):
             is_bill = 1
         self.entry = EntryAccount.objects.create(
             year=self.fiscal_year, date_value=self.date, designation=self.__str__(),
-            journal=Journal.objects.get(id=3))
+            journal=Journal.objects.get(id=3), costaccounting=self.cost_accounting)
         accounts = self.third.accountthird_set.filter(
             code__regex=current_system_account().get_customer_mask())
         if len(accounts) == 0:
@@ -306,7 +307,7 @@ class Bill(LucteriosModel):
     def cancel(self):
         if (self.status == 1) and (self.bill_type in (1, 3)):
             new_asset = Bill.objects.create(
-                bill_type=2, date=date.today(), third=self.third, status=0)
+                bill_type=2, date=date.today(), third=self.third, status=0, cost_accounting=self.cost_accounting)
             for detail in self.detail_set.all():
                 detail.id = None
                 detail.bill = new_asset
@@ -317,10 +318,83 @@ class Bill(LucteriosModel):
         else:
             return None
 
+    def convert_to_bill(self):
+        if (self.status == 1) and (self.bill_type == 0):
+            new_bill = Bill.objects.create(
+                bill_type=1, date=date.today(), third=self.third, status=0)
+            cost_accountings = CostAccounting.objects.filter(
+                Q(status=0) & Q(is_default=True))
+            if len(cost_accountings) >= 1:
+                new_bill.cost_accounting = cost_accountings[0]
+                new_bill.save()
+            for detail in self.detail_set.all():
+                detail.id = None
+                detail.bill = new_bill
+                detail.save()
+            self.status = 3
+            self.save()
+            return new_bill.id
+        else:
+            return None
+
     def archive(self):
         if self.status == 1:
             self.status = 3
             self.save()
+
+    def get_statistics_customer(self):
+        cust_list = []
+        if self.fiscal_year is not None:
+            total_cust = 0
+            costumers = {}
+            for bill in Bill.objects.filter(Q(fiscal_year=self.fiscal_year) & Q(
+                    bill_type__in=(1, 2, 3)) & Q(status__in=(1, 2, 3))):
+                if bill.third_id not in costumers.keys():
+                    costumers[bill.third_id] = 0
+                if bill.bill_type == 2:
+                    costumers[bill.third_id] -= bill.get_total_excltax()
+                    total_cust -= bill.get_total_excltax()
+                else:
+                    costumers[bill.third_id] += bill.get_total_excltax()
+                    total_cust += bill.get_total_excltax()
+            for cust_id in costumers.keys():
+                cust_list.append((six.text_type(Third.objects.get(id=cust_id)),
+                                  format_devise(costumers[cust_id], 5),
+                                  "%.2f %%" % (100 * costumers[cust_id] / total_cust), costumers[cust_id]))
+            cust_list.sort(key=lambda cust_item: cust_item[3], reverse=True)
+            cust_list.append(("{[b]}%s{[/b]}" % _('total'), "{[b]}%s{[/b]}" % format_devise(total_cust, 5),
+                              "{[b]}%.2f %%{[/b]}" % 100, total_cust))
+        return cust_list
+
+    def get_statistics_article(self):
+        art_list = []
+        if self.fiscal_year is not None:
+            total_art = 0
+            articles = {}
+            for det in Detail.objects.filter(Q(bill__fiscal_year=self.fiscal_year) & Q(
+                    bill__bill_type__in=(1, 2, 3)) & Q(bill__status__in=(1, 2, 3))):
+                if det.article_id not in articles.keys():
+                    articles[det.article_id] = [0, 0]
+                if det.bill.bill_type == 2:
+                    articles[det.article_id][0] -= det.get_total_excltax()
+                    articles[det.article_id][1] -= float(det.quantity)
+                    total_art -= det.get_total_excltax()
+                else:
+                    articles[det.article_id][0] += det.get_total_excltax()
+                    articles[det.article_id][1] += float(det.quantity)
+                    total_art += det.get_total_excltax()
+            for art_id in articles.keys():
+                art_list.append((six.text_type(Article.objects.get(id=art_id)),
+                                 format_devise(articles[art_id][0], 5),
+                                 "%.2f" % articles[art_id][1],
+                                 format_devise(
+                                     articles[art_id][0] / articles[art_id][1], 5),
+                                 "%.2f %%" % (100 * articles[art_id][0] / total_art), articles[art_id][0]))
+            art_list.sort(key=lambda art_item: art_item[5], reverse=True)
+            art_list.append(("{[b]}%s{[/b]}" % _('total'), "{[b]}---{[/b]}", "{[b]}---{[/b]}",
+                             "{[b]}%s{[/b]}" % format_devise(total_art, 5),
+                             "{[b]}%.2f %%{[/b]}" % 100, total_art))
+        return art_list
 
     class Meta(object):
         verbose_name = _('bill')

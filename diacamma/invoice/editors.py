@@ -25,6 +25,8 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import unicode_literals
 
 from django.utils.translation import ugettext_lazy as _
+from django.db.models import Q
+from django.utils import six
 
 from lucterios.framework.editors import LucteriosEditor
 from lucterios.framework.xfercomponents import XferCompButton, XferCompLabelForm,\
@@ -35,6 +37,7 @@ from lucterios.framework.models import get_value_if_choices
 from lucterios.CORE.parameters import Params
 
 from diacamma.accounting.tools import current_system_account
+from diacamma.accounting.models import CostAccounting
 
 
 class ArticleEditor(LucteriosEditor):
@@ -49,10 +52,33 @@ class ArticleEditor(LucteriosEditor):
 class BillEditor(LucteriosEditor):
 
     def edit(self, xfer):
+        bill_type = xfer.getparam('bill_type', xfer.item.bill_type)
         xfer.get_components('comment').with_hypertext = True
         xfer.get_components('comment').set_size(100, 375)
+        com_type = xfer.get_components('bill_type')
+        com_type.set_value(bill_type)
+        com_type.set_action(
+            xfer.request, xfer.get_action(), {'close': CLOSE_NO, 'modal': FORMTYPE_REFRESH})
+        if bill_type == 0:
+            xfer.remove_component("cost_accounting")
+            xfer.remove_component("lbl_cost_accounting")
+        else:
+            comp = xfer.get_components("cost_accounting")
+            sel_list = []
+            sel_list.append((0, "---"))
+            comp.set_value(0)
+            for select_obj in CostAccounting.objects.filter(Q(status=0)):
+                sel_list.append((select_obj.id, six.text_type(select_obj)))
+                if select_obj.is_default:
+                    comp.set_value(select_obj.id)
+            if xfer.item.id is not None:
+                comp.set_value(xfer.item.cost_accounting_id)
+            comp.set_select(sel_list)
 
     def show(self, xfer):
+        if xfer.item.cost_accounting is None:
+            xfer.remove_component("cost_accounting")
+            xfer.remove_component("lbl_cost_accounting")
         xfer.move(0, 0, 1)
         lbl = XferCompLabelForm('title')
         lbl.set_location(1, 0, 4)

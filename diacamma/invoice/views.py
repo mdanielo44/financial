@@ -9,18 +9,20 @@ from lucterios.framework.xferadvance import XferListEditor, XferShowEditor, \
 from lucterios.framework.xferadvance import XferAddEditor
 from lucterios.framework.xferadvance import XferDelete
 from lucterios.framework.xfercomponents import XferCompLabelForm, \
-    XferCompSelect, XferCompEdit, XferCompHeader
+    XferCompSelect, XferCompEdit, XferCompHeader, XferCompImage, XferCompGrid
 from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage, \
     FORMTYPE_MODAL, CLOSE_YES, SELECT_SINGLE, FORMTYPE_REFRESH, CLOSE_NO,\
-    SELECT_MULTI
+    SELECT_MULTI, WrapAction
 
 from diacamma.invoice.models import Article, Bill, Detail
 from diacamma.accounting.models import Third, FiscalYear
-from django.utils import six
+from django.utils import six, formats
 from lucterios.framework.xfergraphic import XferContainerAcknowledge,\
     XferContainerCustom
 from lucterios.CORE.parameters import Params
 from lucterios.CORE.editors import XferSavedCriteriaSearchEditor
+from datetime import date
+from lucterios.CORE.xferprint import XferPrintAction
 
 MenuManage.add_sub("invoice", "financial", "diacamma.invoice/images/invoice.png",
                    _("invoice"), _("Manage of billing"), 20)
@@ -115,6 +117,9 @@ class BillShow(XferShowEditor):
         if self.item.status == 1:
             self.action_list.insert(
                 0, ('archive', _("Archive"), "images/ok.png", CLOSE_NO))
+            if self.item.bill_type == 0:
+                self.action_list.insert(
+                    0, ('convertbill', _("=> Bill"), "images/ok.png", CLOSE_YES))
             if self.item.bill_type in (1, 3):
                 self.action_list.insert(
                     1, ('cancel', _("Cancel"), "images/cancel.png", CLOSE_NO))
@@ -132,6 +137,21 @@ class BillValid(XferContainerAcknowledge):
     def fillresponse(self):
         if (self.item.status == 0) and self.confirme(_("Do you want validate '%s'?") % self.item):
             self.item.valid()
+
+
+@ActionsManage.affect('Bill', 'convertbill')
+@MenuManage.describ('contacts.change_bill')
+class BillFromQuotation(XferContainerAcknowledge):
+    caption = _("Convert to bill")
+    icon = "bill.png"
+    model = Bill
+    field_id = 'bill'
+
+    def fillresponse(self):
+        if (self.item.bill_type == 0) and (self.item.status == 1) and self.confirme(_("Do you want convert '%s' to bill?") % self.item):
+            new_id = self.item.convert_to_bill()
+            self.redirect_action(ActionsManage.get_act_changed(
+                self.model.__name__, 'show', '', ''), {'params': {self.field_id: new_id}})
 
 
 @ActionsManage.affect('Bill', 'cancel')
@@ -296,9 +316,81 @@ class ArticleDel(XferDelete):
 
 
 @ActionsManage.affect('Article', 'statistic')
-@MenuManage.describ('invoice.change_bill', FORMTYPE_NOMODAL, 'invoice', _('Statistic of selling'))
+@MenuManage.describ('invoice.change_bill', FORMTYPE_MODAL, 'invoice', _('Statistic of selling'))
 class BillStatistic(XferContainerCustom):
     icon = "report.png"
     model = Bill
     field_id = 'bill'
     caption = _("Statistic")
+
+    def fill_header(self):
+        img = XferCompImage('img')
+        img.set_value(self.icon_path())
+        img.set_location(0, 0, 1, 2)
+        self.add_component(img)
+        select_year = self.getparam('fiscal_year')
+        lbl = XferCompLabelForm('lbl_title')
+        lbl.set_value_as_headername(
+            _('Statistics in date of %s') % formats.date_format(date.today(), "DATE_FORMAT"))
+        lbl.set_location(1, 0, 2)
+        self.add_component(lbl)
+        self.item.fiscal_year = FiscalYear.get_current(select_year)
+        self.fill_from_model(1, 1, False, ['fiscal_year'])
+        self.get_components('fiscal_year').set_action(
+            self.request, self.get_action(), {'close': CLOSE_NO, 'modal': FORMTYPE_REFRESH})
+
+    def fill_customers(self):
+        costumer_result = self.item.get_statistics_customer()
+        grid = XferCompGrid("customers")
+        grid.add_header("customer", _("customer"))
+        grid.add_header("amount", _("amount"))
+        grid.add_header("ratio", _("ratio (%)"))
+        index = 0
+        for cust_val in costumer_result:
+            grid.set_value(index, "customer", cust_val[0])
+            grid.set_value(index, "amount", cust_val[1])
+            grid.set_value(index, "ratio", cust_val[2])
+            index += 1
+        grid.set_location(0, 1, 3)
+        grid.set_size(400, 800)
+        self.add_component(grid)
+
+    def fill_articles(self):
+        articles_result = self.item.get_statistics_article()
+        grid = XferCompGrid("articles")
+        grid.add_header("article", _("article"))
+        grid.add_header("amount", _("amount"))
+        grid.add_header("number", _("number"))
+        grid.add_header("mean", _("mean"))
+        grid.add_header("ratio", _("ratio (%)"))
+        index = 0
+        for art_val in articles_result:
+            grid.set_value(index, "article", art_val[0])
+            grid.set_value(index, "amount", art_val[1])
+            grid.set_value(index, "number", art_val[2])
+            grid.set_value(index, "amount", art_val[3])
+            grid.set_value(index, "mean", art_val[4])
+            index += 1
+        grid.set_location(0, 1, 3)
+        grid.set_size(400, 800)
+        self.add_component(grid)
+
+    def fillresponse(self):
+        self.fill_header()
+        self.new_tab(_('Customers'))
+        self.fill_customers()
+        self.new_tab(_('Articles'))
+        self.fill_articles()
+        self.add_action(BillStatisticPrint.get_action(
+            _("Print"), "images/print.png"), {'close': CLOSE_NO, 'params': {'classname': self.__class__.__name__}})
+        self.add_action(WrapAction(_('Close'), 'images/close.png'), {})
+
+
+@MenuManage.describ('invoice.change_bill')
+class BillStatisticPrint(XferPrintAction):
+    caption = _("Print statistic")
+    icon = "report.png"
+    model = Bill
+    field_id = 'bill'
+    action_class = BillStatistic
+    with_text_export = True

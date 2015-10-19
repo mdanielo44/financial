@@ -81,7 +81,7 @@ class InvoiceMigrate(MigrateAbstract):
         cur_b = self.old_db.open()
         cur_b.execute(
             "SELECT id,exercice,typeFact,num,date,tiers,comment,etat,operation,analytique FROM fr_sdlibre_facture_factures")
-        for billid, exercice, typeFact, num, factdate, tiers, comment, etat, operation, _ in cur_b.fetchall():
+        for billid, exercice, typeFact, num, factdate, tiers, comment, etat, operation, analytique in cur_b.fetchall():
             if typeFact != 3:
                 self.print_log(
                     "=> bill ex:%s - type:%s - num:%s - date=%s", (exercice, typeFact, num, factdate))
@@ -98,6 +98,9 @@ class InvoiceMigrate(MigrateAbstract):
                 if operation in self.old_db.objectlinks['entryaccount'].keys():
                     self.bill_list[billid].entry = self.old_db.objectlinks[
                         'entryaccount'][operation]
+                if analytique in self.old_db.objectlinks['costaccounting'].keys():
+                    self.bill_list[billid].cost_accounting = self.old_db.objectlinks[
+                        'costaccounting'][analytique]
                 self.bill_list[billid].save()
         cur_d = self.old_db.open()
         cur_d.execute(

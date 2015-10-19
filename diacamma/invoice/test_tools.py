@@ -26,11 +26,16 @@ from __future__ import unicode_literals
 
 from diacamma.invoice.models import Article, Vat
 
-from diacamma.accounting.models import FiscalYear
+from diacamma.accounting.models import FiscalYear, CostAccounting
 from diacamma.accounting.test_tools import create_account
 
 
 def default_articles():
+    CostAccounting.objects.create(
+        name='close', description='Close cost', status=1, is_default=False)
+    CostAccounting.objects.create(
+        name='open', description='Open cost', status=0, is_default=True)
+
     create_account(['709'], 3, FiscalYear.get_current())
     create_account(['4455'], 1, FiscalYear.get_current())
     vat1 = Vat.objects.create(name="5%", rate=5.0, isactif=True)
