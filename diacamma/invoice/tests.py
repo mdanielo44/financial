@@ -505,7 +505,7 @@ class BillTest(LucteriosTest):
         self.call('/diacamma.invoice/billShow', {'bill': 1}, False)
         self.assert_observer(
             'core.custom', 'diacamma.invoice', 'billShow')
-        self.assert_count_equal('COMPONENTS/*', 18)
+        self.assert_count_equal('COMPONENTS/*', 24)
         self.assert_xml_equal(
             'COMPONENTS/LABELFORM[@name="num_txt"]', "A-1")
         self.assert_xml_equal(
@@ -789,7 +789,7 @@ class BillTest(LucteriosTest):
         self.call('/diacamma.invoice/billShow', {'bill': 1}, False)
         self.assert_observer(
             'core.custom', 'diacamma.invoice', 'billShow')
-        self.assert_count_equal('COMPONENTS/*', 18)
+        self.assert_count_equal('COMPONENTS/*', 24)
         self.assert_xml_equal(
             'COMPONENTS/LABELFORM[@name="title"]', "{[br/]}{[center]}{[u]}{[b]}avoir{[/b]}{[/u]}{[/center]}")
         self.assert_xml_equal(
@@ -866,7 +866,7 @@ class BillTest(LucteriosTest):
         self.call('/diacamma.invoice/billShow', {'bill': 1}, False)
         self.assert_observer(
             'core.custom', 'diacamma.invoice', 'billShow')
-        self.assert_count_equal('COMPONENTS/*', 16)
+        self.assert_count_equal('COMPONENTS/*', 22)
         self.assert_xml_equal(
             'COMPONENTS/LABELFORM[@name="total_excltax"]', "25.00€")
         self.assert_xml_equal(

@@ -59,6 +59,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('accounting', '0001_initial'),
+        ('payoff', '0001_initial'),
     ]
 
     operations = [
@@ -105,8 +106,8 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Bill',
             fields=[
-                ('id', models.AutoField(
-                    auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('supporting_ptr', models.OneToOneField(auto_created=True, parent_link=True,
+                                                        serialize=False, primary_key=True, to='payoff.Supporting')),
                 ('bill_type', models.IntegerField(null=False, default=0, db_index=True, verbose_name='bill type', choices=[
                  (0, 'quotation'), (1, 'bill'), (2, 'asset'), (3, 'receipt')])),
                 ('num', models.IntegerField(
@@ -120,10 +121,6 @@ class Migration(migrations.Migration):
                                                       on_delete=django.db.models.deletion.PROTECT, verbose_name='cost accounting', default=None)),
                 ('entry', models.ForeignKey(to='accounting.EntryAccount', null=True,
                                             on_delete=django.db.models.deletion.PROTECT, verbose_name='entry', default=None)),
-                ('fiscal_year', models.ForeignKey(to='accounting.FiscalYear', null=True,
-                                                  on_delete=django.db.models.deletion.PROTECT, verbose_name='fiscal year', default=None)),
-                ('third', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT,
-                                            verbose_name='third', null=True, default=None, to='accounting.Third')),
             ],
             options={
                 'verbose_name_plural': 'bills',

@@ -1,0 +1,114 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2015-10-20 17:09+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: __init__.py:41
+msgid "Diacamma payoff"
+msgstr "Diacamma payoff"
+
+#: editors.py:42
+msgid "Add"
+msgstr "Add"
+
+#: models.py:40
+msgid "fiscal year"
+msgstr "fiscal year"
+
+#: models.py:42
+msgid "third"
+msgstr "third"
+
+#: models.py:46
+msgid "total payed"
+msgstr "total payed"
+
+#: models.py:46
+msgid "rest to pay"
+msgstr "rest to pay"
+
+#: models.py:49 models.py:50 models.py:75
+msgid "supporting"
+msgstr "supporting"
+
+#: models.py:76
+msgid "date"
+msgstr "date"
+
+#: models.py:77
+msgid "amount"
+msgstr "amount"
+
+#: models.py:79
+msgid "mode"
+msgstr "mode"
+
+#: models.py:80
+msgid "cash"
+msgstr "cash"
+
+#: models.py:80
+msgid "cheque"
+msgstr "cheque"
+
+#: models.py:80
+msgid "transfer"
+msgstr "transfer"
+
+#: models.py:80
+msgid "crédit card"
+msgstr "credit card"
+
+#: models.py:80
+msgid "other"
+msgstr "other"
+
+#: models.py:81
+msgid "payer"
+msgstr "payer"
+
+#: models.py:83
+msgid "reference"
+msgstr "reference"
+
+#: models.py:85
+msgid "entry"
+msgstr "entry"
+
+#: models.py:89
+msgid "value"
+msgstr "value"
+
+#: models.py:100
+msgid "payoff"
+msgstr "payoff"
+
+#: models.py:101
+msgid "payoffs"
+msgstr "payoffs"
+
+#: views.py:43
+msgid "Add payoff"
+msgstr "Add payoff"
+
+#: views.py:44
+msgid "Modify payoff"
+msgstr "Modify payoff"
+
+#: views.py:60
+msgid "Delete payoff"
+msgstr "Delete payoff"

@@ -38,6 +38,7 @@ from lucterios.CORE.parameters import Params
 
 from diacamma.accounting.tools import current_system_account
 from diacamma.accounting.models import CostAccounting
+from diacamma.payoff.editors import SupportingEditor
 
 
 class ArticleEditor(LucteriosEditor):
@@ -49,7 +50,7 @@ class ArticleEditor(LucteriosEditor):
             'sell_account').mask = current_system_account().get_revenue_mask()
 
 
-class BillEditor(LucteriosEditor):
+class BillEditor(SupportingEditor):
 
     def edit(self, xfer):
         bill_type = xfer.getparam('bill_type', xfer.item.bill_type)
@@ -125,6 +126,8 @@ class BillEditor(LucteriosEditor):
             xfer.add_component(lbl)
         else:
             details.actions = []
+            if self.item.bill_type != 0:
+                SupportingEditor.show(self, xfer)
         return
 
 

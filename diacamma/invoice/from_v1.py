@@ -41,6 +41,7 @@ class InvoiceMigrate(MigrateAbstract):
         self.article_list = {}
         self.bill_list = {}
         self.detail_list = {}
+        self.payoff_list = {}
 
     def _vat(self):
         vat_mdl = apps.get_model("invoice", "Vat")
@@ -114,8 +115,31 @@ class InvoiceMigrate(MigrateAbstract):
                         detailid].article = self.article_list[article]
                 if taxe > 0.0001:
                     self.detail_list[
-                        detailid].vta_rate = taxe / (prix * quantite - remise)
+                        detailid].vta_rate = taxe / (100 * prix * quantite - remise)
+                else:
+                    self.detail_list[detailid].vta_rate = 0.0
                 self.detail_list[detailid].save()
+
+    def _payoff(self):
+        payoff_mdl = apps.get_model("payoff", "Payoff")
+        payoff_mdl.objects.all().delete()
+        self.payoff_list = {}
+        cur_p = self.old_db.open()
+        cur_p.execute(
+            "SELECT id, facture, date, montant, mode, reference, operation, CompteCheque, payeur FROM fr_sdlibre_facture_payement")
+        for payoffid, facture, date, montant, mode, reference, operation, _, payeur in cur_p.fetchall():
+            if facture in self.bill_list.keys():
+                self.print_log(
+                    "=> payoff bill:%s - date=%s - amount=%.2f", (facture, date, montant))
+                if mode is None:
+                    mode = 4
+                self.payoff_list[payoffid] = payoff_mdl.objects.create(supporting=self.bill_list[facture],
+                                                                       date=date, amount=montant, mode=mode,
+                                                                       reference=reference, payer=payeur)
+                if operation in self.old_db.objectlinks['entryaccount'].keys():
+                    self.payoff_list[payoffid].entry = self.old_db.objectlinks[
+                        'entryaccount'][operation]
+                    self.payoff_list[payoffid].save()
 
     def _params(self):
         cur_p = self.old_db.open()
@@ -151,6 +175,7 @@ class InvoiceMigrate(MigrateAbstract):
             self._vat()
             self._article()
             self._bill()
+            self._payoff()
         except:
             import traceback
             traceback.print_exc()

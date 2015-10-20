@@ -40,6 +40,7 @@ from lucterios.CORE.parameters import Params
 from diacamma.accounting.models import FiscalYear, Third, EntryAccount, \
     CostAccounting, Journal, EntryLineAccount, ChartsAccount
 from diacamma.accounting.tools import current_system_account, format_devise, currency_round
+from diacamma.payoff.models import Supporting
 
 
 class Vat(LucteriosModel):
@@ -97,15 +98,11 @@ class Article(LucteriosModel):
         verbose_name_plural = _('articles')
 
 
-class Bill(LucteriosModel):
-    fiscal_year = models.ForeignKey(
-        FiscalYear, verbose_name=_('fiscal year'), null=True, default=None, db_index=True, on_delete=models.PROTECT)
+class Bill(Supporting):
     bill_type = models.IntegerField(verbose_name=_('bill type'),
                                     choices=((0, _('quotation')), (1, _('bill')), (2, _('asset')), (3, _('receipt'))), null=False, default=0, db_index=True)
     num = models.IntegerField(verbose_name=_('numeros'), null=True)
     date = models.DateField(verbose_name=_('date'), null=False)
-    third = models.ForeignKey(
-        Third, verbose_name=_('third'), null=True, default=None, db_index=True, on_delete=models.PROTECT)
     comment = models.TextField(_('comment'), null=True, default="")
     status = models.IntegerField(verbose_name=_('status'),
                                  choices=((0, _('building')), (1, _('valid')), (2, _('cancel')), (3, _('archive'))), null=False, default=0, db_index=True)
@@ -120,8 +117,14 @@ class Bill(LucteriosModel):
         return "%s %s - %s" % (billtype, self.num_txt, get_value_converted(self.date))
 
     @classmethod
-    def get_default_fields(cls):
-        return ["bill_type", (_('numeros'), "num_txt"), "date", "third", "comment", (_('total'), 'total'), "status"]
+    def get_default_fields(cls, status=-1):
+        fields = ["bill_type", (_('numeros'), "num_txt"),
+                  "date", "third", "comment", (_('total'), 'total')]
+        if status == -1:
+            fields.append("status")
+        elif status == 1:
+            fields.append(Supporting.get_payoff_fields()[-1][-1])
+        return fields
 
     @classmethod
     def get_edit_fields(cls):
@@ -173,6 +176,9 @@ class Bill(LucteriosModel):
         for detail in self.detail_set.all():
             val += detail.get_total_incltax()
         return val
+
+    def get_total(self):
+        return self.get_total_incltax()
 
     @property
     def total_incltax(self):
@@ -292,8 +298,8 @@ class Bill(LucteriosModel):
     def valid(self):
         if (self.status == 0) and (self.get_info_state() == ''):
             self.fiscal_year = FiscalYear.get_current()
-            bill_list = self.fiscal_year.bill_set.filter(
-                bill_type=self.bill_type).exclude(status=0)
+            bill_list = Bill.objects.filter(
+                Q(bill_type=self.bill_type) & Q(fiscal_year=self.fiscal_year)).exclude(status=0)
             val = bill_list.aggregate(Max('num'))
             if val['num__max'] is None:
                 self.num = 1
