@@ -819,7 +819,7 @@ class EntryLineAccount(LucteriosModel):
     def equals(self, other):
         res = self.id == other.id
         res = res and (self.account.id == other.account.id)
-        res = res and (self.amount == other.amount)
+        res = res and (abs(self.amount - other.amount) < 0.0001)
         res = res and (self.reference == other.reference)
         if self.third is None:
             res = res and (other.third is None)

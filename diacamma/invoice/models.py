@@ -287,7 +287,7 @@ class Bill(LucteriosModel):
             self.entry.get_serial())
         if not no_change or (abs(debit_rest) > 0.001) or (abs(credit_rest) > 0.001):
             raise LucteriosException(
-                GRAVE, _("Error in accounting generator!"))
+                GRAVE, _("Error in accounting generator!") + "{[br/]} no_change=%s debit_rest=%.3f credit_rest=%.3f" % (no_change, debit_rest, credit_rest))
 
     def valid(self):
         if (self.status == 0) and (self.get_info_state() == ''):
@@ -384,15 +384,19 @@ class Bill(LucteriosModel):
                     articles[det.article_id][1] += float(det.quantity)
                     total_art += det.get_total_excltax()
             for art_id in articles.keys():
-                art_list.append((six.text_type(Article.objects.get(id=art_id)),
+                if art_id is None:
+                    art_text = "---"
+                else:
+                    art_text = six.text_type(Article.objects.get(id=art_id))
+                art_list.append((art_text,
                                  format_devise(articles[art_id][0], 5),
                                  "%.2f" % articles[art_id][1],
                                  format_devise(
                                      articles[art_id][0] / articles[art_id][1], 5),
                                  "%.2f %%" % (100 * articles[art_id][0] / total_art), articles[art_id][0]))
             art_list.sort(key=lambda art_item: art_item[5], reverse=True)
-            art_list.append(("{[b]}%s{[/b]}" % _('total'), "{[b]}---{[/b]}", "{[b]}---{[/b]}",
-                             "{[b]}%s{[/b]}" % format_devise(total_art, 5),
+            art_list.append(("{[b]}%s{[/b]}" % _('total'), "{[b]}%s{[/b]}" % format_devise(total_art, 5),
+                             "{[b]}---{[/b]}", "{[b]}---{[/b]}",
                              "{[b]}%.2f %%{[/b]}" % 100, total_art))
         return art_list
 

@@ -24,23 +24,25 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
 from shutil import rmtree
+from datetime import date
+
+from django.utils import formats, six
 
 from lucterios.framework.test import LucteriosTest
 from lucterios.framework.xfergraphic import XferContainerAcknowledge
 from lucterios.framework.filetools import get_user_dir
-
+from lucterios.CORE.models import Parameter
+from lucterios.CORE.parameters import Params
 
 from diacamma.invoice.views_conf import InvoiceConf, VatAddModify, VatDel
 from diacamma.invoice.views import ArticleList, ArticleAddModify, ArticleDel,\
     BillList, BillAddModify, BillShow, BillThirdValid, BillThird,\
-    DetailAddModify, DetailDel, BillValid, BillDel, BillArchive, BillCancel, BillFromQuotation
+    DetailAddModify, DetailDel, BillValid, BillDel, BillArchive, BillCancel, BillFromQuotation,\
+    BillStatistic, BillStatisticPrint
 from diacamma.accounting.test_tools import initial_thirds, default_compta
 from diacamma.invoice.test_tools import default_articles
 from diacamma.accounting.views_entries import EntryLineAccountList
-from django.utils import formats
-from datetime import date
-from lucterios.CORE.models import Parameter
-from lucterios.CORE.parameters import Params
+from base64 import b64decode
 
 
 class ConfigTest(LucteriosTest):
@@ -174,7 +176,7 @@ class BillTest(LucteriosTest):
         default_articles()
         rmtree(get_user_dir(), True)
 
-    def _create_bill(self, details, bill_type, bill_date, bill_third):
+    def _create_bill(self, details, bill_type, bill_date, bill_third, valid=False):
         if (bill_type == 0) or (bill_type == 3):
             cost_accounting = 0
         else:
@@ -184,16 +186,23 @@ class BillTest(LucteriosTest):
                   {'bill_type': bill_type, 'date': bill_date, 'cost_accounting': cost_accounting, 'SAVE': 'YES'}, False)
         self.assert_observer(
             'core.acknowledge', 'diacamma.invoice', 'billAddModify')
+        bill_id = self.get_first_xpath("ACTION/PARAM[@name='bill']").text
         self.factory.xfer = BillThirdValid()
         self.call('/diacamma.invoice/billThirdValid',
-                  {'bill': 1, 'third': bill_third}, False)
+                  {'bill': bill_id, 'third': bill_third}, False)
         for detail in details:
             detail['SAVE'] = 'YES'
-            detail['bill'] = 1
+            detail['bill'] = bill_id
             self.factory.xfer = DetailAddModify()
             self.call('/diacamma.invoice/detailAddModify', detail, False)
             self.assert_observer(
                 'core.acknowledge', 'diacamma.invoice', 'detailAddModify')
+        if valid:
+            self.factory.xfer = BillValid()
+            self.call('/diacamma.invoice/billValid',
+                      {'CONFIRME': 'YES', 'bill': bill_id}, False)
+            self.assert_observer(
+                'core.acknowledge', 'diacamma.invoice', 'billValid')
 
     def test_add_bill(self):
         self.factory.xfer = BillList()
@@ -1064,3 +1073,103 @@ class BillTest(LucteriosTest):
         self.assert_count_equal('COMPONENTS/GRID[@name="bill"]/HEADER', 7)
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="bill"]/HEADER[@name="total"]', "total HT")
+
+    def test_statistic(self):
+        details = [
+            {'article': 0, 'designation': 'article 0', 'price': '20.00', 'quantity': 15}]
+        self._create_bill(details, 0, '2015-04-01', 6, True)  # 59.50
+        details = [{'article': 1, 'designation': 'article 1', 'price': '22.00', 'quantity': 3, 'reduce': '5.0'},
+                   {'article': 2, 'designation': 'article 2', 'price': '3.25', 'quantity': 7}]
+        self._create_bill(details, 1, '2015-04-01', 6, True)  # 83.75
+        details = [{'article': 0, 'designation': 'article 0', 'price': '50.00', 'quantity': 2},
+                   {'article': 5, 'designation': 'article 5', 'price': '6.33', 'quantity': 6.75}]
+        self._create_bill(details, 3, '2015-04-01', 4, True)  # 142.73
+        details = [{'article': 1, 'designation': 'article 1', 'price': '23.00', 'quantity': 3},
+                   {'article': 5, 'designation': 'article 5', 'price': '6.33', 'quantity': 3.50}]
+        self._create_bill(details, 1, '2015-04-01', 5, True)  # 91.16
+        details = [{'article': 2, 'designation': 'article 2', 'price': '3.30', 'quantity': 5},
+                   {'article': 5, 'designation': 'article 5', 'price': '6.35', 'quantity': 4.25, 'reduce': '2.0'}]
+        self._create_bill(details, 1, '2015-04-01', 6, True)  # 41.49
+        details = [
+            {'article': 5, 'designation': 'article 5', 'price': '6.33', 'quantity': 1.25}]
+        self._create_bill(details, 2, '2015-04-01', 4, True)  # 7.91
+
+        self.factory.xfer = BillStatistic()
+        self.call('/diacamma.invoice/billStatistic', {}, False)
+        self.assert_observer(
+            'core.custom', 'diacamma.invoice', 'billStatistic')
+        self.assert_count_equal('COMPONENTS/*', 8)
+
+        self.assert_count_equal('COMPONENTS/GRID[@name="articles"]/HEADER', 5)
+        self.assert_count_equal('COMPONENTS/GRID[@name="articles"]/RECORD', 5)
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="articles"]/RECORD[1]/VALUE[@name="article"]', "ABC1")
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="articles"]/RECORD[1]/VALUE[@name="amount"]', "130.00€")
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="articles"]/RECORD[1]/VALUE[@name="number"]', "6.00")
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="articles"]/RECORD[2]/VALUE[@name="article"]', "---")
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="articles"]/RECORD[2]/VALUE[@name="amount"]', "100.00€")
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="articles"]/RECORD[2]/VALUE[@name="number"]', "2.00")
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="articles"]/RECORD[2]/VALUE[@name="mean"]', "50.00€")
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="articles"]/RECORD[2]/VALUE[@name="ratio"]', "28.47 %")
+
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="articles"]/RECORD[3]/VALUE[@name="article"]', "ABC5")
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="articles"]/RECORD[3]/VALUE[@name="amount"]', "81.97€")
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="articles"]/RECORD[3]/VALUE[@name="number"]', "13.25")
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="articles"]/RECORD[4]/VALUE[@name="article"]', "ABC2")
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="articles"]/RECORD[4]/VALUE[@name="amount"]', "39.25€")
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="articles"]/RECORD[4]/VALUE[@name="number"]', "12.00")
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="articles"]/RECORD[5]/VALUE[@name="article"]', '{[b]}total{[/b]}')
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="articles"]/RECORD[5]/VALUE[@name="amount"]', '{[b]}351.22€{[/b]}')
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="articles"]/RECORD[5]/VALUE[@name="number"]', '{[b]}---{[/b]}')
+
+        self.assert_count_equal('COMPONENTS/GRID[@name="customers"]/HEADER', 3)
+        self.assert_count_equal('COMPONENTS/GRID[@name="customers"]/RECORD', 4)
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="customers"]/RECORD[1]/VALUE[@name="customer"]', "Minimum")
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="customers"]/RECORD[1]/VALUE[@name="amount"]', "134.82€")
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="customers"]/RECORD[2]/VALUE[@name="customer"]', "Dalton Jack")
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="customers"]/RECORD[2]/VALUE[@name="amount"]', "125.24€")
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="customers"]/RECORD[2]/VALUE[@name="ratio"]', "35.66 %")
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="customers"]/RECORD[3]/VALUE[@name="customer"]', "Dalton William")
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="customers"]/RECORD[3]/VALUE[@name="amount"]', "91.16€")
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="customers"]/RECORD[4]/VALUE[@name="customer"]', '{[b]}total{[/b]}')
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="customers"]/RECORD[4]/VALUE[@name="amount"]', '{[b]}351.22€{[/b]}')
+
+        self.factory.xfer = BillStatisticPrint()
+        self.call(
+            '/diacamma.invoice/billStatisticPrint', {'PRINT_MODE': '4'}, False)
+        self.assert_observer(
+            'core.print', 'diacamma.invoice', 'billStatisticPrint')
+        csv_value = b64decode(
+            six.text_type(self.get_first_xpath('PRINT').text)).decode("utf-8")
+        content_csv = csv_value.split('\n')
+        self.assertEqual(len(content_csv), 24, str(content_csv))
+        self.assertEqual(content_csv[1].strip(), '"Impression de statistique"')
+        self.assertEqual(
+            content_csv[12].strip(), '"total";"351.22€";"100.00 %";')
+        self.assertEqual(
+            content_csv[20].strip(), '"total";"351.22€";"---";"---";"100.00 %";')

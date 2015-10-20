@@ -368,8 +368,8 @@ class BillStatistic(XferContainerCustom):
             grid.set_value(index, "article", art_val[0])
             grid.set_value(index, "amount", art_val[1])
             grid.set_value(index, "number", art_val[2])
-            grid.set_value(index, "amount", art_val[3])
-            grid.set_value(index, "mean", art_val[4])
+            grid.set_value(index, "mean", art_val[3])
+            grid.set_value(index, "ratio", art_val[4])
             index += 1
         grid.set_location(0, 1, 3)
         grid.set_size(400, 800)
