@@ -28,6 +28,8 @@ from shutil import rmtree
 from lucterios.framework.test import LucteriosTest
 from lucterios.framework.xfergraphic import XferContainerAcknowledge
 from lucterios.framework.filetools import get_user_dir
+from diacamma.payoff.views_conf import PayoffConf, BankAccountAddModify,\
+    BankAccountDelete
 
 
 class PayoffTest(LucteriosTest):
@@ -36,3 +38,55 @@ class PayoffTest(LucteriosTest):
         self.xfer_class = XferContainerAcknowledge
         LucteriosTest.setUp(self)
         rmtree(get_user_dir(), True)
+
+    def test_vat(self):
+        self.factory.xfer = PayoffConf()
+        self.call('/diacamma.payoff/payoffConf', {}, False)
+        self.assert_observer('core.custom', 'diacamma.payoff', 'payoffConf')
+        self.assert_count_equal('COMPONENTS/TAB', 2)
+        self.assert_count_equal('COMPONENTS/*', 2 + 2 + 2 + 5)
+
+        self.assert_count_equal(
+            'COMPONENTS/GRID[@name="bankaccount"]/HEADER', 3)
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="bankaccount"]/HEADER[@name="designation"]', "désignation")
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="bankaccount"]/HEADER[@name="reference"]', "référence")
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="bankaccount"]/HEADER[@name="account_code"]', "code comptable")
+        self.assert_count_equal(
+            'COMPONENTS/GRID[@name="bankaccount"]/RECORD', 0)
+
+        self.factory.xfer = BankAccountAddModify()
+        self.call('/diacamma.payoff/bankAccountAddModify', {}, False)
+        self.assert_observer(
+            'core.custom', 'diacamma.payoff', 'bankAccountAddModify')
+        self.assert_count_equal('COMPONENTS/*', 7)
+
+        self.factory.xfer = BankAccountAddModify()
+        self.call('/diacamma.payoff/bankAccountAddModify',
+                  {'designation': 'My bank', 'reference': '0123 456789 654 12', 'account_code': '512', 'SAVE': 'YES'}, False)
+        self.assert_observer(
+            'core.acknowledge', 'diacamma.payoff', 'bankAccountAddModify')
+
+        self.factory.xfer = PayoffConf()
+        self.call('/diacamma.payoff/payoffConf', {}, False)
+        self.assert_count_equal(
+            'COMPONENTS/GRID[@name="bankaccount"]/RECORD', 1)
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="bankaccount"]/RECORD[1]/VALUE[@name="designation"]', 'My bank')
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="bankaccount"]/RECORD[1]/VALUE[@name="reference"]', '0123 456789 654 12')
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="bankaccount"]/RECORD[1]/VALUE[@name="account_code"]', '512')
+
+        self.factory.xfer = BankAccountDelete()
+        self.call('/diacamma.payoff/bankAccountDelete',
+                  {'bankaccount': 1, 'CONFIRME': 'YES'}, False)
+        self.assert_observer(
+            'core.acknowledge', 'diacamma.payoff', 'bankAccountDelete')
+
+        self.factory.xfer = PayoffConf()
+        self.call('/diacamma.payoff/payoffConf', {}, False)
+        self.assert_count_equal(
+            'COMPONENTS/GRID[@name="bankaccount"]/RECORD', 0)

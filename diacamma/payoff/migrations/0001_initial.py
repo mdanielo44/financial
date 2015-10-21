@@ -2,8 +2,27 @@
 from __future__ import unicode_literals
 
 from django.db import migrations, models
+from django.utils.translation import ugettext_lazy as _
 import django.core.validators
 import django.db.models.deletion
+
+from lucterios.CORE.models import Parameter
+
+
+def initial_values(*args):
+    param = Parameter.objects.create(
+        name='payoff-bankcharges-account', typeparam=0)
+    param.title = _("payoff-bankcharges-account")
+    param.args = "{'Multi':False}"
+    param.value = ''
+    param.save()
+
+    param = Parameter.objects.create(
+        name='payoff-cash-account', typeparam=0)
+    param.title = _("payoff-cash-account")
+    param.args = "{'Multi':False}"
+    param.value = '531'
+    param.save()
 
 
 class Migration(migrations.Migration):
@@ -29,6 +48,22 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.CreateModel(
+            name='BankAccount',
+            fields=[
+                ('id', models.AutoField(
+                    verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('designation', models.TextField(verbose_name='designation')),
+                ('reference', models.CharField(
+                    max_length=200, verbose_name='reference')),
+                ('account_code', models.CharField(
+                    max_length=50, verbose_name='account code')),
+            ],
+            options={
+                'verbose_name_plural': 'bank accounts',
+                'verbose_name': 'bank account',
+            },
+        ),
+        migrations.CreateModel(
             name='Payoff',
             fields=[
                 ('id', models.AutoField(
@@ -44,12 +79,15 @@ class Migration(migrations.Migration):
                     verbose_name='payer', max_length=150, null=True, default='')),
                 ('reference', models.CharField(
                     verbose_name='reference', max_length=100, null=True, default='')),
-                ('entry', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT,
-                                            null=True, to='accounting.EntryAccount', default=None, verbose_name='entry')),
+                ('entry', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL,
+                                            to='accounting.EntryAccount', default=None, verbose_name='entry')),
+                ('bank_account', models.ForeignKey(null=True, on_delete=django.db.models.deletion.PROTECT,
+                                                   to='payoff.BankAccount', default=None, verbose_name='bank account')),
             ],
             options={
                 'verbose_name_plural': 'payoffs',
                 'verbose_name': 'payoff',
             },
         ),
+        migrations.RunPython(initial_values),
     ]

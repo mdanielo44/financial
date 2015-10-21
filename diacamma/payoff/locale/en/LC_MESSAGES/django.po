@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-10-21 13:52+0000\n"
+"POT-Creation-Date: 2015-10-21 16:31+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,9 +21,17 @@ msgstr ""
 msgid "Diacamma payoff"
 msgstr "Diacamma payoff"
 
-#: editors.py:49
+#: editors.py:50
 msgid "Add"
 msgstr "Add"
+
+#: migrations/0001_initial.py:15
+msgid "payoff-bankcharges-account"
+msgstr "bank charges account"
+
+#: migrations/0001_initial.py:22
+msgid "payoff-cash-account"
+msgstr "cash account"
 
 #: models.py:45
 msgid "fiscal year"
@@ -41,80 +49,96 @@ msgstr "total payed"
 msgid "rest to pay"
 msgstr "rest to pay"
 
-#: models.py:54 models.py:55 models.py:83
+#: models.py:54 models.py:55 models.py:101
 msgid "supporting"
 msgstr "supporting"
 
-#: models.py:84
-msgid "date"
-msgstr "date"
+#: models.py:82
+msgid "designation"
+msgstr "designation"
 
-#: models.py:85
-msgid "amount"
-msgstr "amount"
-
-#: models.py:87
-msgid "mode"
-msgstr "mode"
-
-#: models.py:88
-msgid "cash"
-msgstr "cash"
-
-#: models.py:88
-msgid "cheque"
-msgstr "cheque"
-
-#: models.py:88
-msgid "transfer"
-msgstr "transfer"
-
-#: models.py:88
-msgid "crédit card"
-msgstr "credit card"
-
-#: models.py:88
-msgid "other"
-msgstr "other"
-
-#: models.py:89
-msgid "payer"
-msgstr "payer"
-
-#: models.py:91
+#: models.py:83 models.py:109
 msgid "reference"
 msgstr "reference"
 
-#: models.py:93
+#: models.py:85
+msgid "account code"
+msgstr "account code"
+
+#: models.py:95 models.py:113
+msgid "bank account"
+msgstr "bank account"
+
+#: models.py:96
+msgid "bank accounts"
+msgstr "bank accounts"
+
+#: models.py:102
+msgid "date"
+msgstr "date"
+
+#: models.py:103
+msgid "amount"
+msgstr "amount"
+
+#: models.py:105
+msgid "mode"
+msgstr "mode"
+
+#: models.py:106
+msgid "cash"
+msgstr "cash"
+
+#: models.py:106
+msgid "cheque"
+msgstr "cheque"
+
+#: models.py:106
+msgid "transfer"
+msgstr "transfer"
+
+#: models.py:106
+msgid "crédit card"
+msgstr "credit card"
+
+#: models.py:106
+msgid "other"
+msgstr "other"
+
+#: models.py:107
+msgid "payer"
+msgstr "payer"
+
+#: models.py:111
 msgid "entry"
 msgstr "entry"
 
-#: models.py:100
+#: models.py:117
+msgid "value"
+msgstr "value"
+
+#: models.py:132
 msgid "an entry associated to this payoff is closed!"
 msgstr "an entry associated to this payoff is closed!"
 
-#: models.py:113
+#: models.py:145
 #, python-format
 msgid "payoff for %s"
 msgstr "payoff for %s"
 
-#: models.py:119 models.py:124
+#: models.py:151 models.py:156
 msgid "third has not customer account"
 msgstr "third has not customer account"
 
-#: models.py:131
+#: models.py:163
 msgid "cash-account is not defined!"
 msgstr "cash account is not defined!"
 
-#: models.py:147
-msgid "value"
-msgstr "value"
-
-#: models.py:158
+#: models.py:180
 msgid "payoff"
 msgstr "payoff"
 
-#: models.py:159
+#: models.py:181
 msgid "payoffs"
 msgstr "payoffs"
 
@@ -129,3 +153,35 @@ msgstr "Modify payoff"
 #: views.py:60
 msgid "Delete payoff"
 msgstr "Delete payoff"
+
+#: views_conf.py:17
+msgid "Management of parameters and configuration of payoff"
+msgstr "Management of parameters and configuration of payoff"
+
+#: views_conf.py:22
+msgid "Payoff configuration"
+msgstr "Payoff configuration"
+
+#: views_conf.py:25
+msgid "Bank account"
+msgstr "Bank account"
+
+#: views_conf.py:29
+msgid "Parameters"
+msgstr "Parameters"
+
+#: views_conf.py:35
+msgid "Modify"
+msgstr "Modify"
+
+#: views_conf.py:45
+msgid "Add bank account"
+msgstr "Add bank account"
+
+#: views_conf.py:46
+msgid "Modify bank account"
+msgstr "Modify bank account"
+
+#: views_conf.py:55
+msgid "Delete bank account"
+msgstr "Delete bank account"

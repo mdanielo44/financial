@@ -28,6 +28,15 @@ from diacamma.invoice.models import Article, Vat
 
 from diacamma.accounting.models import FiscalYear, CostAccounting
 from diacamma.accounting.test_tools import create_account
+from diacamma.payoff.models import BankAccount
+
+
+def default_bankaccount():
+    create_account(['581'], 0, FiscalYear.get_current())
+    BankAccount.objects.create(
+        designation="My bank", reference="0123 456789 321654 12", account_code="512")
+    BankAccount.objects.create(
+        designation="PayPal", reference="paypal@moi.com", account_code="581")
 
 
 def default_articles():

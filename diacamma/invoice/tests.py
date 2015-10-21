@@ -41,7 +41,7 @@ from diacamma.invoice.views import ArticleList, ArticleAddModify, ArticleDel,\
     DetailAddModify, DetailDel, BillValid, BillDel, BillArchive, BillCancel, BillFromQuotation,\
     BillStatistic, BillStatisticPrint
 from diacamma.accounting.test_tools import initial_thirds, default_compta
-from diacamma.invoice.test_tools import default_articles
+from diacamma.invoice.test_tools import default_articles, default_bankaccount
 from diacamma.accounting.views_entries import EntryLineAccountList
 from diacamma.payoff.views import PayoffAddModify, PayoffDel
 
@@ -58,7 +58,7 @@ class ConfigTest(LucteriosTest):
         self.call('/diacamma.invoice/invoiceConf', {}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'invoiceConf')
         self.assert_count_equal('COMPONENTS/TAB', 2)
-        self.assert_count_equal('COMPONENTS/*', 2 + 2 + 13 + 2)
+        self.assert_count_equal('COMPONENTS/*', 2 + 2 + 9 + 2)
 
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="vat"]/HEADER', 3)
@@ -175,6 +175,7 @@ class BillTest(LucteriosTest):
         LucteriosTest.setUp(self)
         default_compta()
         default_articles()
+        default_bankaccount()
         rmtree(get_user_dir(), True)
 
     def _create_bill(self, details, bill_type, bill_date, bill_third, valid=False):
@@ -1224,7 +1225,7 @@ class BillTest(LucteriosTest):
 
         self.factory.xfer = PayoffAddModify()
         self.call(
-            '/diacamma.payoff/payoffAddModify', {'SAVE': 'YES', 'supporting': bill_id, 'amount': '60.0', 'payer': "Ma'a Dalton", 'date': '2015-04-03', 'mode': 1, 'reference': 'abc'}, False)
+            '/diacamma.payoff/payoffAddModify', {'SAVE': 'YES', 'supporting': bill_id, 'amount': '60.0', 'payer': "Ma'a Dalton", 'date': '2015-04-03', 'mode': 1, 'reference': 'abc', 'bank_account': 1}, False)
         self.assert_observer(
             'core.acknowledge', 'diacamma.payoff', 'payoffAddModify')
 
@@ -1278,7 +1279,7 @@ class BillTest(LucteriosTest):
 
         self.factory.xfer = PayoffAddModify()
         self.call(
-            '/diacamma.payoff/payoffAddModify', {'SAVE': 'YES', 'supporting': bill_id, 'amount': '40.0', 'payer': "Dalton Jack", 'date': '2015-04-04', 'mode': 2, 'reference': 'efg'}, False)
+            '/diacamma.payoff/payoffAddModify', {'SAVE': 'YES', 'supporting': bill_id, 'amount': '40.0', 'payer': "Dalton Jack", 'date': '2015-04-04', 'mode': 2, 'reference': 'efg', 'bank_account': 2}, False)
         self.assert_observer(
             'core.acknowledge', 'diacamma.payoff', 'payoffAddModify')
 
@@ -1317,14 +1318,16 @@ class BillTest(LucteriosTest):
 
         self.factory.xfer = PayoffAddModify()
         self.call(
-            '/diacamma.payoff/payoffAddModify', {'supporting': bill_id}, False)
+            '/diacamma.payoff/payoffAddModify', {'supporting': bill_id, 'mode': 3}, False)
         self.assert_observer(
             'core.custom', 'diacamma.payoff', 'payoffAddModify')
-        self.assert_count_equal('COMPONENTS/*', 9)
+        self.assert_count_equal('COMPONENTS/*', 11)
+        self.assert_count_equal(
+            'COMPONENTS/SELECT[@name="bank_account"]/CASE', 2)
 
         self.factory.xfer = PayoffAddModify()
         self.call(
-            '/diacamma.payoff/payoffAddModify', {'SAVE': 'YES', 'supporting': bill_id, 'amount': '50.0', 'date': '2015-04-04', 'mode': 3, 'reference': 'ijk'}, False)
+            '/diacamma.payoff/payoffAddModify', {'SAVE': 'YES', 'supporting': bill_id, 'amount': '50.0', 'date': '2015-04-04', 'mode': 3, 'reference': 'ijk', 'bank_account': 1}, False)
         self.assert_observer(
             'core.acknowledge', 'diacamma.payoff', 'payoffAddModify')
 

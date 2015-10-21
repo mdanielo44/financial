@@ -27,7 +27,8 @@ from django.utils.translation import ugettext_lazy as _
 
 from lucterios.framework.editors import LucteriosEditor
 from lucterios.CORE.parameters import Params
-from lucterios.framework.tools import ActionsManage, CLOSE_NO, SELECT_NONE
+from lucterios.framework.tools import ActionsManage, CLOSE_NO, SELECT_NONE,\
+    FORMTYPE_REFRESH
 
 
 class SupportingEditor(LucteriosEditor):
@@ -54,10 +55,19 @@ class PayoffEditor(LucteriosEditor):
     def edit(self, xfer):
         currency_decimal = Params.getvalue("accounting-devise-prec")
         supporting = self.item.supporting.get_final_child()
+        xfer.get_components("mode").set_action(
+            xfer.request, xfer.get_action(), {'close': CLOSE_NO, 'modal': FORMTYPE_REFRESH})
         amount = xfer.get_components("amount")
         amount.prec = currency_decimal
         amount.min = 0
         amount.max = supporting.get_total_rest_topay()
+        if self.item.mode == 0:
+            xfer.remove_component("bank_account")
+            xfer.remove_component("lbl_bank_account")
+        else:
+            banks = xfer.get_components("bank_account")
+            if banks.select_list[0][0] == 0:
+                del banks.select_list[0]
         if not supporting.is_revenu():
             xfer.remove_component("payer")
             xfer.remove_component("lbl_payer")

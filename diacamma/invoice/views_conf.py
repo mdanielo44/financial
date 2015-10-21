@@ -47,7 +47,7 @@ class InvoiceConf(XferListEditor):
     def fillresponse_header(self):
         self.new_tab(_('Parameters'))
         param_lists = ['invoice-vat-mode', 'invoice-default-sell-account', 'invoice-vatsell-account',
-                       'invoice-reduce-account', 'invoice-bankcharges-account', 'invoice-cash-account']
+                       'invoice-reduce-account']
         Params.fill(self, param_lists, 1, 1)
         btn = XferCompButton('editparam')
         btn.set_location(1, self.get_max_row() + 1, 2, 1)

@@ -25,20 +25,6 @@ def initial_values(*args):
     param.save()
 
     param = Parameter.objects.create(
-        name='invoice-cash-account', typeparam=0)
-    param.title = _("invoice-cash-account")
-    param.args = "{'Multi':False}"
-    param.value = '531'
-    param.save()
-
-    param = Parameter.objects.create(
-        name='invoice-bankcharges-account', typeparam=0)
-    param.title = _("invoice-bankcharges-account")
-    param.args = "{'Multi':False}"
-    param.value = ''
-    param.save()
-
-    param = Parameter.objects.create(
         name='invoice-vatsell-account', typeparam=0)
     param.title = _("invoice-vatsell-account")
     param.args = "{'Multi':False}"

@@ -124,10 +124,24 @@ class InvoiceMigrate(MigrateAbstract):
         payoff_mdl = apps.get_model("payoff", "Payoff")
         payoff_mdl.objects.all().delete()
         self.payoff_list = {}
+        bank_mdl = apps.get_model("payoff", "BankAccount")
+        bank_mdl.objects.all().delete()
+        self.bank_list = {}
+
+        cur_b = self.old_db.open()
+        cur_b.execute(
+            "SELECT id, designation,etab,guichet,compte,clef,compteBank  FROM fr_sdlibre_facture_compteCheque")
+        for bankid, designation, etab, guichet, compte, clef, compteBank in cur_b.fetchall():
+            self.print_log(
+                "=> bank account:%s", (designation,))
+            reference = "%s %s %s %s" % (etab, guichet, compte, clef)
+            self.bank_list[bankid] = bank_mdl.objects.create(
+                designation=designation, reference=reference, account_code=convert_code(compteBank))
+
         cur_p = self.old_db.open()
         cur_p.execute(
             "SELECT id, facture, date, montant, mode, reference, operation, CompteCheque, payeur FROM fr_sdlibre_facture_payement")
-        for payoffid, facture, date, montant, mode, reference, operation, _, payeur in cur_p.fetchall():
+        for payoffid, facture, date, montant, mode, reference, operation, compte_cheque, payeur in cur_p.fetchall():
             if facture in self.bill_list.keys():
                 self.print_log(
                     "=> payoff bill:%s - date=%s - amount=%.2f", (facture, date, montant))
@@ -139,7 +153,10 @@ class InvoiceMigrate(MigrateAbstract):
                 if operation in self.old_db.objectlinks['entryaccount'].keys():
                     self.payoff_list[payoffid].entry = self.old_db.objectlinks[
                         'entryaccount'][operation]
-                    self.payoff_list[payoffid].save()
+                if compte_cheque in self.bank_list.keys():
+                    self.payoff_list[payoffid].bank_account = self.bank_list[
+                        compte_cheque]
+                self.payoff_list[payoffid].save(do_generate=False)
 
     def _params(self):
         cur_p = self.old_db.open()
@@ -159,10 +176,10 @@ class InvoiceMigrate(MigrateAbstract):
                 pname = 'invoice-reduce-account'
                 param_value = convert_code(param_value)
             elif param_name == 'CompteFraisBank':
-                pname = 'invoice-bankcharges-account'
+                pname = 'payoff-bankcharges-account'
                 param_value = convert_code(param_value)
             elif param_name == 'CompteCaisse':
-                pname = 'invoice-cash-account'
+                pname = 'payoff-cash-account'
                 param_value = convert_code(param_value)
             if pname != '':
                 self.print_log(

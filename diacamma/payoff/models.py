@@ -78,6 +78,24 @@ class Supporting(LucteriosModel):
         return format_devise(self.get_total_rest_topay(), 5)
 
 
+class BankAccount(LucteriosModel):
+    designation = models.TextField(_('designation'), null=False)
+    reference = models.CharField(_('reference'), max_length=200, null=False)
+    account_code = models.CharField(
+        _('account code'), max_length=50, null=False)
+
+    @classmethod
+    def get_default_fields(cls):
+        return ["designation", "reference", "account_code"]
+
+    def __str__(self):
+        return self.designation
+
+    class Meta(object):
+        verbose_name = _('bank account')
+        verbose_name_plural = _('bank accounts')
+
+
 class Payoff(LucteriosModel):
     supporting = models.ForeignKey(
         Supporting, verbose_name=_('supporting'), null=False, db_index=True, on_delete=models.CASCADE)
@@ -91,6 +109,20 @@ class Payoff(LucteriosModel):
         _('reference'), max_length=100, null=True, default='')
     entry = models.ForeignKey(
         EntryAccount, verbose_name=_('entry'), null=True, default=None, db_index=True, on_delete=models.SET_NULL)
+    bank_account = models.ForeignKey(BankAccount, verbose_name=_(
+        'bank account'), null=True, default=None, db_index=True, on_delete=models.PROTECT)
+
+    @classmethod
+    def get_default_fields(cls):
+        return ["date", (_('value'), "value"), "mode", "reference", "payer"]
+
+    @classmethod
+    def get_edit_fields(cls):
+        return ["date", "amount", "payer", "mode", "bank_account", "reference"]
+
+    @property
+    def value(self):
+        return format_devise(self.amount, 5)
 
     def delete_accounting(self):
         if self.entry is not None:
@@ -124,7 +156,7 @@ class Payoff(LucteriosModel):
                 IMPORTANT, _("third has not customer account"))
         EntryLineAccount.objects.create(
             account=third_account, amount=is_revenu * float(self.amount), third=supporting.third, entry=new_entry)
-        cash_code = Params.getvalue("invoice-cash-account")
+        cash_code = Params.getvalue("payoff-cash-account")
         cash_account = ChartsAccount.get_account(cash_code, fiscal_year)
         if cash_account is None:
             raise LucteriosException(
@@ -133,26 +165,16 @@ class Payoff(LucteriosModel):
             account=cash_account, amount=-1 * is_revenu * float(self.amount), entry=new_entry)
         self.entry = new_entry
 
-    def save(self):
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None, do_generate=True):
+        if not force_insert and do_generate:
+            self.delete_accounting()
+            self.generate_accounting()
+        return LucteriosModel.save(self, force_insert, force_update, using, update_fields)
+
+    def delete(self, using=None):
         self.delete_accounting()
-        self.generate_accounting()
-        return LucteriosModel.save(self)
-
-    def delete(self):
-        self.delete_accounting()
-        LucteriosModel.delete(self)
-
-    @classmethod
-    def get_default_fields(cls):
-        return ["date", (_('value'), "value"), "mode", "reference", "payer"]
-
-    @classmethod
-    def get_edit_fields(cls):
-        return ["date", "amount", "payer", "mode", "reference"]
-
-    @property
-    def value(self):
-        return format_devise(self.amount, 5)
+        LucteriosModel.delete(self, using)
 
     class Meta(object):
         verbose_name = _('payoff')

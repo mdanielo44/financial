@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-10-21 13:52+0000\n"
+"POT-Creation-Date: 2015-10-21 16:31+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -59,30 +59,22 @@ msgid "invoice-reduce-account"
 msgstr "compte de réduction"
 
 #: migrations/0001_initial.py:29
-msgid "invoice-cash-account"
-msgstr "compte de caisse"
-
-#: migrations/0001_initial.py:36
-msgid "invoice-bankcharges-account"
-msgstr "compte de frais bancaire"
-
-#: migrations/0001_initial.py:43
 msgid "invoice-vatsell-account"
 msgstr "compte de TVA de vente"
 
-#: migrations/0001_initial.py:50
+#: migrations/0001_initial.py:36
 msgid "invoice-vat-mode"
 msgstr "mode TVA"
 
-#: migrations/0001_initial.py:51
+#: migrations/0001_initial.py:37
 msgid "invoice-vat-mode.0"
 msgstr "non applicable"
 
-#: migrations/0001_initial.py:52
+#: migrations/0001_initial.py:38
 msgid "invoice-vat-mode.1"
 msgstr "prix hors taxe"
 
-#: migrations/0001_initial.py:52
+#: migrations/0001_initial.py:38
 msgid "invoice-vat-mode.2"
 msgstr "prix toutes taxes comprise"
 
@@ -495,6 +487,12 @@ msgstr "Modifier une TVA"
 #: views_conf.py:76
 msgid "Delete VAT"
 msgstr "Supprimer une TVA"
+
+#~ msgid "invoice-cash-account"
+#~ msgstr "compte de caisse"
+
+#~ msgid "invoice-bankcharges-account"
+#~ msgstr "compte de frais bancaire"
 
 #~ msgid "fiscal year"
 #~ msgstr "exercice comptable"
