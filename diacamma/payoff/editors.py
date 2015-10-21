@@ -36,8 +36,15 @@ class SupportingEditor(LucteriosEditor):
         xfer.params['supporting'] = self.item.id
         xfer.filltab_from_model(
             1, xfer.get_max_row() + 1, True, self.item.get_payoff_fields())
+        payoff = xfer.get_components("payoff")
+        if not self.item.is_revenu():
+            head_idx = 0
+            for header in payoff.headers:
+                if header.name == 'payer':
+                    break
+                head_idx += 1
+            del payoff.headers[head_idx]
         if self.item.get_total_rest_topay() > 0.001:
-            payoff = xfer.get_components("payoff")
             payoff.add_action(xfer.request, ActionsManage.get_act_changed(
                 'Payoff', 'append', _("Add"), "images/add.png", ), {'close': CLOSE_NO, 'unique': SELECT_NONE})
 
@@ -51,3 +58,6 @@ class PayoffEditor(LucteriosEditor):
         amount.prec = currency_decimal
         amount.min = 0
         amount.max = supporting.get_total_rest_topay()
+        if not supporting.is_revenu():
+            xfer.remove_component("payer")
+            xfer.remove_component("lbl_payer")

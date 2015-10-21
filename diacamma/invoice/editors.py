@@ -53,14 +53,11 @@ class ArticleEditor(LucteriosEditor):
 class BillEditor(SupportingEditor):
 
     def edit(self, xfer):
-        bill_type = xfer.getparam('bill_type', xfer.item.bill_type)
         xfer.get_components('comment').with_hypertext = True
         xfer.get_components('comment').set_size(100, 375)
         com_type = xfer.get_components('bill_type')
-        com_type.set_value(bill_type)
-        com_type.set_action(
-            xfer.request, xfer.get_action(), {'close': CLOSE_NO, 'modal': FORMTYPE_REFRESH})
-        if bill_type == 0:
+        com_type.set_action(xfer.request, xfer.get_action(), {'close': CLOSE_NO, 'modal': FORMTYPE_REFRESH})
+        if xfer.item.bill_type == 0:
             xfer.remove_component("cost_accounting")
             xfer.remove_component("lbl_cost_accounting")
         else:

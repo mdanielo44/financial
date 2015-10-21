@@ -191,6 +191,9 @@ class Bill(Supporting):
         else:
             return "%s-%d" % (self.fiscal_year.letter, self.num)
 
+    def is_revenu(self):
+        return self.bill_type != 2
+
     def get_info_state(self):
         info = []
         if self.status == 0:

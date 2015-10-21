@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-10-20 17:09+0000\n"
+"POT-Creation-Date: 2015-10-21 13:52+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,83 +21,100 @@ msgstr ""
 msgid "Diacamma payoff"
 msgstr "Diacamma payoff"
 
-#: editors.py:42
+#: editors.py:49
 msgid "Add"
 msgstr "Add"
 
-#: models.py:40
+#: models.py:45
 msgid "fiscal year"
 msgstr "fiscal year"
 
-#: models.py:42
+#: models.py:47
 msgid "third"
 msgstr "third"
 
-#: models.py:46
+#: models.py:51
 msgid "total payed"
 msgstr "total payed"
 
-#: models.py:46
+#: models.py:51
 msgid "rest to pay"
 msgstr "rest to pay"
 
-#: models.py:49 models.py:50 models.py:75
+#: models.py:54 models.py:55 models.py:83
 msgid "supporting"
 msgstr "supporting"
 
-#: models.py:76
+#: models.py:84
 msgid "date"
 msgstr "date"
 
-#: models.py:77
+#: models.py:85
 msgid "amount"
 msgstr "amount"
 
-#: models.py:79
+#: models.py:87
 msgid "mode"
 msgstr "mode"
 
-#: models.py:80
+#: models.py:88
 msgid "cash"
 msgstr "cash"
 
-#: models.py:80
+#: models.py:88
 msgid "cheque"
 msgstr "cheque"
 
-#: models.py:80
+#: models.py:88
 msgid "transfer"
 msgstr "transfer"
 
-#: models.py:80
+#: models.py:88
 msgid "crédit card"
 msgstr "credit card"
 
-#: models.py:80
+#: models.py:88
 msgid "other"
 msgstr "other"
 
-#: models.py:81
+#: models.py:89
 msgid "payer"
 msgstr "payer"
 
-#: models.py:83
+#: models.py:91
 msgid "reference"
 msgstr "reference"
 
-#: models.py:85
+#: models.py:93
 msgid "entry"
 msgstr "entry"
 
-#: models.py:89
+#: models.py:100
+msgid "an entry associated to this payoff is closed!"
+msgstr "an entry associated to this payoff is closed!"
+
+#: models.py:113
+#, python-format
+msgid "payoff for %s"
+msgstr "payoff for %s"
+
+#: models.py:119 models.py:124
+msgid "third has not customer account"
+msgstr "third has not customer account"
+
+#: models.py:131
+msgid "cash-account is not defined!"
+msgstr "cash account is not defined!"
+
+#: models.py:147
 msgid "value"
 msgstr "value"
 
-#: models.py:100
+#: models.py:158
 msgid "payoff"
 msgstr "payoff"
 
-#: models.py:101
+#: models.py:159
 msgid "payoffs"
 msgstr "payoffs"
 

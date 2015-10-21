@@ -30,8 +30,13 @@ from django.utils.translation import ugettext_lazy as _
 
 from lucterios.framework.models import LucteriosModel
 
-from diacamma.accounting.models import EntryAccount, FiscalYear, Third
-from diacamma.accounting.tools import format_devise, currency_round
+from diacamma.accounting.models import EntryAccount, FiscalYear, Third, Journal,\
+    ChartsAccount, EntryLineAccount
+from diacamma.accounting.tools import format_devise, currency_round,\
+    current_system_account
+from lucterios.framework.error import LucteriosException, IMPORTANT
+from django.utils import six
+from lucterios.CORE.parameters import Params
 
 
 class Supporting(LucteriosModel):
@@ -50,6 +55,9 @@ class Supporting(LucteriosModel):
         verbose_name_plural = _('supporting')
 
     def get_total(self):
+        raise Exception('no implemented!')
+
+    def is_revenu(self):
         raise Exception('no implemented!')
 
     def get_total_payed(self):
@@ -82,7 +90,57 @@ class Payoff(LucteriosModel):
     reference = models.CharField(
         _('reference'), max_length=100, null=True, default='')
     entry = models.ForeignKey(
-        EntryAccount, verbose_name=_('entry'), null=True, default=None, db_index=True, on_delete=models.PROTECT)
+        EntryAccount, verbose_name=_('entry'), null=True, default=None, db_index=True, on_delete=models.SET_NULL)
+
+    def delete_accounting(self):
+        if self.entry is not None:
+            payoff_entry = self.entry
+            if payoff_entry.close:
+                raise LucteriosException(
+                    IMPORTANT, _("an entry associated to this payoff is closed!"))
+            self.entry = None
+            payoff_entry.delete()
+
+    def generate_accounting(self):
+        supporting = self.supporting.get_final_child()
+        if supporting.is_revenu():
+            is_revenu = -1
+        else:
+            is_revenu = 1
+        fiscal_year = FiscalYear.get_current()
+        new_entry = EntryAccount.objects.create(
+            year=fiscal_year, date_value=self.date, designation=_(
+                "payoff for %s") % six.text_type(supporting),
+            journal=Journal.objects.get(id=4))
+        accounts = supporting.third.accountthird_set.filter(
+            code__regex=current_system_account().get_customer_mask())
+        if len(accounts) == 0:
+            raise LucteriosException(
+                IMPORTANT, _("third has not customer account"))
+        third_account = ChartsAccount.get_account(
+            accounts[0].code, fiscal_year)
+        if third_account is None:
+            raise LucteriosException(
+                IMPORTANT, _("third has not customer account"))
+        EntryLineAccount.objects.create(
+            account=third_account, amount=is_revenu * float(self.amount), third=supporting.third, entry=new_entry)
+        cash_code = Params.getvalue("invoice-cash-account")
+        cash_account = ChartsAccount.get_account(cash_code, fiscal_year)
+        if cash_account is None:
+            raise LucteriosException(
+                IMPORTANT, _("cash-account is not defined!"))
+        EntryLineAccount.objects.create(
+            account=cash_account, amount=-1 * is_revenu * float(self.amount), entry=new_entry)
+        self.entry = new_entry
+
+    def save(self):
+        self.delete_accounting()
+        self.generate_accounting()
+        return LucteriosModel.save(self)
+
+    def delete(self):
+        self.delete_accounting()
+        LucteriosModel.delete(self)
 
     @classmethod
     def get_default_fields(cls):
