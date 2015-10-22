@@ -25,7 +25,7 @@ from __future__ import unicode_literals
 
 from django.utils.translation import ugettext_lazy as _
 
-from diacamma.invoice.models import Vat
+from diacamma.invoice.models import Vat, Article
 
 from lucterios.framework.xferadvance import XferListEditor
 from lucterios.framework.xferadvance import XferAddEditor
@@ -34,6 +34,8 @@ from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManag
 from lucterios.CORE.parameters import Params
 from lucterios.framework.xfercomponents import XferCompButton
 from lucterios.CORE.views import ParamEdit
+from lucterios.framework import signal_and_lock
+from lucterios.CORE.models import Parameter
 
 
 @ActionsManage.affect('Vat', 'list')
@@ -74,3 +76,20 @@ class VatDel(XferDelete):
     model = Vat
     field_id = 'vat'
     caption = _("Delete VAT")
+
+
+@signal_and_lock.Signal.decorate('compte_no_found')
+def comptenofound_invoice(known_codes, accompt_returned):
+    article_unknown = Article.objects.filter(
+        isdisabled=False).exclude(sell_account__in=known_codes).values_list('sell_account', flat=True).distinct()
+    param_unknown = Parameter.objects.filter(name__in=('invoice-default-sell-account', 'invoice-vatsell-account',
+                                                       'invoice-reduce-account')).exclude(value__in=known_codes).values_list('value', flat=True).distinct()
+    comptenofound = ""
+    if (len(article_unknown) > 0):
+        comptenofound = _("articles") + ":" + ",".join(article_unknown) + " "
+    if (len(param_unknown) > 0):
+        comptenofound += _("parameters") + ":" + ",".join(param_unknown)
+    if comptenofound != "":
+        accompt_returned.append(
+            "- {[i]}{[u]}%s{[/u]}: %s{[/i]}" % (_('Invoice'), comptenofound))
+    return True

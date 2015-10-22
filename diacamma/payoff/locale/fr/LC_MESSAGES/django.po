@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-10-22 14:48+0000\n"
+"POT-Creation-Date: 2015-10-22 16:19+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -66,7 +66,7 @@ msgstr "référence"
 msgid "account code"
 msgstr "code comptable"
 
-#: models.py:99 models.py:117
+#: models.py:99 models.py:117 views_conf.py:68
 msgid "bank account"
 msgstr "compte bancaire"
 
@@ -155,34 +155,42 @@ msgstr "Modifier un réglement"
 msgid "Delete payoff"
 msgstr "Supprimer un réglement"
 
-#: views_conf.py:17
+#: views_conf.py:19
 msgid "Management of parameters and configuration of payoff"
 msgstr "Gestion des paramètres et des configuration du règlement"
 
-#: views_conf.py:22
+#: views_conf.py:24
 msgid "Payoff configuration"
 msgstr "Configuration du règlement"
 
-#: views_conf.py:25
+#: views_conf.py:27
 msgid "Bank account"
 msgstr "Compte bancaire"
 
-#: views_conf.py:29
+#: views_conf.py:31
 msgid "Parameters"
 msgstr "Paramètres"
 
-#: views_conf.py:35
+#: views_conf.py:37
 msgid "Modify"
 msgstr "Modifier"
 
-#: views_conf.py:45
+#: views_conf.py:47
 msgid "Add bank account"
 msgstr "Ajouter un compte bancaire"
 
-#: views_conf.py:46
+#: views_conf.py:48
 msgid "Modify bank account"
 msgstr "Modifier un compte bancaire"
 
-#: views_conf.py:55
+#: views_conf.py:57
 msgid "Delete bank account"
 msgstr "Supprimer un compte bancaire"
+
+#: views_conf.py:70
+msgid "parameters"
+msgstr "paramètres"
+
+#: views_conf.py:73
+msgid "Payoff"
+msgstr "Réglement"

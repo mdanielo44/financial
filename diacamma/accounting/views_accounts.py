@@ -37,6 +37,7 @@ from lucterios.framework.xfercomponents import XferCompLabelForm
 from diacamma.accounting.models import ChartsAccount, FiscalYear
 from lucterios.framework.xfergraphic import XferContainerAcknowledge
 from lucterios.CORE.xferprint import XferPrintListing
+from lucterios.framework.signal_and_lock import Signal
 
 MenuManage.add_sub("bookkeeping", "financial", "diacamma.accounting/images/accounting.png",
                    _("Bookkeeping"), _("Manage of Bookkeeping"), 30)
@@ -82,6 +83,18 @@ class ChartsAccountList(XferListEditor):
         lbl.set_value_center(self.item.year.total_result_text)
         lbl.set_location(0, 10, 2)
         self.add_component(lbl)
+
+        accompt_returned = []
+        all_codes = self.item.year.chartsaccount_set.all().values_list(
+            'code', flat=True)
+        Signal.call_signal("compte_no_found", all_codes, accompt_returned)
+        lbl = XferCompLabelForm("CompteNoFound")
+        if len(accompt_returned) > 0:
+            lbl.set_value("{[u]}{[b]}%s{[/b]}{[/u]}{[br]}%s" % (
+                _("Using codes unknows in this account chart:"), "{[br/]}".join(accompt_returned)))
+        lbl.set_location(0, 11, 2)
+        self.add_component(lbl)
+
         if self.item.year.status == 0:
             self.add_action(FiscalYearBegin.get_action(
                 _('Begin'), 'images/ok.png'), {'modal': FORMTYPE_MODAL, 'close': CLOSE_NO}, 0)

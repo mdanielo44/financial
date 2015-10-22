@@ -43,9 +43,10 @@ from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompEdit, 
 from lucterios.framework.error import LucteriosException
 
 from diacamma.accounting.models import Third, AccountThird, FiscalYear, \
-    EntryLineAccount
+    EntryLineAccount, ModelLineEntry
 from diacamma.accounting.views_admin import Configuration
 from lucterios.CORE.editors import XferSavedCriteriaSearchEditor
+from diacamma.accounting.tools import current_system_account
 
 MenuManage.add_sub("financial", None, "diacamma.accounting/images/financial.png",
                    _("Financial"), _("Financial tools"), 50)
@@ -295,4 +296,21 @@ def summary_accounting(xfer):
     lab.set_value_center('{[hr/]}')
     lab.set_location(0, row + 3, 4)
     xfer.add_component(lab)
+    return True
+
+
+@signal_and_lock.Signal.decorate('compte_no_found')
+def comptenofound_accounting(known_codes, accompt_returned):
+    third_unknown = AccountThird.objects.filter(
+        third__status=0).exclude(code__in=known_codes).values_list('code', flat=True).distinct()
+    model_unknown = ModelLineEntry.objects.exclude(
+        code__in=known_codes).values_list('code', flat=True).distinct()
+    comptenofound = ""
+    if (len(third_unknown) > 0):
+        comptenofound = _("thirds") + ":" + ",".join(third_unknown) + " "
+    if (len(model_unknown) > 0):
+        comptenofound += _("models") + ":" + ",".join(model_unknown)
+    if comptenofound != "":
+        accompt_returned.append(
+            "- {[i]}{[u]}%s{[/u]}: %s{[/i]}" % (_('Accounting'), comptenofound))
     return True
