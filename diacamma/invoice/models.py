@@ -144,6 +144,20 @@ class Bill(Supporting):
     def get_show_fields(cls):
         return [((_('numeros'), "num_txt"), "date"), "third", "detail_set", "comment", "cost_accounting", ("status", (_('total'), 'total_excltax'))]
 
+    @classmethod
+    def get_print_fields(cls):
+        print_fields = [
+            (_("bill type"), "type_bill"), (_('numeros'), "num_txt"), "date", "third", "detail_set"]
+        print_fields.extend(Supporting.get_print_fields())
+        print_fields.extend(
+            ["comment", "status", (_('total'), 'total_excltax'), (_('VTA sum'), 'vta_sum'), (_('total incl. taxes'), 'total_incltax')])
+        print_fields.append('OUR_DETAIL')
+        return print_fields
+
+    @property
+    def type_bill(self):
+        return get_value_if_choices(self.bill_type, self.get_field_by_name("bill_type")).upper()
+
     @property
     def total(self):
         if Params.getvalue("invoice-vat-mode") == 2:
@@ -190,6 +204,30 @@ class Bill(Supporting):
             return None
         else:
             return "%s-%d" % (self.fiscal_year.letter, self.num)
+
+    def get_vta_details(self):
+        vtas = {}
+        for detail in self.detail_set.all():
+            if abs(detail.vta_rate) > 0.001:
+                vta_txt = "%.2f" % abs(float(detail.vta_rate) * 100.0)
+                if vta_txt not in vtas.keys():
+                    vtas[vta_txt] = float(0.0)
+                vtas[vta_txt] += detail.get_vta()
+        return vtas
+
+    @property
+    def title_vta_details(self):
+        vtas = []
+        for vta in self.get_vta_details().keys():
+            vtas.append(_("VAT %s %%") % vta)
+        return "{[br/]}".join(vtas)
+
+    @property
+    def vta_details(self):
+        vtas = []
+        for value in self.get_vta_details().values():
+            vtas.append(format_devise(value, 5))
+        return "{[br/]}".join(vtas)
 
     def is_revenu(self):
         return self.bill_type != 2
@@ -428,8 +466,8 @@ class Detail(LucteriosModel):
         MinValueValidator(0.0), MaxValueValidator(9999999.99)])
     reduce = models.DecimalField(verbose_name=_('reduce'), max_digits=10, decimal_places=3, default=0.0, validators=[
         MinValueValidator(0.0), MaxValueValidator(9999999.999)])
-    vta_rate = models.DecimalField(_('vta rate'), max_digits=6, decimal_places=2, default=10.0, validators=[
-        MinValueValidator(0.0), MaxValueValidator(100.0)])
+    vta_rate = models.DecimalField(_('vta rate'), max_digits=6, decimal_places=4, default=0.1, validators=[
+        MinValueValidator(0.0), MaxValueValidator(1.0)])
 
     def __str__(self):
         return "[%s] %s:%f" % (six.text_type(self.reference), six.text_type(self.designation), self.price_txt)

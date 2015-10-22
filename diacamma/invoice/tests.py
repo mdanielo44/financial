@@ -39,7 +39,7 @@ from diacamma.invoice.views_conf import InvoiceConf, VatAddModify, VatDel
 from diacamma.invoice.views import ArticleList, ArticleAddModify, ArticleDel,\
     BillList, BillAddModify, BillShow, BillThirdValid, BillThird,\
     DetailAddModify, DetailDel, BillValid, BillDel, BillArchive, BillCancel, BillFromQuotation,\
-    BillStatistic, BillStatisticPrint
+    BillStatistic, BillStatisticPrint, BillPrint
 from diacamma.accounting.test_tools import initial_thirds, default_compta
 from diacamma.invoice.test_tools import default_articles, default_bankaccount
 from diacamma.accounting.views_entries import EntryLineAccountList
@@ -430,19 +430,19 @@ class BillTest(LucteriosTest):
         self.assert_observer('core.custom', 'diacamma.invoice', 'billList')
         self.assert_count_equal('COMPONENTS/GRID[@name="bill"]/RECORD', 1)
         self.assert_count_equal(
-            'COMPONENTS/GRID[@name="bill"]/ACTIONS/ACTION', 3)
+            'COMPONENTS/GRID[@name="bill"]/ACTIONS/ACTION', 4)
         self.factory.xfer = BillList()
         self.call('/diacamma.invoice/billList', {'status_filter': 0}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'billList')
         self.assert_count_equal('COMPONENTS/GRID[@name="bill"]/RECORD', 0)
         self.assert_count_equal(
-            'COMPONENTS/GRID[@name="bill"]/ACTIONS/ACTION', 3)
+            'COMPONENTS/GRID[@name="bill"]/ACTIONS/ACTION', 4)
         self.factory.xfer = BillList()
         self.call('/diacamma.invoice/billList', {'status_filter': 1}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'billList')
         self.assert_count_equal('COMPONENTS/GRID[@name="bill"]/RECORD', 1)
         self.assert_count_equal(
-            'COMPONENTS/GRID[@name="bill"]/ACTIONS/ACTION', 2)
+            'COMPONENTS/GRID[@name="bill"]/ACTIONS/ACTION', 3)
         self.factory.xfer = BillList()
         self.call('/diacamma.invoice/billList', {'status_filter': 2}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'billList')
@@ -470,7 +470,7 @@ class BillTest(LucteriosTest):
         self.assert_observer('core.custom', 'diacamma.invoice', 'billList')
         self.assert_count_equal('COMPONENTS/GRID[@name="bill"]/RECORD', 1)
         self.assert_count_equal(
-            'COMPONENTS/GRID[@name="bill"]/ACTIONS/ACTION', 1)
+            'COMPONENTS/GRID[@name="bill"]/ACTIONS/ACTION', 2)
 
     def test_compta_bill(self):
         details = [{'article': 1, 'designation': 'article 1', 'price': '22.50', 'quantity': 3, 'reduce': '5.0'},
@@ -513,7 +513,7 @@ class BillTest(LucteriosTest):
             'COMPONENTS/LABELFORM[@name="num_txt"]', "A-1")
         self.assert_xml_equal(
             'COMPONENTS/LABELFORM[@name="status"]', "validé")
-        self.assert_count_equal('ACTIONS/ACTION', 3)
+        self.assert_count_equal('ACTIONS/ACTION', 4)
 
         self.factory.xfer = EntryLineAccountList()
         self.call('/diacamma.accounting/entryLineAccountList',
@@ -711,7 +711,7 @@ class BillTest(LucteriosTest):
             'COMPONENTS/LABELFORM[@name="date"]', "1 avril 2015")
         self.assert_xml_equal(
             'COMPONENTS/LABELFORM[@name="total_excltax"]', "62.50€")
-        self.assert_count_equal('ACTIONS/ACTION', 3)
+        self.assert_count_equal('ACTIONS/ACTION', 4)
 
         self.factory.xfer = EntryLineAccountList()
         self.call('/diacamma.accounting/entryLineAccountList',
@@ -801,7 +801,7 @@ class BillTest(LucteriosTest):
             'COMPONENTS/LABELFORM[@name="num_txt"]', "A-1")
         self.assert_xml_equal(
             'COMPONENTS/LABELFORM[@name="status"]', "validé")
-        self.assert_count_equal('ACTIONS/ACTION', 2)
+        self.assert_count_equal('ACTIONS/ACTION', 3)
 
         self.factory.xfer = EntryLineAccountList()
         self.call('/diacamma.accounting/entryLineAccountList',
@@ -880,7 +880,7 @@ class BillTest(LucteriosTest):
             'COMPONENTS/LABELFORM[@name="title"]', "{[br/]}{[center]}{[u]}{[b]}reçu{[/b]}{[/u]}{[/center]}")
         self.assert_xml_equal(
             'COMPONENTS/LABELFORM[@name="date"]', "1 avril 2015")
-        self.assert_count_equal('ACTIONS/ACTION', 3)
+        self.assert_count_equal('ACTIONS/ACTION', 4)
 
         self.factory.xfer = EntryLineAccountList()
         self.call('/diacamma.accounting/entryLineAccountList',
@@ -1177,6 +1177,11 @@ class BillTest(LucteriosTest):
         self.assertEqual(
             content_csv[20].strip(), '"total";"351.22€";"---";"---";"100.00 %";')
 
+        self.factory.xfer = BillPrint()
+        self.call(
+            '/diacamma.invoice/billPrint', {'bill': '1;2;3;4;5', 'PRINT_MODE': 3, 'MODEL': 8}, False)
+        self.assert_observer('core.print', 'diacamma.invoice', 'billPrint')
+
     def test_payoff_bill(self):
         details = [
             {'article': 0, 'designation': 'article 0', 'price': '100.00', 'quantity': 1}]
@@ -1225,7 +1230,7 @@ class BillTest(LucteriosTest):
 
         self.factory.xfer = PayoffAddModify()
         self.call(
-            '/diacamma.payoff/payoffAddModify', {'SAVE': 'YES', 'supporting': bill_id, 'amount': '60.0', 'payer': "Ma'a Dalton", 'date': '2015-04-03', 'mode': 1, 'reference': 'abc', 'bank_account': 1}, False)
+            '/diacamma.payoff/payoffAddModify', {'SAVE': 'YES', 'supporting': bill_id, 'amount': '60.0', 'payer': "Ma'a Dalton", 'date': '2015-04-03', 'mode': 0, 'reference': 'abc', 'bank_account': 0}, False)
         self.assert_observer(
             'core.acknowledge', 'diacamma.payoff', 'payoffAddModify')
 
@@ -1249,7 +1254,7 @@ class BillTest(LucteriosTest):
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="payoff"]/RECORD[1]/VALUE[@name="date"]', "3 avril 2015")
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="payoff"]/RECORD[1]/VALUE[@name="mode"]', "chèque")
+            'COMPONENTS/GRID[@name="payoff"]/RECORD[1]/VALUE[@name="mode"]', "espèce")
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="payoff"]/RECORD[1]/VALUE[@name="value"]', "60.00€")
         self.assert_xml_equal(
@@ -1264,6 +1269,8 @@ class BillTest(LucteriosTest):
             'core.custom', 'diacamma.accounting', 'entryLineAccountList')
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD', 4)
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[4]/VALUE[@name="entry_account"]', '[531] 531')
         self.assert_xml_equal(
             "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit:{[/b]} 100.00€ - {[b]}Charge:{[/b]} 0.00€ = {[b]}Resultat:{[/b]} 100.00€ | {[b]}Trésorie:{[/b]} 60.00€ - {[b]}Validé:{[/b]} 0.00€{[/center]}')
 
@@ -1300,6 +1307,18 @@ class BillTest(LucteriosTest):
             'COMPONENTS/GRID[@name="payoff"]/RECORD', 2)
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="payoff"]/ACTIONS/ACTION', 2)
+
+        self.factory.xfer = EntryLineAccountList()
+        self.call('/diacamma.accounting/entryLineAccountList',
+                  {'year': '1', 'journal': '-1', 'filter': '0'}, False)
+        self.assert_observer(
+            'core.custom', 'diacamma.accounting', 'entryLineAccountList')
+        self.assert_count_equal(
+            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD', 6)
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[6]/VALUE[@name="entry_account"]', '[581] 581')
+        self.assert_xml_equal(
+            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit:{[/b]} 100.00€ - {[b]}Charge:{[/b]} 0.00€ = {[b]}Resultat:{[/b]} 100.00€ | {[b]}Trésorie:{[/b]} 100.00€ - {[b]}Validé:{[/b]} 0.00€{[/center]}')
 
     def test_payoff_avoid(self):
         details = [
@@ -1365,6 +1384,8 @@ class BillTest(LucteriosTest):
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD', 4)
         self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[4]/VALUE[@name="entry_account"]', '[512] 512')
+        self.assert_xml_equal(
             "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit:{[/b]} -50.00€ - {[b]}Charge:{[/b]} 0.00€ = {[b]}Resultat:{[/b]} -50.00€ | {[b]}Trésorie:{[/b]} -50.00€ - {[b]}Validé:{[/b]} 0.00€{[/center]}')
 
         self.factory.xfer = PayoffDel()
@@ -1382,3 +1403,8 @@ class BillTest(LucteriosTest):
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD', 2)
         self.assert_xml_equal(
             "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit:{[/b]} -50.00€ - {[b]}Charge:{[/b]} 0.00€ = {[b]}Resultat:{[/b]} -50.00€ | {[b]}Trésorie:{[/b]} 0.00€ - {[b]}Validé:{[/b]} 0.00€{[/center]}')
+
+        self.factory.xfer = BillPrint()
+        self.call(
+            '/diacamma.invoice/billPrint', {'bill': '1', 'PRINT_MODE': 3, 'MODEL': 9}, False)
+        self.assert_observer('core.print', 'diacamma.invoice', 'billPrint')

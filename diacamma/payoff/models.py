@@ -50,6 +50,10 @@ class Supporting(LucteriosModel):
     def get_payoff_fields(cls):
         return ['payoff_set', ((_('total payed'), 'total_payed'), (_('rest to pay'), 'total_rest_topay'))]
 
+    @classmethod
+    def get_print_fields(cls):
+        return ['payoff_set', (_('total payed'), 'total_payed'), (_('rest to pay'), 'total_rest_topay')]
+
     class Meta(object):
         verbose_name = _('supporting')
         verbose_name_plural = _('supporting')
@@ -156,7 +160,10 @@ class Payoff(LucteriosModel):
                 IMPORTANT, _("third has not customer account"))
         EntryLineAccount.objects.create(
             account=third_account, amount=is_revenu * float(self.amount), third=supporting.third, entry=new_entry)
-        cash_code = Params.getvalue("payoff-cash-account")
+        if self.bank_account is None:
+            cash_code = Params.getvalue("payoff-cash-account")
+        else:
+            cash_code = self.bank_account.account_code
         cash_account = ChartsAccount.get_account(cash_code, fiscal_year)
         if cash_account is None:
             raise LucteriosException(

@@ -32,7 +32,8 @@ from lucterios.framework.xferadvance import XferListEditor, XferShowEditor, \
 from lucterios.framework.xferadvance import XferAddEditor
 from lucterios.framework.xferadvance import XferDelete
 from lucterios.framework.xfercomponents import XferCompLabelForm, \
-    XferCompSelect, XferCompEdit, XferCompHeader, XferCompImage, XferCompGrid
+    XferCompSelect, XferCompEdit, XferCompHeader, XferCompImage, XferCompGrid,\
+    DEFAULT_ACTION_LIST
 from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage, \
     FORMTYPE_MODAL, CLOSE_YES, SELECT_SINGLE, FORMTYPE_REFRESH, CLOSE_NO,\
     SELECT_MULTI, WrapAction
@@ -45,7 +46,9 @@ from lucterios.framework.xfergraphic import XferContainerAcknowledge,\
 from lucterios.CORE.parameters import Params
 from lucterios.CORE.editors import XferSavedCriteriaSearchEditor
 from datetime import date
-from lucterios.CORE.xferprint import XferPrintAction
+from lucterios.CORE.xferprint import XferPrintAction, XferPrintReporting
+from copy import deepcopy
+from lucterios.framework.error import LucteriosException, IMPORTANT
 
 MenuManage.add_sub("invoice", "financial", "diacamma.invoice/images/invoice.png",
                    _("invoice"), _("Manage of billing"), 20)
@@ -89,9 +92,14 @@ class BillList(XferListEditor):
         if status_filter >= 1:
             self.action_grid = [
                 ('show', _("Edit"), "images/show.png", SELECT_SINGLE)]
+        else:
+            self.action_grid = deepcopy(DEFAULT_ACTION_LIST)
         if status_filter == 1:
             self.action_grid.append(
                 ('archive', _("Archive"), "images/ok.png", SELECT_MULTI))
+        if status_filter != 2:
+            self.action_grid.append(
+                ('printbill', _("Print"), "images/print.png", SELECT_MULTI))
 
     def fillresponse(self):
         XferListEditor.fillresponse(self)
@@ -147,6 +155,9 @@ class BillShow(XferShowEditor):
             if self.item.bill_type in (1, 3):
                 self.action_list.insert(
                     1, ('cancel', _("Cancel"), "images/cancel.png", CLOSE_NO))
+        if self.item.status in (1, 3):
+            self.action_list.insert(0,
+                                    ('printbill', _("Print"), "images/print.png", CLOSE_NO))
         XferShowEditor.fillresponse(self)
 
 
@@ -263,6 +274,24 @@ class BillThirdValid(XferSave):
     model = Bill
     field_id = 'bill'
     caption = _("Select third to bill")
+
+
+@ActionsManage.affect('Bill', 'printbill')
+@MenuManage.describ('invoice.add_bill')
+class BillPrint(XferPrintReporting):
+    icon = "bill.png"
+    model = Bill
+    field_id = 'bill'
+    caption = _("Print bill")
+
+    def items_callback(self):
+        has_item = False
+        for item in self.items:
+            if item.status > 0:
+                has_item = True
+                yield item
+        if not has_item:
+            raise LucteriosException(IMPORTANT, _("No invoice to print!"))
 
 
 @ActionsManage.affect('Detail', 'edit', 'add')

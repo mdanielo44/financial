@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-10-21 16:31+0000\n"
+"POT-Creation-Date: 2015-10-22 14:48+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -42,104 +42,104 @@ msgstr "exercice"
 msgid "third"
 msgstr "tiers"
 
-#: models.py:51
+#: models.py:51 models.py:55
 msgid "total payed"
 msgstr "total payé"
 
-#: models.py:51
+#: models.py:51 models.py:55
 msgid "rest to pay"
 msgstr "rest dû"
 
-#: models.py:54 models.py:55 models.py:101
+#: models.py:58 models.py:59 models.py:105
 msgid "supporting"
 msgstr "support"
 
-#: models.py:82
+#: models.py:86
 msgid "designation"
 msgstr "désignation"
 
-#: models.py:83 models.py:109
+#: models.py:87 models.py:113
 msgid "reference"
 msgstr "référence"
 
-#: models.py:85
+#: models.py:89
 msgid "account code"
 msgstr "code comptable"
 
-#: models.py:95 models.py:113
+#: models.py:99 models.py:117
 msgid "bank account"
 msgstr "compte bancaire"
 
-#: models.py:96
+#: models.py:100
 msgid "bank accounts"
 msgstr "comptes bancaire"
 
-#: models.py:102
+#: models.py:106
 msgid "date"
 msgstr "date"
 
-#: models.py:103
+#: models.py:107
 msgid "amount"
 msgstr "montant"
 
-#: models.py:105
+#: models.py:109
 msgid "mode"
 msgstr "mode"
 
-#: models.py:106
+#: models.py:110
 msgid "cash"
 msgstr "espèce"
 
-#: models.py:106
+#: models.py:110
 msgid "cheque"
 msgstr "chèque"
 
-#: models.py:106
+#: models.py:110
 msgid "transfer"
 msgstr "virement"
 
-#: models.py:106
+#: models.py:110
 msgid "crédit card"
 msgstr "carte de crédit"
 
-#: models.py:106
+#: models.py:110
 msgid "other"
 msgstr "autre"
 
-#: models.py:107
+#: models.py:111
 msgid "payer"
 msgstr "payeur"
 
-#: models.py:111
+#: models.py:115
 msgid "entry"
 msgstr "écriture"
 
-#: models.py:117
+#: models.py:121
 msgid "value"
 msgstr "valeur"
 
-#: models.py:132
+#: models.py:136
 msgid "an entry associated to this payoff is closed!"
 msgstr "une écriture associée à ce réglement est clôturée!"
 
-#: models.py:145
+#: models.py:149
 #, python-format
 msgid "payoff for %s"
 msgstr "réglement de %s"
 
-#: models.py:151 models.py:156
+#: models.py:155 models.py:160
 msgid "third has not customer account"
 msgstr "le tiers n'a pas de compte client"
 
-#: models.py:163
+#: models.py:170
 msgid "cash-account is not defined!"
 msgstr "le compte d'espèce n'est pas défini!"
 
-#: models.py:180
+#: models.py:187
 msgid "payoff"
 msgstr "réglement"
 
-#: models.py:181
+#: models.py:188
 msgid "payoffs"
 msgstr "réglements"
 
