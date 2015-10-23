@@ -91,5 +91,38 @@ class Migration(migrations.Migration):
                 'verbose_name': 'payoff',
             },
         ),
+        migrations.CreateModel(
+            name='DepositSlip',
+            fields=[
+                ('id', models.AutoField(
+                    auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('status', models.IntegerField(db_index=True, choices=[
+                 (0, 'building'), (1, 'closed'), (2, 'valid')], verbose_name='status', default=0)),
+                ('date', models.DateField(verbose_name='date')),
+                ('reference', models.CharField(
+                    null=False, verbose_name='reference', max_length=100, default='')),
+                ('bank_account', models.ForeignKey(to='payoff.BankAccount', verbose_name='bank account',
+                                                   on_delete=django.db.models.deletion.PROTECT, null=False)),
+            ],
+            options={
+                'verbose_name_plural': 'deposit slips',
+                'verbose_name': 'deposit slip',
+            },
+        ),
+        migrations.CreateModel(
+            name='DepositDetail',
+            fields=[
+                ('id', models.AutoField(
+                    auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('deposit', models.ForeignKey(to='payoff.DepositSlip', verbose_name='deposit',
+                                              on_delete=django.db.models.deletion.PROTECT, null=True, default=None)),
+                ('payoff', models.ForeignKey(to='payoff.Payoff', verbose_name='payoff',
+                                             on_delete=django.db.models.deletion.PROTECT, null=True, default=None)),
+            ],
+            options={
+                'verbose_name_plural': 'deposit details',
+                'verbose_name': 'deposit detail',
+            },
+        ),
         migrations.RunPython(initial_values),
     ]

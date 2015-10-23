@@ -159,6 +159,32 @@ class InvoiceMigrate(MigrateAbstract):
                         compte_cheque]
                 self.payoff_list[payoffid].save(do_generate=False)
 
+    def _deposit(self):
+        deposit_mdl = apps.get_model("payoff", "DepositSlip")
+        deposit_mdl.objects.all().delete()
+        self.deposit_list = {}
+        ddetail_mdl = apps.get_model("payoff", "DepositDetail")
+        ddetail_mdl.objects.all().delete()
+        self.ddetail_list = {}
+
+        cur_s = self.old_db.open()
+        cur_s.execute(
+            "SELECT id, etat,CompteCheque,date,reference FROM fr_sdlibre_facture_bordereauCheque")
+        for depositid, etat, compte_cheque, date, reference in cur_s.fetchall():
+            if compte_cheque in self.bank_list.keys():
+                self.print_log(
+                    "=> deposit:%s %s %s", (compte_cheque, date, reference))
+                self.deposit_list[depositid] = deposit_mdl.objects.create(
+                    status=etat, bank_account=self.bank_list[compte_cheque], date=date, reference=reference)
+
+        cur_d = self.old_db.open()
+        cur_d.execute(
+            "SELECT id,  bordereau,payement  FROM fr_sdlibre_facture_detailCheque")
+        for ddetailid, bordereau, payement in cur_d.fetchall():
+            if (bordereau in self.deposit_list.keys()) and (payement in self.payoff_list.keys()):
+                self.ddetail_list[ddetailid] = ddetail_mdl.objects.create(deposit=self.deposit_list[bordereau],
+                                                                          payoff=self.payoff_list[payement])
+
     def _params(self):
         cur_p = self.old_db.open()
         cur_p.execute(
@@ -194,6 +220,7 @@ class InvoiceMigrate(MigrateAbstract):
             self._article()
             self._bill()
             self._payoff()
+            self._deposit()
         except:
             import traceback
             traceback.print_exc()

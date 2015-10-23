@@ -28,7 +28,7 @@ from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.utils.translation import ugettext_lazy as _
 
-from lucterios.framework.models import LucteriosModel
+from lucterios.framework.models import LucteriosModel, get_value_converted
 
 from diacamma.accounting.models import EntryAccount, FiscalYear, Third, Journal,\
     ChartsAccount, EntryLineAccount
@@ -37,6 +37,7 @@ from diacamma.accounting.tools import format_devise, currency_round,\
 from lucterios.framework.error import LucteriosException, IMPORTANT
 from django.utils import six
 from lucterios.CORE.parameters import Params
+from django.db.models.aggregates import Sum
 
 
 class Supporting(LucteriosModel):
@@ -211,3 +212,142 @@ class Payoff(LucteriosModel):
     class Meta(object):
         verbose_name = _('payoff')
         verbose_name_plural = _('payoffs')
+
+
+class DepositSlip(LucteriosModel):
+
+    status = models.IntegerField(verbose_name=_('status'),
+                                 choices=((0, _('building')), (1, _('closed')), (2, _('valid'))), null=False, default=0, db_index=True)
+    bank_account = models.ForeignKey(BankAccount, verbose_name=_(
+        'bank account'), null=False, db_index=True, on_delete=models.PROTECT)
+    date = models.DateField(verbose_name=_('date'), null=False)
+    reference = models.CharField(
+        _('reference'), max_length=100, null=False, default='')
+
+    def __str__(self):
+        return "%s %s" % (self.reference, get_value_converted(self.date))
+
+    @classmethod
+    def get_default_fields(cls):
+        return ['status', 'bank_account', 'date', 'reference', (_('total'), 'total')]
+
+    @classmethod
+    def get_edit_fields(cls):
+        return ['bank_account', 'reference', 'date']
+
+    @classmethod
+    def get_show_fields(cls):
+        return ['bank_account', 'bank_account.reference', ("date", "reference"), "depositdetail_set", ((_('number'), "nb"), (_('total'), 'total'))]
+
+    def get_total(self):
+        value = 0
+        for detail in self.depositdetail_set.all():
+            value += detail.get_amount()
+        return value
+
+    @property
+    def total(self):
+        return format_devise(self.get_total(), 5)
+
+    @property
+    def nb(self):
+        return len(self.depositdetail_set.all())
+
+    def can_delete(self):
+        if self.status != 0:
+            return _('Remove of %s impossible!') % six.text_type(self)
+        return ''
+
+    def close_deposit(self):
+        if self.status == 0:
+            self.status = 1
+            self.save()
+
+    def validate_deposit(self):
+        if self.status == 1:
+            self.status = 2
+            self.save()
+
+    def add_payoff(self, entries):
+        if self.status == 0:
+            for entry in entries:
+                payoff_list = Payoff.objects.filter(entry_id=entry)
+                if len(payoff_list) > 0:
+                    DepositDetail.objects.create(
+                        deposit=self, payoff=payoff_list[0])
+
+    class Meta(object):
+        verbose_name = _('deposit slip')
+        verbose_name_plural = _('deposit slips')
+
+
+class DepositDetail(LucteriosModel):
+
+    deposit = models.ForeignKey(
+        DepositSlip, verbose_name=_('deposit'), null=True, default=None, db_index=True, on_delete=models.PROTECT)
+    payoff = models.ForeignKey(
+        Payoff, verbose_name=_('payoff'), null=True, default=None, db_index=True, on_delete=models.PROTECT)
+
+    @classmethod
+    def get_default_fields(cls):
+        return [(_('customer'), 'customer'), (_('date'), 'date'), (_('reference'), 'reference'), (_('amount'), 'amount')]
+
+    @classmethod
+    def get_edit_fields(cls):
+        return []
+
+    @property
+    def customer(self):
+        return self.payoff.payer
+
+    @property
+    def date(self):
+        return self.payoff.date
+
+    @property
+    def reference(self):
+        return self.payoff.reference
+
+    def get_amount(self):
+        values = Payoff.objects.filter(
+            entry=self.payoff.entry, reference=self.payoff.reference).aggregate(Sum('amount'))
+        if 'amount__sum' in values.keys():
+            return values['amount__sum']
+        else:
+            return 0
+
+    @property
+    def amount(self):
+        return format_devise(self.get_amount(), 5)
+
+    @classmethod
+    def get_payof_not_deposit(cls, payer, reference, order_list):
+        payoff_nodeposit = []
+        entity_known = DepositDetail.objects.values_list(
+            'payoff__entry_id', flat=True).distinct()
+        entity_unknown = Payoff.objects.exclude(supporting__is_revenu=True, entry_id__in=entity_known).values(
+            'entry_id', 'date', 'reference', 'payer').annotate(amount=Sum('amount'))
+        if payer != '':
+            entity_unknown = entity_unknown.filter(payer__contains=payer)
+        if reference != '':
+            entity_unknown = entity_unknown.filter(
+                reference__contains=reference)
+        if order_list is not None:
+            entity_unknown = entity_unknown.order_by(*order_list)
+        for values in entity_unknown:
+            payoff = {}
+            payoff['id'] = values['entry_id']
+            bills = []
+            for supporting in Supporting.objects.filter(payoff__entry=values['entry_id']):
+                bills.append(six.text_type(supporting.get_final_child()))
+            payoff['bill'] = '{[br/]}'.join(bills)
+            payoff['payer'] = values['payer']
+            payoff['amount'] = format_devise(values['amount'], 5)
+            payoff['date'] = values['date']
+            payoff['reference'] = values['reference']
+            payoff_nodeposit.append(payoff)
+        return payoff_nodeposit
+
+    class Meta(object):
+        verbose_name = _('deposit detail')
+        verbose_name_plural = _('deposit details')

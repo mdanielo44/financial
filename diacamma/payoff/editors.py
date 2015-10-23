@@ -33,6 +33,7 @@ from diacamma.payoff.models import Supporting
 from lucterios.framework.error import LucteriosException, IMPORTANT
 from django.utils import six
 from build.lib.lucterios.framework.xfercomponents import XferCompLabelForm
+from lucterios.contacts.models import LegalEntity
 
 
 class SupportingEditor(LucteriosEditor):
@@ -101,3 +102,23 @@ class PayoffEditor(LucteriosEditor):
         if not supporting_list[0].is_revenu:
             xfer.remove_component("payer")
             xfer.remove_component("lbl_payer")
+
+
+class DepositSlipEditor(LucteriosEditor):
+
+    def show(self, xfer):
+        xfer.move(0, 0, 5)
+        xfer.item = LegalEntity.objects.get(id=1)
+        xfer.fill_from_model(
+            1, 0, True, ["name", 'address', ('postal_code', 'city'), ('tel1', 'email')])
+        xfer.item = self.item
+        lbl = XferCompLabelForm('sep')
+        lbl.set_value_center("{[hr/]}")
+        lbl.set_location(1, 4, 4)
+        xfer.add_component(lbl)
+        xfer.remove_component("lbl_depositdetail_set")
+        depositdetail = xfer.get_components("depositdetail")
+        depositdetail.col = 1
+        depositdetail.colspan = 4
+        if self.item.status != 0:
+            depositdetail.actions = []
