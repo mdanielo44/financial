@@ -99,6 +99,8 @@ class Article(LucteriosModel):
 
 
 class Bill(Supporting):
+    fiscal_year = models.ForeignKey(
+        FiscalYear, verbose_name=_('fiscal year'), null=True, default=None, db_index=True, on_delete=models.PROTECT)
     bill_type = models.IntegerField(verbose_name=_('bill type'),
                                     choices=((0, _('quotation')), (1, _('bill')), (2, _('asset')), (3, _('receipt'))), null=False, default=0, db_index=True)
     num = models.IntegerField(verbose_name=_('numeros'), null=True)

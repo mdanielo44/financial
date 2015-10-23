@@ -337,6 +337,8 @@ class Migration(migrations.Migration):
             fields=[
                 ('supporting_ptr', models.OneToOneField(auto_created=True, parent_link=True,
                                                         serialize=False, primary_key=True, to='payoff.Supporting')),
+                ('fiscal_year', models.ForeignKey(on_delete=deletion.PROTECT,
+                                                  null=True, to='accounting.FiscalYear', default=None, verbose_name='fiscal year')),
                 ('bill_type', models.IntegerField(null=False, default=0, db_index=True, verbose_name='bill type', choices=[
                  (0, 'quotation'), (1, 'bill'), (2, 'asset'), (3, 'receipt')])),
                 ('num', models.IntegerField(
@@ -364,8 +366,7 @@ class Migration(migrations.Migration):
                 ('designation', models.TextField(verbose_name='designation')),
                 ('price', models.DecimalField(verbose_name='price', max_digits=10, default=0.0,
                                               decimal_places=3, validators=[MinValueValidator(0.0), MaxValueValidator(9999999.999)])),
-                ('vta_rate', models.DecimalField(verbose_name='vta rate', max_digits=6, default=10.0,
-                                                 decimal_places=2, validators=[MinValueValidator(0.0), MaxValueValidator(100.0)])),
+                ('vta_rate', models.DecimalField(validators=[MinValueValidator(0.0), MaxValueValidator(1.0)], verbose_name='vta rate', default=0.1, decimal_places=4, max_digits=6)),
                 ('unit', models.CharField(
                     null=True, verbose_name='unit', default='', max_length=10)),
                 ('quantity', models.DecimalField(validators=[MinValueValidator(0.0), MaxValueValidator(

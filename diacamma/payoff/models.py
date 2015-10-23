@@ -41,9 +41,6 @@ from django.db.models.aggregates import Sum
 
 
 class Supporting(LucteriosModel):
-
-    fiscal_year = models.ForeignKey(
-        FiscalYear, verbose_name=_('fiscal year'), null=True, default=None, db_index=True, on_delete=models.PROTECT)
     third = models.ForeignKey(
         Third, verbose_name=_('third'), null=True, default=None, db_index=True, on_delete=models.PROTECT)
     is_revenu = models.BooleanField(verbose_name=_('is revenu'), default=True)
