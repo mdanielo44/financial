@@ -41,6 +41,8 @@ class Migration(migrations.Migration):
                                                   null=True, to='accounting.FiscalYear', default=None, verbose_name='fiscal year')),
                 ('third', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT,
                                             null=True, to='accounting.Third', default=None, verbose_name='third')),
+                ('is_revenu', models.BooleanField(
+                    default=True, verbose_name='is revenu')),
             ],
             options={
                 'verbose_name_plural': 'supporting',

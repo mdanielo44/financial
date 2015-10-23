@@ -31,7 +31,7 @@ from lucterios.framework.xferadvance import XferDelete
 from lucterios.framework.tools import ActionsManage, MenuManage
 
 from diacamma.payoff.models import Payoff
-from django.utils import six
+from lucterios.framework.xfergraphic import XferContainerAcknowledge
 
 
 @ActionsManage.affect('Payoff', 'edit', 'append')
@@ -43,12 +43,24 @@ class PayoffAddModify(XferAddEditor):
     caption_add = _("Add payoff")
     caption_modify = _("Modify payoff")
 
-    def fillresponse(self):
-        if self.item.id is None:
-            supporting = self.item.supporting.get_final_child()
-            self.item.amount = supporting.get_total_rest_topay()
-            self.item.payer = six.text_type(supporting.third)
-        XferAddEditor.fillresponse(self)
+    def fillresponse_multisave(self, supportings=(), amount=0.0, mode=0, payer='', reference='', bank_account=0, date=None):
+        Payoff.multi_save(
+            supportings, amount, mode, payer, reference, bank_account, date)
+
+    def run_save(self, request, *args, **kwargs):
+        supportings = self.getparam('supportings', ())
+        if len(supportings) > 0:
+            multisave = XferContainerAcknowledge()
+            multisave.is_view_right = self.is_view_right
+            multisave.locked = self.locked
+            multisave.model = self.model
+            multisave.field_id = self.field_id
+            multisave.caption = self.caption
+            multisave.closeaction = self.closeaction
+            multisave.fillresponse = self.fillresponse_multisave
+            return multisave.get(request, *args, **kwargs)
+        else:
+            return XferAddEditor.run_save(self, request, *args, **kwargs)
 
 
 @ActionsManage.affect('Payoff', 'delete')

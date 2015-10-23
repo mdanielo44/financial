@@ -229,7 +229,7 @@ class Bill(Supporting):
             vtas.append(format_devise(value, 5))
         return "{[br/]}".join(vtas)
 
-    def is_revenu(self):
+    def payoff_is_revenu(self):
         return self.bill_type != 2
 
     def get_info_state(self):

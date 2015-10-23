@@ -29,16 +29,24 @@ from lucterios.framework.editors import LucteriosEditor
 from lucterios.CORE.parameters import Params
 from lucterios.framework.tools import ActionsManage, CLOSE_NO, SELECT_NONE,\
     FORMTYPE_REFRESH
+from diacamma.payoff.models import Supporting
+from lucterios.framework.error import LucteriosException, IMPORTANT
+from django.utils import six
+from build.lib.lucterios.framework.xfercomponents import XferCompLabelForm
 
 
 class SupportingEditor(LucteriosEditor):
+
+    def before_save(self, xfer):
+        self.item.is_revenu = self.item.payoff_is_revenu()
+        return LucteriosEditor.before_save(self, xfer)
 
     def show(self, xfer):
         xfer.params['supporting'] = self.item.id
         xfer.filltab_from_model(
             1, xfer.get_max_row() + 1, True, self.item.get_payoff_fields())
         payoff = xfer.get_components("payoff")
-        if not self.item.is_revenu():
+        if not self.item.is_revenu:
             head_idx = 0
             for header in payoff.headers:
                 if header.name == 'payer':
@@ -54,13 +62,35 @@ class PayoffEditor(LucteriosEditor):
 
     def edit(self, xfer):
         currency_decimal = Params.getvalue("accounting-devise-prec")
-        supporting = self.item.supporting.get_final_child()
-        xfer.get_components("mode").set_action(
-            xfer.request, xfer.get_action(), {'close': CLOSE_NO, 'modal': FORMTYPE_REFRESH})
+        supportings = xfer.getparam('supportings', ())
+        if len(supportings) > 0:
+            supporting_list = Supporting.objects.filter(
+                id__in=supportings, is_revenu=True)
+            if len(supporting_list) == 0:
+                raise LucteriosException(IMPORTANT, _('No-valid selection!'))
+        else:
+            supporting_list = [self.item.supporting]
+        amount_max = 0
+        title = []
+        for supporting in supporting_list:
+            up_supporting = supporting.get_final_child()
+            title.append(six.text_type(up_supporting))
+            amount_max += up_supporting.get_total_rest_topay()
+        xfer.move(0, 0, 1)
+        lbl = XferCompLabelForm('supportings')
+        lbl.set_value_center("{[br/]}".join(title))
+        lbl.set_location(1, 0, 2)
+        xfer.add_component(lbl)
         amount = xfer.get_components("amount")
+        if self.item.id is None:
+            amount.value = amount_max
+            xfer.get_components("payer").value = six.text_type(
+                supporting_list[0].third)
         amount.prec = currency_decimal
         amount.min = 0
-        amount.max = supporting.get_total_rest_topay()
+        amount.max = amount_max
+        xfer.get_components("mode").set_action(
+            xfer.request, xfer.get_action(), {'close': CLOSE_NO, 'modal': FORMTYPE_REFRESH})
         if self.item.mode == 0:
             xfer.remove_component("bank_account")
             xfer.remove_component("lbl_bank_account")
@@ -68,6 +98,6 @@ class PayoffEditor(LucteriosEditor):
             banks = xfer.get_components("bank_account")
             if banks.select_list[0][0] == 0:
                 del banks.select_list[0]
-        if not supporting.is_revenu():
+        if not supporting_list[0].is_revenu:
             xfer.remove_component("payer")
             xfer.remove_component("lbl_payer")

@@ -49,6 +49,7 @@ from datetime import date
 from lucterios.CORE.xferprint import XferPrintAction, XferPrintReporting
 from copy import deepcopy
 from lucterios.framework.error import LucteriosException, IMPORTANT
+from diacamma.payoff.views import PayoffAddModify
 
 MenuManage.add_sub("invoice", "financial", "diacamma.invoice/images/invoice.png",
                    _("invoice"), _("Manage of billing"), 20)
@@ -97,6 +98,8 @@ class BillList(XferListEditor):
         if status_filter == 1:
             self.action_grid.append(
                 ('archive', _("Archive"), "images/ok.png", SELECT_MULTI))
+            self.action_grid.append(
+                ('multipay', _('payoff'), '', SELECT_MULTI))
         if status_filter != 2:
             self.action_grid.append(
                 ('printbill', _("Print"), "images/print.png", SELECT_MULTI))
@@ -172,6 +175,19 @@ class BillValid(XferContainerAcknowledge):
     def fillresponse(self):
         if (self.item.status == 0) and self.confirme(_("Do you want validate '%s'?") % self.item):
             self.item.valid()
+
+
+@ActionsManage.affect('Bill', 'multipay')
+@MenuManage.describ('payoff.add_payoff')
+class BillMultiPay(XferContainerAcknowledge):
+    caption = _("Multi-pay bill")
+    icon = "bill.png"
+    model = Bill
+    field_id = 'bill'
+
+    def fillresponse(self, bill):
+        self.redirect_action(
+            PayoffAddModify.get_action("", ""), {'params': {"supportings": bill}})
 
 
 @ActionsManage.affect('Bill', 'convertbill')

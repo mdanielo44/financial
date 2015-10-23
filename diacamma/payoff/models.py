@@ -45,6 +45,7 @@ class Supporting(LucteriosModel):
         FiscalYear, verbose_name=_('fiscal year'), null=True, default=None, db_index=True, on_delete=models.PROTECT)
     third = models.ForeignKey(
         Third, verbose_name=_('third'), null=True, default=None, db_index=True, on_delete=models.PROTECT)
+    is_revenu = models.BooleanField(verbose_name=_('is revenu'), default=True)
 
     @classmethod
     def get_payoff_fields(cls):
@@ -61,7 +62,7 @@ class Supporting(LucteriosModel):
     def get_total(self):
         raise Exception('no implemented!')
 
-    def is_revenu(self):
+    def payoff_is_revenu(self):
         raise Exception('no implemented!')
 
     def get_total_payed(self):
@@ -139,7 +140,7 @@ class Payoff(LucteriosModel):
 
     def generate_accounting(self):
         supporting = self.supporting.get_final_child()
-        if supporting.is_revenu():
+        if self.supporting.is_revenu:
             is_revenu = -1
         else:
             is_revenu = 1
@@ -178,6 +179,30 @@ class Payoff(LucteriosModel):
             self.delete_accounting()
             self.generate_accounting()
         return LucteriosModel.save(self, force_insert, force_update, using, update_fields)
+
+    @classmethod
+    def multi_save(cls, supportings, amount, mode, payer, reference, bank_account, date):
+        supporting_list = Supporting.objects.filter(
+            id__in=supportings, is_revenu=True)
+        if len(supporting_list) == 0:
+            raise LucteriosException(IMPORTANT, _('No-valid selection!'))
+        amount_sum = 0
+        for supporting in supporting_list:
+            amount_sum += supporting.get_final_child().get_total_rest_topay()
+        amount_rest = amount
+        for supporting in supporting_list:
+            new_paypoff = Payoff.objects.create(supporting=supporting,
+                                                date=date, payer=payer, mode=mode, reference=reference)
+            if bank_account != 0:
+                new_paypoff.bank_account = BankAccount.objects.get(
+                    id=bank_account)
+            new_paypoff.amount = currency_round(
+                supporting.get_final_child().get_total_rest_topay() * amount / amount_sum)
+            amount_rest -= new_paypoff.amount
+            new_paypoff.save()
+        if abs(amount_rest) > 0.001:
+            new_paypoff.amount += amount_rest
+            new_paypoff.save()
 
     def delete(self, using=None):
         self.delete_accounting()

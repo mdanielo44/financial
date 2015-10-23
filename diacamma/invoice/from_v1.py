@@ -102,6 +102,7 @@ class InvoiceMigrate(MigrateAbstract):
                 if analytique in self.old_db.objectlinks['costaccounting'].keys():
                     self.bill_list[billid].cost_accounting = self.old_db.objectlinks[
                         'costaccounting'][analytique]
+                self.bill_list[billid].is_revenu = typeFact != 2
                 self.bill_list[billid].save()
         cur_d = self.old_db.open()
         cur_d.execute(
