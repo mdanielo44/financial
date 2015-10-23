@@ -12,11 +12,10 @@ from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManag
     CLOSE_YES, CLOSE_NO, FORMTYPE_REFRESH, SELECT_MULTI, WrapAction
 from lucterios.framework.xfergraphic import XferContainerCustom,\
     XferContainerAcknowledge
+from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompImage
+from lucterios.framework.xfercomponents import XferCompEdit, XferCompGrid
 
 from diacamma.payoff.models import DepositSlip, DepositDetail
-from build.lib.lucterios.framework.xfercomponents import XferCompLabelForm,\
-    XferCompImage
-from lucterios.framework.xfercomponents import XferCompEdit, XferCompGrid
 
 
 @ActionsManage.affect('DepositSlip', 'list')

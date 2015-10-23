@@ -489,14 +489,14 @@ class Detail(LucteriosModel):
             return currency_round(self.price * self.vta_rate)
         if (Params.getvalue("invoice-vat-mode") == 1) and (self.vta_rate < -0.001):
             return currency_round(self.price * -1 * self.vta_rate / (1 - self.vta_rate))
-        return self.price
+        return float(self.price)
 
     def get_reduce(self):
         if (Params.getvalue("invoice-vat-mode") == 2) and (self.vta_rate > 0.001):
             return currency_round(self.reduce * self.vta_rate)
         if (Params.getvalue("invoice-vat-mode") == 1) and (self.vta_rate < -0.001):
             return currency_round(self.reduce * -1 * self.vta_rate / (1 - self.vta_rate))
-        return self.reduce
+        return float(self.reduce)
 
     @property
     def price_txt(self):
@@ -505,7 +505,7 @@ class Detail(LucteriosModel):
     @property
     def reduce_txt(self):
         if self.reduce > 0.0001:
-            return "%s(%.2f%%)" % (format_devise(self.get_reduce(), 5), 100 * self.get_reduce() / (self.get_price() * self.quantity))
+            return "%s(%.2f%%)" % (format_devise(self.get_reduce(), 5), 100 * self.get_reduce() / (self.get_price() * float(self.quantity)))
         else:
             return None
 

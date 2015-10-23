@@ -23,17 +23,19 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
 from __future__ import unicode_literals
+
 from django.utils.translation import ugettext_lazy as _
+from django.utils import six
 
 from lucterios.framework.editors import LucteriosEditor
+from lucterios.framework.xfercomponents import XferCompLabelForm
 from lucterios.CORE.parameters import Params
 from lucterios.framework.tools import ActionsManage, CLOSE_NO, SELECT_NONE,\
     FORMTYPE_REFRESH
-from diacamma.payoff.models import Supporting
 from lucterios.framework.error import LucteriosException, IMPORTANT
-from django.utils import six
-from build.lib.lucterios.framework.xfercomponents import XferCompLabelForm
 from lucterios.contacts.models import LegalEntity
+
+from diacamma.payoff.models import Supporting
 
 
 class SupportingEditor(LucteriosEditor):
