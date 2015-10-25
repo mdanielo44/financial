@@ -112,7 +112,6 @@ class BillEditor(SupportingEditor):
             if self.item.third is not None:
                 btn = XferCompButton('show_third')
                 btn.set_location(third.col + third.colspan + 1, third.row)
-                modal_name = xfer.item.__class__.__name__
                 btn.set_action(xfer.request, ActionsManage.get_act_changed('Third', 'show', _('show'), ''),
                                {'modal': FORMTYPE_MODAL, 'close': CLOSE_NO, 'params': {'third': self.item.third.id}})
                 xfer.add_component(btn)

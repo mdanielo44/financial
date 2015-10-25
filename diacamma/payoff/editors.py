@@ -50,13 +50,8 @@ class SupportingEditor(LucteriosEditor):
             1, xfer.get_max_row() + 1, True, self.item.get_payoff_fields())
         payoff = xfer.get_components("payoff")
         if not self.item.is_revenu:
-            head_idx = 0
-            for header in payoff.headers:
-                if header.name == 'payer':
-                    break
-                head_idx += 1
-            del payoff.headers[head_idx]
-        if self.item.get_total_rest_topay() > 0.001:
+            payoff.delete_header('payer')
+        if self.item.get_max_payoff() > 0.001:
             payoff.add_action(xfer.request, ActionsManage.get_act_changed(
                 'Payoff', 'append', _("Add"), "images/add.png", ), {'close': CLOSE_NO, 'unique': SELECT_NONE})
 
@@ -74,11 +69,13 @@ class PayoffEditor(LucteriosEditor):
         else:
             supporting_list = [self.item.supporting]
         amount_max = 0
+        amount_sum = 0
         title = []
         for supporting in supporting_list:
             up_supporting = supporting.get_final_child()
             title.append(six.text_type(up_supporting))
-            amount_max += up_supporting.get_total_rest_topay()
+            amount_sum += up_supporting.get_total_rest_topay()
+            amount_max += up_supporting.get_max_payoff()
         xfer.move(0, 0, 1)
         lbl = XferCompLabelForm('supportings')
         lbl.set_value_center("{[br/]}".join(title))
@@ -86,7 +83,7 @@ class PayoffEditor(LucteriosEditor):
         xfer.add_component(lbl)
         amount = xfer.get_components("amount")
         if self.item.id is None:
-            amount.value = amount_max
+            amount.value = amount_sum
             xfer.get_components("payer").value = six.text_type(
                 supporting_list[0].third)
         amount.prec = currency_decimal

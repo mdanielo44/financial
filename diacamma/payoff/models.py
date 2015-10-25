@@ -30,9 +30,9 @@ from django.utils.translation import ugettext_lazy as _
 
 from lucterios.framework.models import LucteriosModel, get_value_converted
 
-from diacamma.accounting.models import EntryAccount, FiscalYear, Third, Journal,\
+from diacamma.accounting.models import EntryAccount, FiscalYear, Third, Journal, \
     ChartsAccount, EntryLineAccount
-from diacamma.accounting.tools import format_devise, currency_round,\
+from diacamma.accounting.tools import format_devise, currency_round, \
     current_system_account
 from lucterios.framework.error import LucteriosException, IMPORTANT
 from django.utils import six
@@ -60,6 +60,9 @@ class Supporting(LucteriosModel):
     def get_total(self):
         raise Exception('no implemented!')
 
+    def get_max_payoff(self):
+        return self.get_total_rest_topay()
+        
     def payoff_is_revenu(self):
         raise Exception('no implemented!')
 
