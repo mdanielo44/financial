@@ -62,7 +62,7 @@ class Supporting(LucteriosModel):
 
     def get_max_payoff(self):
         return self.get_total_rest_topay()
-        
+
     def payoff_is_revenu(self):
         raise Exception('no implemented!')
 
