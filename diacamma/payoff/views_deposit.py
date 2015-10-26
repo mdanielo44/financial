@@ -79,7 +79,7 @@ class DepositSlipClose(XferContainerAcknowledge):
     caption = _("Close deposit slip")
 
     def fillresponse(self):
-        if self.confirme(_("Do you want to close this deposit?")):
+        if (self.item.status == 0) and self.confirme(_("Do you want to close this deposit?")):
             self.item.close_deposit()
 
 
@@ -92,7 +92,7 @@ class DepositSlipValidate(XferContainerAcknowledge):
     caption = _("Close deposit slip")
 
     def fillresponse(self):
-        if self.confirme(_("Do you want to validate this deposit?")):
+        if (self.item.status == 1) and self.confirme(_("Do you want to validate this deposit?")):
             self.item.validate_deposit()
 
 

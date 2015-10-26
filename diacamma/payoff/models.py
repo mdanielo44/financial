@@ -114,7 +114,7 @@ class Payoff(LucteriosModel):
     reference = models.CharField(
         _('reference'), max_length=100, null=True, default='')
     entry = models.ForeignKey(
-        EntryAccount, verbose_name=_('entry'), null=True, default=None, db_index=True, on_delete=models.SET_NULL)
+        EntryAccount, verbose_name=_('entry'), null=True, default=None, db_index=True, on_delete=models.CASCADE)
     bank_account = models.ForeignKey(BankAccount, verbose_name=_(
         'bank account'), null=True, default=None, db_index=True, on_delete=models.PROTECT)
 
@@ -139,7 +139,7 @@ class Payoff(LucteriosModel):
             self.entry = None
             payoff_entry.delete()
 
-    def generate_accounting(self):
+    def generate_accounting(self, third_amounts):
         supporting = self.supporting.get_final_child()
         if self.supporting.is_revenu:
             is_revenu = -1
@@ -150,18 +150,19 @@ class Payoff(LucteriosModel):
             year=fiscal_year, date_value=self.date, designation=_(
                 "payoff for %s") % six.text_type(supporting),
             journal=Journal.objects.get(id=4))
-        accounts = supporting.third.accountthird_set.filter(
-            code__regex=current_system_account().get_customer_mask())
-        if len(accounts) == 0:
-            raise LucteriosException(
-                IMPORTANT, _("third has not customer account"))
-        third_account = ChartsAccount.get_account(
-            accounts[0].code, fiscal_year)
-        if third_account is None:
-            raise LucteriosException(
-                IMPORTANT, _("third has not customer account"))
-        EntryLineAccount.objects.create(
-            account=third_account, amount=is_revenu * float(self.amount), third=supporting.third, entry=new_entry)
+        for third, amount in third_amounts:
+            accounts = third.accountthird_set.filter(
+                code__regex=current_system_account().get_customer_mask())
+            if len(accounts) == 0:
+                raise LucteriosException(
+                    IMPORTANT, _("third has not customer account"))
+            third_account = ChartsAccount.get_account(
+                accounts[0].code, fiscal_year)
+            if third_account is None:
+                raise LucteriosException(
+                    IMPORTANT, _("third has not customer account"))
+            EntryLineAccount.objects.create(
+                account=third_account, amount=is_revenu * amount, third=third, entry=new_entry)
         if self.bank_account is None:
             cash_code = Params.getvalue("payoff-cash-account")
         else:
@@ -172,13 +173,14 @@ class Payoff(LucteriosModel):
                 IMPORTANT, _("cash-account is not defined!"))
         EntryLineAccount.objects.create(
             account=cash_account, amount=-1 * is_revenu * float(self.amount), entry=new_entry)
-        self.entry = new_entry
+        return new_entry
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None, do_generate=True):
         if not force_insert and do_generate:
             self.delete_accounting()
-            self.generate_accounting()
+            self.entry = self.generate_accounting(
+                [(self.supporting.third, float(self.amount))])
         return LucteriosModel.save(self, force_insert, force_update, using, update_fields)
 
     @classmethod
@@ -191,6 +193,7 @@ class Payoff(LucteriosModel):
         for supporting in supporting_list:
             amount_sum += supporting.get_final_child().get_total_rest_topay()
         amount_rest = amount
+        paypoff_list = []
         for supporting in supporting_list:
             new_paypoff = Payoff.objects.create(supporting=supporting,
                                                 date=date, payer=payer, mode=mode, reference=reference)
@@ -200,10 +203,20 @@ class Payoff(LucteriosModel):
             new_paypoff.amount = currency_round(
                 supporting.get_final_child().get_total_rest_topay() * amount / amount_sum)
             amount_rest -= new_paypoff.amount
-            new_paypoff.save()
+            new_paypoff.save(do_generate=False)
+            paypoff_list.append(new_paypoff)
         if abs(amount_rest) > 0.001:
             new_paypoff.amount += amount_rest
-            new_paypoff.save()
+            new_paypoff.save(do_generate=False)
+        third_amounts = {}
+        for paypoff_item in paypoff_list:
+            if paypoff_item.supporting.third not in third_amounts.keys():
+                third_amounts[paypoff_item.supporting.third] = 0
+            third_amounts[paypoff_item.supporting.third] += paypoff_item.amount
+        new_entry = paypoff_list[0].generate_accounting(third_amounts.items())
+        for paypoff_item in paypoff_list:
+            paypoff_item.entry = new_entry
+            paypoff_item.save(do_generate=False)
 
     def delete(self, using=None):
         self.delete_accounting()
@@ -266,6 +279,8 @@ class DepositSlip(LucteriosModel):
     def validate_deposit(self):
         if self.status == 1:
             self.status = 2
+            for detail in self.depositdetail_set.all():
+                detail.payoff.entry.closed()
             self.save()
 
     def add_payoff(self, entries):
@@ -290,7 +305,7 @@ class DepositDetail(LucteriosModel):
 
     @classmethod
     def get_default_fields(cls):
-        return [(_('customer'), 'customer'), (_('date'), 'date'), (_('reference'), 'reference'), (_('amount'), 'amount')]
+        return ['payoff.payer', 'payoff.date', 'payoff.reference', (_('amount'), 'amount')]
 
     @classmethod
     def get_edit_fields(cls):
@@ -325,7 +340,7 @@ class DepositDetail(LucteriosModel):
         payoff_nodeposit = []
         entity_known = DepositDetail.objects.values_list(
             'payoff__entry_id', flat=True).distinct()
-        entity_unknown = Payoff.objects.exclude(supporting__is_revenu=True, entry_id__in=entity_known).values(
+        entity_unknown = Payoff.objects.filter(supporting__is_revenu=True, mode=1).exclude(entry_id__in=entity_known).values(
             'entry_id', 'date', 'reference', 'payer').annotate(amount=Sum('amount'))
         if payer != '':
             entity_unknown = entity_unknown.filter(payer__contains=payer)
