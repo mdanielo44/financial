@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 '''
-lucterios.contacts package
+diacamma.invoice test_tools package
 
 @author: Laurent GAY
 @organization: sd-libre.fr
@@ -24,29 +24,17 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
 
-from diacamma.invoice.models import Article, Vat
-
-from diacamma.accounting.models import FiscalYear, CostAccounting
-from diacamma.accounting.test_tools import create_account
-from diacamma.payoff.models import BankAccount
-from diacamma.invoice.views import BillValid, DetailAddModify, BillThirdValid,\
-    BillAddModify
 from lucterios.framework.test import LucteriosTest
 
+from diacamma.accounting.models import FiscalYear
+from diacamma.accounting.test_tools import create_account, default_costaccounting
 
-def default_bankaccount():
-    create_account(['581'], 0, FiscalYear.get_current())
-    BankAccount.objects.create(
-        designation="My bank", reference="0123 456789 321654 12", account_code="512")
-    BankAccount.objects.create(
-        designation="PayPal", reference="paypal@moi.com", account_code="581")
+from diacamma.invoice.models import Article, Vat
+from diacamma.invoice.views import BillValid, DetailAddModify, BillThirdValid, BillAddModify
 
 
 def default_articles():
-    CostAccounting.objects.create(
-        name='close', description='Close cost', status=1, is_default=False)
-    CostAccounting.objects.create(
-        name='open', description='Open cost', status=0, is_default=True)
+    default_costaccounting()
 
     create_account(['709'], 3, FiscalYear.get_current())
     create_account(['4455'], 1, FiscalYear.get_current())

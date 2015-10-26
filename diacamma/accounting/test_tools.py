@@ -117,6 +117,13 @@ def fill_accounts(year=None):
     create_account(['601', '602', '604', '607', '627'], 4, year)
 
 
+def default_costaccounting():
+    CostAccounting.objects.create(
+        name='close', description='Close cost', status=1, is_default=False)
+    CostAccounting.objects.create(
+        name='open', description='Open cost', status=0, is_default=True)
+
+
 def add_models():
     model1 = ModelEntry.objects.create(journal=Journal.objects.get(
         id=2), designation='achat')

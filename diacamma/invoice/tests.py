@@ -35,15 +35,16 @@ from lucterios.framework.filetools import get_user_dir
 from lucterios.CORE.models import Parameter
 from lucterios.CORE.parameters import Params
 
+from diacamma.accounting.test_tools import initial_thirds, default_compta
+from diacamma.accounting.views_entries import EntryLineAccountList
+from diacamma.invoice.test_tools import default_articles, InvoiceTest
 from diacamma.invoice.views_conf import InvoiceConf, VatAddModify, VatDel
 from diacamma.invoice.views import ArticleList, ArticleAddModify, ArticleDel,\
     BillList, BillAddModify, BillShow, BillThirdValid, BillThird,\
     DetailAddModify, DetailDel, BillValid, BillDel, BillArchive, BillCancel, BillFromQuotation,\
     BillStatistic, BillStatisticPrint, BillPrint, BillMultiPay
-from diacamma.accounting.test_tools import initial_thirds, default_compta
-from diacamma.invoice.test_tools import default_articles, default_bankaccount, InvoiceTest
-from diacamma.accounting.views_entries import EntryLineAccountList
 from diacamma.payoff.views import PayoffAddModify, PayoffDel
+from diacamma.payoff.test_tools import default_bankaccount
 
 
 class ConfigTest(LucteriosTest):

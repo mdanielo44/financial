@@ -1,0 +1,410 @@
+# -*- coding: utf-8 -*-
+'''
+lucterios.contacts package
+
+@author: Laurent GAY
+@organization: sd-libre.fr
+@contact: info@sd-libre.fr
+@copyright: 2015 sd-libre.fr
+@license: This file is part of Lucterios.
+
+Lucterios is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Lucterios is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
+'''
+
+from __future__ import unicode_literals
+from shutil import rmtree
+
+from lucterios.framework.xfergraphic import XferContainerAcknowledge
+from lucterios.framework.filetools import get_user_dir
+
+from diacamma.accounting.test_tools import initial_thirds, default_compta
+from diacamma.invoice.test_tools import default_articles, default_bankaccount, InvoiceTest
+from diacamma.payoff.views_deposit import DepositSlipList, DepositSlipAddModify,\
+    DepositSlipShow, DepositDetailAddModify, DepositDetailSave, DepositSlipClose,\
+    DepositSlipValidate
+from diacamma.payoff.views import PayoffAddModify
+from diacamma.accounting.views_entries import EntryLineAccountList
+
+
+class DepositTest(InvoiceTest):
+
+    def setUp(self):
+        self.xfer_class = XferContainerAcknowledge
+        initial_thirds()
+        InvoiceTest.setUp(self)
+        default_compta()
+        default_articles()
+        default_bankaccount()
+        rmtree(get_user_dir(), True)
+        self.add_bills()
+
+    def add_bills(self):
+        details = [
+            {'article': 0, 'designation': 'article 0', 'price': '100.00', 'quantity': 1}]
+        self._create_bill(details, 1, '2015-04-01', 6, True)
+        details = [
+            {'article': 0, 'designation': 'article 0', 'price': '100.00', 'quantity': 1}]
+        self._create_bill(details, 1, '2015-04-01', 4, True)
+        details = [
+            {'article': 0, 'designation': 'article 0', 'price': '100.00', 'quantity': 1}]
+        self._create_bill(details, 2, '2015-04-01', 5, True)
+        details = [
+            {'article': 0, 'designation': 'article 0', 'price': '100.00', 'quantity': 1}]
+        self._create_bill(details, 3, '2015-04-01', 7, True)
+
+    def create_deposit(self):
+        self.factory.xfer = DepositSlipAddModify()
+        self.call('/diacamma.payoff/depositSlipAddModify',
+                  {'SAVE': 'YES', 'bank_account': 1, 'reference': '123456', 'date': '2015-04-10'}, False)
+        self.assert_observer(
+            'core.acknowledge', 'diacamma.payoff', 'depositSlipAddModify')
+
+    def create_payoff(self, bill_id, amount, payer, mode, reference):
+        self.factory.xfer = PayoffAddModify()
+        self.call(
+            '/diacamma.payoff/payoffAddModify', {'SAVE': 'YES', 'supporting': bill_id, 'amount': amount, 'payer': payer, 'date': '2015-04-03', 'mode': mode, 'reference': reference, 'bank_account': 1}, False)
+        self.assert_observer(
+            'core.acknowledge', 'diacamma.payoff', 'payoffAddModify')
+
+    def test_deposit_basic(self):
+        self.factory.xfer = DepositSlipList()
+        self.call('/diacamma.payoff/depositSlipList', {}, False)
+        self.assert_observer(
+            'core.custom', 'diacamma.payoff', 'depositSlipList')
+        self.assert_count_equal(
+            'COMPONENTS/GRID[@name="depositslip"]/RECORD', 0)
+        self.assert_count_equal(
+            'COMPONENTS/GRID[@name="depositslip"]/HEADER', 5)
+
+        self.factory.xfer = DepositSlipAddModify()
+        self.call('/diacamma.payoff/depositSlipAddModify', {}, False)
+        self.assert_observer(
+            'core.custom', 'diacamma.payoff', 'depositSlipAddModify')
+        self.assert_count_equal('COMPONENTS/*', 7)
+
+        self.factory.xfer = DepositSlipAddModify()
+        self.call('/diacamma.payoff/depositSlipAddModify',
+                  {'SAVE': 'YES', 'bank_account': 1, 'reference': '123456', 'date': '2015-04-10'}, False)
+        self.assert_observer(
+            'core.acknowledge', 'diacamma.payoff', 'depositSlipAddModify')
+
+        self.factory.xfer = DepositSlipList()
+        self.call('/diacamma.payoff/depositSlipList', {}, False)
+        self.assert_observer(
+            'core.custom', 'diacamma.payoff', 'depositSlipList')
+        self.assert_count_equal(
+            'COMPONENTS/GRID[@name="depositslip"]/RECORD', 1)
+        self.assert_count_equal(
+            'COMPONENTS/GRID[@name="depositslip"]/HEADER', 5)
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="depositslip"]/RECORD[1]/VALUE[@name="bank_account"]', 'My bank')
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="depositslip"]/RECORD[1]/VALUE[@name="reference"]', '123456')
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="depositslip"]/RECORD[1]/VALUE[@name="date"]', '10 avril 2015')
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="depositslip"]/RECORD[1]/VALUE[@name="status"]', 'en création')
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="depositslip"]/RECORD[1]/VALUE[@name="total"]', '0.00€')
+
+        self.factory.xfer = DepositSlipShow()
+        self.call(
+            '/diacamma.payoff/depositSlipShow', {'depositslip': 1}, False)
+        self.assert_observer(
+            'core.custom', 'diacamma.payoff', 'depositSlipShow')
+        self.assert_count_equal('COMPONENTS/*', 27)
+        self.assert_count_equal('ACTIONS/ACTION', 3)
+        self.assert_count_equal(
+            'COMPONENTS/GRID[@name="depositdetail"]/RECORD', 0)
+        self.assert_count_equal(
+            'COMPONENTS/GRID[@name="depositdetail"]/HEADER', 4)
+        self.assert_count_equal(
+            'COMPONENTS/GRID[@name="depositdetail"]/ACTIONS/ACTION', 2)
+        self.assert_xml_equal(
+            'COMPONENTS/LABELFORM[@name="total"]', '0.00€')
+
+    def test_deposit_nocheque(self):
+        self.create_deposit()
+
+        self.factory.xfer = DepositDetailAddModify()
+        self.call(
+            '/diacamma.payoff/depositDetailAddModify', {'depositslip': 1}, False)
+        self.assert_observer(
+            'core.custom', 'diacamma.payoff', 'depositDetailAddModify')
+        self.assert_count_equal('COMPONENTS/*', 7)
+        self.assert_count_equal('ACTIONS/ACTION', 1)
+        self.assert_count_equal(
+            'COMPONENTS/GRID[@name="entry"]/RECORD', 0)
+        self.assert_count_equal(
+            'COMPONENTS/GRID[@name="entry"]/HEADER', 5)
+        self.assert_count_equal(
+            'COMPONENTS/GRID[@name="entry"]/ACTIONS/ACTION', 1)
+
+    def test_deposit_simple(self):
+        self.create_payoff(1, "75.0", "Mr Smith", 1, "ABC123")
+        self.create_payoff(2, "50.0", "Mme Smith", 1, "XYZ987")
+        self.create_payoff(4, "30.0", "Miss Smith", 1, "?????")
+        self.create_deposit()
+
+        self.factory.xfer = DepositDetailAddModify()
+        self.call(
+            '/diacamma.payoff/depositDetailAddModify', {'depositslip': 1}, False)
+        self.assert_observer(
+            'core.custom', 'diacamma.payoff', 'depositDetailAddModify')
+        self.assert_count_equal(
+            'COMPONENTS/GRID[@name="entry"]/RECORD', 3)
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="entry"]/RECORD[1]/VALUE[@name="bill"]', 'facture A-1 - 1 avril 2015')
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="entry"]/RECORD[1]/VALUE[@name="payer"]', 'Mr Smith')
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="entry"]/RECORD[1]/VALUE[@name="amount"]', '75.00€')
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="entry"]/RECORD[1]/VALUE[@name="reference"]', 'ABC123')
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="entry"]/RECORD[2]/VALUE[@name="bill"]', 'facture A-2 - 1 avril 2015')
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="entry"]/RECORD[2]/VALUE[@name="payer"]', 'Mme Smith')
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="entry"]/RECORD[2]/VALUE[@name="amount"]', '50.00€')
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="entry"]/RECORD[2]/VALUE[@name="reference"]', 'XYZ987')
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="entry"]/RECORD[3]/VALUE[@name="bill"]', 'reçu A-1 - 1 avril 2015')
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="entry"]/RECORD[3]/VALUE[@name="payer"]', 'Miss Smith')
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="entry"]/RECORD[3]/VALUE[@name="amount"]', '30.00€')
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="entry"]/RECORD[3]/VALUE[@name="reference"]', '?????')
+        id1 = self.get_first_xpath(
+            'COMPONENTS/GRID[@name="entry"]/RECORD[1]').get('id')
+        id2 = self.get_first_xpath(
+            'COMPONENTS/GRID[@name="entry"]/RECORD[2]').get('id')
+
+        self.factory.xfer = DepositDetailSave()
+        self.call(
+            '/diacamma.payoff/depositDetailSave', {'depositslip': 1, 'entry': '%s;%s' % (id1, id2)}, False)
+        self.assert_observer(
+            'core.acknowledge', 'diacamma.payoff', 'depositDetailSave')
+
+        self.factory.xfer = DepositSlipShow()
+        self.call(
+            '/diacamma.payoff/depositSlipShow', {'depositslip': 1}, False)
+        self.assert_observer(
+            'core.custom', 'diacamma.payoff', 'depositSlipShow')
+        self.assert_count_equal(
+            'COMPONENTS/GRID[@name="depositdetail"]/RECORD', 2)
+        self.assert_xml_equal(
+            'COMPONENTS/LABELFORM[@name="total"]', '125.00€')
+
+        self.factory.xfer = DepositDetailAddModify()
+        self.call(
+            '/diacamma.payoff/depositDetailAddModify', {'depositslip': 1}, False)
+        self.assert_observer(
+            'core.custom', 'diacamma.payoff', 'depositDetailAddModify')
+        self.assert_count_equal(
+            'COMPONENTS/GRID[@name="entry"]/RECORD', 1)
+
+    def test_deposit_othermode(self):
+        self.create_payoff(1, "10.0", "Mr Smith", 0, "ABC123")
+        self.create_payoff(2, "8.5", "Mme Smith", 2, "XYZ987")
+        self.create_payoff(1, "12.0", "Jean Dupond", 3, "321CBA")
+        self.create_payoff(2, "9.75", "Marie Durant", 4, "789ZXY")
+        self.create_deposit()
+
+        self.factory.xfer = DepositDetailAddModify()
+        self.call(
+            '/diacamma.payoff/depositDetailAddModify', {'depositslip': 1}, False)
+        self.assert_observer(
+            'core.custom', 'diacamma.payoff', 'depositDetailAddModify')
+        self.assert_count_equal(
+            'COMPONENTS/GRID[@name="entry"]/RECORD', 0)
+
+    def test_deposit_asset(self):
+        self.create_payoff(3, "10.0", "Mr Smith", 1, "ABC123")
+        self.create_payoff(3, "8.5", "Mme Smith", 1, "XYZ987")
+        self.create_payoff(3, "12.0", "Jean Dupond", 0, "321CBA")
+        self.create_payoff(3, "9.75", "Marie Durant", 3, "789ZXY")
+        self.create_deposit()
+
+        self.factory.xfer = DepositDetailAddModify()
+        self.call(
+            '/diacamma.payoff/depositDetailAddModify', {'depositslip': 1}, False)
+        self.assert_observer(
+            'core.custom', 'diacamma.payoff', 'depositDetailAddModify')
+        self.assert_count_equal(
+            'COMPONENTS/GRID[@name="entry"]/RECORD', 0)
+
+    def test_deposit_multipayoff(self):
+        self.create_payoff(1, "50.0", "Mr Smith", 1, "ABC123")
+
+        self.factory.xfer = PayoffAddModify()
+        self.call(
+            '/diacamma.payoff/payoffAddModify', {'SAVE': 'YES', 'supportings': '1;2', 'amount': '150.0', 'date': '2015-04-04', 'mode': 1, 'reference': 'IJKL654', 'bank_account': 1, 'payer': "Jean Dupond"}, False)
+        self.assert_observer(
+            'core.acknowledge', 'diacamma.payoff', 'payoffAddModify')
+        self.create_deposit()
+
+        self.factory.xfer = DepositDetailAddModify()
+        self.call(
+            '/diacamma.payoff/depositDetailAddModify', {'depositslip': 1}, False)
+        self.assert_observer(
+            'core.custom', 'diacamma.payoff', 'depositDetailAddModify')
+        self.assert_count_equal(
+            'COMPONENTS/GRID[@name="entry"]/RECORD', 2)
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="entry"]/RECORD[1]/VALUE[@name="bill"]', 'facture A-1 - 1 avril 2015')
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="entry"]/RECORD[1]/VALUE[@name="payer"]', 'Mr Smith')
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="entry"]/RECORD[1]/VALUE[@name="amount"]', '50.00€')
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="entry"]/RECORD[1]/VALUE[@name="reference"]', 'ABC123')
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="entry"]/RECORD[2]/VALUE[@name="bill"]', 'facture A-1 - 1 avril 2015{[br/]}facture A-2 - 1 avril 2015')
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="entry"]/RECORD[2]/VALUE[@name="payer"]', 'Jean Dupond')
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="entry"]/RECORD[2]/VALUE[@name="amount"]', '150.00€')
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="entry"]/RECORD[2]/VALUE[@name="reference"]', 'IJKL654')
+
+        id1 = self.get_first_xpath(
+            'COMPONENTS/GRID[@name="entry"]/RECORD[1]').get('id')
+        id2 = self.get_first_xpath(
+            'COMPONENTS/GRID[@name="entry"]/RECORD[2]').get('id')
+
+        self.factory.xfer = DepositDetailSave()
+        self.call(
+            '/diacamma.payoff/depositDetailSave', {'depositslip': 1, 'entry': '%s;%s' % (id1, id2)}, False)
+        self.assert_observer(
+            'core.acknowledge', 'diacamma.payoff', 'depositDetailSave')
+
+        self.factory.xfer = DepositSlipShow()
+        self.call(
+            '/diacamma.payoff/depositSlipShow', {'depositslip': 1}, False)
+        self.assert_observer(
+            'core.custom', 'diacamma.payoff', 'depositSlipShow')
+        self.assert_count_equal(
+            'COMPONENTS/GRID[@name="depositdetail"]/RECORD', 2)
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="depositdetail"]/RECORD[1]/VALUE[@name="payoff.payer"]', 'Mr Smith')
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="depositdetail"]/RECORD[1]/VALUE[@name="payoff.reference"]', 'ABC123')
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="depositdetail"]/RECORD[1]/VALUE[@name="amount"]', '50.00€')
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="depositdetail"]/RECORD[2]/VALUE[@name="payoff.payer"]', 'Jean Dupond')
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="depositdetail"]/RECORD[2]/VALUE[@name="payoff.reference"]', 'IJKL654')
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="depositdetail"]/RECORD[2]/VALUE[@name="amount"]', '150.00€')
+        self.assert_xml_equal(
+            'COMPONENTS/LABELFORM[@name="total"]', '200.00€')
+
+        self.factory.xfer = DepositDetailAddModify()
+        self.call(
+            '/diacamma.payoff/depositDetailAddModify', {'depositslip': 1}, False)
+        self.assert_observer(
+            'core.custom', 'diacamma.payoff', 'depositDetailAddModify')
+        self.assert_count_equal(
+            'COMPONENTS/GRID[@name="entry"]/RECORD', 0)
+
+    def test_deposit_valid(self):
+        self.create_payoff(1, "75.0", "Mr Smith", 1, "ABC123")
+        self.create_payoff(2, "50.0", "Mme Smith", 1, "XYZ987")
+        self.create_deposit()
+
+        self.factory.xfer = DepositDetailAddModify()
+        self.call(
+            '/diacamma.payoff/depositDetailAddModify', {'depositslip': 1}, False)
+        self.assert_observer(
+            'core.custom', 'diacamma.payoff', 'depositDetailAddModify')
+        self.assert_count_equal('COMPONENTS/GRID[@name="entry"]/RECORD', 2)
+        id1 = self.get_first_xpath(
+            'COMPONENTS/GRID[@name="entry"]/RECORD[1]').get('id')
+        id2 = self.get_first_xpath(
+            'COMPONENTS/GRID[@name="entry"]/RECORD[2]').get('id')
+        self.factory.xfer = DepositDetailSave()
+        self.call(
+            '/diacamma.payoff/depositDetailSave', {'depositslip': 1, 'entry': '%s;%s' % (id1, id2)}, False)
+        self.assert_observer(
+            'core.acknowledge', 'diacamma.payoff', 'depositDetailSave')
+
+        self.factory.xfer = DepositSlipClose()
+        self.call(
+            '/diacamma.payoff/depositSlipClose', {'depositslip': 1, 'CONFIRME': 'YES'}, False)
+        self.assert_observer(
+            'core.acknowledge', 'diacamma.payoff', 'depositSlipClose')
+
+        self.factory.xfer = DepositSlipShow()
+        self.call(
+            '/diacamma.payoff/depositSlipShow', {'depositslip': 1}, False)
+        self.assert_observer(
+            'core.custom', 'diacamma.payoff', 'depositSlipShow')
+        self.assert_count_equal('ACTIONS/ACTION', 3)
+
+        self.factory.xfer = EntryLineAccountList()
+        self.call('/diacamma.accounting/entryLineAccountList',
+                  {'year': '1', 'journal': '-1', 'filter': '0'}, False)
+        self.assert_observer(
+            'core.custom', 'diacamma.accounting', 'entryLineAccountList')
+        self.assert_count_equal(
+            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD', 12)
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[10]/VALUE[@name="entry.num"]', '---')
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[10]/VALUE[@name="entry_account"]', '[512] 512')
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[10]/VALUE[@name="debit"]', '75.00€')
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[12]/VALUE[@name="entry.num"]', '---')
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[12]/VALUE[@name="entry_account"]', '[512] 512')
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[12]/VALUE[@name="debit"]', '50.00€')
+
+        self.factory.xfer = DepositSlipValidate()
+        self.call(
+            '/diacamma.payoff/depositSlipValidate', {'depositslip': 1, 'CONFIRME': 'YES'}, False)
+        self.assert_observer(
+            'core.acknowledge', 'diacamma.payoff', 'depositSlipValidate')
+
+        self.factory.xfer = DepositSlipShow()
+        self.call(
+            '/diacamma.payoff/depositSlipShow', {'depositslip': 1}, False)
+        self.assert_observer(
+            'core.custom', 'diacamma.payoff', 'depositSlipShow')
+        self.assert_count_equal('ACTIONS/ACTION', 2)
+
+        self.factory.xfer = EntryLineAccountList()
+        self.call('/diacamma.accounting/entryLineAccountList',
+                  {'year': '1', 'journal': '-1', 'filter': '0'}, False)
+        self.assert_observer(
+            'core.custom', 'diacamma.accounting', 'entryLineAccountList')
+        self.assert_count_equal(
+            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD', 12)
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[10]/VALUE[@name="entry.num"]', '1')
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[10]/VALUE[@name="entry_account"]', '[512] 512')
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[10]/VALUE[@name="debit"]', '75.00€')
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[12]/VALUE[@name="entry.num"]', '2')
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[12]/VALUE[@name="entry_account"]', '[512] 512')
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[12]/VALUE[@name="debit"]', '50.00€')
