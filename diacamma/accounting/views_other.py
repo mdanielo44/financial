@@ -47,7 +47,7 @@ class CostAccountingList(XferListEditor):
     def fillresponse(self):
         XferListEditor.fillresponse(self)
         self.get_components('title').colspan += 1
-        self.get_components('nb').colspan += 1
+        self.get_components('nb_costaccounting').colspan += 1
         grid = self.get_components(self.field_id)
         grid.colspan += 1
         grid.add_action(self.request, CostAccountingDefault.get_action(), {

@@ -41,7 +41,7 @@ from diacamma.invoice.views import ArticleList, ArticleAddModify, ArticleDel,\
     DetailAddModify, DetailDel, BillValid, BillDel, BillArchive, BillCancel, BillFromQuotation,\
     BillStatistic, BillStatisticPrint, BillPrint, BillMultiPay
 from diacamma.accounting.test_tools import initial_thirds, default_compta
-from diacamma.invoice.test_tools import default_articles, default_bankaccount
+from diacamma.invoice.test_tools import default_articles, default_bankaccount, InvoiceTest
 from diacamma.accounting.views_entries import EntryLineAccountList
 from diacamma.payoff.views import PayoffAddModify, PayoffDel
 
@@ -167,7 +167,7 @@ class ConfigTest(LucteriosTest):
         self.assert_count_equal('COMPONENTS/GRID[@name="article"]/RECORD', 0)
 
 
-class BillTest(LucteriosTest):
+class BillTest(InvoiceTest):
 
     def setUp(self):
         self.xfer_class = XferContainerAcknowledge
@@ -177,35 +177,6 @@ class BillTest(LucteriosTest):
         default_articles()
         default_bankaccount()
         rmtree(get_user_dir(), True)
-
-    def _create_bill(self, details, bill_type, bill_date, bill_third, valid=False):
-        if (bill_type == 0) or (bill_type == 3):
-            cost_accounting = 0
-        else:
-            cost_accounting = 2
-        self.factory.xfer = BillAddModify()
-        self.call('/diacamma.invoice/billAddModify',
-                  {'bill_type': bill_type, 'date': bill_date, 'cost_accounting': cost_accounting, 'SAVE': 'YES'}, False)
-        self.assert_observer(
-            'core.acknowledge', 'diacamma.invoice', 'billAddModify')
-        bill_id = self.get_first_xpath("ACTION/PARAM[@name='bill']").text
-        self.factory.xfer = BillThirdValid()
-        self.call('/diacamma.invoice/billThirdValid',
-                  {'bill': bill_id, 'third': bill_third}, False)
-        for detail in details:
-            detail['SAVE'] = 'YES'
-            detail['bill'] = bill_id
-            self.factory.xfer = DetailAddModify()
-            self.call('/diacamma.invoice/detailAddModify', detail, False)
-            self.assert_observer(
-                'core.acknowledge', 'diacamma.invoice', 'detailAddModify')
-        if valid:
-            self.factory.xfer = BillValid()
-            self.call('/diacamma.invoice/billValid',
-                      {'CONFIRME': 'YES', 'bill': bill_id}, False)
-            self.assert_observer(
-                'core.acknowledge', 'diacamma.invoice', 'billValid')
-        return bill_id
 
     def test_add_bill(self):
         self.factory.xfer = BillList()

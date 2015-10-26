@@ -29,6 +29,9 @@ from diacamma.invoice.models import Article, Vat
 from diacamma.accounting.models import FiscalYear, CostAccounting
 from diacamma.accounting.test_tools import create_account
 from diacamma.payoff.models import BankAccount
+from diacamma.invoice.views import BillValid, DetailAddModify, BillThirdValid,\
+    BillAddModify
+from lucterios.framework.test import LucteriosTest
 
 
 def default_bankaccount():
@@ -59,3 +62,35 @@ def default_articles():
                            price="1.31", unit="", isdisabled=False, sell_account="708", vat=None)
     Article.objects.create(reference='ABC5', designation="Article 05",
                            price="64.10", unit="m", isdisabled=True, sell_account="701", vat=vat2)
+
+
+class InvoiceTest(LucteriosTest):
+
+    def _create_bill(self, details, bill_type, bill_date, bill_third, valid=False):
+        if (bill_type == 0) or (bill_type == 3):
+            cost_accounting = 0
+        else:
+            cost_accounting = 2
+        self.factory.xfer = BillAddModify()
+        self.call('/diacamma.invoice/billAddModify',
+                  {'bill_type': bill_type, 'date': bill_date, 'cost_accounting': cost_accounting, 'SAVE': 'YES'}, False)
+        self.assert_observer(
+            'core.acknowledge', 'diacamma.invoice', 'billAddModify')
+        bill_id = self.get_first_xpath("ACTION/PARAM[@name='bill']").text
+        self.factory.xfer = BillThirdValid()
+        self.call('/diacamma.invoice/billThirdValid',
+                  {'bill': bill_id, 'third': bill_third}, False)
+        for detail in details:
+            detail['SAVE'] = 'YES'
+            detail['bill'] = bill_id
+            self.factory.xfer = DetailAddModify()
+            self.call('/diacamma.invoice/detailAddModify', detail, False)
+            self.assert_observer(
+                'core.acknowledge', 'diacamma.invoice', 'detailAddModify')
+        if valid:
+            self.factory.xfer = BillValid()
+            self.call('/diacamma.invoice/billValid',
+                      {'CONFIRME': 'YES', 'bill': bill_id}, False)
+            self.assert_observer(
+                'core.acknowledge', 'diacamma.invoice', 'billValid')
+        return bill_id

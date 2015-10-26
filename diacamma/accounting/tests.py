@@ -693,7 +693,7 @@ class AdminTest(LucteriosTest):
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="fiscalyear"]/RECORD', 0)
         self.assert_xml_equal(
-            'COMPONENTS/LABELFORM[@name="nb"]', 'Nombre total de exercices: 0')
+            'COMPONENTS/LABELFORM[@name="nb_fiscalyear"]', 'Nombre total de exercices: 0')
 
         self.assert_count_equal('COMPONENTS/GRID[@name="journal"]/HEADER', 1)
         self.assert_xml_equal(
@@ -816,7 +816,7 @@ class AdminTest(LucteriosTest):
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="fiscalyear"]/RECORD[1]/VALUE[@name="is_actif"]', "1")
         self.assert_xml_equal(
-            'COMPONENTS/LABELFORM[@name="nb"]', 'Nombre total de exercices: 1')
+            'COMPONENTS/LABELFORM[@name="nb_fiscalyear"]', 'Nombre total de exercices: 1')
 
         self.factory.xfer = FiscalYearAddModify()
         self.call('/diacamma.accounting/fiscalYearAddModify', {}, False)
@@ -853,7 +853,7 @@ class AdminTest(LucteriosTest):
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="fiscalyear"]/RECORD[2]/VALUE[@name="is_actif"]', "0")
         self.assert_xml_equal(
-            'COMPONENTS/LABELFORM[@name="nb"]', 'Nombre total de exercices: 2')
+            'COMPONENTS/LABELFORM[@name="nb_fiscalyear"]', 'Nombre total de exercices: 2')
 
         self.factory.xfer = FiscalYearActive()
         self.call(
