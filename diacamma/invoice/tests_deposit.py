@@ -29,12 +29,13 @@ from lucterios.framework.xfergraphic import XferContainerAcknowledge
 from lucterios.framework.filetools import get_user_dir
 
 from diacamma.accounting.test_tools import initial_thirds, default_compta
-from diacamma.invoice.test_tools import default_articles, default_bankaccount, InvoiceTest
+from diacamma.accounting.views_entries import EntryLineAccountList
+from diacamma.invoice.test_tools import default_articles, InvoiceTest
 from diacamma.payoff.views_deposit import DepositSlipList, DepositSlipAddModify,\
     DepositSlipShow, DepositDetailAddModify, DepositDetailSave, DepositSlipClose,\
     DepositSlipValidate
 from diacamma.payoff.views import PayoffAddModify
-from diacamma.accounting.views_entries import EntryLineAccountList
+from diacamma.payoff.test_tools import default_bankaccount
 
 
 class DepositTest(InvoiceTest):
