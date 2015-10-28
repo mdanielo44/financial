@@ -29,10 +29,8 @@ from django.db.models import Q
 from django.utils import six
 
 from lucterios.framework.editors import LucteriosEditor
-from lucterios.framework.xfercomponents import XferCompButton, XferCompLabelForm,\
-    XferCompHeader
-from lucterios.framework.tools import ActionsManage, FORMTYPE_MODAL, CLOSE_NO, \
-    FORMTYPE_REFRESH
+from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompHeader
+from lucterios.framework.tools import CLOSE_NO, FORMTYPE_REFRESH
 from lucterios.framework.models import get_value_if_choices
 from lucterios.CORE.parameters import Params
 
@@ -56,7 +54,8 @@ class BillEditor(SupportingEditor):
         xfer.get_components('comment').with_hypertext = True
         xfer.get_components('comment').set_size(100, 375)
         com_type = xfer.get_components('bill_type')
-        com_type.set_action(xfer.request, xfer.get_action(), {'close': CLOSE_NO, 'modal': FORMTYPE_REFRESH})
+        com_type.set_action(
+            xfer.request, xfer.get_action(), {'close': CLOSE_NO, 'modal': FORMTYPE_REFRESH})
         if xfer.item.bill_type == 0:
             xfer.remove_component("cost_accounting")
             xfer.remove_component("lbl_cost_accounting")
@@ -100,26 +99,7 @@ class BillEditor(SupportingEditor):
             xfer.filltab_from_model(1, xfer.get_max_row() + 1, True,
                                     [((_('VTA sum'), 'vta_sum'), (_('total incl. taxes'), 'total_incltax'))])
         if self.item.status == 0:
-            third = xfer.get_components('third')
-            third.colspan -= 2
-            btn = XferCompButton('change_third')
-            btn.set_location(third.col + third.colspan, third.row)
-            modal_name = xfer.item.__class__.__name__
-            btn.set_action(xfer.request, ActionsManage.get_act_changed(modal_name, 'third', _('change'), ''),
-                           {'modal': FORMTYPE_MODAL, 'close': CLOSE_NO})
-            xfer.add_component(btn)
-
-            if self.item.third is not None:
-                btn = XferCompButton('show_third')
-                btn.set_location(third.col + third.colspan + 1, third.row)
-                btn.set_action(xfer.request, ActionsManage.get_act_changed('Third', 'show', _('show'), ''),
-                               {'modal': FORMTYPE_MODAL, 'close': CLOSE_NO, 'params': {'third': self.item.third.id}})
-                xfer.add_component(btn)
-            lbl = XferCompLabelForm('info')
-            lbl.set_color('red')
-            lbl.set_location(1, xfer.get_max_row() + 1, 4)
-            lbl.set_value(self.item.get_info_state())
-            xfer.add_component(lbl)
+            SupportingEditor.show_third(self, xfer)
         else:
             details.actions = []
             if self.item.bill_type != 0:

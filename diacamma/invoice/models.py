@@ -237,14 +237,8 @@ class Bill(Supporting):
     def get_info_state(self):
         info = []
         if self.status == 0:
-            if self.third is None:
-                info.append(six.text_type(_("no third selected")))
-            else:
-                accounts = self.third.accountthird_set.filter(
-                    code__regex=current_system_account().get_customer_mask())
-                if (len(accounts) == 0) or (ChartsAccount.get_account(accounts[0].code, FiscalYear.get_current()) is None):
-                    info.append(
-                        six.text_type(_("third has not customer account")))
+            info = Supporting.get_info_state(
+                self, current_system_account().get_customer_mask())
         details = self.detail_set.all()
         if len(details) == 0:
             info.append(six.text_type(_("no detail")))

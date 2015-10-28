@@ -30,7 +30,8 @@ from diacamma.accounting.models import FiscalYear
 from diacamma.accounting.test_tools import create_account, default_costaccounting
 
 from diacamma.invoice.models import Article, Vat
-from diacamma.invoice.views import BillValid, DetailAddModify, BillThirdValid, BillAddModify
+from diacamma.invoice.views import BillValid, DetailAddModify, BillAddModify
+from diacamma.payoff.views import SupportingThirdValid
 
 
 def default_articles():
@@ -65,9 +66,9 @@ class InvoiceTest(LucteriosTest):
         self.assert_observer(
             'core.acknowledge', 'diacamma.invoice', 'billAddModify')
         bill_id = self.get_first_xpath("ACTION/PARAM[@name='bill']").text
-        self.factory.xfer = BillThirdValid()
-        self.call('/diacamma.invoice/billThirdValid',
-                  {'bill': bill_id, 'third': bill_third}, False)
+        self.factory.xfer = SupportingThirdValid()
+        self.call('/diacamma.invoice/supportingThirdValid',
+                  {'supporting': bill_id, 'third': bill_third}, False)
         for detail in details:
             detail['SAVE'] = 'YES'
             detail['bill'] = bill_id

@@ -28,10 +28,10 @@ from django.utils.translation import ugettext_lazy as _
 from django.utils import six
 
 from lucterios.framework.editors import LucteriosEditor
-from lucterios.framework.xfercomponents import XferCompLabelForm
+from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompButton
 from lucterios.CORE.parameters import Params
 from lucterios.framework.tools import ActionsManage, CLOSE_NO, SELECT_NONE,\
-    FORMTYPE_REFRESH
+    FORMTYPE_REFRESH, FORMTYPE_MODAL
 from lucterios.framework.error import LucteriosException, IMPORTANT
 from lucterios.contacts.models import LegalEntity
 
@@ -41,8 +41,30 @@ from diacamma.payoff.models import Supporting
 class SupportingEditor(LucteriosEditor):
 
     def before_save(self, xfer):
-        self.item.is_revenu = self.item.payoff_is_revenu()
+        self.item.is_revenu = self.item.get_final_child().payoff_is_revenu()
         return LucteriosEditor.before_save(self, xfer)
+
+    def show_third(self, xfer):
+        xfer.params['supporting'] = self.item.id
+        third = xfer.get_components('third')
+        third.colspan -= 2
+        btn = XferCompButton('change_third')
+        btn.set_location(third.col + third.colspan, third.row)
+        btn.set_action(xfer.request, ActionsManage.get_act_changed("Supporting", 'third', _('change'), ''),
+                       {'modal': FORMTYPE_MODAL, 'close': CLOSE_NO})
+        xfer.add_component(btn)
+
+        if self.item.third is not None:
+            btn = XferCompButton('show_third')
+            btn.set_location(third.col + third.colspan + 1, third.row)
+            btn.set_action(xfer.request, ActionsManage.get_act_changed('Third', 'show', _('show'), ''),
+                           {'modal': FORMTYPE_MODAL, 'close': CLOSE_NO, 'params': {'third': self.item.third.id}})
+            xfer.add_component(btn)
+        lbl = XferCompLabelForm('info')
+        lbl.set_color('red')
+        lbl.set_location(1, xfer.get_max_row() + 1, 4)
+        lbl.set_value(self.item.get_info_state())
+        xfer.add_component(lbl)
 
     def show(self, xfer):
         xfer.params['supporting'] = self.item.id

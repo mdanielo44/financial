@@ -72,6 +72,21 @@ class Supporting(LucteriosModel):
             val += currency_round(payoff.amount)
         return val
 
+    def get_info_state(self, third_mask=None):
+        info = []
+        if third_mask is None:
+            third_mask = current_system_account().get_third_mask()
+        if self.status == 0:
+            if self.third is None:
+                info.append(six.text_type(_("no third selected")))
+            else:
+                accounts = self.third.accountthird_set.filter(
+                    code__regex=third_mask)
+                if (len(accounts) == 0) or (ChartsAccount.get_account(accounts[0].code, FiscalYear.get_current()) is None):
+                    info.append(
+                        six.text_type(_("third has not correct account")))
+        return info
+
     @property
     def total_payed(self):
         return format_devise(self.get_total_payed(), 5)

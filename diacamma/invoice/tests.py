@@ -40,10 +40,10 @@ from diacamma.accounting.views_entries import EntryLineAccountList
 from diacamma.invoice.test_tools import default_articles, InvoiceTest
 from diacamma.invoice.views_conf import InvoiceConf, VatAddModify, VatDel
 from diacamma.invoice.views import ArticleList, ArticleAddModify, ArticleDel,\
-    BillList, BillAddModify, BillShow, BillThirdValid, BillThird,\
-    DetailAddModify, DetailDel, BillValid, BillDel, BillArchive, BillCancel, BillFromQuotation,\
+    BillList, BillAddModify, BillShow, DetailAddModify, DetailDel, BillValid, BillDel, BillArchive, BillCancel, BillFromQuotation,\
     BillStatistic, BillStatisticPrint, BillPrint, BillMultiPay
-from diacamma.payoff.views import PayoffAddModify, PayoffDel
+from diacamma.payoff.views import PayoffAddModify, PayoffDel, SupportingThird,\
+    SupportingThirdValid
 from diacamma.payoff.test_tools import default_bankaccount
 
 
@@ -245,18 +245,18 @@ class BillTest(InvoiceTest):
         self.assert_xml_equal(
             'COMPONENTS/LABELFORM[@name="info"]', "{[font color=\"red\"]}sans tiers selectionné{[br/]}pas de détail{[/font]}")
 
-        self.factory.xfer = BillThird()
-        self.call('/diacamma.invoice/billThird',
+        self.factory.xfer = SupportingThird()
+        self.call('/diacamma.payoff/supportingThird',
                   {'bill': 1}, False)
         self.assert_observer(
-            'core.custom', 'diacamma.invoice', 'billThird')
+            'core.custom', 'diacamma.payoff', 'supportingThird')
         self.assert_count_equal('COMPONENTS/GRID[@name="third"]/RECORD', 7)
 
-        self.factory.xfer = BillThirdValid()
-        self.call('/diacamma.invoice/billThirdValid',
-                  {'bill': 1, 'third': 6}, False)
+        self.factory.xfer = SupportingThirdValid()
+        self.call('/diacamma.payoff/supportingThirdValid',
+                  {'supporting': 1, 'third': 6}, False)
         self.assert_observer(
-            'core.acknowledge', 'diacamma.invoice', 'billThirdValid')
+            'core.acknowledge', 'diacamma.payoff', 'supportingThirdValid')
 
         self.factory.xfer = BillShow()
         self.call('/diacamma.invoice/billShow', {'bill': 1}, False)
@@ -326,11 +326,11 @@ class BillTest(InvoiceTest):
                   {'bill_type': 1, 'date': '2015-04-01', 'SAVE': 'YES'}, False)
         self.assert_observer(
             'core.acknowledge', 'diacamma.invoice', 'billAddModify')
-        self.factory.xfer = BillThirdValid()
-        self.call('/diacamma.invoice/billThirdValid',
-                  {'bill': 1, 'third': 6}, False)
+        self.factory.xfer = SupportingThirdValid()
+        self.call('/diacamma.payoff/supportingThirdValid',
+                  {'supporting': 1, 'third': 6}, False)
         self.assert_observer(
-            'core.acknowledge', 'diacamma.invoice', 'billThirdValid')
+            'core.acknowledge', 'diacamma.payoff', 'supportingThirdValid')
 
         self.factory.xfer = BillShow()
         self.call('/diacamma.invoice/billShow', {'bill': 1}, False)
@@ -382,11 +382,11 @@ class BillTest(InvoiceTest):
                   {'SAVE': 'YES', 'bill': 1, 'article': 2, 'designation': 'My article', 'price': '43.72', 'quantity': 2}, False)
         self.assert_observer(
             'core.acknowledge', 'diacamma.invoice', 'detailAddModify')
-        self.factory.xfer = BillThirdValid()
-        self.call('/diacamma.invoice/billThirdValid',
-                  {'bill': 1, 'third': 1}, False)
+        self.factory.xfer = SupportingThirdValid()
+        self.call('/diacamma.payoff/supportingThirdValid',
+                  {'supporting': 1, 'third': 1}, False)
         self.assert_observer(
-            'core.acknowledge', 'diacamma.invoice', 'billThirdValid')
+            'core.acknowledge', 'diacamma.payoff', 'supportingThirdValid')
         self.factory.xfer = BillShow()
         self.call('/diacamma.invoice/billShow', {'bill': 1}, False)
         self.assert_observer(

@@ -23,32 +23,31 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
 from __future__ import unicode_literals
+from datetime import date
+from copy import deepcopy
 
 from django.utils.translation import ugettext_lazy as _
+from django.utils import six, formats
 from django.db.models import Q
 
-from lucterios.framework.xferadvance import XferListEditor, XferShowEditor, \
-    XferSave
+from lucterios.framework.xferadvance import XferListEditor, XferShowEditor
 from lucterios.framework.xferadvance import XferAddEditor
 from lucterios.framework.xferadvance import XferDelete
 from lucterios.framework.xfercomponents import XferCompLabelForm, \
-    XferCompSelect, XferCompEdit, XferCompHeader, XferCompImage, XferCompGrid,\
+    XferCompSelect, XferCompHeader, XferCompImage, XferCompGrid,\
     DEFAULT_ACTION_LIST
 from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage, \
     FORMTYPE_MODAL, CLOSE_YES, SELECT_SINGLE, FORMTYPE_REFRESH, CLOSE_NO,\
     SELECT_MULTI, WrapAction
-
-from diacamma.invoice.models import Article, Bill, Detail
-from diacamma.accounting.models import Third, FiscalYear
-from django.utils import six, formats
 from lucterios.framework.xfergraphic import XferContainerAcknowledge,\
     XferContainerCustom
+from lucterios.framework.error import LucteriosException, IMPORTANT
+from lucterios.CORE.xferprint import XferPrintAction, XferPrintReporting
 from lucterios.CORE.parameters import Params
 from lucterios.CORE.editors import XferSavedCriteriaSearchEditor
-from datetime import date
-from lucterios.CORE.xferprint import XferPrintAction, XferPrintReporting
-from copy import deepcopy
-from lucterios.framework.error import LucteriosException, IMPORTANT
+
+from diacamma.invoice.models import Article, Bill, Detail
+from diacamma.accounting.models import FiscalYear
 from diacamma.payoff.views import PayoffAddModify
 
 MenuManage.add_sub("invoice", "financial", "diacamma.invoice/images/invoice.png",
@@ -242,54 +241,6 @@ class BillDel(XferDelete):
     model = Bill
     field_id = 'bill'
     caption = _("Delete bill")
-
-
-@ActionsManage.affect('Bill', 'third')
-@MenuManage.describ('invoice.change_bill')
-class BillThird(XferListEditor):
-    icon = "diacamma.accounting/images/thirds.png"
-    model = Third
-    field_id = 'third'
-    caption = _("Select third to bill")
-
-    def __init__(self, **kwargs):
-        XferListEditor.__init__(self, **kwargs)
-        self.action_list = []
-
-    def fillresponse_header(self):
-        contact_filter = self.getparam('filter', '')
-        lbl = XferCompLabelForm('lbl_filtre')
-        lbl.set_value_as_name(_('Filtrer by contact'))
-        lbl.set_location(0, 2)
-        self.add_component(lbl)
-        comp = XferCompEdit('filter')
-        comp.set_value(contact_filter)
-        comp.set_action(self.request, self.get_action(),
-                        {'modal': FORMTYPE_REFRESH, 'close': CLOSE_NO})
-        comp.set_location(1, 2)
-        self.add_component(comp)
-        self.filter = Q(status=0)
-        if contact_filter != "":
-            q_legalentity = Q(
-                contact__legalentity__name__contains=contact_filter)
-            q_individual = (Q(contact__individual__firstname__contains=contact_filter) | Q(
-                contact__individual__lastname__contains=contact_filter))
-            self.filter &= (q_legalentity | q_individual)
-
-    def fillresponse(self):
-        XferListEditor.fillresponse(self)
-        grid = self.get_components(self.field_id)
-        grid.add_action(self.request, BillThirdValid.get_action(
-            _('select'), 'images/ok.png'), {'modal': FORMTYPE_MODAL, 'close': CLOSE_YES, 'unique': SELECT_SINGLE}, 0)
-
-
-@MenuManage.describ('invoice.change_bill')
-class BillThirdValid(XferSave):
-    redirect_to_show = False
-    icon = "diacamma.accounting/images/thirds.png"
-    model = Bill
-    field_id = 'bill'
-    caption = _("Select third to bill")
 
 
 @ActionsManage.affect('Bill', 'printbill')
