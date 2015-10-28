@@ -42,4 +42,4 @@ def __title__():
 
 
 def link():
-    return ["lucterios.contacts", "lucterios.accounting"]
+    return ["lucterios.contacts", "diacamma.accounting"]

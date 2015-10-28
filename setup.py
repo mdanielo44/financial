@@ -52,11 +52,15 @@ setup(
         'Programming Language :: Python',
         'Topic :: Database :: Front-Ends',
     ],
-    packages=["diacamma", "diacamma.accounting"],
+    packages=["diacamma", "diacamma.accounting", "diacamma.invoice", "diacamma.payoff"],
     package_data={
         "diacamma.accounting.migrations": ['*'],
         "diacamma.accounting.system": ['*', 'locale/*/*/*'],
         "diacamma.accounting": ['build', 'images/*', 'locale/*/*/*', 'help/*'],
+        "diacamma.invoice.migrations": ['*'],
+        "diacamma.invoice": ['build', 'images/*', 'locale/*/*/*', 'help/*'],
+        "diacamma.payoff.migrations": ['*'],
+        "diacamma.payoff": ['build', 'images/*', 'locale/*/*/*', 'help/*'],
     },
     install_requires=["lucterios ==2.0.*", "lucterios-contacts ==2.0.*"],
 )

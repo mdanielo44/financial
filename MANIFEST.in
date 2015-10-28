@@ -2,3 +2,10 @@ recursive-include diacamma/accounting *
 recursive-exclude diacamma/accounting/__pycache__ *
 recursive-exclude diacamma/accounting/migrations/__pycache__ *
 recursive-exclude diacamma/accounting/system/__pycache__ *
+recursive-include diacamma/invoice *
+recursive-exclude diacamma/invoice/__pycache__ *
+recursive-exclude diacamma/invoice/migrations/__pycache__ *
+recursive-include diacamma/payoff *
+recursive-exclude diacamma/payoff/__pycache__ *
+recursive-exclude diacamma/payoff/migrations/__pycache__ *
+
