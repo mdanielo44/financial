@@ -230,7 +230,7 @@ class BillTest(InvoiceTest):
         self.assert_xml_equal(
             'COMPONENTS/LABELFORM[@name="date"]', "1 avril 2014")
         self.assert_xml_equal(
-            'COMPONENTS/LABELFORM[@name="info"]', "{[font color=\"red\"]}sans tiers selectionné{[br/]}pas de détail{[br/]}la date n'est pas incluse dans l'exercice{[/font]}")
+            'COMPONENTS/LABELFORM[@name="info"]', "{[font color=\"red\"]}aucun tiers sélectionné{[br/]}pas de détail{[br/]}la date n'est pas incluse dans l'exercice{[/font]}")
 
         self.factory.xfer = BillAddModify()
         self.call('/diacamma.invoice/billAddModify',
@@ -243,7 +243,7 @@ class BillTest(InvoiceTest):
         self.assert_observer(
             'core.custom', 'diacamma.invoice', 'billShow')
         self.assert_xml_equal(
-            'COMPONENTS/LABELFORM[@name="info"]', "{[font color=\"red\"]}sans tiers selectionné{[br/]}pas de détail{[/font]}")
+            'COMPONENTS/LABELFORM[@name="info"]', "{[font color=\"red\"]}aucun tiers sélectionné{[br/]}pas de détail{[/font]}")
 
         self.factory.xfer = SupportingThird()
         self.call('/diacamma.payoff/supportingThird',
@@ -394,7 +394,7 @@ class BillTest(InvoiceTest):
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="detail"]/RECORD', 1)
         self.assert_xml_equal(
-            'COMPONENTS/LABELFORM[@name="info"]', "{[font color=\"red\"]}le tiers n'a pas de compte client{[/font]}")
+            'COMPONENTS/LABELFORM[@name="info"]', "{[font color=\"red\"]}le tiers n'a pas de compte correcte{[/font]}")
 
     def check_list_del_archive(self):
         self.factory.xfer = BillList()
