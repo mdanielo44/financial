@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-10-29 09:35+0000\n"
+"POT-Creation-Date: 2015-10-29 16:35+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -71,22 +71,22 @@ msgstr "prix hors taxe"
 msgid "invoice-vat-mode.2"
 msgstr "prix toutes taxes comprise"
 
-#: migrations/0001_initial.py:49 models.py:105 models.py:447 models.py:453
+#: migrations/0001_initial.py:49 models.py:105 models.py:439 models.py:445
 msgid "bill"
 msgstr "facture"
 
 #: migrations/0001_initial.py:143 migrations/0001_initial.py:269 models.py:97
-#: models.py:455 views.py:381
+#: models.py:447 views.py:381
 msgid "article"
 msgstr "article"
 
 #: migrations/0001_initial.py:144 migrations/0001_initial.py:270 models.py:67
-#: models.py:456
+#: models.py:448
 msgid "designation"
 msgstr "désignation"
 
 #: migrations/0001_initial.py:145 migrations/0001_initial.py:271 models.py:68
-#: models.py:82 models.py:457 models.py:473 models.py:481
+#: models.py:82 models.py:449 models.py:465 models.py:473
 msgid "price"
 msgstr "prix"
 
@@ -150,7 +150,7 @@ msgstr "TVA"
 msgid "VATs"
 msgstr "TVAs"
 
-#: models.py:70 models.py:460
+#: models.py:70 models.py:452
 msgid "unit"
 msgstr "unité"
 
@@ -226,8 +226,8 @@ msgstr "écriture"
 msgid "cost accounting"
 msgstr "compte analytique"
 
-#: models.py:124 models.py:147 models.py:155 models.py:408 models.py:441
-#: models.py:473
+#: models.py:124 models.py:147 models.py:155 models.py:400 models.py:433
+#: models.py:465
 msgid "total"
 msgstr "total"
 
@@ -240,7 +240,7 @@ msgstr "TVA %s %%"
 msgid "no detail"
 msgstr "pas de détail"
 
-#: models.py:259 models.py:302
+#: models.py:259 models.py:294
 msgid "article has code account unknown!"
 msgstr "un article a un compte inconnu!"
 
@@ -253,43 +253,39 @@ msgstr "la date n'est pas incluse dans l'exercice"
 msgid "\"%s\" cannot be deleted!"
 msgstr "\"%s\" n'est pas supprimable!"
 
-#: models.py:283 models.py:288
-msgid "third has not customer account"
-msgstr "le tiers n'a pas de compte client"
-
-#: models.py:314
+#: models.py:306
 msgid "reduce-account is not defined!"
 msgstr "le compte de reduction n'est pas défini!"
 
-#: models.py:326
+#: models.py:318
 msgid "vta-account is not defined!"
 msgstr "le compte de TVA n'est pas défini!"
 
-#: models.py:333
+#: models.py:325
 msgid "Error in accounting generator!"
 msgstr "Erreur sur la génération comptable!"
 
-#: models.py:448
+#: models.py:440
 msgid "bills"
 msgstr "factures"
 
-#: models.py:461
+#: models.py:453
 msgid "quantity"
 msgstr "quantité"
 
-#: models.py:463 models.py:473 models.py:481
+#: models.py:455 models.py:465 models.py:473
 msgid "reduce"
 msgstr "réduction"
 
-#: models.py:465
+#: models.py:457
 msgid "vta rate"
 msgstr "taux de TVA"
 
-#: models.py:569
+#: models.py:561
 msgid "detail"
 msgstr "détail"
 
-#: models.py:570
+#: models.py:562
 msgid "details"
 msgstr "détails"
 
@@ -529,6 +525,9 @@ msgstr "paramètres"
 #: views_conf.py:94
 msgid "Invoice"
 msgstr "Facturier"
+
+#~ msgid "third has not customer account"
+#~ msgstr "le tiers n'a pas de compte client"
 
 #~ msgid "change"
 #~ msgstr "changer"

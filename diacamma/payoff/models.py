@@ -25,6 +25,7 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import unicode_literals
 
 from django.db import models
+from django.db.models import Q
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.utils.translation import ugettext_lazy as _
 
@@ -66,9 +67,13 @@ class Supporting(LucteriosModel):
     def payoff_is_revenu(self):
         raise Exception('no implemented!')
 
+    @property
+    def payoff_query(self):
+        return Q()
+
     def get_total_payed(self):
         val = 0
-        for payoff in self.payoff_set.all():
+        for payoff in self.payoff_set.filter(self.payoff_query):
             val += currency_round(payoff.amount)
         return val
 

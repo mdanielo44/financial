@@ -138,10 +138,10 @@ class AccountingMigrate(MigrateAbstract):
                     "=> charts of account %s - %d", (num_cpt, exercice))
                 self.chartsaccount_list[chartsaccountid] = chartsaccount_mdl.objects.create(
                     code=num_cpt, name=designation, year=self.year_list[exercice])
-                if (num_cpt[0] == '2') or (num_cpt[0] == '3') or (num_cpt[0:2] == '41') or (num_cpt[0] == '5'):
+                if (num_cpt[0] == '2') or (num_cpt[0] == '3') or (num_cpt[0:2] == '41') or (num_cpt[0:2] == '45') or (num_cpt[0] == '5'):
                     self.chartsaccount_list[
                         chartsaccountid].type_of_account = 0  # Asset / 'actif'
-                if (num_cpt[0] == '4') and (num_cpt[0:2] != '41'):
+                if (num_cpt[0] == '4') and (num_cpt[0:2] != '41') and (num_cpt[0:2] != '45'):
                     # Liability / 'passif'
                     self.chartsaccount_list[
                         chartsaccountid].type_of_account = 1

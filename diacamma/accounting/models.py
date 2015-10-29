@@ -84,8 +84,17 @@ class Third(LucteriosModel):
         result.extend(["status", "accountthird_set.code"])
         return result
 
-    def get_total(self):
-        return get_amount_sum(EntryLineAccount.objects.filter(third=self).aggregate(Sum('amount')))
+    def get_total(self, current_date=None):
+        current_filter = Q(third=self)
+        if current_date is not None:
+            current_filter &= Q(entry__date_value__lt=current_date)
+        active_sum = get_amount_sum(EntryLineAccount.objects.filter(
+            current_filter & Q(account__type_of_account=0)).aggregate(Sum('amount')))
+        passive_sum = get_amount_sum(EntryLineAccount.objects.filter(
+            current_filter & Q(account__type_of_account=1)).aggregate(Sum('amount')))
+        other_sum = get_amount_sum(EntryLineAccount.objects.filter(
+            current_filter & Q(account__type_of_account__gt=1)).aggregate(Sum('amount')))
+        return passive_sum - active_sum + other_sum
 
     @property
     def total(self):
