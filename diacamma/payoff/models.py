@@ -87,6 +87,20 @@ class Supporting(LucteriosModel):
                         six.text_type(_("third has not correct account")))
         return info
 
+    def get_third_account(self, third_mask, fiscalyear, third=None):
+        if third is None:
+            third = self.third
+        accounts = third.accountthird_set.filter(code__regex=third_mask)
+        if len(accounts) == 0:
+            raise LucteriosException(
+                IMPORTANT, _("third has not correct account"))
+        third_account = ChartsAccount.get_account(
+            accounts[0].code, fiscalyear)
+        if third_account is None:
+            raise LucteriosException(
+                IMPORTANT, _("third has not correct account"))
+        return third_account
+
     @property
     def total_payed(self):
         return format_devise(self.get_total_payed(), 5)

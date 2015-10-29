@@ -273,19 +273,11 @@ class Bill(Supporting):
             is_bill = -1
         else:
             is_bill = 1
+        third_account = self.get_third_account(
+            current_system_account().get_customer_mask(), self.fiscal_year)
         self.entry = EntryAccount.objects.create(
             year=self.fiscal_year, date_value=self.date, designation=self.__str__(),
             journal=Journal.objects.get(id=3), costaccounting=self.cost_accounting)
-        accounts = self.third.accountthird_set.filter(
-            code__regex=current_system_account().get_customer_mask())
-        if len(accounts) == 0:
-            raise LucteriosException(
-                IMPORTANT, _("third has not customer account"))
-        third_account = ChartsAccount.get_account(
-            accounts[0].code, self.fiscal_year)
-        if third_account is None:
-            raise LucteriosException(
-                IMPORTANT, _("third has not customer account"))
         EntryLineAccount.objects.create(
             account=third_account, amount=is_bill * self.get_total_incltax(), third=self.third, entry=self.entry)
         remise_total = 0
