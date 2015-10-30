@@ -120,8 +120,15 @@ class PayoffEditor(LucteriosEditor):
         amount.prec = currency_decimal
         amount.min = 0
         amount.max = amount_max
-        xfer.get_components("mode").set_action(
-            xfer.request, xfer.get_action(), {'close': CLOSE_NO, 'modal': FORMTYPE_REFRESH})
+        mode = xfer.get_components("mode")
+        banks = xfer.get_components("bank_account")
+        if banks.select_list[0][0] == 0:
+            del banks.select_list[0]
+        if len(banks.select_list) == 0:
+            mode.select_list = [mode.select_list[0]]
+        else:
+            xfer.get_components("mode").set_action(
+                xfer.request, xfer.get_action(), {'close': CLOSE_NO, 'modal': FORMTYPE_REFRESH})
         if self.item.mode == 0:
             xfer.remove_component("bank_account")
             xfer.remove_component("lbl_bank_account")
@@ -129,6 +136,9 @@ class PayoffEditor(LucteriosEditor):
             banks = xfer.get_components("bank_account")
             if banks.select_list[0][0] == 0:
                 del banks.select_list[0]
+            if len(banks.select_list) == 0:
+                xfer.remove_component("bank_account")
+                xfer.remove_component("lbl_bank_account")
         if not supporting_list[0].is_revenu:
             xfer.remove_component("payer")
             xfer.remove_component("lbl_payer")
