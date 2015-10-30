@@ -305,7 +305,7 @@ class CompletedEntryTest(LucteriosTest):
         self.assert_xml_equal("COMPONENTS/LABELFORM[@name='accounting_result']",
                               '{[center]}{[b]}Produit:{[/b]} 230.62€ - {[b]}Charge:{[/b]} 348.60€ = {[b]}Resultat:{[/b]} -117.98€ | {[b]}Trésorie:{[/b]} 1050.66€ - {[b]}Validé:{[/b]} 1244.74€{[/center]}')
         self.assert_xml_equal(
-            "COMPONENTS/LABELFORM[@name='accountingtitle']", "{[center]}{[u]}{[b]}Financier{[/b]}{[/u]}{[/center]}")
+            "COMPONENTS/LABELFORM[@name='accountingtitle']", "{[center]}{[u]}{[b]}Comptabilité{[/b]}{[/u]}{[/center]}")
 
     def test_listing(self):
         self.factory.xfer = EntryLineAccountListing()

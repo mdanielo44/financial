@@ -23,43 +23,28 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
 from __future__ import unicode_literals
+from re import match
 
-from django.db.models import Q
+from django.db.models.aggregates import Sum
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils.translation import ugettext_lazy as _
 from django.utils import six
 
+from lucterios.framework.signal_and_lock import Signal
 from lucterios.framework.models import get_value_if_choices
 from lucterios.framework.error import LucteriosException, IMPORTANT
-from lucterios.CORE.parameters import Params
 from lucterios.framework.editors import LucteriosEditor
 from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompSelect, \
     XferCompButton, XferCompGrid, XferCompEdit, XferCompFloat
 from lucterios.framework.tools import FORMTYPE_REFRESH, CLOSE_NO, ActionsManage, \
     FORMTYPE_MODAL, SELECT_SINGLE, SELECT_MULTI, CLOSE_YES, WrapAction
+from lucterios.CORE.parameters import Params
 
 from diacamma.accounting.models import current_system_account, FiscalYear, \
     EntryLineAccount, EntryAccount, get_amount_sum, Third, CostAccounting
-from django.db.models.aggregates import Sum
-from re import match
 
 
 class ThirdEditor(LucteriosEditor):
-
-    def _add_filtering(self, xfer, lines_filter):
-
-        lbl = XferCompLabelForm('lbl_lines_filter')
-        lbl.set_value_as_name(_('Accounts filter'))
-        lbl.set_location(0, 1)
-        xfer.add_component(lbl)
-        edt = XferCompSelect("lines_filter")
-        edt.set_select([(0, _('All entries of current fiscal year')), (1, _(
-            'Only no-closed entries of current fiscal year')), (2, _('All entries for all fiscal year'))])
-        edt.set_value(lines_filter)
-        edt.set_location(1, 1)
-        edt.set_action(xfer.request, xfer.get_action(),
-                       {'modal': FORMTYPE_REFRESH, 'close': CLOSE_NO})
-        xfer.add_component(edt)
 
     def show(self, xfer):
         xfer.tab = 0
@@ -75,28 +60,7 @@ class ThirdEditor(LucteriosEditor):
                        {'modal': FORMTYPE_MODAL, 'close': CLOSE_NO, 'params': {modal_name.lower(): six.text_type(xfer.item.id)}})
         xfer.add_component(btn)
         xfer.item = old_item
-        try:
-            lines_filter = xfer.getparam('lines_filter', 0)
-            if lines_filter == 0:
-                entry_lines_filter = Q(entry__year=FiscalYear.get_current())
-            elif lines_filter == 1:
-                entry_lines_filter = Q(
-                    entry__year=FiscalYear.get_current()) & Q(entry__close=False)
-            else:
-                entry_lines_filter = Q()
-            entry_lines = self.item.entrylineaccount_set.filter(
-                entry_lines_filter)
-            xfer.new_tab(_('entry of account'))
-            self._add_filtering(xfer, lines_filter)
-            link_grid_lines = XferCompGrid('entrylineaccount')
-            link_grid_lines.set_model(
-                entry_lines, EntryLineAccount.get_other_fields(), xfer)
-            link_grid_lines.set_location(0, 2, 2)
-            link_grid_lines.add_action(xfer.request, ActionsManage.get_act_changed('EntryLineAccount', 'open', _('Edit'), 'images/edit.png'),
-                                       {'modal': FORMTYPE_MODAL, 'unique': SELECT_SINGLE, 'close': CLOSE_NO})
-            xfer.add_component(link_grid_lines)
-        except LucteriosException:
-            pass
+        Signal.call_signal("third_addon", self.item, xfer)
 
 
 class AccountThirdEditor(LucteriosEditor):

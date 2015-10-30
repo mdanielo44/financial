@@ -257,10 +257,7 @@ class Bill(Supporting):
                 if detail_account is None:
                     info.append(
                         six.text_type(_("article has code account unknown!")))
-        fiscal_year = FiscalYear.get_current()
-        if (fiscal_year.begin > self.date) or (fiscal_year.end < self.date):
-            info.append(
-                six.text_type(_("date not include in current fiscal year")))
+        info.extend(self.check_date(self.date.isoformat()))
         return "{[br/]}".join(info)
 
     def can_delete(self):

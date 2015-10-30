@@ -27,7 +27,7 @@ from datetime import date
 from copy import deepcopy
 
 from django.utils.translation import ugettext_lazy as _
-from django.utils import six, formats
+from django.utils import formats
 from django.db.models import Q
 
 from lucterios.framework.xferadvance import XferListEditor, XferShowEditor
@@ -49,9 +49,34 @@ from lucterios.CORE.editors import XferSavedCriteriaSearchEditor
 from diacamma.invoice.models import Article, Bill, Detail
 from diacamma.accounting.models import FiscalYear
 from diacamma.payoff.views import PayoffAddModify
+from lucterios.framework import signal_and_lock
 
 MenuManage.add_sub("invoice", "financial", "diacamma.invoice/images/invoice.png",
                    _("invoice"), _("Manage of billing"), 20)
+
+
+def _add_bill_filter(xfer, row):
+    status_filter = xfer.getparam('status_filter', -1)
+    lbl = XferCompLabelForm('lbl_filter')
+    lbl.set_value_as_name(_('Filter by type'))
+    lbl.set_location(0, row)
+    xfer.add_component(lbl)
+    dep_field = Bill.get_field_by_name('status')
+    sel_list = list(dep_field.choices)
+    sel_list.insert(0, (-1, _('building+valid')))
+    edt = XferCompSelect("status_filter")
+    edt.set_select(sel_list)
+    edt.set_value(status_filter)
+    edt.set_location(1, row)
+    edt.set_action(xfer.request, xfer.get_action(), {
+                   'modal': FORMTYPE_REFRESH, 'close': CLOSE_NO})
+    xfer.add_component(edt)
+    current_filter = Q()
+    if status_filter >= 0:
+        current_filter &= Q(status=status_filter)
+    elif status_filter == -1:
+        current_filter &= Q(status=0) | Q(status=1)
+    return current_filter, status_filter
 
 
 @ActionsManage.affect('Bill', 'list')
@@ -63,32 +88,8 @@ class BillList(XferListEditor):
     caption = _("Bill")
 
     def fillresponse_header(self):
-        status_filter = self.getparam('status_filter', -1)
+        self.filter, status_filter = _add_bill_filter(self, 3)
         self.fieldnames = Bill.get_default_fields(status_filter)
-        lbl = XferCompLabelForm('lbl_filter')
-        lbl.set_value_as_name(_('Filter by type'))
-        lbl.set_location(0, 3)
-        self.add_component(lbl)
-        dep_field = self.item.get_field_by_name('status')
-        sel_list = list(dep_field.choices)
-        sel_list.insert(0, (-1, _('building+valid')))
-        edt = XferCompSelect("status_filter")
-        edt.set_select(sel_list)
-        edt.set_value(status_filter)
-        edt.set_location(1, 3)
-        edt.set_action(self.request, self.get_action(),
-                       {'modal': FORMTYPE_REFRESH, 'close': CLOSE_NO})
-        self.add_component(edt)
-        lbl = XferCompLabelForm('lbl_fiscalyear')
-        lbl.set_value_as_header(six.text_type(FiscalYear.get_current()))
-        lbl.set_location(2, 3)
-        self.add_component(lbl)
-
-        self.filter = Q()
-        if status_filter >= 0:
-            self.filter = Q(status=status_filter)
-        elif status_filter == -1:
-            self.filter = Q(status=0) | Q(status=1)
         if status_filter >= 1:
             self.action_grid = [
                 ('show', _("Edit"), "images/show.png", SELECT_SINGLE)]
@@ -99,7 +100,7 @@ class BillList(XferListEditor):
                 ('archive', _("Archive"), "images/ok.png", SELECT_MULTI))
             self.action_grid.append(
                 ('multipay', _('payoff'), '', SELECT_MULTI))
-        if status_filter != 2:
+        if status_filter in (1, 3):
             self.action_grid.append(
                 ('printbill', _("Print"), "images/print.png", SELECT_MULTI))
 
@@ -244,7 +245,7 @@ class BillDel(XferDelete):
 
 
 @ActionsManage.affect('Bill', 'printbill')
-@MenuManage.describ('invoice.add_bill')
+@MenuManage.describ('invoice.change_bill')
 class BillPrint(XferPrintReporting):
     icon = "bill.png"
     model = Bill
@@ -414,3 +415,44 @@ class BillStatisticPrint(XferPrintAction):
     field_id = 'bill'
     action_class = BillStatistic
     with_text_export = True
+
+
+@signal_and_lock.Signal.decorate('summary')
+def summary_invoice(xfer):
+    if WrapAction.is_permission(xfer.request, 'invoice.change_bill'):
+        row = xfer.get_max_row() + 1
+        lab = XferCompLabelForm('invoicetitle')
+        lab.set_value_as_infocenter(_("Invoice"))
+        lab.set_location(0, row, 4)
+        xfer.add_component(lab)
+        nb_build = len(Bill.objects.filter(status=0))
+        nb_valid = len(Bill.objects.filter(status=1))
+        lab = XferCompLabelForm('invoiceinfo')
+        lab.set_value_as_header(
+            _("There are %(build)d bills in building and %(valid)d validated") % {'build': nb_build, 'valid': nb_valid})
+        lab.set_location(0, row + 1, 4)
+        xfer.add_component(lab)
+        lab = XferCompLabelForm('invoicesep')
+        lab.set_value_as_infocenter("{[hr/]}")
+        lab.set_location(0, row + 2, 4)
+        xfer.add_component(lab)
+
+
+@signal_and_lock.Signal.decorate('third_addon')
+def thirdaddon_invoice(item, xfer):
+    if WrapAction.is_permission(xfer.request, 'invoice.change_bill'):
+        try:
+            FiscalYear.get_current()
+            xfer.new_tab(_('Invoice'))
+            current_filter, status_filter = _add_bill_filter(xfer, 1)
+            current_filter &= Q(third=item)
+            bills = Bill.objects.filter(current_filter)
+            bill_grid = XferCompGrid('bill')
+            bill_grid.set_model(
+                bills, Bill.get_default_fields(status_filter), xfer)
+            bill_grid.set_location(0, 2, 2)
+            bill_grid.add_action(xfer.request, ActionsManage.get_act_changed('Bill', 'show', _('Edit'), 'images/edit.png'),
+                                 {'modal': FORMTYPE_MODAL, 'unique': SELECT_SINGLE, 'close': CLOSE_NO})
+            xfer.add_component(bill_grid)
+        except LucteriosException:
+            pass

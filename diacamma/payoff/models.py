@@ -92,6 +92,14 @@ class Supporting(LucteriosModel):
                         six.text_type(_("third has not correct account")))
         return info
 
+    def check_date(self, date):
+        info = []
+        fiscal_year = FiscalYear.get_current()
+        if (fiscal_year.begin.isoformat() > date) or (fiscal_year.end.isoformat() < date):
+            info.append(
+                six.text_type(_("date not include in current fiscal year")))
+        return info
+
     def get_third_account(self, third_mask, fiscalyear, third=None):
         if third is None:
             third = self.third

@@ -288,8 +288,8 @@ class ThirdTest(LucteriosTest):
         self.factory.xfer = ThirdShow()
         self.call('/diacamma.accounting/thirdShow', {"third": 4}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'thirdShow')
-        self.assert_count_equal('COMPONENTS/TAB', 2)
-        self.assert_count_equal('COMPONENTS/*', 16 + 7 + 4)
+        self.assert_count_equal('COMPONENTS/TAB', 3)
+        self.assert_count_equal('COMPONENTS/*', 16 + 7 + 4 + 4)
         self.assert_xml_equal(
             'COMPONENTS/LABELFORM[@name="contact"]', 'Minimum')
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="status"]', 'Actif')
@@ -361,8 +361,8 @@ class ThirdTest(LucteriosTest):
         self.call('/diacamma.accounting/thirdShow',
                   {"third": 4, 'lines_filter': 0}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'thirdShow')
-        self.assert_count_equal('COMPONENTS/TAB', 2)
-        self.assert_count_equal('COMPONENTS/*', 16 + 7 + 4)
+        self.assert_count_equal('COMPONENTS/TAB', 3)
+        self.assert_count_equal('COMPONENTS/*', 16 + 7 + 4 + 4)
         self.assert_xml_equal('COMPONENTS/SELECT[@name="lines_filter"]', '0')
         self.assert_count_equal(
             'COMPONENTS/SELECT[@name="lines_filter"]/CASE', 3)
@@ -375,8 +375,8 @@ class ThirdTest(LucteriosTest):
         self.call('/diacamma.accounting/thirdShow',
                   {"third": 4, 'lines_filter': 1}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'thirdShow')
-        self.assert_count_equal('COMPONENTS/TAB', 2)
-        self.assert_count_equal('COMPONENTS/*', 16 + 7 + 4)
+        self.assert_count_equal('COMPONENTS/TAB', 3)
+        self.assert_count_equal('COMPONENTS/*', 16 + 7 + 4 + 4)
         self.assert_xml_equal('COMPONENTS/SELECT[@name="lines_filter"]', '1')
         self.assert_count_equal(
             'COMPONENTS/SELECT[@name="lines_filter"]/CASE', 3)
@@ -391,8 +391,8 @@ class ThirdTest(LucteriosTest):
         self.call('/diacamma.accounting/thirdShow',
                   {"third": 4, 'lines_filter': 0}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'thirdShow')
-        self.assert_count_equal('COMPONENTS/TAB', 2)
-        self.assert_count_equal('COMPONENTS/*', 16 + 7 + 4)
+        self.assert_count_equal('COMPONENTS/TAB', 3)
+        self.assert_count_equal('COMPONENTS/*', 16 + 7 + 4 + 4)
         self.assert_xml_equal('COMPONENTS/SELECT[@name="lines_filter"]', '0')
         self.assert_count_equal(
             'COMPONENTS/SELECT[@name="lines_filter"]/CASE', 3)
@@ -405,8 +405,8 @@ class ThirdTest(LucteriosTest):
         self.call('/diacamma.accounting/thirdShow',
                   {"third": 4, 'lines_filter': 2}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'thirdShow')
-        self.assert_count_equal('COMPONENTS/TAB', 2)
-        self.assert_count_equal('COMPONENTS/*', 16 + 7 + 4)
+        self.assert_count_equal('COMPONENTS/TAB', 3)
+        self.assert_count_equal('COMPONENTS/*', 16 + 7 + 4 + 4)
         self.assert_xml_equal('COMPONENTS/SELECT[@name="lines_filter"]', '2')
         self.assert_count_equal(
             'COMPONENTS/SELECT[@name="lines_filter"]/CASE', 3)
@@ -666,7 +666,7 @@ class AdminTest(LucteriosTest):
         self.call('/CORE/statusMenu', {}, False)
         self.assert_observer('core.custom', 'CORE', 'statusMenu')
         self.assert_xml_equal(
-            "COMPONENTS/LABELFORM[@name='accountingtitle']", "{[center]}{[u]}{[b]}Financier{[/b]}{[/u]}{[/center]}")
+            "COMPONENTS/LABELFORM[@name='accountingtitle']", "{[center]}{[u]}{[b]}Comptabilité{[/b]}{[/u]}{[/center]}")
         self.assert_xml_equal(
             "COMPONENTS/LABELFORM[@name='accounting_error']", "{[center]}Pas d'exercice défini!{[/center]}")
         self.assert_action_equal(

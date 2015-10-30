@@ -36,6 +36,7 @@ from lucterios.framework.error import LucteriosException, IMPORTANT
 from lucterios.contacts.models import LegalEntity
 
 from diacamma.payoff.models import Supporting
+from diacamma.accounting.models import FiscalYear
 
 
 class SupportingEditor(LucteriosEditor):
@@ -80,6 +81,14 @@ class SupportingEditor(LucteriosEditor):
 
 class PayoffEditor(LucteriosEditor):
 
+    def before_save(self, xfer):
+        if float(self.item.amount) < 0.0001:
+            raise LucteriosException(IMPORTANT, _("payoff null!"))
+        info = self.item.supporting.check_date(self.item.date)
+        if len(info) > 0:
+            raise LucteriosException(IMPORTANT, info[0])
+        return
+
     def edit(self, xfer):
         currency_decimal = Params.getvalue("accounting-devise-prec")
         supportings = xfer.getparam('supportings', ())
@@ -105,7 +114,7 @@ class PayoffEditor(LucteriosEditor):
         xfer.add_component(lbl)
         amount = xfer.get_components("amount")
         if self.item.id is None:
-            amount.value = amount_sum
+            amount.value = max(0, amount_sum)
             xfer.get_components("payer").value = six.text_type(
                 supporting_list[0].third)
         amount.prec = currency_decimal

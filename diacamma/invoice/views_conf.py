@@ -31,10 +31,10 @@ from lucterios.framework.xferadvance import XferListEditor
 from lucterios.framework.xferadvance import XferAddEditor
 from lucterios.framework.xferadvance import XferDelete
 from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage
-from lucterios.CORE.parameters import Params
 from lucterios.framework.xfercomponents import XferCompButton
-from lucterios.CORE.views import ParamEdit
 from lucterios.framework import signal_and_lock
+from lucterios.CORE.parameters import Params
+from lucterios.CORE.views import ParamEdit
 from lucterios.CORE.models import Parameter
 
 

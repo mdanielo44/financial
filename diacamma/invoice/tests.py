@@ -402,13 +402,13 @@ class BillTest(InvoiceTest):
         self.assert_observer('core.custom', 'diacamma.invoice', 'billList')
         self.assert_count_equal('COMPONENTS/GRID[@name="bill"]/RECORD', 1)
         self.assert_count_equal(
-            'COMPONENTS/GRID[@name="bill"]/ACTIONS/ACTION', 4)
+            'COMPONENTS/GRID[@name="bill"]/ACTIONS/ACTION', 3)
         self.factory.xfer = BillList()
         self.call('/diacamma.invoice/billList', {'status_filter': 0}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'billList')
         self.assert_count_equal('COMPONENTS/GRID[@name="bill"]/RECORD', 0)
         self.assert_count_equal(
-            'COMPONENTS/GRID[@name="bill"]/ACTIONS/ACTION', 4)
+            'COMPONENTS/GRID[@name="bill"]/ACTIONS/ACTION', 3)
         self.factory.xfer = BillList()
         self.call('/diacamma.invoice/billList', {'status_filter': 1}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'billList')

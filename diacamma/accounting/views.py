@@ -30,23 +30,20 @@ from django.db.models.query import QuerySet
 from django.db.models import Q
 from django.utils import six
 
+from lucterios.framework import signal_and_lock
 from lucterios.framework.xferadvance import XferListEditor, XferAddEditor, XferShowEditor, XferDelete
-from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage, \
-    FORMTYPE_REFRESH, CLOSE_NO, WrapAction
 from lucterios.framework.xfergraphic import XferContainerAcknowledge
+from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompEdit, XferCompButton, XferCompSelect, XferCompImage, XferCompDate, XferCompGrid
+from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage, FORMTYPE_REFRESH, CLOSE_NO, WrapAction, FORMTYPE_MODAL, SELECT_SINGLE
+from lucterios.framework.error import LucteriosException
 from lucterios.CORE.xferprint import XferPrintListing
+from lucterios.CORE.editors import XferSavedCriteriaSearchEditor
 from lucterios.contacts.tools import ContactSelection
 from lucterios.contacts.models import AbstractContact
-from lucterios.framework import signal_and_lock
-from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompEdit, XferCompButton, \
-    XferCompSelect, XferCompImage, XferCompDate
-from lucterios.framework.error import LucteriosException
 
 from diacamma.accounting.models import Third, AccountThird, FiscalYear, \
     EntryLineAccount, ModelLineEntry
 from diacamma.accounting.views_admin import Configuration
-from lucterios.CORE.editors import XferSavedCriteriaSearchEditor
-from diacamma.accounting.tools import current_system_account
 
 MenuManage.add_sub("financial", None, "diacamma.accounting/images/financial.png",
                    _("Financial"), _("Financial tools"), 50)
@@ -267,36 +264,39 @@ class AccountThirdDel(XferDelete):
 
 @signal_and_lock.Signal.decorate('summary')
 def summary_accounting(xfer):
-    row = xfer.get_max_row() + 1
-    lab = XferCompLabelForm('accountingtitle')
-    lab.set_value_as_infocenter(_("Financial"))
-    lab.set_location(0, row, 4)
-    xfer.add_component(lab)
-    try:
-        year = FiscalYear.get_current()
-        lbl = XferCompLabelForm("accounting_year")
-        lbl.set_value_center(six.text_type(year))
-        lbl.set_location(0, row + 1, 4)
-        xfer.add_component(lbl)
-        lbl = XferCompLabelForm("accounting_result")
-        lbl.set_value_center(year.total_result_text)
-        lbl.set_location(0, row + 2, 4)
-        xfer.add_component(lbl)
-    except LucteriosException as lerr:
-        lbl = XferCompLabelForm("accounting_error")
-        lbl.set_value_center(six.text_type(lerr))
-        lbl.set_location(0, row + 1, 4)
-        xfer.add_component(lbl)
-        btn = XferCompButton("accounting_conf")
-        btn.set_action(xfer.request, Configuration.get_action(
-            _("conf."), ""), {'close': CLOSE_NO})
-        btn.set_location(0, row + 2, 4)
-        xfer.add_component(btn)
-    lab = XferCompLabelForm('accountingend')
-    lab.set_value_center('{[hr/]}')
-    lab.set_location(0, row + 3, 4)
-    xfer.add_component(lab)
-    return True
+    if WrapAction.is_permission(xfer.request, 'accounting.change_chartsaccount'):
+        row = xfer.get_max_row() + 1
+        lab = XferCompLabelForm('accountingtitle')
+        lab.set_value_as_infocenter(_("Bookkeeping"))
+        lab.set_location(0, row, 4)
+        xfer.add_component(lab)
+        try:
+            year = FiscalYear.get_current()
+            lbl = XferCompLabelForm("accounting_year")
+            lbl.set_value_center(six.text_type(year))
+            lbl.set_location(0, row + 1, 4)
+            xfer.add_component(lbl)
+            lbl = XferCompLabelForm("accounting_result")
+            lbl.set_value_center(year.total_result_text)
+            lbl.set_location(0, row + 2, 4)
+            xfer.add_component(lbl)
+        except LucteriosException as lerr:
+            lbl = XferCompLabelForm("accounting_error")
+            lbl.set_value_center(six.text_type(lerr))
+            lbl.set_location(0, row + 1, 4)
+            xfer.add_component(lbl)
+            btn = XferCompButton("accounting_conf")
+            btn.set_action(xfer.request, Configuration.get_action(
+                _("conf."), ""), {'close': CLOSE_NO})
+            btn.set_location(0, row + 2, 4)
+            xfer.add_component(btn)
+        lab = XferCompLabelForm('accountingend')
+        lab.set_value_center('{[hr/]}')
+        lab.set_location(0, row + 3, 4)
+        xfer.add_component(lab)
+        return True
+    else:
+        return False
 
 
 @signal_and_lock.Signal.decorate('compte_no_found')
@@ -314,3 +314,40 @@ def comptenofound_accounting(known_codes, accompt_returned):
         accompt_returned.append(
             "- {[i]}{[u]}%s{[/u]}: %s{[/i]}" % (_('Accounting'), comptenofound))
     return True
+
+
+@signal_and_lock.Signal.decorate('third_addon')
+def thirdaddon_accounting(item, xfer):
+    if WrapAction.is_permission(xfer.request, 'accounting.change_entryaccount'):
+        try:
+            lines_filter = xfer.getparam('lines_filter', 0)
+            if lines_filter == 0:
+                entry_lines_filter = Q(entry__year=FiscalYear.get_current())
+            elif lines_filter == 1:
+                entry_lines_filter = Q(
+                    entry__year=FiscalYear.get_current()) & Q(entry__close=False)
+            else:
+                entry_lines_filter = Q()
+            xfer.new_tab(_('entry of account'))
+            lbl = XferCompLabelForm('lbl_lines_filter')
+            lbl.set_value_as_name(_('Accounts filter'))
+            lbl.set_location(0, 1)
+            xfer.add_component(lbl)
+            edt = XferCompSelect("lines_filter")
+            edt.set_select([(0, _('All entries of current fiscal year')), (1, _(
+                'Only no-closed entries of current fiscal year')), (2, _('All entries for all fiscal year'))])
+            edt.set_value(lines_filter)
+            edt.set_location(1, 1)
+            edt.set_action(xfer.request, xfer.get_action(),
+                           {'modal': FORMTYPE_REFRESH, 'close': CLOSE_NO})
+            xfer.add_component(edt)
+            entry_lines = item.entrylineaccount_set.filter(entry_lines_filter)
+            link_grid_lines = XferCompGrid('entrylineaccount')
+            link_grid_lines.set_model(
+                entry_lines, EntryLineAccount.get_other_fields(), xfer)
+            link_grid_lines.set_location(0, 2, 2)
+            link_grid_lines.add_action(xfer.request, ActionsManage.get_act_changed('EntryLineAccount', 'open', _('Edit'), 'images/edit.png'),
+                                       {'modal': FORMTYPE_MODAL, 'unique': SELECT_SINGLE, 'close': CLOSE_NO})
+            xfer.add_component(link_grid_lines)
+        except LucteriosException:
+            pass

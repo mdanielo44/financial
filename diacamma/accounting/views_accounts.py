@@ -85,8 +85,9 @@ class ChartsAccountList(XferListEditor):
         self.add_component(lbl)
 
         accompt_returned = []
-        all_codes = self.item.year.chartsaccount_set.all().values_list(
-            'code', flat=True)
+        all_codes = list(
+            self.item.year.chartsaccount_set.all().values_list('code', flat=True))
+        all_codes.append('')
         Signal.call_signal("compte_no_found", all_codes, accompt_returned)
         lbl = XferCompLabelForm("CompteNoFound")
         if len(accompt_returned) > 0:
