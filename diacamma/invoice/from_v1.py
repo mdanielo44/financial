@@ -63,9 +63,9 @@ class InvoiceMigrate(MigrateAbstract):
         cur_a.execute(
             "SELECT id,reference,designation,prix,unit,compteVente,tva,noactive FROM fr_sdlibre_facture_articles")
         for articleid, reference, designation, prix, unit, compteVente, tva, noactive in cur_a.fetchall():
-            self.print_log("=> article %s", (reference,))
             if unit == 'NULL':
-                unit = None
+                unit = ''
+            self.print_log("=> article %s - %s %s", (reference, prix, unit))
             self.article_list[articleid] = article_mdl.objects.create(
                 reference=reference, designation=designation, price=prix, unit=unit, sell_account=convert_code(compteVente), isdisabled=noactive == 'o')
             if tva != 0:

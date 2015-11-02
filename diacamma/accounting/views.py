@@ -56,10 +56,6 @@ class ThirdList(XferListEditor):
     model = Third
     field_id = 'third'
     caption = _("Thirds")
-    action_list = [('disable', _('Disabled'), ''),
-                   ('search', _("Search"),
-                    "diacamma.accounting/images/thirds.png"),
-                   ('listing', _("Listing"), "images/print.png")]
 
     def get_items_from_filter(self):
         items = XferListEditor.get_items_from_filter(self)
@@ -72,6 +68,10 @@ class ThirdList(XferListEditor):
         return res
 
     def fillresponse_header(self):
+        self.action_list = [('disable', _('Disabled'), ''),
+                            ('search', _("Search"),
+                             "diacamma.accounting/images/thirds.png"),
+                            ('listing', _("Listing"), "images/print.png")]
         contact_filter = self.getparam('filter', '')
         show_filter = self.getparam('show_filter', 0)
         lbl = XferCompLabelForm('lbl_filtre')
@@ -158,6 +158,7 @@ class ThirdDisable(XferContainerAcknowledge):
             lbl.set_location(1, 1, 1)
             dlg.add_component(lbl)
             limite_date = XferCompDate('limit_date')
+            limite_date.set_needed(True)
             limite_date.set_value((date.today() - timedelta(weeks=25)))
             limite_date.set_location(1, 2, 1)
             dlg.add_component(limite_date)
