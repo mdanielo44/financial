@@ -154,7 +154,7 @@ class DepositDetailAddModify(XferContainerCustom):
         grid.add_header('amount', _('amount'), horderable=1)
         grid.add_header('date', _('date'), horderable=1)
         grid.add_header('reference', _('reference'), horderable=1)
-        payoff_nodeposit = DepositDetail.get_payof_not_deposit(
+        payoff_nodeposit = DepositDetail.get_payoff_not_deposit(
             payer, reference, grid.order_list)
         for payoff in payoff_nodeposit:
             payoffid = payoff['id']

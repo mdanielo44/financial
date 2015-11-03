@@ -116,7 +116,10 @@ class Bill(Supporting):
     def __str__(self):
         billtype = get_value_if_choices(
             self.bill_type, self.get_field_by_name('bill_type'))
-        return "%s %s - %s" % (billtype, self.num_txt, get_value_converted(self.date))
+        if self.num is None:
+            return "%s - %s" % (billtype, get_value_converted(self.date))
+        else:
+            return "%s %s - %s" % (billtype, self.num_txt, get_value_converted(self.date))
 
     @classmethod
     def get_default_fields(cls, status=-1):
@@ -232,7 +235,7 @@ class Bill(Supporting):
         return "{[br/]}".join(vtas)
 
     def payoff_is_revenu(self):
-        return self.bill_type != 2
+        return (self.bill_type != 0) and (self.bill_type != 2)
 
     def get_info_state(self):
         info = []
@@ -353,7 +356,7 @@ class Bill(Supporting):
     def convert_to_bill(self):
         if (self.status == 1) and (self.bill_type == 0):
             new_bill = Bill.objects.create(
-                bill_type=1, date=date.today(), third=self.third, status=0)
+                bill_type=1, date=date.today(), third=self.third, status=0, comment=self.comment)
             cost_accountings = CostAccounting.objects.filter(
                 Q(status=0) & Q(is_default=True))
             if len(cost_accountings) >= 1:

@@ -79,7 +79,7 @@ class Migration(migrations.Migration):
                     verbose_name='payer', max_length=150, null=True, default='')),
                 ('reference', models.CharField(
                     verbose_name='reference', max_length=100, null=True, default='')),
-                ('entry', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE,
+                ('entry', models.ForeignKey(null=True, on_delete=django.db.models.deletion.PROTECT,
                                             to='accounting.EntryAccount', default=None, verbose_name='entry')),
                 ('bank_account', models.ForeignKey(null=True, on_delete=django.db.models.deletion.PROTECT,
                                                    to='payoff.BankAccount', default=None, verbose_name='bank account')),
@@ -113,7 +113,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(
                     auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('deposit', models.ForeignKey(to='payoff.DepositSlip', verbose_name='deposit',
-                                              on_delete=django.db.models.deletion.PROTECT, null=True, default=None)),
+                                              on_delete=django.db.models.deletion.CASCADE, null=True, default=None)),
                 ('payoff', models.ForeignKey(to='payoff.Payoff', verbose_name='payoff',
                                              on_delete=django.db.models.deletion.PROTECT, null=True, default=None)),
             ],

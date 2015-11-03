@@ -156,7 +156,7 @@ class Payoff(LucteriosModel):
     reference = models.CharField(
         _('reference'), max_length=100, null=True, default='')
     entry = models.ForeignKey(
-        EntryAccount, verbose_name=_('entry'), null=True, default=None, db_index=True, on_delete=models.CASCADE)
+        EntryAccount, verbose_name=_('entry'), null=True, default=None, db_index=True, on_delete=models.PROTECT)
     bank_account = models.ForeignKey(BankAccount, verbose_name=_(
         'bank account'), null=True, default=None, db_index=True, on_delete=models.PROTECT)
 
@@ -237,16 +237,16 @@ class Payoff(LucteriosModel):
         amount_rest = amount
         paypoff_list = []
         for supporting in supporting_list:
-            new_paypoff = Payoff.objects.create(supporting=supporting,
-                                                date=date, payer=payer, mode=mode, reference=reference)
+            new_paypoff = Payoff(supporting=supporting, date=date, payer=payer, mode=mode, reference=reference)
             if bank_account != 0:
                 new_paypoff.bank_account = BankAccount.objects.get(
                     id=bank_account)
             new_paypoff.amount = currency_round(
                 supporting.get_final_child().get_total_rest_topay() * amount / amount_sum)
-            amount_rest -= new_paypoff.amount
-            new_paypoff.save(do_generate=False)
-            paypoff_list.append(new_paypoff)
+            if new_paypoff.amount > 0.0001:
+                amount_rest -= new_paypoff.amount
+                new_paypoff.save(do_generate=False)
+                paypoff_list.append(new_paypoff)
         if abs(amount_rest) > 0.001:
             new_paypoff.amount += amount_rest
             new_paypoff.save(do_generate=False)
@@ -341,7 +341,7 @@ class DepositSlip(LucteriosModel):
 class DepositDetail(LucteriosModel):
 
     deposit = models.ForeignKey(
-        DepositSlip, verbose_name=_('deposit'), null=True, default=None, db_index=True, on_delete=models.PROTECT)
+        DepositSlip, verbose_name=_('deposit'), null=True, default=None, db_index=True, on_delete=models.CASCADE)
     payoff = models.ForeignKey(
         Payoff, verbose_name=_('payoff'), null=True, default=None, db_index=True, on_delete=models.PROTECT)
 
@@ -378,7 +378,7 @@ class DepositDetail(LucteriosModel):
         return format_devise(self.get_amount(), 5)
 
     @classmethod
-    def get_payof_not_deposit(cls, payer, reference, order_list):
+    def get_payoff_not_deposit(cls, payer, reference, order_list):
         payoff_nodeposit = []
         entity_known = DepositDetail.objects.values_list(
             'payoff__entry_id', flat=True).distinct()
