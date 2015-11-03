@@ -1,0 +1,73 @@
+{% load i18n %}
+<h1>{% trans "02_create_bill.html" %}</h1>
+
+<h2>Cr&eacute;ation</h2>
+<p>
+	Depuis le menu <I>Finance/Facturier/Les factures</I> vous pouvez
+	&eacute;diter ou ajouter une nouvelle facture.
+</p>
+<p>Commencez par d&eacute;finir le type de document (devis, facture,
+	re&ccedil;u ou avoir) que vous souhaitez cr&eacute;er ainsi que la date
+	d'&eacute;mission et un commentaire qui figurera dessus.</p>
+<p>Dans cette facture, vous devez pr&eacute;ciser le client
+	associ&eacute;, c'est &agrave; dire le tiers comptable imputable de
+	l'op&eacute;ration.</p>
+<P ALIGN=CENTER>
+	<img src='../extensions/fr_sdlibre_facture/help/facture_edition.png'
+		NAME="Image2" ALIGN=MIDDLE WIDTH=567 HEIGHT=330 BORDER=0>
+</p>
+<p>Ensuite ajoutez ou enlevez autant d'articles que vous le désirez.</p>
+<P ALIGN=CENTER>
+	<img src='../extensions/fr_sdlibre_facture/help/add_article.png'
+		NAME="Image3" ALIGN=MIDDLE WIDTH=529 HEIGHT=243 BORDER=0>
+</p>
+<p>Par d&eacute;faut, vous obtenez la d&eacute;signation et le prix
+	par d&eacute;faut de l'article s&eacute;lectionn&eacute;, mais
+	l'ensemble est modifiable. Vous pouvez choisir aussi l'article divers:
+	aucune information par d&eacute;faut n'est alors propos&eacute;.</p>
+
+<h2>Changement d'&eacute;tat</h2>
+<p>
+	Depuis le menu <I>Finance/Facturier/Les factures</I> vous pouvez
+	consulter les factures en cours, valid&eacute; ou fini.
+</p>
+
+<p>Un devis, une facture, un re&ccedil;u ou un avoir dans l'état «
+	en cours » est un document en cours de conception et il n'est pas
+	encore envoyé au client.</p>
+<p>Depuis la fiche du document, vous pouvez le valider: il devient
+	alors imprimable et non modifiable. Dans le cas de la facture, du
+	re&ccedil;u ou de l'avoir, il vous est proposé aussi de réaliser un
+	règlement global ou d'enregistrer un paiement d'acompte au cours de
+	cette validation.</p>
+
+<center>
+	<img src='diacamma.invoice/help/bill_accompte.png' BORDER=0>
+</center>
+
+<p>Dans ces deux cas, une &eacute;criture comptable est alors
+	automatiquement g&eacute;n&eacute;r&eacute;e.</p>
+<p>Un devis valid&eacute; peut facilement &ecirc;tre
+	transform&eacute; en facture dans le cas de son acceptation par votre
+	client. La facture ainsi cr&eacute;&eacute; se retrouve alors dans
+	l'&eacute;tat «&nbsp;en cours&nbsp;» pour vous permettre de la
+	r&eacute;ajuster.</p>
+
+<p>Une fois qu'une facture (ou un avoir) est considéré comme
+	terminée (c'est à dire réglée ou définie comme pertes et profits), vous
+	pouvez définir son état à «fini».</p>
+<p>Depuis une facture « fini », il vous est possible de créer un
+	avoir correspondant à l'état « en cours ». Cette fonctionnalité vous
+	sera utile si vous êtes amené à rembourser un client d'un bien ou un
+	service précédemment facturé.</p>
+
+<h2>Impression</h2>
+
+<p>
+	Depuis la fiche d'un document (devis, facture, re&ccedil;u ou avoir)
+	vous pouvez à tout moment imprimer ou ré-impriment celui-ci s'il n'est
+	pas à l'état «en cours». L'impression, qui peut être une visualisation,
+	une sortie imprimante ou un export en fichier PDF, est sauvegardée dans
+	l'application et ne changera pas, même si vous modifiez le logo de
+	votre structure.
+</p>

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-10-30 16:06+0000\n"
+"POT-Creation-Date: 2015-11-03 16:53+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -34,14 +34,26 @@ msgstr "total HT"
 msgid "price incl. taxes"
 msgstr "prix TTC"
 
-#: editors.py:96 editors.py:100 migrations/0001_initial.py:151 models.py:155
+#: editors.py:96 editors.py:100 migrations/0001_initial.py:151 models.py:158
 #: views.py:116
 msgid "total incl. taxes"
 msgstr "total TTC"
 
-#: editors.py:100 models.py:155
+#: editors.py:100 models.py:158
 msgid "VTA sum"
 msgstr "total TVA"
+
+#: help/01_articles.html:2
+msgid "01_articles.html"
+msgstr "Les articles"
+
+#: help/02_create_bill.html:2
+msgid "02_create_bill.html"
+msgstr "Création de facture"
+
+#: help/03_configuration.html:2
+msgid "03_configuration.html"
+msgstr "Configuration"
 
 #: migrations/0001_initial.py:20
 msgid "invoice-default-sell-account"
@@ -71,22 +83,22 @@ msgstr "prix hors taxe"
 msgid "invoice-vat-mode.2"
 msgstr "prix toutes taxes comprise"
 
-#: migrations/0001_initial.py:49 models.py:105 models.py:436 models.py:442
+#: migrations/0001_initial.py:49 models.py:105 models.py:439 models.py:445
 msgid "bill"
 msgstr "facture"
 
 #: migrations/0001_initial.py:143 migrations/0001_initial.py:269 models.py:97
-#: models.py:444 views.py:382
+#: models.py:447 views.py:382
 msgid "article"
 msgstr "article"
 
 #: migrations/0001_initial.py:144 migrations/0001_initial.py:270 models.py:67
-#: models.py:445
+#: models.py:448
 msgid "designation"
 msgstr "désignation"
 
 #: migrations/0001_initial.py:145 migrations/0001_initial.py:271 models.py:68
-#: models.py:82 models.py:446 models.py:462 models.py:470
+#: models.py:82 models.py:449 models.py:465 models.py:473
 msgid "price"
 msgstr "prix"
 
@@ -150,7 +162,7 @@ msgstr "TVA"
 msgid "VATs"
 msgstr "TVAs"
 
-#: models.py:70 models.py:449
+#: models.py:70 models.py:452
 msgid "unit"
 msgstr "unité"
 
@@ -174,7 +186,7 @@ msgstr "articles"
 msgid "fiscal year"
 msgstr "exercice"
 
-#: models.py:104 models.py:152
+#: models.py:104 models.py:155
 msgid "bill type"
 msgstr "type de facture"
 
@@ -190,7 +202,7 @@ msgstr "avoir"
 msgid "receipt"
 msgstr "reçu"
 
-#: models.py:106 models.py:123 models.py:147 models.py:152
+#: models.py:106 models.py:126 models.py:150 models.py:155
 msgid "numeros"
 msgstr "numéro"
 
@@ -226,62 +238,62 @@ msgstr "écriture"
 msgid "cost accounting"
 msgstr "compte analytique"
 
-#: models.py:124 models.py:147 models.py:155 models.py:397 models.py:430
-#: models.py:462
+#: models.py:127 models.py:150 models.py:158 models.py:400 models.py:433
+#: models.py:465
 msgid "total"
 msgstr "total"
 
-#: models.py:224
+#: models.py:227
 #, python-format
 msgid "VAT %s %%"
 msgstr "TVA %s %%"
 
-#: models.py:244
+#: models.py:247
 msgid "no detail"
 msgstr "pas de détail"
 
-#: models.py:259 models.py:291
+#: models.py:262 models.py:294
 msgid "article has code account unknown!"
 msgstr "un article a un compte inconnu!"
 
-#: models.py:265
+#: models.py:268
 #, python-format
 msgid "\"%s\" cannot be deleted!"
 msgstr "\"%s\" n'est pas supprimable!"
 
-#: models.py:303
+#: models.py:306
 msgid "reduce-account is not defined!"
 msgstr "le compte de reduction n'est pas défini!"
 
-#: models.py:315
+#: models.py:318
 msgid "vta-account is not defined!"
 msgstr "le compte de TVA n'est pas défini!"
 
-#: models.py:322
+#: models.py:325
 msgid "Error in accounting generator!"
 msgstr "Erreur sur la génération comptable!"
 
-#: models.py:437
+#: models.py:440
 msgid "bills"
 msgstr "factures"
 
-#: models.py:450
+#: models.py:453
 msgid "quantity"
 msgstr "quantité"
 
-#: models.py:452 models.py:462 models.py:470
+#: models.py:455 models.py:465 models.py:473
 msgid "reduce"
 msgstr "réduction"
 
-#: models.py:454
+#: models.py:457
 msgid "vta rate"
 msgstr "taux de TVA"
 
-#: models.py:558
+#: models.py:561
 msgid "detail"
 msgstr "détail"
 
-#: models.py:559
+#: models.py:562
 msgid "details"
 msgstr "détails"
 

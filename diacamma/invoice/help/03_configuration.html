@@ -1,0 +1,58 @@
+{% load i18n %}
+<h1>{% trans "03_configuration.html" %}</h1>
+
+<h2>Codes comptables par d&eacute;faut</h2>
+
+<P>Ce module est intimement lié au module de gestion comptable, un
+	certain nombre de codes comptables par défaut sont nécessaires.</P>
+<P>Pour pouvoir générer les écritures comptables correspondants aux
+	factures saisies avec des articles non référencés, vous devez préciser
+	le code comptable de vente (classe 7) lié a ce type de d'article. Par
+	défaut, le code comptable de vente de service est défini.</P>
+<P>
+	Pour réaliser une réduction sur un article, vous devez préciser le code
+	comptable de vente à imputer de cette réduction.<br /> Dans le cas de
+	règlement en liquide, il vous faut préciser le code comptable de banque
+	associé à votre caisse.
+</P>
+
+<h2>La configuration de la TVA</h2>
+<p>
+	Depuis le menu <i>administration/extensions (conf.)/paramètres
+		financiers/TVA</i>, vous pouvez compl&egrave;tement configurer la gestion
+	de votre soumission &agrave; la TVA.
+</p>
+<center>
+	<img src='diacamma.invoice/help/vat.png' BORDER=0>
+</center>
+<P>
+	Pour commencer, vous devez définir les modalités de soumission en
+	sélectionnant votre <i>mode d'application</i>:
+</p>
+<ul>
+	<li>TVA non applicable</li> Vous n'&ecirc;tes pas soumis &agrave; la
+	TVA. L'ensemble de vos factures sont r&eacute;alis&eacute;es hors-taxe.
+	<li>Prix HT</li> Vous &ecirc;tes soumis à la TVA. Vous faites le choix
+	d'&eacute;diter vos factures avec les montants des articles en
+	hors-taxe.
+	<li>Prix TTC</li> Vous &ecirc;tes soumis à la TVA. Vous faites le choix
+	d'&eacute;diter vos factures avec les montants des articles toutes
+	taxes comprises.
+</ul>
+<P>Précisez également le compte comptable d'imputation de ces taxes
+	(par défaut le 4455)</p>
+<P>Définissez l'ensemble des taux de taxes auxquels vos ventes sont
+	soumises. La taxe par défaut sera celle appliquée à l'article libre
+	(sans référence).</P>
+
+<h2>La facture avec TVA</h2>
+<p>Si vous &ecirc;tes soumis &agrave; la TVA, l'&eacute;dition de la
+	facture change un peu</p>
+<p>En plus de préciser si les articles sont en montant HT ou TTC,
+	vous avez en bas de l'écran le total de la facture hors-taxe, taxes
+	comprises ainsi que le montant total des taxes.</p>
+<center>
+	<img src='diacamma.invoice/help/bill_vat.png' BORDER=0>
+</center>
+<p>De plus, dans l'impression de la facture, un sous-d&eacute;tail
+	des taxes appara&icirc;t par taux de TVA.</p>

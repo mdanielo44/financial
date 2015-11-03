@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-10-30 16:06+0000\n"
+"POT-Creation-Date: 2015-11-03 16:53+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -41,6 +41,18 @@ msgstr "réglement vide!"
 #: editors.py:99 models.py:233
 msgid "No-valid selection!"
 msgstr "Sélection non-valide!"
+
+#: help/01_payoff.html:2
+msgid "01_payoff.html"
+msgstr "Règlement"
+
+#: help/02_deposit.html:2
+msgid "02_deposit.html"
+msgstr "Dépôt de chèques"
+
+#: help/03_config.html:2
+msgid "03_config.html"
+msgstr "Configuration"
 
 #: migrations/0001_initial.py:15
 msgid "payoff-bankcharges-account"
