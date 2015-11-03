@@ -156,7 +156,7 @@ class Payoff(LucteriosModel):
     reference = models.CharField(
         _('reference'), max_length=100, null=True, default='')
     entry = models.ForeignKey(
-        EntryAccount, verbose_name=_('entry'), null=True, default=None, db_index=True, on_delete=models.PROTECT)
+        EntryAccount, verbose_name=_('entry'), null=True, default=None, db_index=True, on_delete=models.CASCADE)
     bank_account = models.ForeignKey(BankAccount, verbose_name=_(
         'bank account'), null=True, default=None, db_index=True, on_delete=models.PROTECT)
 

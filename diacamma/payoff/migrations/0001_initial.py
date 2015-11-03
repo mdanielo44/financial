@@ -79,7 +79,7 @@ class Migration(migrations.Migration):
                     verbose_name='payer', max_length=150, null=True, default='')),
                 ('reference', models.CharField(
                     verbose_name='reference', max_length=100, null=True, default='')),
-                ('entry', models.ForeignKey(null=True, on_delete=django.db.models.deletion.PROTECT,
+                ('entry', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE,
                                             to='accounting.EntryAccount', default=None, verbose_name='entry')),
                 ('bank_account', models.ForeignKey(null=True, on_delete=django.db.models.deletion.PROTECT,
                                                    to='payoff.BankAccount', default=None, verbose_name='bank account')),
