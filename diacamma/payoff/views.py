@@ -78,7 +78,7 @@ class PayoffDel(XferDelete):
 
 
 @ActionsManage.affect('Supporting', 'third')
-@MenuManage.describ('payoff.change_supporting')
+@MenuManage.describ('')
 class SupportingThird(XferListEditor):
     icon = "diacamma.accounting/images/thirds.png"
     model = Third
@@ -116,7 +116,7 @@ class SupportingThird(XferListEditor):
             _('select'), 'images/ok.png'), {'modal': FORMTYPE_MODAL, 'close': CLOSE_YES, 'unique': SELECT_SINGLE}, 0)
 
 
-@MenuManage.describ('payoff.change_supporting')
+@MenuManage.describ('')
 class SupportingThirdValid(XferSave):
     redirect_to_show = False
     icon = "diacamma.accounting/images/thirds.png"

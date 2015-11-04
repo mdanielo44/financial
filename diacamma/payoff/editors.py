@@ -31,7 +31,7 @@ from lucterios.framework.editors import LucteriosEditor
 from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompButton
 from lucterios.CORE.parameters import Params
 from lucterios.framework.tools import ActionsManage, CLOSE_NO, SELECT_NONE,\
-    FORMTYPE_REFRESH, FORMTYPE_MODAL
+    FORMTYPE_REFRESH, FORMTYPE_MODAL, WrapAction
 from lucterios.framework.error import LucteriosException, IMPORTANT
 from lucterios.contacts.models import LegalEntity
 
@@ -45,15 +45,16 @@ class SupportingEditor(LucteriosEditor):
         self.item.is_revenu = self.item.get_final_child().payoff_is_revenu()
         return LucteriosEditor.before_save(self, xfer)
 
-    def show_third(self, xfer):
+    def show_third(self, xfer, right=''):
         xfer.params['supporting'] = self.item.id
         third = xfer.get_components('third')
         third.colspan -= 2
-        btn = XferCompButton('change_third')
-        btn.set_location(third.col + third.colspan, third.row)
-        btn.set_action(xfer.request, ActionsManage.get_act_changed("Supporting", 'third', _('change'), ''),
-                       {'modal': FORMTYPE_MODAL, 'close': CLOSE_NO})
-        xfer.add_component(btn)
+        if WrapAction.is_permission(xfer.request, right):
+            btn = XferCompButton('change_third')
+            btn.set_location(third.col + third.colspan, third.row)
+            btn.set_action(xfer.request, ActionsManage.get_act_changed("Supporting", 'third', _('change'), ''),
+                           {'modal': FORMTYPE_MODAL, 'close': CLOSE_NO})
+            xfer.add_component(btn)
 
         if self.item.third is not None:
             btn = XferCompButton('show_third')

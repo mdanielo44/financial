@@ -107,7 +107,7 @@ class DepositSlipPrint(XferPrintAction):
 
 
 @ActionsManage.affect('DepositDetail', 'add')
-@MenuManage.describ('payoff.add_depositdetail')
+@MenuManage.describ('payoff.add_depositslip')
 class DepositDetailAddModify(XferContainerCustom):
     icon = "bank.png"
     model = DepositDetail
@@ -173,7 +173,7 @@ class DepositDetailAddModify(XferContainerCustom):
 
 
 @ActionsManage.affect('DepositDetail', 'save')
-@MenuManage.describ('payoff.add_depositdetail')
+@MenuManage.describ('payoff.add_depositslip')
 class DepositDetailSave(XferContainerAcknowledge):
     icon = "bank.png"
     model = DepositSlip
@@ -185,7 +185,7 @@ class DepositDetailSave(XferContainerAcknowledge):
 
 
 @ActionsManage.affect('DepositDetail', 'delete')
-@MenuManage.describ('payoff.delete_depositdetail')
+@MenuManage.describ('payoff.add_depositslip')
 class DepositDetailDel(XferDelete):
     icon = "bank.png"
     model = DepositDetail

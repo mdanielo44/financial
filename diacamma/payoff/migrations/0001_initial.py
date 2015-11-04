@@ -45,6 +45,7 @@ class Migration(migrations.Migration):
             options={
                 'verbose_name_plural': 'supporting',
                 'verbose_name': 'supporting',
+                'default_permissions': []
             },
         ),
         migrations.CreateModel(
@@ -120,6 +121,7 @@ class Migration(migrations.Migration):
             options={
                 'verbose_name_plural': 'deposit details',
                 'verbose_name': 'deposit detail',
+                'default_permissions': []
             },
         ),
         migrations.RunPython(initial_values),

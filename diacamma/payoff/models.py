@@ -57,6 +57,7 @@ class Supporting(LucteriosModel):
     class Meta(object):
         verbose_name = _('supporting')
         verbose_name_plural = _('supporting')
+        default_permissions = []
 
     def get_total(self):
         raise Exception('no implemented!')
@@ -408,3 +409,4 @@ class DepositDetail(LucteriosModel):
     class Meta(object):
         verbose_name = _('deposit detail')
         verbose_name_plural = _('deposit details')
+        default_permissions = []

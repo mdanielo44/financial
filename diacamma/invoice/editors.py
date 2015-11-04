@@ -99,7 +99,7 @@ class BillEditor(SupportingEditor):
             xfer.filltab_from_model(1, xfer.get_max_row() + 1, True,
                                     [((_('VTA sum'), 'vta_sum'), (_('total incl. taxes'), 'total_incltax'))])
         if self.item.status == 0:
-            SupportingEditor.show_third(self, xfer)
+            SupportingEditor.show_third(self, xfer, 'invoice.add_bill')
         else:
             details.actions = []
             if self.item.bill_type != 0:
