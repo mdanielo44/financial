@@ -16,7 +16,7 @@ from lucterios.CORE.models import Parameter
 
 
 @ActionsManage.affect('BankAccount', 'list')
-@MenuManage.describ('payoff.change_bankaccount', FORMTYPE_NOMODAL, 'contact.conf', _('Management of parameters and configuration of payoff'))
+@MenuManage.describ('payoff.change_bankaccount', FORMTYPE_NOMODAL, 'financial.conf', _('Management of parameters and configuration of payoff'))
 class PayoffConf(XferListEditor):
     icon = "bank.png"
     model = BankAccount

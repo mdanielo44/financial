@@ -44,9 +44,11 @@ from lucterios.framework.error import LucteriosException, IMPORTANT
 
 from diacamma.accounting.tools import clear_system_account
 
+MenuManage.add_sub("financial.conf", "core.extensions", "", _("F"), "", 2)
+
 
 @ActionsManage.affect('FiscalYear', 'list')
-@MenuManage.describ('accounting.change_fiscalyear', FORMTYPE_MODAL, 'contact.conf', _('Management of fiscal year and financial parameters'))
+@MenuManage.describ('accounting.change_fiscalyear', FORMTYPE_MODAL, 'financial.conf', _('Management of fiscal year and financial parameters'))
 class Configuration(XferListEditor):
     icon = "accountingYear.png"
     model = FiscalYear

@@ -39,7 +39,7 @@ from lucterios.CORE.models import Parameter
 
 
 @ActionsManage.affect('Vat', 'list')
-@MenuManage.describ('invoice.change_vat', FORMTYPE_NOMODAL, 'contact.conf', _('Management of parameters and configuration of invoice'))
+@MenuManage.describ('invoice.change_vat', FORMTYPE_NOMODAL, 'financial.conf', _('Management of parameters and configuration of invoice'))
 class InvoiceConf(XferListEditor):
     icon = "invoice_conf.png"
     model = Vat
