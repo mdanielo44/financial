@@ -136,7 +136,7 @@ class BillAddModify(XferAddEditor):
 
 
 @ActionsManage.affect('Bill', 'show')
-@MenuManage.describ('contacts.change_bill')
+@MenuManage.describ('invoice.change_bill')
 class BillShow(XferShowEditor):
     caption = _("Show bill")
     icon = "bill.png"
@@ -165,7 +165,7 @@ class BillShow(XferShowEditor):
 
 
 @ActionsManage.affect('Bill', 'valid')
-@MenuManage.describ('contacts.change_bill')
+@MenuManage.describ('invoice.change_bill')
 class BillValid(XferContainerAcknowledge):
     caption = _("Valid bill")
     icon = "bill.png"
@@ -191,7 +191,7 @@ class BillMultiPay(XferContainerAcknowledge):
 
 
 @ActionsManage.affect('Bill', 'convertbill')
-@MenuManage.describ('contacts.change_bill')
+@MenuManage.describ('invoice.change_bill')
 class BillFromQuotation(XferContainerAcknowledge):
     caption = _("Convert to bill")
     icon = "bill.png"
@@ -206,7 +206,7 @@ class BillFromQuotation(XferContainerAcknowledge):
 
 
 @ActionsManage.affect('Bill', 'cancel')
-@MenuManage.describ('contacts.change_bill')
+@MenuManage.describ('invoice.change_bill')
 class BillCancel(XferContainerAcknowledge):
     caption = _("Valid bill")
     icon = "bill.png"
@@ -222,7 +222,7 @@ class BillCancel(XferContainerAcknowledge):
 
 
 @ActionsManage.affect('Bill', 'archive')
-@MenuManage.describ('contacts.change_bill')
+@MenuManage.describ('invoice.change_bill')
 class BillArchive(XferContainerAcknowledge):
     caption = _("Valid bill")
     icon = "bill.png"
