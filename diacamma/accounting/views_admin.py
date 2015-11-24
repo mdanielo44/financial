@@ -44,7 +44,7 @@ from lucterios.framework.error import LucteriosException, IMPORTANT
 
 from diacamma.accounting.tools import clear_system_account
 
-MenuManage.add_sub("financial.conf", "core.extensions", "", _("F"), "", 2)
+MenuManage.add_sub("financial.conf", "core.extensions", "", _("Financial"), "", 2)
 
 
 @ActionsManage.affect('FiscalYear', 'list')

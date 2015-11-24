@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-11-06 13:38+0000\n"
+"POT-Creation-Date: 2015-11-24 17:42+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -76,7 +76,7 @@ msgstr "Edit"
 msgid "Link/Unlink"
 msgstr "Link/Unlink"
 
-#: editors.py:236 views_admin.py:98
+#: editors.py:236 views_admin.py:100
 msgid "Modify"
 msgstr "Modify"
 
@@ -519,7 +519,7 @@ msgstr "Credit"
 msgid "Debit"
 msgstr "Debit"
 
-#: views.py:49
+#: views.py:49 views_admin.py:47
 msgid "Financial"
 msgstr "Financial"
 
@@ -715,31 +715,31 @@ msgstr "Show an account"
 msgid "Delete an account"
 msgstr "Delete an account"
 
-#: views_admin.py:49
+#: views_admin.py:51
 msgid "Management of fiscal year and financial parameters"
 msgstr "Management of fiscal year and financial parameters"
 
-#: views_admin.py:54
+#: views_admin.py:56
 msgid "Accounting configuration"
 msgstr "Accounting configuration"
 
-#: views_admin.py:57
+#: views_admin.py:59
 msgid "Fiscal year list"
 msgstr "Fiscal year list"
 
-#: views_admin.py:60
+#: views_admin.py:62
 msgid "accounting system"
 msgstr "accounting system"
 
-#: views_admin.py:83
+#: views_admin.py:85
 msgid "Journals"
 msgstr "Journals"
 
-#: views_admin.py:91
+#: views_admin.py:93
 msgid "Parameters"
 msgstr "Parameters"
 
-#: views_admin.py:107
+#: views_admin.py:109
 #, python-format
 msgid ""
 "Do you confirm to select \"%s\" like accounting system?{[br/]}{[br/]}{[i]}"
@@ -748,43 +748,43 @@ msgstr ""
 "Do you confirm to select \"%s\" like accounting system?{[br/]}{[br/]}{[i]}"
 "{[u]}Warning{[/u]}: This choose is definitive.{[/i]}"
 
-#: views_admin.py:119
+#: views_admin.py:121
 msgid "Activate"
 msgstr "Activate"
 
-#: views_admin.py:131
+#: views_admin.py:133
 msgid "Add fiscal year"
 msgstr "Add fiscal year"
 
-#: views_admin.py:132
+#: views_admin.py:134
 msgid "Modify fiscal year"
 msgstr "Modify fiscal year"
 
-#: views_admin.py:138
+#: views_admin.py:140
 msgid "Account system not defined!"
 msgstr "Account system not defined!"
 
-#: views_admin.py:149
+#: views_admin.py:151
 msgid "Delete fiscal year"
 msgstr "Delete fiscal year"
 
-#: views_admin.py:158
+#: views_admin.py:160
 msgid "Add accounting journal"
 msgstr "Add accounting journal"
 
-#: views_admin.py:159
+#: views_admin.py:161
 msgid "Modify accounting journal"
 msgstr "Add accounting journal"
 
-#: views_admin.py:168
+#: views_admin.py:170
 msgid "Delete accounting journal"
 msgstr "Delete accounting journal"
 
-#: views_admin.py:176
+#: views_admin.py:178
 msgid "Export"
 msgstr "Export"
 
-#: views_admin.py:187
+#: views_admin.py:189
 msgid "Export fiscal year"
 msgstr "Export fiscal year"
 
