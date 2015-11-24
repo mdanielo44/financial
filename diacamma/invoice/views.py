@@ -27,7 +27,9 @@ from datetime import date
 from copy import deepcopy
 
 from django.utils.translation import ugettext_lazy as _
-from django.utils import formats
+from django.utils import formats, six
+from django.utils.module_loading import import_module
+from django.apps.registry import apps
 from django.db.models import Q
 
 from lucterios.framework.xferadvance import XferListEditor, XferShowEditor
@@ -35,21 +37,22 @@ from lucterios.framework.xferadvance import XferAddEditor
 from lucterios.framework.xferadvance import XferDelete
 from lucterios.framework.xfercomponents import XferCompLabelForm, \
     XferCompSelect, XferCompHeader, XferCompImage, XferCompGrid,\
-    DEFAULT_ACTION_LIST
+    DEFAULT_ACTION_LIST, XferCompMemo, XferCompEdit
 from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage, \
     FORMTYPE_MODAL, CLOSE_YES, SELECT_SINGLE, FORMTYPE_REFRESH, CLOSE_NO,\
     SELECT_MULTI, WrapAction
 from lucterios.framework.xfergraphic import XferContainerAcknowledge,\
     XferContainerCustom
 from lucterios.framework.error import LucteriosException, IMPORTANT
+from lucterios.framework import signal_and_lock
 from lucterios.CORE.xferprint import XferPrintAction, XferPrintReporting
 from lucterios.CORE.parameters import Params
 from lucterios.CORE.editors import XferSavedCriteriaSearchEditor
+from lucterios.CORE.models import PrintModel
 
 from diacamma.invoice.models import Article, Bill, Detail
 from diacamma.accounting.models import FiscalYear
 from diacamma.payoff.views import PayoffAddModify
-from lucterios.framework import signal_and_lock
 
 MenuManage.add_sub("invoice", "financial", "diacamma.invoice/images/invoice.png",
                    _("invoice"), _("Manage of billing"), 20)
@@ -161,6 +164,11 @@ class BillShow(XferShowEditor):
         if self.item.status in (1, 3):
             self.action_list.insert(0,
                                     ('printbill', _("Print"), "images/print.png", CLOSE_NO))
+            if apps.is_installed("lucterios.mailing"):
+                fct_mailing_mod = import_module('lucterios.mailing.functions')
+                if fct_mailing_mod.will_mail_send():
+                    self.action_list.insert(0,
+                                            ('email', _("Send"), "lucterios.mailing/images/email.png", CLOSE_NO))
         XferShowEditor.fillresponse(self)
 
 
@@ -260,6 +268,56 @@ class BillPrint(XferPrintReporting):
                 yield item
         if not has_item:
             raise LucteriosException(IMPORTANT, _("No invoice to print!"))
+
+
+@ActionsManage.affect('Bill', 'email')
+@MenuManage.describ('invoice.change_bill')
+class BillEmail(XferContainerAcknowledge):
+    caption = _("Send bill")
+    icon = "bill.png"
+    model = Bill
+    field_id = 'bill'
+
+    def fillresponse(self, subject='', message='', model=0):
+        if self.getparam("OK") is None:
+            dlg = self.create_custom()
+            icon = XferCompImage('img')
+            icon.set_location(0, 0, 1, 6)
+            icon.set_value(self.icon_path())
+            dlg.add_component(icon)
+            lbl = XferCompLabelForm('lb_subject')
+            lbl.set_value_as_name(_('subject'))
+            lbl.set_location(1, 1)
+            dlg.add_component(lbl)
+            lbl = XferCompEdit('subject')
+            lbl.set_value(six.text_type(self.item))
+            lbl.set_location(2, 1)
+            dlg.add_component(lbl)
+            lbl = XferCompLabelForm('lb_message')
+            lbl.set_value_as_name(_('message'))
+            lbl.set_location(1, 2)
+            dlg.add_component(lbl)
+            lbl = XferCompMemo('message')
+            lbl.set_value(_('%(name)s\n\nJoint in this email your bill %(bill)s.\n\nRegards') % {
+                          'name': six.text_type(self.item.third), 'bill': six.text_type(self.item)})
+            lbl.with_hypertext = True
+            lbl.set_size(130, 450)
+            lbl.set_location(2, 2)
+            dlg.add_component(lbl)
+            selectors = PrintModel.get_print_selector(2, self.model)[0]
+            lbl = XferCompLabelForm('lb_model')
+            lbl.set_value_as_name(selectors[1])
+            lbl.set_location(1, 3)
+            dlg.add_component(lbl)
+            sel = XferCompSelect('model')
+            sel.set_select(selectors[2])
+            sel.set_location(2, 3)
+            dlg.add_component(sel)
+            dlg.add_action(
+                self.get_action(_('Ok'), 'images/ok.png'), {'params': {"OK": "YES"}})
+            dlg.add_action(WrapAction(_('Cancel'), 'images/cancel.png'), {})
+        else:
+            self.item.send_bill(subject, message, model)
 
 
 @ActionsManage.affect('Detail', 'edit', 'add')

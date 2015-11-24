@@ -1,14 +1,14 @@
 <project name="Diacamma2.accounting" default="all" basedir=".">
-	<property name="syndic.path" value="${basedir}/../syndic" />
+	<property name="asso.path" value="${basedir}/../asso" />
 	<property name="core.path" value="${basedir}/../lct-core" />
 	<property name="contact.path" value="${basedir}/../lct-contacts" />
 	<property name="project.packagepath" value="diacamma/accounting,diacamma/invoice,diacamma/payoff" />
 	<property name="project.packagename" value="diacamma.accounting diacamma.invoice diacamma.payoff" />
 	<property name="project.name" value="diacamma" />
 	<property name="project.packname" value="diacamma_financial.egg-info" />
-	<property name="project.pythonpath" value="${core.path}:${syndic.path}:${contact.path}:${env.PYTHONPATH}" />
-	<property name="project.modules" value="lucterios.contacts,diacamma.accounting,diacamma.invoice,diacamma.payoff" />
-	<property name="project.appli" value="diacamma.syndic" />
+	<property name="project.pythonpath" value="${core.path}:${asso.path}:${contact.path}:${env.PYTHONPATH}" />
+	<property name="project.modules" value="lucterios.contacts,lucterios.mailing,diacamma.accounting,diacamma.invoice,diacamma.payoff" />
+	<property name="project.appli" value="diacamma.asso" />
 	<property name="project.test.source" value="diacamma" />
 	<property name="project.test.omit" value="${core.path}/lucterios/install/*" />
 	<property name="project.test.include" value="${core.path}/lucterios/CORE/*.py,${core.path}/lucterios/framework/*.py" />

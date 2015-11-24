@@ -41,10 +41,11 @@ from diacamma.invoice.test_tools import default_articles, InvoiceTest
 from diacamma.invoice.views_conf import InvoiceConf, VatAddModify, VatDel
 from diacamma.invoice.views import ArticleList, ArticleAddModify, ArticleDel,\
     BillList, BillAddModify, BillShow, DetailAddModify, DetailDel, BillValid, BillDel, BillArchive, BillCancel, BillFromQuotation,\
-    BillStatistic, BillStatisticPrint, BillPrint, BillMultiPay
+    BillStatistic, BillStatisticPrint, BillPrint, BillMultiPay, BillEmail
 from diacamma.payoff.views import PayoffAddModify, PayoffDel, SupportingThird,\
     SupportingThirdValid
 from diacamma.payoff.test_tools import default_bankaccount
+from lucterios.mailing.tests import configSMTP, TestReceiver, decode_b64
 
 
 class ConfigTest(LucteriosTest):
@@ -1530,3 +1531,41 @@ class BillTest(InvoiceTest):
             'core.custom', 'diacamma.accounting', 'entryLineAccountList')
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD', 6)
+
+    def test_send_bill(self):
+        configSMTP('localhost', 1025)
+        server = TestReceiver()
+        server.start(1025)
+        try:
+            self.assertEqual(0, server.count())
+            details = [
+                {'article': 0, 'designation': 'article 0', 'price': '100.00', 'quantity': 1}]
+            bill_id = self._create_bill(
+                details, 1, '2015-04-01', 6, True)  # 59.50
+            self.factory.xfer = BillEmail()
+            self.call('/diacamma.invoice/billEmail', {'bill': bill_id}, False)
+            self.assert_observer(
+                'core.custom', 'diacamma.invoice', 'billEmail')
+            self.assert_count_equal('COMPONENTS/*', 7)
+
+            self.factory.xfer = BillEmail()
+            self.call('/diacamma.invoice/billEmail',
+                      {'bill': bill_id, 'OK': 'YES', 'subject': 'my bill', 'message': 'this is a bill.', 'model': 8}, False)
+            self.assert_observer(
+                'core.acknowledge', 'diacamma.invoice', 'billEmail')
+            self.assertEqual(1, server.count())
+            self.assertEqual(
+                'mr-sylvestre@worldcompany.com', server.get(0)[1])
+            self.assertEqual(
+                ['Jack.Dalton@worldcompany.com'], server.get(0)[2])
+            msg, msg_file = server.check_first_message('my bill', 2)
+            self.assertEqual('text/plain', msg.get_content_type())
+            self.assertEqual(
+                'base64', msg.get('Content-Transfer-Encoding', ''))
+            self.assertEqual('this is a bill.', decode_b64(msg.get_payload()))
+            self.assertTrue(
+                'facture_A-1.pdf' in msg_file.get('Content-Type', ''), msg_file.get('Content-Type', ''))
+            self.assertEqual(
+                "%PDF".encode('ascii', 'ignore'), b64decode(msg_file.get_payload())[:4])
+        finally:
+            server.stop()
