@@ -440,11 +440,14 @@ class Bill(Supporting):
                              "{[b]}%.2f %%{[/b]}" % 100, total_art))
         return art_list
 
-    def send_bill(self, subject, message, model):
-        fct_mailing_mod = import_module('lucterios.mailing.functions')
+    def get_bill_name(self):
         billtype = get_value_if_choices(
             self.bill_type, self.get_field_by_name('bill_type'))
-        pdf_name = "%s_%s.pdf" % (billtype, self.num_txt)
+        return "%s_%s_%s" % (billtype, self.num_txt, six.text_type(self.third))
+
+    def send_bill(self, subject, message, model):
+        fct_mailing_mod = import_module('lucterios.mailing.functions')
+        pdf_name = "%s.pdf" % self.get_bill_name()
         gen = ReportingGenerator()
         gen.items = [self]
         gen.model_text = PrintModel.objects.get(id=model).value

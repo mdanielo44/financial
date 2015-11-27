@@ -260,6 +260,13 @@ class BillPrint(XferPrintReporting):
     field_id = 'bill'
     caption = _("Print bill")
 
+    def get_print_name(self):
+        if len(self.items) == 1:
+            current_bill = self.items[0]
+            return current_bill.get_bill_name()
+        else:
+            return six.text_type(self.caption)
+
     def items_callback(self):
         has_item = False
         for item in self.items:

@@ -1564,7 +1564,7 @@ class BillTest(InvoiceTest):
                 'base64', msg.get('Content-Transfer-Encoding', ''))
             self.assertEqual('this is a bill.', decode_b64(msg.get_payload()))
             self.assertTrue(
-                'facture_A-1.pdf' in msg_file.get('Content-Type', ''), msg_file.get('Content-Type', ''))
+                'facture_A-1_Dalton Jack.pdf' in msg_file.get('Content-Type', ''), msg_file.get('Content-Type', ''))
             self.assertEqual(
                 "%PDF".encode('ascii', 'ignore'), b64decode(msg_file.get_payload())[:4])
         finally:
