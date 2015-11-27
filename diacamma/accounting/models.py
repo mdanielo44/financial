@@ -100,6 +100,15 @@ class Third(LucteriosModel):
     def total(self):
         return format_devise(self.get_total(), 5)
 
+    def merge_objects(self, alias_objects=[]):
+        LucteriosModel.merge_objects(self, alias_objects=alias_objects)
+        last_code = []
+        for sub_account in self.accountthird_set.all():
+            if sub_account.code in last_code:
+                sub_account.delete()
+            else:
+                last_code.append(sub_account.code)
+
     class Meta(object):
         verbose_name = _('third')
         verbose_name_plural = _('thirds')

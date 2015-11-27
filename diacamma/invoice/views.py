@@ -51,7 +51,7 @@ from lucterios.CORE.editors import XferSavedCriteriaSearchEditor
 from lucterios.CORE.models import PrintModel
 
 from diacamma.invoice.models import Article, Bill, Detail
-from diacamma.accounting.models import FiscalYear
+from diacamma.accounting.models import FiscalYear, Third
 from diacamma.payoff.views import PayoffAddModify
 
 MenuManage.add_sub("invoice", "financial", "diacamma.invoice/images/invoice.png",
@@ -473,6 +473,22 @@ class BillStatisticPrint(XferPrintAction):
     field_id = 'bill'
     action_class = BillStatistic
     with_text_export = True
+
+
+@signal_and_lock.Signal.decorate('show_contact')
+def show_contact_invoice(contact, xfer):
+    if WrapAction.is_permission(xfer.request, 'invoice.change_bill'):
+        third = Third.objects.filter(contact_id=contact.id)
+        if len(third) == 1:
+            third = third[0]
+            xfer.new_tab(_("Financial"))
+            nb_build = len(Bill.objects.filter(third=third, status=0))
+            nb_valid = len(Bill.objects.filter(third=third, status=1))
+            lab = XferCompLabelForm('invoiceinfo')
+            lab.set_value_as_header(
+                _("There are %(build)d bills in building and %(valid)d validated") % {'build': nb_build, 'valid': nb_valid})
+            lab.set_location(0, 5, 2)
+            xfer.add_component(lab)
 
 
 @signal_and_lock.Signal.decorate('summary')

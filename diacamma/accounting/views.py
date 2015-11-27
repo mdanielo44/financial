@@ -317,6 +317,33 @@ def comptenofound_accounting(known_codes, accompt_returned):
     return True
 
 
+@signal_and_lock.Signal.decorate('show_contact')
+def show_contact_accounting(contact, xfer):
+    if WrapAction.is_permission(xfer.request, 'accounting.change_entryaccount'):
+        main_third = None
+        thirds = Third.objects.filter(contact_id=contact.id)
+        if len(thirds) > 1:
+            main_third = thirds[0]
+            alias_third = []
+            for third in thirds:
+                if third.id != main_third.id:
+                    alias_third.append(third)
+            main_third.merge_objects(alias_third)
+        elif len(thirds) == 1:
+            main_third = thirds[0]
+        if main_third is not None:
+            xfer.new_tab(_("Financial"))
+            xfer.item = main_third
+            xfer.filltab_from_model(
+                0, 0, True, ["status", ((_('total'), 'total'),)])
+            btn = XferCompButton('show_third')
+            btn.set_location(0, 50, 2)
+            btn.set_action(xfer.request, ActionsManage.get_act_changed("Third", 'show', _('Show'), 'images/edit.png'),
+                           {'modal': FORMTYPE_MODAL, 'close': CLOSE_NO, 'params': {"third": six.text_type(main_third.id)}})
+            xfer.add_component(btn)
+            xfer.item = contact
+
+
 @signal_and_lock.Signal.decorate('third_addon')
 def thirdaddon_accounting(item, xfer):
     if WrapAction.is_permission(xfer.request, 'accounting.change_entryaccount'):

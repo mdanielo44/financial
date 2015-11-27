@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-11-24 17:42+0000\n"
+"POT-Creation-Date: 2015-11-27 14:47+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -320,7 +320,7 @@ msgstr "Management of bill list"
 msgid "Bill"
 msgstr "Bill"
 
-#: views.py:98 views.py:512
+#: views.py:98 views.py:528
 msgid "Edit"
 msgstr "Edit"
 
@@ -532,14 +532,18 @@ msgstr "Close"
 msgid "Print statistic"
 msgstr "Print statistic"
 
-#: views.py:483 views.py:504 views_conf.py:94
-msgid "Invoice"
-msgstr "Invoice"
+#: views.py:484
+msgid "Financial"
+msgstr "Financial"
 
-#: views.py:490
+#: views.py:489 views.py:506
 #, python-format
 msgid "There are %(build)d bills in building and %(valid)d validated"
 msgstr "There are %(build)d bills in building and %(valid)d validated"
+
+#: views.py:499 views.py:520 views_conf.py:94
+msgid "Invoice"
+msgstr "Invoice"
 
 #: views_conf.py:42
 msgid "Management of parameters and configuration of invoice"
