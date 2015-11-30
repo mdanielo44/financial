@@ -23,8 +23,9 @@ msgstr "French system acounting"
 
 #: system/french.py:356
 msgid "Ok"
-msgstr ""
+msgstr "Ok"
 
 #: system/french.py:357
 msgid "Cancel"
-msgstr ""
+msgstr "Cancel"
+

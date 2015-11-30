@@ -30,8 +30,7 @@ from django.utils.module_loading import import_module
 
 def accounting_system_list():
     res = {}
-    res['diacamma.accounting.system.french.FrenchSystemAcounting'] = _(
-        'French system acounting')
+    res['diacamma.accounting.system.french.FrenchSystemAcounting'] = _('French system acounting')
     return res
 
 

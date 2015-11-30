@@ -31,13 +31,15 @@ from lucterios.framework.xferadvance import XferAddEditor
 from lucterios.framework.xferadvance import XferShowEditor
 from lucterios.framework.xferadvance import XferDelete
 from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage, \
-    FORMTYPE_REFRESH, CLOSE_NO, SELECT_SINGLE, FORMTYPE_MODAL
+    FORMTYPE_REFRESH, CLOSE_NO, SELECT_SINGLE, FORMTYPE_MODAL, WrapAction,\
+    SELECT_MULTI
 from lucterios.framework.xfercomponents import XferCompLabelForm
+from lucterios.framework.xfergraphic import XferContainerAcknowledge
+from lucterios.framework.signal_and_lock import Signal
+from lucterios.CORE.xferprint import XferPrintListing
+from lucterios.CORE.views import ObjectMerge
 
 from diacamma.accounting.models import ChartsAccount, FiscalYear
-from lucterios.framework.xfergraphic import XferContainerAcknowledge
-from lucterios.CORE.xferprint import XferPrintListing
-from lucterios.framework.signal_and_lock import Signal
 
 MenuManage.add_sub("bookkeeping", "financial", "diacamma.accounting/images/accounting.png",
                    _("Bookkeeping"), _("Manage of Bookkeeping"), 30)
@@ -75,10 +77,14 @@ class ChartsAccountList(XferListEditor):
             grid_charts.actions = []
             grid_charts.add_action(self.request, ActionsManage.get_act_changed('ChartsAccount', 'show', _(
                 "Edit"), "images/edit.png"), {'modal': FORMTYPE_MODAL, 'unique': SELECT_SINGLE})
-        elif self.item.year.last_fiscalyear is not None:
+        else:
             grid_charts = self.get_components('chartsaccount')
-            grid_charts.add_action(self.request, FiscalYearImport.get_action(
-                _("import"), ''), {'modal': FORMTYPE_MODAL, 'close': CLOSE_NO})
+            if self.item.year.last_fiscalyear is not None:
+                grid_charts.add_action(self.request, FiscalYearImport.get_action(
+                    _("import"), ''), {'modal': FORMTYPE_MODAL, 'close': CLOSE_NO})
+            if WrapAction.is_permission(self.request, 'accounting.add_chartsaccount'):
+                self.get_components(self.field_id).add_action(self.request, ObjectMerge.get_action(
+                    _("Merge"), "images/clone.png"), {'close': CLOSE_NO, 'unique': SELECT_MULTI, 'params': {'modelname': self.model.get_long_name(), 'field_id': self.field_id}})
         lbl = XferCompLabelForm("result")
         lbl.set_value_center(self.item.year.total_result_text)
         lbl.set_location(0, 10, 2)
@@ -182,6 +188,7 @@ class ChartsAccountAddModify(XferAddEditor):
     field_id = 'chartsaccount'
     caption_add = _("Add an account")
     caption_modify = _("Modify an account")
+    redirect_to_show = None
 
     def fill_simple_fields(self):
         for old_key in ['type_of_account']:
