@@ -136,7 +136,7 @@ class ThirdSave(XferContainerAcknowledge):
             self.item.status = 0
             self.item.save()
         self.redirect_action(
-            ThirdShow.get_action(), {'params': {self.field_id: self.item.id}})
+            ThirdShow.get_action(), {'params': {'third': self.item.id}})
 
 
 @ActionsManage.affect('Third', 'disable')
