@@ -33,8 +33,7 @@ from lucterios.framework.models import LucteriosModel, get_value_converted
 
 from diacamma.accounting.models import EntryAccount, FiscalYear, Third, Journal, \
     ChartsAccount, EntryLineAccount
-from diacamma.accounting.tools import format_devise, currency_round, \
-    current_system_account
+from diacamma.accounting.tools import format_devise, currency_round
 from lucterios.framework.error import LucteriosException, IMPORTANT
 from django.utils import six
 from lucterios.CORE.parameters import Params
@@ -62,6 +61,9 @@ class Supporting(LucteriosModel):
     def get_total(self):
         raise Exception('no implemented!')
 
+    def get_third_mask(self):
+        raise Exception('no implemented!')
+
     def get_max_payoff(self):
         return self.get_total_rest_topay()
 
@@ -81,7 +83,7 @@ class Supporting(LucteriosModel):
     def get_info_state(self, third_mask=None):
         info = []
         if third_mask is None:
-            third_mask = current_system_account().get_third_mask()
+            third_mask = self.get_third_mask()
         if self.status == 0:
             if self.third is None:
                 info.append(six.text_type(_("no third selected")))
@@ -195,15 +197,15 @@ class Payoff(LucteriosModel):
             journal=Journal.objects.get(id=4))
         for third, amount in third_amounts:
             accounts = third.accountthird_set.filter(
-                code__regex=current_system_account().get_customer_mask())
+                code__regex=supporting.get_third_mask())
             if len(accounts) == 0:
                 raise LucteriosException(
-                    IMPORTANT, _("third has not customer account"))
+                    IMPORTANT, _("third has not correct account"))
             third_account = ChartsAccount.get_account(
                 accounts[0].code, fiscal_year)
             if third_account is None:
                 raise LucteriosException(
-                    IMPORTANT, _("third has not customer account"))
+                    IMPORTANT, _("third has not correct account"))
             EntryLineAccount.objects.create(
                 account=third_account, amount=is_revenu * amount, third=third, entry=new_entry)
         if self.bank_account is None:
@@ -238,7 +240,8 @@ class Payoff(LucteriosModel):
         amount_rest = amount
         paypoff_list = []
         for supporting in supporting_list:
-            new_paypoff = Payoff(supporting=supporting, date=date, payer=payer, mode=mode, reference=reference)
+            new_paypoff = Payoff(
+                supporting=supporting, date=date, payer=payer, mode=mode, reference=reference)
             if bank_account != 0:
                 new_paypoff.bank_account = BankAccount.objects.get(
                     id=bank_account)

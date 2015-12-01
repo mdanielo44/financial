@@ -101,12 +101,13 @@ class PayoffEditor(LucteriosEditor):
         else:
             supporting_list = [self.item.supporting]
         amount_max = 0
-        amount_sum = 0
+        amount_sum = xfer.getparam('amount', 0)
         title = []
         for supporting in supporting_list:
             up_supporting = supporting.get_final_child()
             title.append(six.text_type(up_supporting))
-            amount_sum += up_supporting.get_total_rest_topay()
+            if xfer.getparam('amount') is None:
+                amount_sum += up_supporting.get_total_rest_topay()
             amount_max += up_supporting.get_max_payoff()
         xfer.move(0, 0, 1)
         lbl = XferCompLabelForm('supportings')

@@ -122,7 +122,7 @@ class ThirdSearch(XferSavedCriteriaSearchEditor):
 class ThirdSave(XferContainerAcknowledge):
     icon = "thirds.png"
     model = Third
-    field_id = 'third'
+    field_id = ''
 
     def fillresponse(self, pkname=''):
         contact_id = self.getparam(pkname)
@@ -180,9 +180,6 @@ class ThirdAdd(ContactSelection):
     icon = "thirds.png"
     caption = _("Add third")
     select_class = ThirdSave
-
-    def __init__(self):
-        ContactSelection.__init__(self)
 
 
 @ActionsManage.affect('Third', 'modify')

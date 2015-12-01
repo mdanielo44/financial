@@ -136,6 +136,9 @@ class Bill(Supporting):
             fields.append(Supporting.get_payoff_fields()[-1][-1])
         return fields
 
+    def get_third_mask(self):
+        return current_system_account().get_customer_mask()
+
     @classmethod
     def get_edit_fields(cls):
         return ["bill_type", "cost_accounting", "date", "comment"]
