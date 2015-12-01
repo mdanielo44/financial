@@ -68,7 +68,7 @@ class Vat(LucteriosModel):
 
 
 class Article(LucteriosModel):
-    reference = models.CharField(_('reference'), max_length=20)
+    reference = models.CharField(_('reference'), max_length=30)
     designation = models.TextField(_('designation'))
     price = models.DecimalField(_('price'), max_digits=10, decimal_places=3, default=0.0, validators=[
         MinValueValidator(0.0), MaxValueValidator(9999999.999)])

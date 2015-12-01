@@ -314,7 +314,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(
                     auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('reference', models.CharField(
-                    verbose_name='reference', max_length=20)),
+                    verbose_name='reference', max_length=30)),
                 ('designation', models.TextField(verbose_name='designation')),
                 ('price', models.DecimalField(validators=[MinValueValidator(0.0), MaxValueValidator(
                     9999999.999)], decimal_places=3, max_digits=10, verbose_name='price', default=0.0)),

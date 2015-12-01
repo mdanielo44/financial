@@ -90,9 +90,12 @@ class Supporting(LucteriosModel):
             else:
                 accounts = self.third.accountthird_set.filter(
                     code__regex=third_mask)
-                if (len(accounts) == 0) or (ChartsAccount.get_account(accounts[0].code, FiscalYear.get_current()) is None):
-                    info.append(
-                        six.text_type(_("third has not correct account")))
+                try:
+                    if (len(accounts) == 0) or (ChartsAccount.get_account(accounts[0].code, FiscalYear.get_current()) is None):
+                        info.append(
+                            six.text_type(_("third has not correct account")))
+                except LucteriosException as err:
+                        info.append(six.text_type(err))
         return info
 
     def check_date(self, date):
