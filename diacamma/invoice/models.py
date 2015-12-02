@@ -260,15 +260,21 @@ class Bill(Supporting):
                 else:
                     detail_code = Params.getvalue(
                         "invoice-default-sell-account")
+                detail_account = None
                 if match(current_system_account().get_revenue_mask(), detail_code) is not None:
-                    detail_account = ChartsAccount.get_account(
-                        detail_code, FiscalYear.get_current())
-                else:
-                    detail_account = None
+                    try:
+                        detail_account = ChartsAccount.get_account(
+                            detail_code, FiscalYear.get_current())
+                    except LucteriosException:
+                        break
                 if detail_account is None:
                     info.append(
                         six.text_type(_("article has code account unknown!")))
-        info.extend(self.check_date(self.date.isoformat()))
+                    break
+        try:
+            info.extend(self.check_date(self.date.isoformat()))
+        except LucteriosException:
+            pass
         return "{[br/]}".join(info)
 
     def can_delete(self):

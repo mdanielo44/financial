@@ -60,7 +60,7 @@ class ConfigTest(LucteriosTest):
         self.call('/diacamma.invoice/invoiceConf', {}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'invoiceConf')
         self.assert_count_equal('COMPONENTS/TAB', 2)
-        self.assert_count_equal('COMPONENTS/*', 2 + 2 + 9 + 2)
+        self.assert_count_equal('COMPONENTS/*', 2 + 2 + 11 + 2)
 
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="vat"]/HEADER', 3)
@@ -352,7 +352,7 @@ class BillTest(InvoiceTest):
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="detail"]/RECORD', 1)
         self.assert_xml_equal(
-            'COMPONENTS/LABELFORM[@name="info"]', "{[font color=\"red\"]}un article a un compte inconnu!{[/font]}")
+            'COMPONENTS/LABELFORM[@name="info"]', "{[font color=\"red\"]}au moins un article a un compte inconnu!{[/font]}")
 
         self.factory.xfer = DetailDel()
         self.call('/diacamma.invoice/detailDel',
@@ -371,7 +371,7 @@ class BillTest(InvoiceTest):
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="detail"]/RECORD', 1)
         self.assert_xml_equal(
-            'COMPONENTS/LABELFORM[@name="info"]', "{[font color=\"red\"]}un article a un compte inconnu!{[/font]}")
+            'COMPONENTS/LABELFORM[@name="info"]', "{[font color=\"red\"]}au moins un article a un compte inconnu!{[/font]}")
 
         self.factory.xfer = DetailDel()
         self.call('/diacamma.invoice/detailDel',

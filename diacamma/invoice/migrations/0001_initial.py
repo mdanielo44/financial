@@ -45,6 +45,13 @@ def initial_values(*args):
     param.value = '0'
     param.save()
 
+    param = Parameter.objects.create(
+        name="invoice-account-third", typeparam=0)
+    param.title = _("member-account-third")
+    param.args = "{'Multi':False}"
+    param.value = '411'
+    param.save()
+
     prtmdl = PrintModel.objects.create(
         name=_("bill"), kind=2, modelname=Bill.get_long_name())
     prtmdl.value = """
@@ -366,7 +373,8 @@ class Migration(migrations.Migration):
                 ('designation', models.TextField(verbose_name='designation')),
                 ('price', models.DecimalField(verbose_name='price', max_digits=10, default=0.0,
                                               decimal_places=3, validators=[MinValueValidator(0.0), MaxValueValidator(9999999.999)])),
-                ('vta_rate', models.DecimalField(validators=[MinValueValidator(0.0), MaxValueValidator(1.0)], verbose_name='vta rate', default=0.1, decimal_places=4, max_digits=6)),
+                ('vta_rate', models.DecimalField(validators=[MinValueValidator(0.0), MaxValueValidator(
+                    1.0)], verbose_name='vta rate', default=0.1, decimal_places=4, max_digits=6)),
                 ('unit', models.CharField(
                     null=True, verbose_name='unit', default='', max_length=10)),
                 ('quantity', models.DecimalField(validators=[MinValueValidator(0.0), MaxValueValidator(
