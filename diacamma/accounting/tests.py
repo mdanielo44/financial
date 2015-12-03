@@ -702,13 +702,13 @@ class AdminTest(LucteriosTest):
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="journal"]/RECORD[@id="1"]/VALUE[@name="name"]', 'Report à nouveau')
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="journal"]/RECORD[@id="2"]/VALUE[@name="name"]', 'Achat')
+            'COMPONENTS/GRID[@name="journal"]/RECORD[@id="2"]/VALUE[@name="name"]', 'Achats')
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="journal"]/RECORD[@id="3"]/VALUE[@name="name"]', 'Vente')
+            'COMPONENTS/GRID[@name="journal"]/RECORD[@id="3"]/VALUE[@name="name"]', 'Ventes')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="journal"]/RECORD[@id="4"]/VALUE[@name="name"]', 'Règlement')
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="journal"]/RECORD[@id="5"]/VALUE[@name="name"]', 'Autre')
+            'COMPONENTS/GRID[@name="journal"]/RECORD[@id="5"]/VALUE[@name="name"]', 'Opérations diverses')
 
         self.assert_xml_equal(
             'COMPONENTS/LABELFORM[@name="accounting-devise"]', '€')
@@ -724,7 +724,7 @@ class AdminTest(LucteriosTest):
         self.assert_observer(
             'core.custom', 'diacamma.accounting', 'journalAddModify')
         self.assert_count_equal('COMPONENTS/*', 3)
-        self.assert_xml_equal('COMPONENTS/EDIT[@name="name"]', 'Achat')
+        self.assert_xml_equal('COMPONENTS/EDIT[@name="name"]', 'Achats')
 
         self.factory.xfer = JournalAddModify()
         self.call('/diacamma.accounting/journalAddModify',
@@ -1020,7 +1020,7 @@ class ModelTest(LucteriosTest):
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="modelentry"]/RECORD', 1)
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="modelentry"]/RECORD[1]/VALUE[@name="journal"]', "Achat")
+            'COMPONENTS/GRID[@name="modelentry"]/RECORD[1]/VALUE[@name="journal"]', "Achats")
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="modelentry"]/RECORD[1]/VALUE[@name="designation"]', "foo")
         self.assert_xml_equal(
@@ -1071,7 +1071,7 @@ class ModelTest(LucteriosTest):
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="modelentry"]/RECORD', 1)
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="modelentry"]/RECORD[1]/VALUE[@name="journal"]', "Achat")
+            'COMPONENTS/GRID[@name="modelentry"]/RECORD[1]/VALUE[@name="journal"]', "Achats")
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="modelentry"]/RECORD[1]/VALUE[@name="designation"]', "foo")
         self.assert_xml_equal(

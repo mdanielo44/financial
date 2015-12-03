@@ -538,7 +538,7 @@ class EntryTest(LucteriosTest):
             'core.custom', 'diacamma.accounting', 'entryAccountShow')
         self.assert_count_equal('COMPONENTS/*', 17)
         self.assert_xml_equal("COMPONENTS/LABELFORM[@name='num']", '1')
-        self.assert_xml_equal("COMPONENTS/LABELFORM[@name='journal']", 'Achat')
+        self.assert_xml_equal("COMPONENTS/LABELFORM[@name='journal']", 'Achats')
         self.assert_xml_equal(
             "COMPONENTS/LABELFORM[@name='date_entry']", formats.date_format(date.today(), "DATE_FORMAT"))
         self.assert_xml_equal(

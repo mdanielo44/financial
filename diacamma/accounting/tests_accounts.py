@@ -406,7 +406,7 @@ class ChartsAccountTest(LucteriosTest):
         self.assertEqual(len(content_csv), 22, str(content_csv))
         self.assertEqual(content_csv[1].strip(), '"Liste de plan comptable"')
         self.assertEqual(content_csv[
-                         3].strip(), '"code";"nom";"report à nouveau";"total exercice";"total validé";')
+                         3].strip(), '"code";"nom";"total de l\'exercice précédent";"total exercice";"total validé";')
         self.assertEqual(content_csv[4].strip(
         ), '"106";"106";"Crédit: 1250.47€";"Crédit: 1250.47€";"Crédit: 1250.47€";')
         self.assertEqual(content_csv[9].strip(
