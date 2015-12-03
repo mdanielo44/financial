@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-12-02 16:08+0000\n"
+"POT-Creation-Date: 2015-12-03 13:24+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -187,15 +187,15 @@ msgstr "Report à nouveau"
 
 #: migrations/0001_initial.py:67
 msgid "Buying"
-msgstr "Achat"
+msgstr "Achats"
 
 #: migrations/0001_initial.py:68
 msgid "Selling"
-msgstr "Vente"
+msgstr "Ventes"
 
 #: migrations/0001_initial.py:70
 msgid "Other"
-msgstr "Autre"
+msgstr "Opérations diverses"
 
 #: migrations/0001_initial.py:73 migrations/0001_initial.py:81
 #: migrations/0001_initial.py:92
@@ -224,7 +224,7 @@ msgstr "nom"
 
 #: migrations/0001_initial.py:84 models.py:454 models.py:467
 msgid "total of last year"
-msgstr "report à nouveau"
+msgstr "total de l'exercice précédent"
 
 #: migrations/0001_initial.py:86 models.py:455 models.py:468
 msgid "total current"
@@ -690,7 +690,7 @@ msgstr "Voulez-vous importer le plan comptable de l'exercice précédent?"
 
 #: views_accounts.py:153
 msgid "Last fiscal year import"
-msgstr "Report à nouveau"
+msgstr "Import du report à nouveau"
 
 #: views_accounts.py:156
 msgid "Do you want to import last year result?"
