@@ -24,7 +24,7 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import unicode_literals
 
 from datetime import date, timedelta
-from os.path import join
+from os.path import join, isfile
 from re import match
 
 from django.db import models
@@ -44,6 +44,8 @@ from lucterios.framework.filetools import read_file, xml_validator, save_file,\
 
 from diacamma.accounting.tools import get_amount_sum, format_devise, \
     current_system_account, currency_round
+from csv import DictReader
+from _csv import QUOTE_NONE
 
 
 class Third(LucteriosModel):
@@ -513,8 +515,22 @@ class ChartsAccount(LucteriosModel):
         else:
             return accounts[0]
 
-    class Meta(object):
+    @classmethod
+    def import_initial(cls, year, account_list):
+        for account_item in account_list:
+            if isfile(account_item):
+                with open(account_item, 'r') as fcsv:
+                    csv_read = DictReader(
+                        fcsv, delimiter=';', quotechar='', quoting=QUOTE_NONE)
+                    for row in csv_read:
+                        if cls.get_account(row['code'], year) is None:
+                            account_desc = current_system_account().new_charts_account(
+                                row['code'])
+                            if account_desc[1] >= 0:
+                                ChartsAccount.objects.create(year=year, code=row['code'],
+                                                             name=row['name'], type_of_account=account_desc[1])
 
+    class Meta(object):
         verbose_name = _('charts of account')
         verbose_name_plural = _('charts of accounts')
         ordering = ['year', 'code']

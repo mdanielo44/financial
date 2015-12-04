@@ -40,6 +40,7 @@ from lucterios.CORE.xferprint import XferPrintListing
 from lucterios.CORE.views import ObjectMerge
 
 from diacamma.accounting.models import ChartsAccount, FiscalYear
+from lucterios.framework import signal_and_lock
 
 MenuManage.add_sub("bookkeeping", "financial", "diacamma.accounting/images/accounting.png",
                    _("Bookkeeping"), _("Manage of Bookkeeping"), 30)
@@ -85,6 +86,9 @@ class ChartsAccountList(XferListEditor):
             if WrapAction.is_permission(self.request, 'accounting.add_chartsaccount'):
                 self.get_components(self.field_id).add_action(self.request, ObjectMerge.get_action(
                     _("Merge"), "images/clone.png"), {'close': CLOSE_NO, 'unique': SELECT_MULTI, 'params': {'modelname': self.model.get_long_name(), 'field_id': self.field_id}})
+            if signal_and_lock.Signal.call_signal("initial_account", None) > 0:
+                grid_charts.add_action(self.request, ChartsAccountInitial.get_action(
+                    _("initial"), 'images/add.png'), {'modal': FORMTYPE_MODAL, 'close': CLOSE_NO})
         lbl = XferCompLabelForm("result")
         lbl.set_value_center(self.item.year.total_result_text)
         lbl.set_location(0, 10, 2)
@@ -111,6 +115,21 @@ class ChartsAccountList(XferListEditor):
         if self.item.year.status == 1:
             self.add_action(FiscalYearClose.get_action(
                 _('Closing'), 'images/ok.png'), {'modal': FORMTYPE_MODAL, 'close': CLOSE_NO}, 0)
+
+
+@MenuManage.describ('accounting.add_chartsaccount')
+class ChartsAccountInitial(XferContainerAcknowledge):
+    icon = "account.png"
+    model = ChartsAccount
+    field_id = 'chartsaccount'
+    caption = _("Add initial charts of account")
+
+    def fillresponse(self, confirme):
+        account_list = []
+        signal_and_lock.Signal.call_signal("initial_account", account_list)
+        if self.confirme(_('Do you want to import initial accounts?')):
+            ChartsAccount.import_initial(
+                FiscalYear.get_current(self.getparam('year')), account_list)
 
 
 @ActionsManage.affect('ChartsAccount', 'listing')

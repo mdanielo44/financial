@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-12-03 13:24+0000\n"
+"POT-Creation-Date: 2015-12-04 13:37+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,23 +21,23 @@ msgstr ""
 msgid "Diacamma payoff"
 msgstr "Diacamma payoff"
 
-#: editors.py:55
+#: editors.py:54
 msgid "change"
 msgstr "change"
 
-#: editors.py:62
+#: editors.py:61
 msgid "show"
 msgstr "show"
 
-#: editors.py:80
+#: editors.py:79
 msgid "Add"
 msgstr "Add"
 
-#: editors.py:87
+#: editors.py:86
 msgid "payoff null!"
 msgstr "payoff null!"
 
-#: editors.py:100 models.py:239
+#: editors.py:99 models.py:239
 msgid "No-valid selection!"
 msgstr "No-valid selection!"
 

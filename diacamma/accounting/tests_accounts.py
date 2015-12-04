@@ -602,7 +602,7 @@ class FiscalYearWorkflowTest(LucteriosTest):
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="chartsaccount"]/RECORD', 15)
         self.assert_count_equal(
-            'COMPONENTS/GRID[@name="chartsaccount"]/ACTIONS/ACTION', 4)
+            'COMPONENTS/GRID[@name="chartsaccount"]/ACTIONS/ACTION', 5)
 
         self.factory.xfer = ChartsAccountList()
         self.call('/diacamma.accounting/chartsAccountList',
@@ -612,7 +612,7 @@ class FiscalYearWorkflowTest(LucteriosTest):
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="chartsaccount"]/RECORD', 0)
         self.assert_count_equal(
-            'COMPONENTS/GRID[@name="chartsaccount"]/ACTIONS/ACTION', 5)
+            'COMPONENTS/GRID[@name="chartsaccount"]/ACTIONS/ACTION', 6)
         self.assert_action_equal(
             'COMPONENTS/GRID[@name="chartsaccount"]/ACTIONS/ACTION[4]', ('importer', None, 'diacamma.accounting', 'fiscalYearImport', 0, 1, 1))
 

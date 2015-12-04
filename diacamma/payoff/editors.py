@@ -36,7 +36,6 @@ from lucterios.framework.error import LucteriosException, IMPORTANT
 from lucterios.contacts.models import LegalEntity
 
 from diacamma.payoff.models import Supporting
-from diacamma.accounting.models import FiscalYear
 
 
 class SupportingEditor(LucteriosEditor):
