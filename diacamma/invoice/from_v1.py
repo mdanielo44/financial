@@ -88,6 +88,8 @@ class InvoiceMigrate(MigrateAbstract):
                     "=> bill ex:%s - type:%s - num:%s - date=%s", (exercice, typeFact, num, factdate))
                 if typeFact == 4:
                     typeFact = 3
+                if comment is None:
+                    comment = ''
                 self.bill_list[billid] = bill_mdl.objects.create(
                     bill_type=typeFact, date=factdate, comment=comment, status=etat, num=num)
                 if exercice in self.old_db.objectlinks['year'].keys():

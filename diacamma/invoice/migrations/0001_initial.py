@@ -352,7 +352,7 @@ class Migration(migrations.Migration):
                     null=True, verbose_name='numeros')),
                 ('date', models.DateField(null=False, verbose_name='date')),
                 ('comment', models.TextField(
-                    verbose_name='comment', null=True, default='')),
+                    verbose_name='comment', null=False, default='')),
                 ('status', models.IntegerField(verbose_name='status', db_index=True, default=0, choices=[
                  (0, 'building'), (1, 'valid'), (2, 'cancel'), (3, 'archive')])),
                 ('cost_accounting', models.ForeignKey(to='accounting.CostAccounting', null=True,

@@ -110,7 +110,7 @@ class Bill(Supporting):
                                     choices=((0, _('quotation')), (1, _('bill')), (2, _('asset')), (3, _('receipt'))), null=False, default=0, db_index=True)
     num = models.IntegerField(verbose_name=_('numeros'), null=True)
     date = models.DateField(verbose_name=_('date'), null=False)
-    comment = models.TextField(_('comment'), null=True, default="")
+    comment = models.TextField(_('comment'), null=False, default="")
     status = models.IntegerField(verbose_name=_('status'),
                                  choices=((0, _('building')), (1, _('valid')), (2, _('cancel')), (3, _('archive'))), null=False, default=0, db_index=True)
     entry = models.ForeignKey(
