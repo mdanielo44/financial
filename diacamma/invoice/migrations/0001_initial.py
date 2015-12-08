@@ -47,7 +47,7 @@ def initial_values(*args):
 
     param = Parameter.objects.create(
         name="invoice-account-third", typeparam=0)
-    param.title = _("member-account-third")
+    param.title = _("invoice-account-third")
     param.args = "{'Multi':False}"
     param.value = '411'
     param.save()
