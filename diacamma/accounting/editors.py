@@ -56,8 +56,11 @@ class ThirdEditor(LucteriosEditor):
         btn = XferCompButton('show')
         btn.set_location(2, 5, 3, 1)
         modal_name = xfer.item.__class__.__name__
+        field_id = modal_name.lower()
+        if field_id == 'legalentity':
+            field_id = 'legal_entity'
         btn.set_action(xfer.request, ActionsManage.get_act_changed(modal_name, 'show', _('Show'), 'images/edit.png'),
-                       {'modal': FORMTYPE_MODAL, 'close': CLOSE_NO, 'params': {modal_name.lower(): six.text_type(xfer.item.id)}})
+                       {'modal': FORMTYPE_MODAL, 'close': CLOSE_NO, 'params': {field_id: six.text_type(xfer.item.id)}})
         xfer.add_component(btn)
         xfer.item = old_item
         Signal.call_signal("third_addon", self.item, xfer)
@@ -357,6 +360,29 @@ class EntryAccountEditor(LucteriosEditor):
             xfer, no_change, debit_rest, credit_rest, nb_lines)
 
 
+def edit_third_for_line(xfer, column, row, account_code, current_third, vertical=True):
+    lbl = XferCompLabelForm('thirdlbl')
+    lbl.set_value_as_name(_('third'))
+    sel_thirds = [(0, '---')]
+    for third in Third.objects.filter(accountthird__code=account_code):
+        sel_thirds.append((third.id, six.text_type(third)))
+    cb_third = XferCompSelect('third')
+    cb_third.set_select(sel_thirds)
+    if current_third is None:
+        cb_third.set_value(xfer.getparam('third', 0))
+    else:
+        cb_third.set_value(xfer.getparam('third', current_third.id))
+    if vertical:
+        cb_third.set_location(column, row + 1)
+        lbl.set_location(column, row)
+    else:
+        cb_third.set_location(column + 2, row)
+        lbl.set_location(column, row, 2)
+    xfer.add_component(lbl)
+    xfer.add_component(cb_third)
+    return lbl
+
+
 class EntryLineAccountEditor(LucteriosEditor):
 
     def edit_account_for_line(self, xfer, column, row, debit_rest, credit_rest):
@@ -400,26 +426,8 @@ class EntryLineAccountEditor(LucteriosEditor):
     def edit_extra_for_line(self, xfer, column, row, vertical=True):
         try:
             if self.item.has_account and self.item.account.is_third:
-                lbl = XferCompLabelForm('thirdlbl')
-                lbl.set_value_as_name(_('third'))
-                sel_thirds = [(0, '---')]
-                for third in Third.objects.filter(accountthird__code=self.item.account.code):
-                    sel_thirds.append((third.id, six.text_type(third)))
-                cb_third = XferCompSelect('third')
-                cb_third.set_select(sel_thirds)
-                if self.item.third is None:
-                    cb_third.set_value(xfer.getparam('third', 0))
-                else:
-                    cb_third.set_value(
-                        xfer.getparam('third', self.item.third.id))
-                if vertical:
-                    cb_third.set_location(column, row + 1)
-                    lbl.set_location(column, row)
-                else:
-                    cb_third.set_location(column + 2, row)
-                    lbl.set_location(column, row, 2)
-                xfer.add_component(lbl)
-                xfer.add_component(cb_third)
+                edit_third_for_line(
+                    xfer, column, row, self.item.account.code, self.item.third, vertical)
             elif self.item.account.is_cash:
                 lbl = XferCompLabelForm('referencelbl')
                 lbl.set_value_as_name(_('reference'))
@@ -484,13 +492,13 @@ class ModelLineEntryEditor(EntryLineAccountEditor):
     def edit(self, xfer):
         xfer.params['model'] = xfer.getparam('modelentry', 0)
         code = xfer.get_components('code')
+        code.col += 1
         code.mask = current_system_account().get_general_mask()
         code.set_action(xfer.request, xfer.get_action(),
                         {'modal': FORMTYPE_REFRESH, 'close': CLOSE_NO})
-        if match(current_system_account().get_third_mask(), self.item.code) is None:
-            xfer.remove_component('third')
-            xfer.remove_component('lbl_third')
-        xfer.move(0, 1, 0)
+        if match(current_system_account().get_third_mask(), self.item.code) is not None:
+            edit_third_for_line(
+                xfer, 1, xfer.get_max_row() + 1, self.item.code, None, False)
         self.edit_creditdebit_for_line(xfer, 1, xfer.get_max_row() + 1)
 
     def before_save(self, xfer):

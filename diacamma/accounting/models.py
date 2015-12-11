@@ -1008,7 +1008,7 @@ class ModelLineEntry(LucteriosModel):
 
     @classmethod
     def get_edit_fields(cls):
-        return ['code', 'third']
+        return ['code']
 
     def credit_debit_way(self):
         chart_account = current_system_account().new_charts_account(self.code)
