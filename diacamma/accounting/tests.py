@@ -135,7 +135,7 @@ class ThirdTest(LucteriosTest):
         self.assert_attrib_equal(
             'COMPONENTS/BUTTON[@name="show"]/ACTIONS/ACTION', 'action', 'legalEntityShow')
         self.assert_xml_equal(
-            'COMPONENTS/BUTTON[@name="show"]/ACTIONS/ACTION/PARAM[@name="legalentity"]', '7')
+            'COMPONENTS/BUTTON[@name="show"]/ACTIONS/ACTION/PARAM[@name="legal_entity"]', '7')
 
     def test_add_individual(self):
         self.factory.xfer = ThirdList()
