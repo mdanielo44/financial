@@ -100,7 +100,7 @@ class PayoffEditor(LucteriosEditor):
         else:
             supporting_list = [self.item.supporting]
         amount_max = 0
-        amount_sum = xfer.getparam('amount', 0)
+        amount_sum = xfer.getparam('amount', 0.0)
         title = []
         for supporting in supporting_list:
             up_supporting = supporting.get_final_child()
@@ -115,12 +115,12 @@ class PayoffEditor(LucteriosEditor):
         xfer.add_component(lbl)
         amount = xfer.get_components("amount")
         if self.item.id is None:
-            amount.value = max(0, amount_sum)
+            amount.value = max(0.0, amount_sum)
             xfer.get_components("payer").value = six.text_type(
                 supporting_list[0].third)
         amount.prec = currency_decimal
-        amount.min = 0
-        amount.max = amount_max
+        amount.min = 0.0
+        amount.max = float(amount_max)
         mode = xfer.get_components("mode")
         banks = xfer.get_components("bank_account")
         if banks.select_list[0][0] == 0:

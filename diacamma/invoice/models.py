@@ -483,7 +483,7 @@ class Detail(LucteriosModel):
         MinValueValidator(0.0), MaxValueValidator(9999999.99)])
     reduce = models.DecimalField(verbose_name=_('reduce'), max_digits=10, decimal_places=3, default=0.0, validators=[
         MinValueValidator(0.0), MaxValueValidator(9999999.999)])
-    vta_rate = models.DecimalField(_('vta rate'), max_digits=6, decimal_places=4, default=0.1, validators=[
+    vta_rate = models.DecimalField(_('vta rate'), max_digits=6, decimal_places=4, default=0.0, validators=[
         MinValueValidator(0.0), MaxValueValidator(1.0)])
 
     def __str__(self):
