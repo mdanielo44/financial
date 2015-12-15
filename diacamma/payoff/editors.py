@@ -102,12 +102,16 @@ class PayoffEditor(LucteriosEditor):
         amount_max = 0
         amount_sum = xfer.getparam('amount', 0.0)
         title = []
+        if self.item.id is None:
+            current_payoff = -1
+        else:
+            current_payoff = self.item.id
         for supporting in supporting_list:
             up_supporting = supporting.get_final_child()
             title.append(six.text_type(up_supporting))
             if xfer.getparam('amount') is None:
                 amount_sum += up_supporting.get_total_rest_topay()
-            amount_max += up_supporting.get_max_payoff()
+            amount_max += up_supporting.get_max_payoff(current_payoff)
         xfer.move(0, 0, 1)
         lbl = XferCompLabelForm('supportings')
         lbl.set_value_center("{[br/]}".join(title))
@@ -118,8 +122,9 @@ class PayoffEditor(LucteriosEditor):
             amount.value = max(0.0, amount_sum)
             xfer.get_components("payer").value = six.text_type(
                 supporting_list[0].third)
-            xfer.get_components("date").value = supporting_list[
-                0].get_final_child().default_date()
+            if xfer.getparam('date') is None:
+                xfer.get_components("date").value = supporting_list[
+                    0].get_final_child().default_date()
         amount.prec = currency_decimal
         amount.min = 0.0
         amount.max = float(amount_max)

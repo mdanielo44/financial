@@ -248,6 +248,9 @@ class Bill(Supporting):
     def default_date(self):
         return self.date
 
+    def entry_links(self):
+        return [self.entry]
+
     def get_info_state(self):
         info = []
         if self.status == 0:

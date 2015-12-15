@@ -32,7 +32,7 @@ from django.utils.translation import ugettext_lazy as _
 from lucterios.framework.models import LucteriosModel, get_value_converted
 
 from diacamma.accounting.models import EntryAccount, FiscalYear, Third, Journal, \
-    ChartsAccount, EntryLineAccount
+    ChartsAccount, EntryLineAccount, AccountLink
 from diacamma.accounting.tools import format_devise, currency_round
 from lucterios.framework.error import LucteriosException, IMPORTANT
 from django.utils import six
@@ -65,8 +65,8 @@ class Supporting(LucteriosModel):
     def get_third_mask(self):
         raise Exception('no implemented!')
 
-    def get_max_payoff(self):
-        return self.get_total_rest_topay()
+    def get_max_payoff(self, ignore_payoff=-1):
+        return self.get_total_rest_topay(ignore_payoff)
 
     def payoff_is_revenu(self):
         raise Exception('no implemented!')
@@ -74,14 +74,18 @@ class Supporting(LucteriosModel):
     def default_date(self):
         return date.today()
 
+    def entry_links(self):
+        return None
+
     @property
     def payoff_query(self):
         return Q()
 
-    def get_total_payed(self):
+    def get_total_payed(self, ignore_payoff=-1):
         val = 0
         for payoff in self.payoff_set.filter(self.payoff_query):
-            val += currency_round(payoff.amount)
+            if payoff.id != ignore_payoff:
+                val += currency_round(payoff.amount)
         return val
 
     def get_info_state(self, third_mask=None):
@@ -128,8 +132,8 @@ class Supporting(LucteriosModel):
     def total_payed(self):
         return format_devise(self.get_total_payed(), 5)
 
-    def get_total_rest_topay(self):
-        return self.get_total() - self.get_total_payed()
+    def get_total_rest_topay(self, ignore_payoff=-1):
+        return self.get_total() - self.get_total_payed(ignore_payoff)
 
     @property
     def total_rest_topay(self):
@@ -191,6 +195,14 @@ class Payoff(LucteriosModel):
             self.entry = None
             payoff_entry.delete()
 
+    def generate_accountlink(self):
+        supporting = self.supporting.get_final_child()
+        if (self.entry is not None) and (abs(supporting.get_total_rest_topay()) < 0.0001) and (supporting.entry_links() is not None) and (len(supporting.entry_links()) > 0):
+            entryline = supporting.entry_links()
+            for all_payoff in supporting.payoff_set.filter(supporting.payoff_query):
+                entryline.append(all_payoff.entry)
+            AccountLink.create_link(entryline)
+
     def generate_accounting(self, third_amounts):
         supporting = self.supporting.get_final_child()
         if self.supporting.is_revenu:
@@ -213,8 +225,12 @@ class Payoff(LucteriosModel):
             if third_account is None:
                 raise LucteriosException(
                     IMPORTANT, _("third has not correct account"))
+            if third_account.type_of_account == 0:
+                is_liability = 1
+            else:
+                is_liability = -1
             EntryLineAccount.objects.create(
-                account=third_account, amount=is_revenu * amount, third=third, entry=new_entry)
+                account=third_account, amount=is_liability * is_revenu * amount, third=third, entry=new_entry)
         if self.bank_account is None:
             cash_code = Params.getvalue("payoff-cash-account")
         else:
@@ -233,7 +249,10 @@ class Payoff(LucteriosModel):
             self.delete_accounting()
             self.entry = self.generate_accounting(
                 [(self.supporting.third, float(self.amount))])
-        return LucteriosModel.save(self, force_insert, force_update, using, update_fields)
+        res = LucteriosModel.save(
+            self, force_insert, force_update, using, update_fields)
+        self.generate_accountlink()
+        return res
 
     @classmethod
     def multi_save(cls, supportings, amount, mode, payer, reference, bank_account, date):
