@@ -244,14 +244,14 @@ class Payoff(LucteriosModel):
         return new_entry
 
     def save(self, force_insert=False, force_update=False, using=None,
-             update_fields=None, do_generate=True):
+             update_fields=None, do_generate=True, do_linking=True):
         if not force_insert and do_generate:
             self.delete_accounting()
             self.entry = self.generate_accounting(
                 [(self.supporting.third, float(self.amount))])
         res = LucteriosModel.save(
             self, force_insert, force_update, using, update_fields)
-        if not force_insert:
+        if not force_insert and do_linking:
             self.generate_accountlink()
         return res
 

@@ -159,7 +159,7 @@ class InvoiceMigrate(MigrateAbstract):
                 if compte_cheque in self.bank_list.keys():
                     self.payoff_list[payoffid].bank_account = self.bank_list[
                         compte_cheque]
-                self.payoff_list[payoffid].save(do_generate=False)
+                self.payoff_list[payoffid].save(do_generate=False, do_linking=False)
 
     def _deposit(self):
         deposit_mdl = apps.get_model("payoff", "DepositSlip")
