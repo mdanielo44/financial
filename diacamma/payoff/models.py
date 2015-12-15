@@ -251,7 +251,8 @@ class Payoff(LucteriosModel):
                 [(self.supporting.third, float(self.amount))])
         res = LucteriosModel.save(
             self, force_insert, force_update, using, update_fields)
-        self.generate_accountlink()
+        if not force_insert:
+            self.generate_accountlink()
         return res
 
     @classmethod
