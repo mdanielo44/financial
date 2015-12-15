@@ -42,6 +42,7 @@ from lucterios.CORE.parameters import Params
 
 from diacamma.accounting.models import current_system_account, FiscalYear, \
     EntryLineAccount, EntryAccount, get_amount_sum, Third, CostAccounting
+from datetime import datetime
 
 
 class ThirdEditor(LucteriosEditor):
@@ -98,6 +99,11 @@ class FiscalYearEditor(LucteriosEditor):
             xfer.change_to_readonly('end')
 
     def before_save(self, xfer):
+        if isinstance(self.item.end, six.text_type):
+            self.item.end = datetime.strptime(self.item.end, "%Y-%m-%d").date()
+        if isinstance(self.item.begin, six.text_type):
+            self.item.begin = datetime.strptime(
+                self.item.begin, "%Y-%m-%d").date()
         if self.item.end < self.item.begin:
             raise LucteriosException(
                 IMPORTANT, _("end of fiscal year must be after begin!"))
@@ -255,21 +261,24 @@ class EntryAccountEditor(LucteriosEditor):
         if self.item.link is not None:
             entrylines = EntryLineAccount.objects.filter(entry__link=self.item.link).exclude(
                 entry__id=self.item.id)
-            lbl = XferCompLabelForm('sep4')
-            lbl.set_location(0, last_row + 4, 6)
-            lbl.set_value_center("{[hr/]}")
-            xfer.add_component(lbl)
-            lbl = XferCompLabelForm('entrylinklab')
-            lbl.set_location(1, last_row + 5, 5)
-            lbl.set_value_center(_("Linked entries"))
-            xfer.add_component(lbl)
-            link_grid_lines = XferCompGrid('entrylineaccount_link')
-            link_grid_lines.set_model(
-                entrylines, EntryLineAccount.get_other_fields(), xfer)
-            link_grid_lines.set_location(1, last_row + 6, 5)
-            link_grid_lines.add_action(xfer.request, ActionsManage.get_act_changed('EntryLineAccount', 'open', _('Edit'), 'images/edit.png'),
-                                       {'modal': FORMTYPE_MODAL, 'unique': SELECT_SINGLE, 'close': CLOSE_YES})
-            xfer.add_component(link_grid_lines)
+            if len(entrylines) == 0:
+                self.item.unlink()
+            else:
+                lbl = XferCompLabelForm('sep4')
+                lbl.set_location(0, last_row + 4, 6)
+                lbl.set_value_center("{[hr/]}")
+                xfer.add_component(lbl)
+                lbl = XferCompLabelForm('entrylinklab')
+                lbl.set_location(1, last_row + 5, 5)
+                lbl.set_value_center(_("Linked entries"))
+                xfer.add_component(lbl)
+                link_grid_lines = XferCompGrid('entrylineaccount_link')
+                link_grid_lines.set_model(
+                    entrylines, EntryLineAccount.get_other_fields(), xfer)
+                link_grid_lines.set_location(1, last_row + 6, 5)
+                link_grid_lines.add_action(xfer.request, ActionsManage.get_act_changed('EntryLineAccount', 'open', _('Edit'), 'images/edit.png'),
+                                           {'modal': FORMTYPE_MODAL, 'unique': SELECT_SINGLE, 'close': CLOSE_YES})
+                xfer.add_component(link_grid_lines)
         if self.added:
             xfer.add_action(
                 xfer.get_action(_("Modify"), "images/ok.png"), {'params': {"SAVE": "YES"}})
@@ -367,9 +376,11 @@ class EntryAccountEditor(LucteriosEditor):
 def edit_third_for_line(xfer, column, row, account_code, current_third, vertical=True):
     lbl = XferCompLabelForm('thirdlbl')
     lbl.set_value_as_name(_('third'))
-    sel_thirds = [(0, '---')]
+    sel_thirds = []
     for third in Third.objects.filter(accountthird__code=account_code):
         sel_thirds.append((third.id, six.text_type(third)))
+    sel_thirds = sorted(sel_thirds, key=lambda third_item: third_item[1])
+    sel_thirds.insert(0, (0, '---'))
     cb_third = XferCompSelect('third')
     cb_third.set_select(sel_thirds)
     if current_third is None:

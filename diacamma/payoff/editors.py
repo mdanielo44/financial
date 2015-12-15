@@ -118,6 +118,8 @@ class PayoffEditor(LucteriosEditor):
             amount.value = max(0.0, amount_sum)
             xfer.get_components("payer").value = six.text_type(
                 supporting_list[0].third)
+            xfer.get_components("date").value = supporting_list[
+                0].get_final_child().default_date()
         amount.prec = currency_decimal
         amount.min = 0.0
         amount.max = float(amount_max)

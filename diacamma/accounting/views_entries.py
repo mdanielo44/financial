@@ -120,7 +120,7 @@ class EntryLineAccountList(XferListEditor):
         self._filter_by_nature()
         if self.item.year.status in [0, 1]:
             self.action_grid.append(
-                ('link', _("Link/Unlink"), "", SELECT_MULTI))
+                ('link', _("Link/Unlink"), "images/left.png", SELECT_MULTI))
 
     def fillresponse(self):
         XferListEditor.fillresponse(self)
@@ -326,6 +326,10 @@ class EntryAccountEdit(XferAddEditor):
     caption_add = _("Add entry of account")
     caption_modify = _("Modify accounting entry")
 
+    def fillresponse(self):
+        self.item.check_date()
+        XferAddEditor.fillresponse(self)
+
 
 @ActionsManage.affect('EntryAccount', 'unlock')
 @MenuManage.describ('')
@@ -334,8 +338,7 @@ class EntryAccountUnlock(XferContainerAcknowledge):
     field_id = 'entryaccount'
 
     def fillresponse(self):
-        if (self.item.id is not None) and (len(self.item.entrylineaccount_set.all()) == 0):
-            self.item.delete()
+        self.item.delete_if_ghost_entry()
 
 
 @ActionsManage.affect('EntryAccount', 'show')

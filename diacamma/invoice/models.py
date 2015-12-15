@@ -245,6 +245,9 @@ class Bill(Supporting):
     def payoff_is_revenu(self):
         return (self.bill_type != 0) and (self.bill_type != 2)
 
+    def default_date(self):
+        return self.date
+
     def get_info_state(self):
         info = []
         if self.status == 0:

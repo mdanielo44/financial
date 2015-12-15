@@ -34,7 +34,8 @@ from lucterios.framework import signal_and_lock
 from lucterios.framework.xferadvance import XferListEditor, XferAddEditor, XferShowEditor, XferDelete
 from lucterios.framework.xfergraphic import XferContainerAcknowledge
 from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompEdit, XferCompButton, XferCompSelect, XferCompImage, XferCompDate, XferCompGrid
-from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage, FORMTYPE_REFRESH, CLOSE_NO, WrapAction, FORMTYPE_MODAL, SELECT_SINGLE
+from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage, FORMTYPE_REFRESH, CLOSE_NO, WrapAction, FORMTYPE_MODAL, SELECT_SINGLE,\
+    SELECT_MULTI
 from lucterios.framework.error import LucteriosException
 from lucterios.CORE.xferprint import XferPrintListing
 from lucterios.CORE.editors import XferSavedCriteriaSearchEditor
@@ -373,6 +374,10 @@ def thirdaddon_accounting(item, xfer):
             link_grid_lines.set_location(0, 2, 2)
             link_grid_lines.add_action(xfer.request, ActionsManage.get_act_changed('EntryLineAccount', 'open', _('Edit'), 'images/edit.png'),
                                        {'modal': FORMTYPE_MODAL, 'unique': SELECT_SINGLE, 'close': CLOSE_NO})
+            link_grid_lines.add_action(xfer.request, ActionsManage.get_act_changed('EntryLineAccount', 'closeentry', _("Closed"), "images/ok.png"),
+                                       {'modal': FORMTYPE_MODAL, 'unique': SELECT_MULTI, 'close': CLOSE_NO})
+            link_grid_lines.add_action(xfer.request, ActionsManage.get_act_changed('EntryLineAccount', 'link', _("Link/Unlink"), "images/left.png"),
+                                       {'modal': FORMTYPE_MODAL, 'unique': SELECT_MULTI, 'close': CLOSE_NO})
             xfer.add_component(link_grid_lines)
         except LucteriosException:
             pass

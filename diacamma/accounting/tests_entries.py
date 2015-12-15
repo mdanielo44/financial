@@ -553,7 +553,6 @@ class EntryTest(LucteriosTest):
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD', 2)
         self.assert_count_equal('ACTIONS/ACTION', 3)
-        self.print_xml("ACTIONS")
         self.assert_attrib_equal(
             "ACTIONS/ACTION[2]", "id", "diacamma.accounting/entryAccountCreateLinked")
 

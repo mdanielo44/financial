@@ -46,6 +46,7 @@ from diacamma.accounting.tools import get_amount_sum, format_devise, \
     current_system_account, currency_round
 from csv import DictReader
 from _csv import QUOTE_NONE
+from lucterios.framework.signal_and_lock import RecordLocker
 
 
 class Third(LucteriosModel):
@@ -579,7 +580,13 @@ class AccountLink(LucteriosModel):
 
     @classmethod
     def create_link(cls, entries):
+        year = None
         for entry in entries:
+            if year is None:
+                year = entry.year
+            elif year != entry.year:
+                raise LucteriosException(
+                    IMPORTANT, _("This entries are not in same fiscal year!"))
             entry.unlink()
         new_link = AccountLink.objects.create()
         for entry in entries:
@@ -629,8 +636,12 @@ class EntryAccount(LucteriosModel):
             return ''
 
     def check_date(self):
+        if self.date_value is None:
+            self.date_value = date.today()
         if isinstance(self.date_value, date):
             self.date_value = self.date_value.isoformat()
+        if self.journal == 1:
+            self.date_value = self.year.begin.isoformat()
         if self.date_value > self.year.end.isoformat():
             self.date_value = self.year.end.isoformat()
         if self.date_value < self.year.begin.isoformat():
@@ -732,9 +743,17 @@ class EntryAccount(LucteriosModel):
         if (self.year.status != 2) and (self.link is not None):
             for entry in self.link.entryaccount_set.all():
                 entry.link = None
-                entry.save()
+                if not entry.delete_if_ghost_entry():
+                    entry.save()
             self.link.delete()
             self.link = None
+
+    def delete_if_ghost_entry(self):
+        if (self.id is not None) and (len(self.entrylineaccount_set.all()) == 0) and not RecordLocker.is_lock(self):
+            self.delete()
+            return True
+        else:
+            return False
 
     def create_linked(self):
         if (self.year.status != 2) and (self.link is None):

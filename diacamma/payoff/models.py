@@ -38,6 +38,7 @@ from lucterios.framework.error import LucteriosException, IMPORTANT
 from django.utils import six
 from lucterios.CORE.parameters import Params
 from django.db.models.aggregates import Sum
+from datetime import date
 
 
 class Supporting(LucteriosModel):
@@ -70,6 +71,9 @@ class Supporting(LucteriosModel):
     def payoff_is_revenu(self):
         raise Exception('no implemented!')
 
+    def default_date(self):
+        return date.today()
+
     @property
     def payoff_query(self):
         return Q()
@@ -95,7 +99,7 @@ class Supporting(LucteriosModel):
                         info.append(
                             six.text_type(_("third has not correct account")))
                 except LucteriosException as err:
-                        info.append(six.text_type(err))
+                    info.append(six.text_type(err))
         return info
 
     def check_date(self, date):
