@@ -574,9 +574,10 @@ class FiscalYearWorkflowTest(LucteriosTest):
                   {'year': '1', 'journal': '1'}, False)
         self.assert_observer(
             'core.custom', 'diacamma.accounting', 'entryAccountEdit')
-        self.assert_count_equal('COMPONENTS/*', 10)
+        self.assert_count_equal('COMPONENTS/*', 9)
         self.assert_count_equal("COMPONENTS/SELECT[@name='journal']/CASE", 4)
         self.assert_xml_equal("COMPONENTS/SELECT[@name='journal']", '2')
+        self.assert_count_equal('ACTIONS/ACTION', 2)
 
     def test_import_charsaccount(self):
         FiscalYear.objects.create(begin='2016-01-01', end='2016-12-31', status=0,

@@ -381,23 +381,24 @@ class CompletedEntryTest(LucteriosTest):
                   {'year': '1', 'journal': '2'}, False)
         self.assert_observer(
             'core.custom', 'diacamma.accounting', 'entryAccountEdit')
-        self.assert_count_equal('COMPONENTS/*', 10)
+        self.assert_count_equal('COMPONENTS/*', 9)
         self.assert_xml_equal("COMPONENTS/SELECT[@name='costaccounting']", '0')
         self.assert_count_equal(
             "COMPONENTS/SELECT[@name='costaccounting']/CASE", 2)
+        self.assert_count_equal('ACTIONS/ACTION', 2)
 
         self.factory.xfer = EntryAccountShow()
         self.call('/diacamma.accounting/entryAccountShow',
                   {'year': '1', 'journal': '2', 'entryaccount': '2'}, False)
         self.assert_observer(
             'core.custom', 'diacamma.accounting', 'entryAccountShow')
-        self.assert_count_equal('COMPONENTS/*', 20)
+        self.assert_count_equal('COMPONENTS/*', 19)
         self.assert_xml_equal(
             "COMPONENTS/LABELFORM[@name='designation']", 'depense 1')
-
         self.assert_xml_equal("COMPONENTS/SELECT[@name='costaccounting']", '2')
         self.assert_count_equal(
             "COMPONENTS/SELECT[@name='costaccounting']/CASE", 2)
+        self.assert_count_equal('ACTIONS/ACTION', 2)
 
         self.factory.xfer = EntryAccountShow()
         self.call('/diacamma.accounting/entryAccountShow',
@@ -407,9 +408,9 @@ class CompletedEntryTest(LucteriosTest):
         self.assert_count_equal('COMPONENTS/*', 16)
         self.assert_xml_equal(
             "COMPONENTS/LABELFORM[@name='designation']", 'Frais bancaire')
-
         self.assert_xml_equal(
             "COMPONENTS/LABELFORM[@name='costaccounting']", 'close')
+        self.assert_count_equal('ACTIONS/ACTION', 1)
 
     def test_costaccounting_list(self):
         self.factory.xfer = CostAccountingList()

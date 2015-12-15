@@ -211,12 +211,12 @@ class ChartsAccountEditor(LucteriosEditor):
 
 class EntryAccountEditor(LucteriosEditor):
 
-    def before_save(self, xfer):
+    def __init__(self, model):
+        LucteriosEditor.__init__(self, model)
+        self.added = False
 
-        if self.item.date_value > self.item.year.end.isoformat():
-            self.item.date_value = self.item.year.end.isoformat()
-        if self.item.date_value < self.item.year.begin.isoformat():
-            self.item.date_value = self.item.year.begin.isoformat()
+    def before_save(self, xfer):
+        self.item.check_date()
         return
 
     def _add_cost_savebtn(self, xfer):
@@ -227,17 +227,11 @@ class EntryAccountEditor(LucteriosEditor):
             sel = xfer.get_components('costaccounting')
             sel.set_select_query(
                 CostAccounting.objects.filter(status=0))
-            added = True
+            self.added = True
         else:
             xfer.fill_from_model(
                 1, name_comp.row + 1, True, ['costaccounting'])
-            added = isinstance(name_comp, XferCompEdit)
-        if added:
-            btn = XferCompButton('save_modif')
-            btn.set_location(3, 0, 1, 2)
-            btn.set_action(xfer.request, xfer.get_action(
-                _("Modify"), "images/edit.png"), {'params': {"SAVE": "YES"}})
-            xfer.add_component(btn)
+            self.added = isinstance(name_comp, XferCompEdit)
 
     def show(self, xfer):
         self._add_cost_savebtn(xfer)
@@ -276,6 +270,9 @@ class EntryAccountEditor(LucteriosEditor):
             link_grid_lines.add_action(xfer.request, ActionsManage.get_act_changed('EntryLineAccount', 'open', _('Edit'), 'images/edit.png'),
                                        {'modal': FORMTYPE_MODAL, 'unique': SELECT_SINGLE, 'close': CLOSE_YES})
             xfer.add_component(link_grid_lines)
+        if self.added:
+            xfer.add_action(
+                xfer.get_action(_("Modify"), "images/ok.png"), {'params': {"SAVE": "YES"}})
 
     def _entryline_editor(self, xfer, serial_vals, debit_rest, credit_rest):
         last_row = xfer.get_max_row() + 5
@@ -325,6 +322,9 @@ class EntryAccountEditor(LucteriosEditor):
     def _change_buttons(self, xfer, no_change, debit_rest, credit_rest, nb_lines):
         xfer.actions = []
         if no_change:
+            if self.added:
+                xfer.add_action(
+                    xfer.get_action(_("Modify"), "images/ok.png"), {'params': {"SAVE": "YES"}})
             if (self.item.link is None) and self.item.has_third and not self.item.has_cash:
                 xfer.add_action(ActionsManage.get_act_changed(
                     'EntryAccount', 'payement', _('Payment'), ''), {'close': CLOSE_YES})
@@ -335,6 +335,9 @@ class EntryAccountEditor(LucteriosEditor):
             if (debit_rest < 0.0001) and (credit_rest < 0.0001) and (nb_lines > 0):
                 xfer.add_action(ActionsManage.get_act_changed(
                     'EntryAccount', 'validate', _('Ok'), 'images/ok.png'), {})
+            elif self.added:
+                xfer.add_action(
+                    xfer.get_action(_("Modify"), "images/ok.png"), {'params': {"SAVE": "YES"}})
             if self.item.id is None:
                 xfer.add_action(
                     WrapAction(_('Cancel'), 'images/cancel.png'), {})
@@ -353,6 +356,7 @@ class EntryAccountEditor(LucteriosEditor):
         if self.item.id:
             nb_lines = self._entryline_editor(
                 xfer, serial_vals, debit_rest, credit_rest)
+            self.added = True
         else:
             self._add_cost_savebtn(xfer)
             nb_lines = 0

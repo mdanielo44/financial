@@ -26,7 +26,7 @@ from __future__ import unicode_literals
 from django.utils.translation import ugettext_lazy as _
 from django.db.models import Q
 
-from lucterios.framework.xferadvance import XferShowEditor, XferDelete
+from lucterios.framework.xferadvance import XferShowEditor, XferDelete, XferSave
 from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage, \
     CLOSE_NO, FORMTYPE_REFRESH, CLOSE_YES, SELECT_SINGLE, \
     SELECT_MULTI, SELECT_NONE, WrapAction
@@ -427,6 +427,13 @@ class EntryAccountValidate(XferContainerAcknowledge):
     caption = _("Validate entry line of account")
 
     def fillresponse(self, serial_entry=''):
+        save = XferSave()
+        save.model = self.model
+        save.field_id = self.field_id
+        save.caption = self.caption
+        save._initialize(self.request)
+        save.params["SAVE"] = "YES"
+        save.fillresponse()
         self.item.save_entrylineaccounts(serial_entry)
 
 

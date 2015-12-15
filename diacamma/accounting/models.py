@@ -628,6 +628,15 @@ class EntryAccount(LucteriosModel):
         else:
             return ''
 
+    def check_date(self):
+        if isinstance(self.date_value, date):
+            self.date_value = self.date_value.isoformat()
+        if self.date_value > self.year.end.isoformat():
+            self.date_value = self.year.end.isoformat()
+        if self.date_value < self.year.begin.isoformat():
+            self.date_value = self.year.begin.isoformat()
+        return
+
     def delete(self):
         self.unlink()
         LucteriosModel.delete(self)
