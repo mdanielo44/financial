@@ -373,8 +373,8 @@ class Migration(migrations.Migration):
                 ('designation', models.TextField(verbose_name='designation')),
                 ('price', models.DecimalField(verbose_name='price', max_digits=10, default=0.0,
                                               decimal_places=3, validators=[MinValueValidator(0.0), MaxValueValidator(9999999.999)])),
-                ('vta_rate', models.DecimalField(validators=[MinValueValidator(0.0), MaxValueValidator(
-                    1.0)], verbose_name='vta rate', default=0.1, decimal_places=4, max_digits=6)),
+                ('vta_rate', models.DecimalField(default=0.0, verbose_name='vta rate', decimal_places=4,
+                                                 max_digits=6, validators=[MinValueValidator(0.0), MaxValueValidator(1.0)])),
                 ('unit', models.CharField(
                     null=True, verbose_name='unit', default='', max_length=10)),
                 ('quantity', models.DecimalField(validators=[MinValueValidator(0.0), MaxValueValidator(
