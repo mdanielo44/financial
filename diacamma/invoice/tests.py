@@ -640,9 +640,19 @@ class BillTest(InvoiceTest):
             'COMPONENTS/LABELFORM[@name="date"]', formats.date_format(date.today(), "DATE_FORMAT"))
         self.factory.xfer = BillAddModify()
         self.call('/diacamma.invoice/billAddModify',
-                  {'bill_type': 2, 'date': '2015-04-01', 'SAVE': 'YES'}, False)
+                  {'bill': 2, 'date': '2015-04-01', 'SAVE': 'YES'}, False)
         self.assert_observer(
             'core.acknowledge', 'diacamma.invoice', 'billAddModify')
+
+        self.factory.xfer = BillShow()
+        self.call('/diacamma.invoice/billShow', {'bill': 2}, False)
+        self.assert_observer(
+            'core.custom', 'diacamma.invoice', 'billShow')
+        self.assert_xml_equal(
+            'COMPONENTS/LABELFORM[@name="date"]', "1 avril 2015")
+        self.assert_xml_equal(
+            'COMPONENTS/LABELFORM[@name="info"]', "{[font color=\"red\"]}{[/font]}")
+
         self.factory.xfer = BillValid()
         self.call('/diacamma.invoice/billValid',
                   {'CONFIRME': 'YES', 'bill': 2}, False)

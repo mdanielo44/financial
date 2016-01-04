@@ -79,7 +79,7 @@ class EntryTest(LucteriosTest):
         self.assert_count_equal('COMPONENTS/*', 9)
         self.assert_xml_equal("COMPONENTS/SELECT[@name='journal']", '2')
         self.assert_xml_equal(
-            "COMPONENTS/DATE[@name='date_value']", date.today().isoformat())
+            "COMPONENTS/DATE[@name='date_value']", '2015-12-31')
         self.assert_xml_equal("COMPONENTS/EDIT[@name='designation']", None)
         self.assert_xml_equal("COMPONENTS/SELECT[@name='costaccounting']", '0')
         self.assert_count_equal(
@@ -635,7 +635,7 @@ class EntryTest(LucteriosTest):
         self.assert_count_equal('COMPONENTS/*', 27)
         self.assert_xml_equal("COMPONENTS/SELECT[@name='journal']", '4')
         self.assert_xml_equal(
-            "COMPONENTS/DATE[@name='date_value']", date.today().isoformat())
+            "COMPONENTS/DATE[@name='date_value']", '2015-12-31')
         self.assert_xml_equal(
             "COMPONENTS/EDIT[@name='designation']", 'règlement de un plein cadie')
 
@@ -776,7 +776,7 @@ class EntryTest(LucteriosTest):
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[3]/VALUE[@name="entry.date_entry"]', '---')
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[3]/VALUE[@name="entry.date_value"]', formats.date_format(date.today(), "DATE_FORMAT"))
+            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[3]/VALUE[@name="entry.date_value"]', '31 décembre 2015')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[3]/VALUE[@name="entry_account"]', '[401 Luke Lucky]')
         self.assert_xml_equal(
@@ -792,7 +792,7 @@ class EntryTest(LucteriosTest):
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[4]/VALUE[@name="entry.date_entry"]', '---')
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[4]/VALUE[@name="entry.date_value"]', formats.date_format(date.today(), "DATE_FORMAT"))
+            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[4]/VALUE[@name="entry.date_value"]', '31 décembre 2015')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[4]/VALUE[@name="entry_account"]', '[512] 512')
         self.assert_xml_equal(
