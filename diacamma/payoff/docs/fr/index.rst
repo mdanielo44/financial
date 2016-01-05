@@ -9,6 +9,8 @@ Sommaire:
 .. toctree::
    :maxdepth: 2
 
-
+   payoff.rst
+   deposit.rst
+   config.rst
 
 
