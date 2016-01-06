@@ -16,18 +16,18 @@ previously entered as well as add new ones.
 As you can see in this screen, you can view entries
 by newspapers or by state. 5 Status filters are available:
 
- - All: no filtering is applied
- - Ongoing (Fog): only entries not yet validated
- - Validated: validated only DEJE writings
- - Scholar: only close or lettered entries avecd'autres
- - No scholar: only entries not yet literate
+* All: no filtering is applied
+* Ongoing (Fog): only entries not yet validated
+* Validated: validated only DEJE writings
+* Scholar: only close or lettered entries avecd'autres
+* No scholar: only entries not yet literate
 
 And 5 default journals:
- - Purchasing Journal
- - Sales Journal
- - Cash Received Journal
- - Journal of various operations
- - last fiscal year report journal
+* Purchasing Journal
+* Sales Journal
+* Cash Received Journal
+* Journal of various operations
+* last fiscal year report journal
 
 To add an entry, first select which start with
 newspaper we want to achieve our new writing, and then we click *Add the button*.

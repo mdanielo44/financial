@@ -44,13 +44,14 @@ Here, first create the basic accounts of your exercise.
 If you already have a previous year, you can import the account code list.
 
 Once this is done, several choices are presented to you:
- - This is your first accounting period
+
+* This is your first accounting period
 	You have just created your structure, you do not have a retained earnings, so now click on the start button, you will have completed the creation of your exercise.
- - It's not your first exercise but you do not use this software before
+* It's not your first exercise but you do not use this software before
 	We'll have to manually enter your retained earnings.
 	To do this, exit the accounts of the fiscal year, enter the list of entries and manually enter a complete writing, coherent and balanced for your retained earnings.
 	Once done, return to your accounts start to click.
- - It's not your first year and you were already using this software
+* It's not your first year and you were already using this software
 	Use the "retained earnings" "button to import the results of the previous year.
 	As it is not possible to start an exercise with a result (whether the beneficiary or deficit).
 	You need before starting your exercise, ventilate the money to an account of capital (capital, reserves, ..).
@@ -91,8 +92,6 @@ auditor.
 In the menu *Financial/Bookkeeping/charts of account* Click the "Closing" button.
 
 **Warning:** All entries must be validated before starting this procedure.
-
-.. Image :: fiscalyear_close.png
 
 The validation phase will carry out a process of
 create a series of year-end entries summarizing the results and

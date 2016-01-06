@@ -31,11 +31,11 @@ An accounting journal is a combination accounting entries to classify them.
 
 The default log are:
 
- - Shopping newspaper containing all the entries relating to purchases made by an entity
- - Sale of newspaper containing all the entries relating to expenditure incurred by an entity
- - Journal of receipts containing all the entries relating to movement on monetary accounts (bank account, cash account ...) in relation to the expenditure and revenue of the entity
- - Again deferrals log containing entries for the passage of an accounting period at its next
- - Various operations log containing all the other writings (eg financial costs ...)
+* Shopping newspaper containing all the entries relating to purchases made by an entity
+* Sale of newspaper containing all the entries relating to expenditure incurred by an entity
+* Journal of receipts containing all the entries relating to movement on monetary accounts (bank account, cash account ...) in relation to the expenditure and revenue of the entity
+* Again deferrals log containing entries for the passage of an accounting period at its next
+* Various operations log containing all the other writings (eg financial costs ...)
 
 Accounting entries
 ------------------
@@ -46,8 +46,8 @@ The sum of a writing credits must be equal to the sum of the rates of the same w
 
 For example, a call writing is schematically by:
 
- - A line to the credit of third-party representing the entire amount of the invoice
- - One or more lines to the flow of the corresponding expense accounts to the type of purchased resources (equipment, services ...)
+* A line to the credit of third-party representing the entire amount of the invoice
+* One or more lines to the flow of the corresponding expense accounts to the type of purchased resources (equipment, services ...)
  
 Total lines in charge of accounts is equal to the amount
 focused on the third line account provider.

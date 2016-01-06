@@ -50,9 +50,12 @@ class EntryLineAccountList(XferListEditor):
     model = EntryLineAccount
     field_id = 'entrylineaccount'
     caption = _("accounting entries")
-    action_list = [('search', _("Search"),
-                    "diacamma.accounting/images/entry.png"),
-                   ('listing', _("Listing"), "images/print.png")]
+
+    def __init__(self, **kwargs):
+        XferListEditor.__init__(self, **kwargs)
+        self.action_list = [('search', _("Search"),
+                             "diacamma.accounting/images/entry.png"),
+                            ('listing', _("Listing"), "images/print.png")]
 
     def _filter_by_year(self):
         select_year = self.getparam('year')

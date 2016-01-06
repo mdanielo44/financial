@@ -94,8 +94,6 @@ Dans le menu *Financier/Comptabilité/plan comptable*, cliquez sur le bouton "Cl
 
 **Attention:** Toutes les écritures doivent être validées avant de commencer cette procédure.
 
-.. image:: fiscalyear_close.png
-
 La phase de validation va réaliser un traitement consistant à
 créer une série d'écritures de fin d'exercice résumant le résultat et
 les dettes tiers (factures clients ou fournisseurs transmises mais pas encore réglées).

@@ -16,18 +16,18 @@ précédemment saisies ainsi que d'en ajouter de nouvelles.
 Comme vous pouvez le voir dans cet écran, vous pouvez consulter les écritures
 par journaux ou par état. 5 filtres d'état vous sont proposés:
 
- - Tout: aucun filtrage n'est appliqué
- - En cours (Brouillard): seulement les écritures non encore validées
- - Validé: seulement les écritures déjé validées
- - Lettré: seulement les écritures rapprochées ou lettrées avecd'autres
- - Non lettré: seulement les écritures non encore lettrées
+* Tout: aucun filtrage n'est appliqué
+* En cours (Brouillard): seulement les écritures non encore validées
+* Validé: seulement les écritures déjé validées
+* Lettré: seulement les écritures rapprochées ou lettrées avecd'autres
+* Non lettré: seulement les écritures non encore lettrées
 
 Ainsi que 5 journaux par défaut:
- - Journal des achats
- - Journal des ventes
- - Journal des encaissements
- - Journal des opérations diverses
- - Journal de report à nouveaux
+* Journal des achats
+* Journal des ventes
+* Journal des encaissements
+* Journal des opérations diverses
+* Journal de report à nouveaux
 
 Pour ajouter une écriture, commençons d'abord par sélectionner sur quel
 journal nous souhaitons réaliser notre nouvelle écriture, puis cliquons
