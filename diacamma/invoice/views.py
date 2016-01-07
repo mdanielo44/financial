@@ -37,7 +37,7 @@ from lucterios.framework.xferadvance import XferAddEditor
 from lucterios.framework.xferadvance import XferDelete
 from lucterios.framework.xfercomponents import XferCompLabelForm, \
     XferCompSelect, XferCompHeader, XferCompImage, XferCompGrid,\
-    DEFAULT_ACTION_LIST, XferCompMemo, XferCompEdit
+    DEFAULT_ACTION_LIST, XferCompMemo, XferCompEdit, XferCompCheck
 from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage, \
     FORMTYPE_MODAL, CLOSE_YES, SELECT_SINGLE, FORMTYPE_REFRESH, CLOSE_NO,\
     SELECT_MULTI, WrapAction
@@ -53,6 +53,7 @@ from lucterios.CORE.models import PrintModel
 from diacamma.invoice.models import Article, Bill, Detail
 from diacamma.accounting.models import FiscalYear, Third
 from diacamma.payoff.views import PayoffAddModify
+from diacamma.payoff.models import Payoff
 
 MenuManage.add_sub("invoice", "financial", "diacamma.invoice/images/invoice.png",
                    _("invoice"), _("Manage of billing"), 20)
@@ -98,6 +99,9 @@ class BillList(XferListEditor):
                 ('show', _("Edit"), "images/show.png", SELECT_SINGLE)]
         else:
             self.action_grid = deepcopy(DEFAULT_ACTION_LIST)
+        if status_filter == 0:
+            self.action_grid.append(
+                ('valid', _("Valid"), "images/ok.png", SELECT_SINGLE))
         if status_filter == 1:
             self.action_grid.append(
                 ('archive', _("Archive"), "images/ok.png", SELECT_MULTI))
@@ -179,10 +183,54 @@ class BillValid(XferContainerAcknowledge):
     icon = "bill.png"
     model = Bill
     field_id = 'bill'
+    readonly = True
 
-    def fillresponse(self):
-        if (self.item.status == 0) and self.confirme(_("Do you want validate '%s'?") % self.item):
-            self.item.valid()
+    def fillresponse(self, withpayoff=True):
+        if (self.item.status == 0) and (self.item.get_info_state() == ''):
+            if self.getparam("CONFIRME") is None:
+                dlg = self.create_custom(Payoff)
+                icon = XferCompImage('img')
+                icon.set_location(0, 0, 1, 6)
+                icon.set_value(self.icon_path())
+                dlg.add_component(icon)
+                lbl = XferCompLabelForm('lb_title')
+                lbl.set_value_as_infocenter(
+                    _("Do you want validate '%s'?") % self.item)
+                lbl.set_location(1, 1, 4)
+                dlg.add_component(lbl)
+                lbl = XferCompCheck('withpayoff')
+                lbl.set_value(withpayoff)
+                lbl.set_location(1, 2)
+                lbl.java_script = """
+var type=current.getValue();
+parent.get('date_payoff').setEnabled(type);
+parent.get('amount').setEnabled(type);
+parent.get('payer').setEnabled(type);
+parent.get('mode').setEnabled(type);
+parent.get('reference').setEnabled(type);
+if (parent.get('bank_account')) {
+    parent.get('bank_account').setEnabled(type);
+}
+"""
+                dlg.add_component(lbl)
+                lbl = XferCompLabelForm('lb_withpayoff')
+                lbl.set_value_as_name(_("Payment of deposit or cash"))
+                lbl.set_location(2, 2)
+                dlg.add_component(lbl)
+                dlg.item.supporting = self.item
+                dlg.fill_from_model(1, 3, False)
+                dlg.get_components("date").name = "date_payoff"
+                dlg.get_components("mode").set_action(
+                    self.request, self.get_action(), {'close': CLOSE_NO, 'modal': FORMTYPE_REFRESH})
+                dlg.add_action(
+                    self.get_action(_('Ok'), 'images/ok.png'), {'params': {"CONFIRME": "YES"}})
+                dlg.add_action(
+                    WrapAction(_('Cancel'), 'images/cancel.png'), {})
+            else:
+                self.item.valid()
+                if withpayoff:
+                    Payoff.multi_save((self.item.id,), self.getparam('amount', 0.0), self.getparam('mode', 0), self.getparam(
+                        'payer'), self.getparam('reference'), self.getparam('bank_account', 0), self.getparam('date_payoff'))
 
 
 @ActionsManage.affect('Bill', 'multipay')

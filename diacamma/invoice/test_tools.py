@@ -79,7 +79,7 @@ class InvoiceTest(LucteriosTest):
         if valid:
             self.factory.xfer = BillValid()
             self.call('/diacamma.invoice/billValid',
-                      {'CONFIRME': 'YES', 'bill': bill_id}, False)
+                      {'CONFIRME': 'YES', 'bill': bill_id, 'withpayoff': False}, False)
             self.assert_observer(
                 'core.acknowledge', 'diacamma.invoice', 'billValid')
         return bill_id

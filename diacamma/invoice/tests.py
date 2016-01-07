@@ -409,7 +409,7 @@ class BillTest(InvoiceTest):
         self.assert_observer('core.custom', 'diacamma.invoice', 'billList')
         self.assert_count_equal('COMPONENTS/GRID[@name="bill"]/RECORD', 0)
         self.assert_count_equal(
-            'COMPONENTS/GRID[@name="bill"]/ACTIONS/ACTION', 3)
+            'COMPONENTS/GRID[@name="bill"]/ACTIONS/ACTION', 4)
         self.factory.xfer = BillList()
         self.call('/diacamma.invoice/billList', {'status_filter': 1}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'billList')
@@ -473,7 +473,7 @@ class BillTest(InvoiceTest):
 
         self.factory.xfer = BillValid()
         self.call('/diacamma.invoice/billValid',
-                  {'CONFIRME': 'YES', 'bill': 1}, False)
+                  {'CONFIRME': 'YES', 'bill': 1, 'withpayoff': False}, False)
         self.assert_observer(
             'core.acknowledge', 'diacamma.invoice', 'billValid')
 
@@ -655,7 +655,7 @@ class BillTest(InvoiceTest):
 
         self.factory.xfer = BillValid()
         self.call('/diacamma.invoice/billValid',
-                  {'CONFIRME': 'YES', 'bill': 2}, False)
+                  {'CONFIRME': 'YES', 'bill': 2, 'withpayoff': False}, False)
         self.assert_observer(
             'core.acknowledge', 'diacamma.invoice', 'billValid')
 
@@ -675,7 +675,7 @@ class BillTest(InvoiceTest):
 
         self.factory.xfer = BillValid()
         self.call('/diacamma.invoice/billValid',
-                  {'CONFIRME': 'YES', 'bill': 1}, False)
+                  {'CONFIRME': 'YES', 'bill': 1, 'withpayoff': False}, False)
         self.assert_observer(
             'core.acknowledge', 'diacamma.invoice', 'billValid')
 
@@ -767,7 +767,7 @@ class BillTest(InvoiceTest):
 
         self.factory.xfer = BillValid()
         self.call('/diacamma.invoice/billValid',
-                  {'CONFIRME': 'YES', 'bill': 1}, False)
+                  {'CONFIRME': 'YES', 'bill': 1, 'withpayoff': False}, False)
         self.assert_observer(
             'core.acknowledge', 'diacamma.invoice', 'billValid')
 
@@ -844,7 +844,7 @@ class BillTest(InvoiceTest):
 
         self.factory.xfer = BillValid()
         self.call('/diacamma.invoice/billValid',
-                  {'CONFIRME': 'YES', 'bill': 1}, False)
+                  {'CONFIRME': 'YES', 'bill': 1, 'withpayoff': False}, False)
         self.assert_observer(
             'core.acknowledge', 'diacamma.invoice', 'billValid')
 
@@ -949,7 +949,7 @@ class BillTest(InvoiceTest):
 
         self.factory.xfer = BillValid()
         self.call('/diacamma.invoice/billValid',
-                  {'CONFIRME': 'YES', 'bill': 1}, False)
+                  {'CONFIRME': 'YES', 'bill': 1, 'withpayoff': False}, False)
         self.assert_observer(
             'core.acknowledge', 'diacamma.invoice', 'billValid')
 
@@ -1024,7 +1024,7 @@ class BillTest(InvoiceTest):
 
         self.factory.xfer = BillValid()
         self.call('/diacamma.invoice/billValid',
-                  {'CONFIRME': 'YES', 'bill': 1}, False)
+                  {'CONFIRME': 'YES', 'bill': 1, 'withpayoff': False}, False)
         self.assert_observer(
             'core.acknowledge', 'diacamma.invoice', 'billValid')
 
