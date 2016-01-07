@@ -19,6 +19,10 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 '''
 from __future__ import unicode_literals
 from shutil import rmtree
+from importlib import import_module
+from base64 import b64decode
+
+from django.utils import six
 
 from lucterios.framework.test import LucteriosTest
 from lucterios.framework.xfergraphic import XferContainerAcknowledge
@@ -33,8 +37,6 @@ from diacamma.accounting.views_accounts import ChartsAccountList, \
 from diacamma.accounting.models import FiscalYear
 from diacamma.accounting.views_entries import EntryAccountEdit, \
     EntryLineAccountList
-from base64 import b64decode
-from django.utils import six
 
 
 class ChartsAccountTest(LucteriosTest):
@@ -580,6 +582,7 @@ class FiscalYearWorkflowTest(LucteriosTest):
         self.assert_count_equal('ACTIONS/ACTION', 2)
 
     def test_import_charsaccount(self):
+        import_module("diacamma.asso.views")
         FiscalYear.objects.create(begin='2016-01-01', end='2016-12-31', status=0,
                                   last_fiscalyear=FiscalYear.objects.get(id=1))
         self.assertEqual(
