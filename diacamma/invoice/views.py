@@ -187,7 +187,10 @@ class BillValid(XferContainerAcknowledge):
 
     def fillresponse(self, withpayoff=True):
         if (self.item.status == 0) and (self.item.get_info_state() == ''):
-            if self.getparam("CONFIRME") is None:
+            if self.item.bill_type == 0:
+                if self.confirme(_("Do you want validate '%s'?") % self.item):
+                    self.item.valid()
+            elif self.getparam("CONFIRME") is None:
                 dlg = self.create_custom(Payoff)
                 icon = XferCompImage('img')
                 icon.set_location(0, 0, 1, 6)
@@ -218,7 +221,7 @@ if (parent.get('bank_account')) {
                 lbl.set_location(2, 2)
                 dlg.add_component(lbl)
                 dlg.item.supporting = self.item
-                dlg.fill_from_model(1, 3, False)
+                dlg.fill_from_model(2, 3, False)
                 dlg.get_components("date").name = "date_payoff"
                 dlg.get_components("mode").set_action(
                     self.request, self.get_action(), {'close': CLOSE_NO, 'modal': FORMTYPE_REFRESH})
@@ -228,7 +231,7 @@ if (parent.get('bank_account')) {
                     WrapAction(_('Cancel'), 'images/cancel.png'), {})
             else:
                 self.item.valid()
-                if withpayoff:
+                if (self.item.bill_type != 0) and withpayoff:
                     Payoff.multi_save((self.item.id,), self.getparam('amount', 0.0), self.getparam('mode', 0), self.getparam(
                         'payer'), self.getparam('reference'), self.getparam('bank_account', 0), self.getparam('date_payoff'))
 
