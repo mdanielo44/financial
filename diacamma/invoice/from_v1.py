@@ -51,7 +51,7 @@ class InvoiceMigrate(MigrateAbstract):
         cur_v.execute(
             "SELECT id,name,taux,actif FROM fr_sdlibre_facture_tva")
         for vatid, name, taux, actif in cur_v.fetchall():
-            self.print_log("=> VAT %s", (name,))
+            self.print_debug("=> VAT %s", (name,))
             self.vat_list[vatid] = vat_mdl.objects.create(
                 name=name, rate=taux, isactif=actif == 'o')
 
@@ -65,7 +65,7 @@ class InvoiceMigrate(MigrateAbstract):
         for articleid, reference, designation, prix, unit, compteVente, tva, noactive in cur_a.fetchall():
             if unit == 'NULL':
                 unit = ''
-            self.print_log("=> article %s - %s %s", (reference, prix, unit))
+            self.print_debug("=> article %s - %s %s", (reference, prix, unit))
             self.article_list[articleid] = article_mdl.objects.create(
                 reference=reference, designation=designation, price=prix, unit=unit, sell_account=convert_code(compteVente), isdisabled=noactive == 'o')
             if tva != 0:
@@ -84,7 +84,7 @@ class InvoiceMigrate(MigrateAbstract):
             "SELECT id,exercice,typeFact,num,date,tiers,comment,etat,operation,analytique FROM fr_sdlibre_facture_factures")
         for billid, exercice, typeFact, num, factdate, tiers, comment, etat, operation, analytique in cur_b.fetchall():
             if typeFact != 3:
-                self.print_log(
+                self.print_debug(
                     "=> bill ex:%s - type:%s - num:%s - date=%s", (exercice, typeFact, num, factdate))
                 if typeFact == 4:
                     typeFact = 3
@@ -135,7 +135,7 @@ class InvoiceMigrate(MigrateAbstract):
         cur_b.execute(
             "SELECT id, designation,etab,guichet,compte,clef,compteBank  FROM fr_sdlibre_facture_compteCheque")
         for bankid, designation, etab, guichet, compte, clef, compteBank in cur_b.fetchall():
-            self.print_log(
+            self.print_debug(
                 "=> bank account:%s", (designation,))
             reference = "%s %s %s %s" % (etab, guichet, compte, clef)
             self.bank_list[bankid] = bank_mdl.objects.create(
@@ -146,7 +146,7 @@ class InvoiceMigrate(MigrateAbstract):
             "SELECT id, facture, date, montant, mode, reference, operation, CompteCheque, payeur FROM fr_sdlibre_facture_payement")
         for payoffid, facture, date, montant, mode, reference, operation, compte_cheque, payeur in cur_p.fetchall():
             if facture in self.bill_list.keys():
-                self.print_log(
+                self.print_debug(
                     "=> payoff bill:%s - date=%s - amount=%.2f", (facture, date, montant))
                 if mode is None:
                     mode = 4
@@ -159,7 +159,8 @@ class InvoiceMigrate(MigrateAbstract):
                 if compte_cheque in self.bank_list.keys():
                     self.payoff_list[payoffid].bank_account = self.bank_list[
                         compte_cheque]
-                self.payoff_list[payoffid].save(do_generate=False, do_linking=False)
+                self.payoff_list[payoffid].save(
+                    do_generate=False, do_linking=False)
 
     def _deposit(self):
         deposit_mdl = apps.get_model("payoff", "DepositSlip")
@@ -174,7 +175,7 @@ class InvoiceMigrate(MigrateAbstract):
             "SELECT id, etat,CompteCheque,date,reference FROM fr_sdlibre_facture_bordereauCheque")
         for depositid, etat, compte_cheque, date, reference in cur_s.fetchall():
             if compte_cheque in self.bank_list.keys():
-                self.print_log(
+                self.print_debug(
                     "=> deposit:%s %s %s", (compte_cheque, date, reference))
                 self.deposit_list[depositid] = deposit_mdl.objects.create(
                     status=etat, bank_account=self.bank_list[compte_cheque], date=date, reference=reference)
@@ -211,7 +212,7 @@ class InvoiceMigrate(MigrateAbstract):
                 pname = 'payoff-cash-account'
                 param_value = convert_code(param_value)
             if pname != '':
-                self.print_log(
+                self.print_debug(
                     "=> parameter of invoice %s - %s", (pname, param_value))
                 Parameter.change_value(pname, param_value)
 
@@ -227,5 +228,7 @@ class InvoiceMigrate(MigrateAbstract):
             import traceback
             traceback.print_exc()
             six.print_("*** Unexpected error: %s ****" % sys.exc_info()[0])
+        self.print_info("Nb articles:%d", len(self.article_list))
+        self.print_info("Nb bills:%d", len(self.bill_list))
         self.old_db.objectlinks['article'] = self.article_list
         self.old_db.objectlinks['bill'] = self.bill_list

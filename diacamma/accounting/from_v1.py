@@ -72,7 +72,8 @@ class AccountingMigrate(MigrateAbstract):
         cur.execute(
             "SELECT id,contact,compteFournisseur,compteClient,compteSalarie,compteSocietaire,etat FROM fr_sdlibre_compta_Tiers")
         for thirdid, abstractid, compte_fournisseur, compte_client, compte_salarie, compte_societaire, etat in cur.fetchall():
-            self.print_log("=> Third of %s", (self.abstract_list[abstractid],))
+            self.print_debug(
+                "=> Third of %s", (self.abstract_list[abstractid],))
             self.third_list[thirdid] = third_mdl.objects.create(
                 contact=self.abstract_list[abstractid], status=etat)
             if (compte_fournisseur is not None) and (compte_fournisseur != ''):
@@ -99,7 +100,7 @@ class AccountingMigrate(MigrateAbstract):
         cur.execute(
             "SELECT id, debut,fin,etat,actif  FROM fr_sdlibre_compta_Exercices ORDER BY fin")
         for yearid, debut, fin, etat, actif in cur.fetchall():
-            self.print_log("=> Year of %s => %s", (debut, fin))
+            self.print_debug("=> Year of %s => %s", (debut, fin))
             self.year_list[yearid] = year_mdl.objects.create(
                 begin=get_date(debut), end=get_date(fin), status=etat, is_actif=(actif == 'o'))
             if last_exercice is not None:
@@ -116,7 +117,7 @@ class AccountingMigrate(MigrateAbstract):
         cur.execute(
             "SELECT id, title, description, etat, last, codeDefault FROM fr_sdlibre_compta_Analytique ORDER BY id")
         for yearid, title, description, etat, last, code_default in cur.fetchall():
-            self.print_log("=> cost accounting %s", (title,))
+            self.print_debug("=> cost accounting %s", (title,))
             self.costaccounting_list[yearid] = costaccounting_mdl.objects.create(name=title, description=description,
                                                                                  status=etat, is_default=(code_default == 'o'))
             if last is not None:
@@ -134,7 +135,7 @@ class AccountingMigrate(MigrateAbstract):
         for chartsaccountid, num_cpt, designation, exercice in cur.fetchall():
             num_cpt = convert_code(num_cpt)
             if len(num_cpt) > 1:
-                self.print_log(
+                self.print_debug(
                     "=> charts of account %s - %d", (num_cpt, exercice))
                 self.chartsaccount_list[chartsaccountid] = chartsaccount_mdl.objects.create(
                     code=num_cpt, name=designation, year=self.year_list[exercice])
@@ -160,7 +161,7 @@ class AccountingMigrate(MigrateAbstract):
                         chartsaccountid].type_of_account = 5  # Contra-accounts
                 self.chartsaccount_list[chartsaccountid].save()
             else:
-                self.print_log("=> charts of account %s - XXX", (num_cpt,))
+                self.print_debug("=> charts of account %s - XXX", (num_cpt,))
                 self.chartsaccount_list[chartsaccountid] = None
 
     def _extra(self):
@@ -194,7 +195,7 @@ class AccountingMigrate(MigrateAbstract):
         cur_e.execute(
             "SELECT id, num, dateEcr, datePiece, designation, exercice, point, journal, opeRaproch, analytique FROM fr_sdlibre_compta_Operation")
         for entryaccountid, num, date_ecr, date_piece, designation, exercice, point, journal, operaproch, analytique in cur_e.fetchall():
-            self.print_log(
+            self.print_debug(
                 "=> entry account %s - %d", (six.text_type(num), exercice))
             self.entryaccount_list[entryaccountid] = entryaccount_mdl.objects.create(num=num, designation=designation,
                                                                                      year=self.year_list[
@@ -213,7 +214,7 @@ class AccountingMigrate(MigrateAbstract):
             "SELECT id,numCpt,montant,reference,operation,tiers  FROM fr_sdlibre_compta_Ecriture")
         for entrylineaccountid, num_cpt, montant, reference, operation, tiers in cur_l.fetchall():
             if self.chartsaccount_list[num_cpt] is not None:
-                self.print_log(
+                self.print_debug(
                     "=> line entry account %f - %d", (montant, num_cpt))
                 self.entrylineaccount_list[entrylineaccountid] = entrylineaccount_mdl.objects.create(account=self.chartsaccount_list[num_cpt], entry=self.entryaccount_list[operation],
                                                                                                      amount=montant, reference=reference)
@@ -233,7 +234,7 @@ class AccountingMigrate(MigrateAbstract):
         cur_m.execute(
             "SELECT id, journal, designation FROM fr_sdlibre_compta_Model")
         for modelid, journal, designation in cur_m.fetchall():
-            self.print_log("=> model %s", (designation,))
+            self.print_debug("=> model %s", (designation,))
             self.model_list[modelid] = model_mdl.objects.create(
                 journal=self.journal_list[journal], designation=designation)
 
@@ -241,7 +242,7 @@ class AccountingMigrate(MigrateAbstract):
         cur_ml.execute(
             "SELECT id, model, compte, montant, tiers FROM fr_sdlibre_compta_ModelLigne")
         for modellineid, model, compte, montant, tiers in cur_ml.fetchall():
-            self.print_log("=> model line %d %s", (model, compte))
+            self.print_debug("=> model line %d %s", (model, compte))
             self.modelline_list[modellineid] = modelline_mdl.objects.create(
                 model=self.model_list[model], code=convert_code(compte), amount=montant)
             if tiers is not None:
@@ -265,7 +266,7 @@ class AccountingMigrate(MigrateAbstract):
             elif param_name == 'PrecDevise':
                 pname = 'accounting-devise-prec'
             if pname != '':
-                self.print_log(
+                self.print_debug(
                     "=> parameter of account %s - %s", (pname, param_value))
                 Parameter.change_value(pname, param_value)
 
@@ -282,6 +283,11 @@ class AccountingMigrate(MigrateAbstract):
             import traceback
             traceback.print_exc()
             six.print_("*** Unexpected error: %s ****" % sys.exc_info()[0])
+        self.print_info("Nb thirds:%d", len(self.third_list))
+        self.print_info("Nb fiscal years:%d", len(self.year_list))
+        self.print_info("Nb chart of accounts:%d", len(self.chartsaccount_list))
+        self.print_info("Nb entries of account:%d", len(self.entryaccount_list))
+        self.print_info("Nb cost accountings:%d", len(self.costaccounting_list))
         self.old_db.objectlinks['third'] = self.third_list
         self.old_db.objectlinks['year'] = self.year_list
         self.old_db.objectlinks['costaccounting'] = self.costaccounting_list
