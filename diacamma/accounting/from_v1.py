@@ -196,7 +196,7 @@ class AccountingMigrate(MigrateAbstract):
             "SELECT id, num, dateEcr, datePiece, designation, exercice, point, journal, opeRaproch, analytique FROM fr_sdlibre_compta_Operation")
         for entryaccountid, num, date_ecr, date_piece, designation, exercice, point, journal, operaproch, analytique in cur_e.fetchall():
             self.print_debug(
-                "=> entry account %s - %d", (six.text_type(num), exercice))
+                "=> entry account %s - %d - %s", (six.text_type(num), exercice, journal))
             self.entryaccount_list[entryaccountid] = entryaccount_mdl.objects.create(num=num, designation=designation,
                                                                                      year=self.year_list[
                                                                                          exercice], date_entry=date_ecr, date_value=date_piece,
