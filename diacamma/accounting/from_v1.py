@@ -120,7 +120,7 @@ class AccountingMigrate(MigrateAbstract):
             self.print_debug("=> cost accounting %s", (title,))
             self.costaccounting_list[yearid] = costaccounting_mdl.objects.create(name=title, description=description,
                                                                                  status=etat, is_default=(code_default == 'o'))
-            if last is not None:
+            if (last is not None) and (last in self.costaccounting_list.keys()):
                 self.costaccounting_list[
                     yearid].last_costaccounting = self.costaccounting_list[last]
                 self.costaccounting_list[yearid].save()
@@ -169,6 +169,7 @@ class AccountingMigrate(MigrateAbstract):
         accountlink_mdl = apps.get_model("accounting", "AccountLink")
         accountlink_mdl.objects.all().delete()
         self.journal_list = {}
+        self.journal_list[0] = journal_mdl.objects.get(id=5)
         self.journal_list[1] = journal_mdl.objects.get(id=2)
         self.journal_list[2] = journal_mdl.objects.get(id=3)
         self.journal_list[3] = journal_mdl.objects.get(id=4)
@@ -285,9 +286,12 @@ class AccountingMigrate(MigrateAbstract):
             six.print_("*** Unexpected error: %s ****" % sys.exc_info()[0])
         self.print_info("Nb thirds:%d", len(self.third_list))
         self.print_info("Nb fiscal years:%d", len(self.year_list))
-        self.print_info("Nb chart of accounts:%d", len(self.chartsaccount_list))
-        self.print_info("Nb entries of account:%d", len(self.entryaccount_list))
-        self.print_info("Nb cost accountings:%d", len(self.costaccounting_list))
+        self.print_info(
+            "Nb chart of accounts:%d", len(self.chartsaccount_list))
+        self.print_info(
+            "Nb entries of account:%d", len(self.entryaccount_list))
+        self.print_info(
+            "Nb cost accountings:%d", len(self.costaccounting_list))
         self.old_db.objectlinks['third'] = self.third_list
         self.old_db.objectlinks['year'] = self.year_list
         self.old_db.objectlinks['costaccounting'] = self.costaccounting_list

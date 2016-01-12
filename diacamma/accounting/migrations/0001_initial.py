@@ -217,7 +217,7 @@ class Migration(migrations.Migration):
                 ('name', models.CharField(
                     verbose_name='name', unique=True, max_length=50)),
                 ('description', models.CharField(
-                    verbose_name='description', unique=True, max_length=50)),
+                    verbose_name='description', max_length=50)),
                 ('status', models.IntegerField(
                     verbose_name='status', choices=[(0, 'opened'), (1, 'closed')], default=0)),
                 ('last_costaccounting', models.ForeignKey(null=True, verbose_name='last cost accounting',

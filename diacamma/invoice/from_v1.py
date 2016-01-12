@@ -177,6 +177,8 @@ class InvoiceMigrate(MigrateAbstract):
             if compte_cheque in self.bank_list.keys():
                 self.print_debug(
                     "=> deposit:%s %s %s", (compte_cheque, date, reference))
+                if date is None:
+                    date = date.today()
                 self.deposit_list[depositid] = deposit_mdl.objects.create(
                     status=etat, bank_account=self.bank_list[compte_cheque], date=date, reference=reference)
 
