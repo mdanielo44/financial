@@ -214,8 +214,12 @@ class AccountingMigrate(MigrateAbstract):
                 self.entryaccount_list[
                     entryaccountid].link = self.accountlink_list[operaproch]
             self.entryaccount_list[entryaccountid].check_date()
+            if isinstance(self.entryaccount_list[entryaccountid].date_entry, datetime.date):
+                self.entryaccount_list[entryaccountid].date_entry = self.entryaccount_list[
+                    entryaccountid].date_entry.isoformat()
             if self.entryaccount_list[entryaccountid].date_entry > self.year_list[exercice].end.isoformat():
-                self.entryaccount_list[entryaccountid].date_entry = self.year_list[exercice].end.isoformat()
+                self.entryaccount_list[entryaccountid].date_entry = self.year_list[
+                    exercice].end.isoformat()
             self.entryaccount_list[entryaccountid].save()
         cur_l = self.old_db.open()
         cur_l.execute(
