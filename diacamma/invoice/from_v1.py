@@ -24,6 +24,7 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
 import sys
+import datetime
 
 from django.apps import apps
 from django.utils import six
@@ -178,7 +179,7 @@ class InvoiceMigrate(MigrateAbstract):
                 self.print_debug(
                     "=> deposit:%s %s %s", (compte_cheque, date, reference))
                 if date is None:
-                    date = date.today()
+                    date = datetime.date.today()
                 self.deposit_list[depositid] = deposit_mdl.objects.create(
                     status=etat, bank_account=self.bank_list[compte_cheque], date=date, reference=reference)
 

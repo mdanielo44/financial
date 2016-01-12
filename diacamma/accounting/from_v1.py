@@ -184,7 +184,11 @@ class AccountingMigrate(MigrateAbstract):
                 accountlinkid] = accountlink_mdl.objects.create()
 
     def _entryaccount(self):
-
+        def convert_date(current_date):
+            try:
+                return datetime.datetime.strptime(current_date, "%Y-%m-%d").date()
+            except (TypeError, ValueError):
+                return datetime.date.today()
         entryaccount_mdl = apps.get_model("accounting", "EntryAccount")
         entryaccount_mdl.objects.all().delete()
         entrylineaccount_mdl = apps.get_model("accounting", "EntryLineAccount")
@@ -200,7 +204,7 @@ class AccountingMigrate(MigrateAbstract):
                 "=> entry account %s - %d - %s", (six.text_type(num), exercice, journal))
             self.entryaccount_list[entryaccountid] = entryaccount_mdl.objects.create(num=num, designation=designation,
                                                                                      year=self.year_list[
-                                                                                         exercice], date_entry=date_ecr, date_value=date_piece,
+                                                                                         exercice], date_entry=convert_date(date_ecr), date_value=convert_date(date_piece),
                                                                                      close=point == 'o', journal=self.journal_list[journal])
             if analytique is not None:
                 self.entryaccount_list[
@@ -209,6 +213,9 @@ class AccountingMigrate(MigrateAbstract):
             if operaproch is not None:
                 self.entryaccount_list[
                     entryaccountid].link = self.accountlink_list[operaproch]
+            self.entryaccount_list[entryaccountid].check_date()
+            if self.entryaccount_list[entryaccountid].date_entry > self.year_list[exercice].end.isoformat():
+                self.entryaccount_list[entryaccountid].date_entry = self.year_list[exercice].end.isoformat()
             self.entryaccount_list[entryaccountid].save()
         cur_l = self.old_db.open()
         cur_l.execute(
