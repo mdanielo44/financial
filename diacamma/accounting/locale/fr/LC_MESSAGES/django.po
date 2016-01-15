@@ -8,15 +8,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-01-07 17:21+0000\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"POT-Creation-Date: 2016-01-08 15:52+0000\n"
+"PO-Revision-Date: 2016-01-11 23:01+0000\n"
+"Last-Translator: b'Paul ARULATEDA <paul531@orange.fr>'\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Language: \n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Translated-Using: django-rosetta 0.7.8\n"
 
 #: __init__.py:41
 msgid "Diacamma accounting"
@@ -32,7 +33,7 @@ msgstr "Cet exercice n'est pas le dernier!"
 
 #: editors.py:109
 msgid "end of fiscal year must be after begin!"
-msgstr "la fin de l'exercice doit être après le début!"
+msgstr "la fin de l'exercice doit être postérieure à son début!"
 
 #: editors.py:120
 msgid "Some enties for last year report are not closed!"
@@ -256,7 +257,7 @@ msgstr "défaut"
 
 #: models.py:56 models.py:177 models.py:394
 msgid "status"
-msgstr "status"
+msgstr "statut"
 
 #: models.py:56
 msgid "Enable"
@@ -264,11 +265,11 @@ msgstr "Actif"
 
 #: models.py:56
 msgid "Disable"
-msgstr "Désactif"
+msgstr "Inactif"
 
 #: models.py:75
 msgid "001@AccountThird information"
-msgstr "001@Infomation comptable"
+msgstr "001@Infomation comptable tiers"
 
 #: models.py:120 views.py:309
 msgid "thirds"
@@ -317,13 +318,13 @@ msgstr "Cet exercice est terminé!"
 #: models.py:259
 #, python-format
 msgid ""
-"{[b]}Revenue:{[/b]} %(revenue)s - {[b]}Expense:{[/b]} %(expense)s = {[b]}"
-"Result:{[/b]} %(result)s | {[b]}Cash:{[/b]} %(cash)s - {[b]}Closed:{[/b]} "
-"%(closed)s"
+"{[b]}Revenue:{[/b]} %(revenue)s - {[b]}Expense:{[/b]} %(expense)s = "
+"{[b]}Result:{[/b]} %(result)s | {[b]}Cash:{[/b]} %(cash)s - "
+"{[b]}Closed:{[/b]} %(closed)s"
 msgstr ""
-"{[b]}Produit:{[/b]} %(revenue)s - {[b]}Charge:{[/b]} %(expense)s = {[b]}"
-"Resultat:{[/b]} %(result)s | {[b]}Trésorie:{[/b]} %(cash)s - {[b]}Validé:{[/"
-"b]} %(closed)s"
+"{[b]}Produit:{[/b]} %(revenue)s - {[b]}Charge:{[/b]} %(expense)s = "
+"{[b]}Résultat:{[/b]} %(resultat)s | {[b]}Trésorie:{[/b]} %(cash)s - "
+"{[b]}Validé:{[/b]} %(closed)s"
 
 #: models.py:271 models.py:285
 msgid "This fiscal year has not a last fiscal year!"
@@ -364,7 +365,7 @@ msgstr "ouverte"
 
 #: models.py:395
 msgid "closed"
-msgstr "clôt"
+msgstr "clôturé"
 
 #: models.py:397
 msgid "last cost accounting"
@@ -646,7 +647,7 @@ msgstr "Seulement les écritures non-validées de l'exercice courant"
 
 #: views.py:364
 msgid "All entries for all fiscal year"
-msgstr "Toutes les écritures de tout les exercices"
+msgstr "Toutes les écritures de tous les exercices"
 
 #: views.py:377 views_entries.py:90
 msgid "Closed"
@@ -686,7 +687,7 @@ msgstr "Report à nouveau"
 
 #: views_accounts.py:117
 msgid "Closing"
-msgstr "Clôturer"
+msgstr "Clôture"
 
 #: views_accounts.py:125
 msgid "Add initial charts of account"
@@ -702,7 +703,7 @@ msgstr "Liste de plan comptable"
 
 #: views_accounts.py:160
 msgid "Import charts accounts from last fiscal year"
-msgstr "Import le plan comptable de l'exercice précédent"
+msgstr "Importation du plan comptable de l'exercice précédent"
 
 #: views_accounts.py:163
 msgid "Do you want to import last year charts accounts?"
@@ -710,7 +711,7 @@ msgstr "Voulez-vous importer le plan comptable de l'exercice précédent?"
 
 #: views_accounts.py:172
 msgid "Last fiscal year import"
-msgstr "Import du report à nouveau"
+msgstr "Importation du report à nouveau"
 
 #: views_accounts.py:175
 msgid "Do you want to import last year result?"
@@ -750,7 +751,7 @@ msgstr "Configuration comptable"
 
 #: views_admin.py:59
 msgid "Fiscal year list"
-msgstr "List d'exercices"
+msgstr "Liste d'exercices"
 
 #: views_admin.py:62
 msgid "accounting system"
@@ -767,11 +768,13 @@ msgstr "Paramètres"
 #: views_admin.py:109
 #, python-format
 msgid ""
-"Do you confirm to select \"%s\" like accounting system?{[br/]}{[br/]}{[i]}"
-"{[u]}Warning{[/u]}: This choose is definitive.{[/i]}"
+"Do you confirm to select \"%s\" like accounting "
+"system?{[br/]}{[br/]}{[i]}{[u]}Warning{[/u]}: This choose is "
+"definitive.{[/i]}"
 msgstr ""
-"Voulez vous confirmer de sélectionner \"%s\" comme système comptable?{[br/]}"
-"{[br/]}{[i]}{[u]}Attention{[/u]}: Ce choix est définitif.{[/i]}"
+"Voulez vous confirmer de sélectionner \"%s\" comme système "
+"comptable?{[br/]}{[br/]}{[i]}{[u]}Attention{[/u]}: Ce choix est "
+"définitif.{[/i]}"
 
 #: views_admin.py:121
 msgid "Activate"
@@ -880,7 +883,7 @@ msgstr "Voulez-vous valider cette écriture?"
 
 #: views_entries.py:237
 msgid "Do you want unlink this entry?"
-msgstr "Voulez-vous délettrer cette écriture?"
+msgstr "Voulez-vous annuler cette écriture?"
 
 #: views_entries.py:249
 msgid "cost accounting for entry"
@@ -888,7 +891,7 @@ msgstr "analytique d'une écriture"
 
 #: views_entries.py:314
 msgid "Show accounting entry"
-msgstr "Voir une écriture"
+msgstr "Afficher une écriture"
 
 #: views_entries.py:329
 msgid "Add entry of account"
@@ -932,7 +935,7 @@ msgstr "Voir toutes les comptabilités analytiques"
 
 #: views_other.py:58
 msgid "Report"
-msgstr "Raport"
+msgstr "Rapport"
 
 #: views_other.py:66
 msgid "Default"
@@ -944,7 +947,7 @@ msgstr "Cette comptabilité a des écritures non validées!"
 
 #: views_other.py:84
 msgid "Do you want to close this cost accounting?"
-msgstr "Voulez-vous cloturer cette comptabilité analytique?"
+msgstr "Voulez-vous clôturer cette comptabilité analytique?"
 
 #: views_other.py:96
 msgid "Add cost accounting"
@@ -1049,7 +1052,7 @@ msgstr "Produits"
 
 #: views_reports.py:215
 msgid "Show ledger for current fiscal year"
-msgstr "Consulter le grand livre pour l'exercice courante"
+msgstr "Consulter le grand livre pour l'exercice courant"
 
 #: views_reports.py:217
 msgid "Ledger"
@@ -1057,7 +1060,7 @@ msgstr "Grand livre"
 
 #: views_reports.py:271
 msgid "Show trial balance for current fiscal year"
-msgstr "Consulter la balance pour l'exercice courante"
+msgstr "Consulter la balance pour l'exercice courant"
 
 #: views_reports.py:273
 msgid "Trial balance"
