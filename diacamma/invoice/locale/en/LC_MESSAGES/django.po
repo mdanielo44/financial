@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-01-08 15:46+0000\n"
+"POT-Creation-Date: 2016-01-15 15:37+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -41,18 +41,6 @@ msgstr "total incl. taxes"
 #: editors.py:100 models.py:166
 msgid "VTA sum"
 msgstr "VTA sum"
-
-#: help/01_articles.html:2
-msgid "01_articles.html"
-msgstr "Articles"
-
-#: help/02_create_bill.html:2
-msgid "02_create_bill.html"
-msgstr "Create bill"
-
-#: help/03_configuration.html:2
-msgid "03_configuration.html"
-msgstr "Configuration"
 
 #: migrations/0001_initial.py:20
 msgid "invoice-default-sell-account"
@@ -584,3 +572,12 @@ msgstr "Delete VAT"
 #: views_conf.py:91
 msgid "parameters"
 msgstr "parameters"
+
+#~ msgid "01_articles.html"
+#~ msgstr "Articles"
+
+#~ msgid "02_create_bill.html"
+#~ msgstr "Create bill"
+
+#~ msgid "03_configuration.html"
+#~ msgstr "Configuration"

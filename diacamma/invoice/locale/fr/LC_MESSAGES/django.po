@@ -8,15 +8,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-01-08 15:46+0000\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"POT-Creation-Date: 2016-01-15 15:37+0000\n"
+"PO-Revision-Date: 2016-01-14 21:59+0000\n"
+"Last-Translator: b'Paul ARULATEDA <paul531@orange.fr>'\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Translated-Using: django-rosetta 0.7.8\n"
 
 #: __init__.py:41
 msgid "Diacamma invoce"
@@ -42,18 +43,6 @@ msgstr "total TTC"
 #: editors.py:100 models.py:166
 msgid "VTA sum"
 msgstr "total TVA"
-
-#: help/01_articles.html:2
-msgid "01_articles.html"
-msgstr "Les articles"
-
-#: help/02_create_bill.html:2
-msgid "02_create_bill.html"
-msgstr "Création de facture"
-
-#: help/03_configuration.html:2
-msgid "03_configuration.html"
-msgstr "Configuration"
 
 #: migrations/0001_initial.py:20
 msgid "invoice-default-sell-account"
@@ -81,7 +70,7 @@ msgstr "prix hors taxe"
 
 #: migrations/0001_initial.py:43
 msgid "invoice-vat-mode.2"
-msgstr "prix toutes taxes comprise"
+msgstr "prix toutes taxes comprises"
 
 #: migrations/0001_initial.py:50
 msgid "invoice-account-third"
@@ -267,7 +256,7 @@ msgstr "\"%s\" n'est pas supprimable!"
 
 #: models.py:326
 msgid "reduce-account is not defined!"
-msgstr "le compte de reduction n'est pas défini!"
+msgstr "le compte de réduction n'est pas défini!"
 
 #: models.py:338
 msgid "vta-account is not defined!"
@@ -355,7 +344,7 @@ msgstr "Ajouter une facture"
 
 #: views.py:142
 msgid "Modify bill"
-msgstr "Modifié une facture"
+msgstr "Modifier une facture"
 
 #: views.py:148
 msgid "Show bill"
@@ -458,7 +447,7 @@ msgstr "Ajouter un détail"
 
 #: views.py:388
 msgid "Modify detail"
-msgstr "Modifié un détail"
+msgstr "Modifier un détail"
 
 #: views.py:407
 msgid "Delete detail"
@@ -490,7 +479,7 @@ msgstr "Ajouter un article"
 
 #: views.py:443
 msgid "Modify article"
-msgstr "Modifié un article"
+msgstr "Modifier un article"
 
 #: views.py:452
 msgid "Delete article"
@@ -585,3 +574,12 @@ msgstr "Supprimer une TVA"
 #: views_conf.py:91
 msgid "parameters"
 msgstr "paramètres"
+
+#~ msgid "01_articles.html"
+#~ msgstr "Les articles"
+
+#~ msgid "02_create_bill.html"
+#~ msgstr "Création de facture"
+
+#~ msgid "03_configuration.html"
+#~ msgstr "Configuration"

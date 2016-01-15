@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-01-08 15:46+0000\n"
+"POT-Creation-Date: 2016-01-15 15:37+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -40,18 +40,6 @@ msgstr "payoff null!"
 #: editors.py:99 models.py:263
 msgid "No-valid selection!"
 msgstr "No-valid selection!"
-
-#: help/01_payoff.html:2
-msgid "01_payoff.html"
-msgstr "Payoff"
-
-#: help/02_deposit.html:2
-msgid "02_deposit.html"
-msgstr "Deposit"
-
-#: help/03_config.html:2
-msgid "03_config.html"
-msgstr "Configuration"
 
 #: migrations/0001_initial.py:15
 msgid "payoff-bankcharges-account"
@@ -370,6 +358,15 @@ msgstr "Save deposit detail"
 #: views_deposit.py:193
 msgid "Delete deposit detail"
 msgstr "Delete deposit detail"
+
+#~ msgid "01_payoff.html"
+#~ msgstr "Payoff"
+
+#~ msgid "02_deposit.html"
+#~ msgstr "Deposit"
+
+#~ msgid "03_config.html"
+#~ msgstr "Configuration"
 
 #~ msgid "third has not customer account"
 #~ msgstr "third has not customer account"
