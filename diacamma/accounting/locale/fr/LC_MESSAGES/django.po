@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-01-15 15:37+0000\n"
+"POT-Creation-Date: 2016-01-21 16:50+0000\n"
 "PO-Revision-Date: 2016-01-11 23:01+0000\n"
 "Last-Translator: b'Paul ARULATEDA <paul531@orange.fr>'\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,7 +21,7 @@ msgstr ""
 
 #: __init__.py:41
 msgid "Diacamma accounting"
-msgstr "Diacamma comptabilité"
+msgstr "Comptabilité Diacamma"
 
 #: editors.py:63 views.py:339
 msgid "Show"
@@ -1051,24 +1051,3 @@ msgstr "Impression de rapport de l'exercice"
 #: views_reports.py:357
 msgid "Income statement of cost accounting"
 msgstr "Compte de résultat de comptabilité analytique"
-
-#~ msgid "01_definition.html"
-#~ msgstr "Définition"
-
-#~ msgid "02_fiscalyear.html"
-#~ msgstr "Exercice"
-
-#~ msgid "03_third.html"
-#~ msgstr "Tiers"
-
-#~ msgid "04_entity.html"
-#~ msgstr "Ecritures"
-
-#~ msgid "05_costaccounting.html"
-#~ msgstr "Comptabilité analytique"
-
-#~ msgid "06_model.html"
-#~ msgstr "Modèle"
-
-#~ msgid "07_reporting.html"
-#~ msgstr "Raports"
