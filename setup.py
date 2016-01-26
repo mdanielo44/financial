@@ -30,8 +30,8 @@ setup(
     name="diacamma-financial",
     version=__version__,
     author="Lucterios",
-    author_email="info@lucterios.org",
-    url="http://www.lucterios.org",
+    author_email="info@diacamma.org",
+    url="http://www.diacamma.org",
     description="Diacamma financial modules for Lucterios framework.",
     long_description="""
     Diacamma financial modules for Lucterios framework.
@@ -40,17 +40,20 @@ setup(
     platforms=('Any',),
     license="GNU General Public License v3",
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'Environment :: Web Environment',
         'Framework :: Django :: 1.8',
+        'Framework :: Django :: 1.9',
         'Intended Audience :: Developers',
         'Intended Audience :: End Users/Desktop',
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
         'Natural Language :: English',
         'Natural Language :: French',
         'Operating System :: OS Independent',
-        'Programming Language :: Python',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.4',
         'Topic :: Database :: Front-Ends',
+        'Topic :: Office/Business :: Financial :: Accounting',
     ],
     packages=["diacamma", "diacamma.accounting", "diacamma.invoice", "diacamma.payoff"],
     package_data={
