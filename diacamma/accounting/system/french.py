@@ -25,6 +25,7 @@ from django.utils import six
 
 from diacamma.accounting.system.default import DefaultSystemAccounting
 from os.path import dirname, join
+from lucterios.framework.tools import get_icon_path
 
 GENERAL_MASK = r'^[0-8][0-9]{2}[0-9a-zA-Z]*$'
 
@@ -283,7 +284,7 @@ class FrenchSystemAcounting(DefaultSystemAccounting):
             type_profit = 'déficite'
         img = XferCompImage("img")
         img.set_location(0, 0)
-        img.set_value("diacamma.accounting/images/account.png")
+        img.set_value(get_icon_path("diacamma.accounting/images/account.png"))
         custom.add_component(img)
         lbl = XferCompLabelForm("title")
         lbl.set_value_as_headername("Bénéfices et Pertes")
