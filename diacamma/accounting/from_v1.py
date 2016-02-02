@@ -134,7 +134,7 @@ class AccountingMigrate(MigrateAbstract):
             "SELECT id,numCpt,designation,exercice FROM fr_sdlibre_compta_Plan")
         for chartsaccountid, num_cpt, designation, exercice in cur.fetchall():
             num_cpt = convert_code(num_cpt)
-            if len(num_cpt) > 1:
+            if (len(num_cpt) > 1) and (num_cpt not in ('600', '700')):
                 self.print_debug(
                     "=> charts of account %s - %d", (num_cpt, exercice))
                 self.chartsaccount_list[chartsaccountid] = chartsaccount_mdl.objects.create(

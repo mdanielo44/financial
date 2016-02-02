@@ -81,8 +81,7 @@ class FiscalYearReport(XferContainerCustom):
         self.fill_body()
 
     def fill_header(self):
-        if self.getparam("year") is None:
-            self.item = FiscalYear.get_current()
+        self.item = FiscalYear.get_current(self.getparam("year"))
         img = XferCompImage('img')
         img.set_value(self.icon_path())
         img.set_location(0, 0, 1, 3)

@@ -403,7 +403,7 @@ class Bill(Supporting):
             total_cust = 0
             costumers = {}
             for bill in Bill.objects.filter(Q(fiscal_year=self.fiscal_year) & Q(
-                    bill_type__in=(1, 2, 3)) & Q(status__in=(1, 2, 3))):
+                    bill_type__in=(1, 2, 3)) & Q(status__in=(1, 3))):
                 if bill.third_id not in costumers.keys():
                     costumers[bill.third_id] = 0
                 if bill.bill_type == 2:
@@ -416,7 +416,8 @@ class Bill(Supporting):
                 cust_list.append((six.text_type(Third.objects.get(id=cust_id)),
                                   format_devise(costumers[cust_id], 5),
                                   "%.2f %%" % (100 * costumers[cust_id] / total_cust), costumers[cust_id]))
-            cust_list.sort(key=lambda cust_item: cust_item[3], reverse=True)
+            cust_list.sort(
+                key=lambda cust_item: (-1 * cust_item[3], cust_item[0]))
             cust_list.append(("{[b]}%s{[/b]}" % _('total'), "{[b]}%s{[/b]}" % format_devise(total_cust, 5),
                               "{[b]}%.2f %%{[/b]}" % 100, total_cust))
         return cust_list
@@ -427,7 +428,7 @@ class Bill(Supporting):
             total_art = 0
             articles = {}
             for det in Detail.objects.filter(Q(bill__fiscal_year=self.fiscal_year) & Q(
-                    bill__bill_type__in=(1, 2, 3)) & Q(bill__status__in=(1, 2, 3))):
+                    bill__bill_type__in=(1, 2, 3)) & Q(bill__status__in=(1, 3))):
                 if det.article_id not in articles.keys():
                     articles[det.article_id] = [0, 0]
                 if det.bill.bill_type == 2:
@@ -443,12 +444,13 @@ class Bill(Supporting):
                     art_text = "---"
                 else:
                     art_text = six.text_type(Article.objects.get(id=art_id))
-                art_list.append((art_text,
-                                 format_devise(articles[art_id][0], 5),
-                                 "%.2f" % articles[art_id][1],
-                                 format_devise(
-                                     articles[art_id][0] / articles[art_id][1], 5),
-                                 "%.2f %%" % (100 * articles[art_id][0] / total_art), articles[art_id][0]))
+                if abs(articles[art_id][1]) > 0.0001:
+                    art_list.append((art_text,
+                                     format_devise(articles[art_id][0], 5),
+                                     "%.2f" % articles[art_id][1],
+                                     format_devise(
+                                         articles[art_id][0] / articles[art_id][1], 5),
+                                     "%.2f %%" % (100 * articles[art_id][0] / total_art), articles[art_id][0]))
             art_list.sort(key=lambda art_item: art_item[5], reverse=True)
             art_list.append(("{[b]}%s{[/b]}" % _('total'), "{[b]}%s{[/b]}" % format_devise(total_art, 5),
                              "{[b]}---{[/b]}", "{[b]}---{[/b]}",
