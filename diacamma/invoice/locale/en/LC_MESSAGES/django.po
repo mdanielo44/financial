@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-01-21 16:50+0000\n"
+"POT-Creation-Date: 2016-02-05 11:24+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -74,22 +74,22 @@ msgstr "price including tax"
 msgid "invoice-account-third"
 msgstr "default third account"
 
-#: migrations/0001_initial.py:56 models.py:110 models.py:474 models.py:480
+#: migrations/0001_initial.py:56 models.py:110 models.py:476 models.py:482
 msgid "bill"
 msgstr "bill"
 
 #: migrations/0001_initial.py:150 migrations/0001_initial.py:276 models.py:102
-#: models.py:482 views.py:498
+#: models.py:484 views.py:498
 msgid "article"
 msgstr "article"
 
 #: migrations/0001_initial.py:151 migrations/0001_initial.py:277 models.py:72
-#: models.py:483
+#: models.py:485
 msgid "designation"
 msgstr "designation"
 
 #: migrations/0001_initial.py:152 migrations/0001_initial.py:278 models.py:73
-#: models.py:87 models.py:484 models.py:500 models.py:508
+#: models.py:87 models.py:486 models.py:502 models.py:510
 msgid "price"
 msgstr "price"
 
@@ -153,7 +153,7 @@ msgstr "VAT"
 msgid "VATs"
 msgstr "VATs"
 
-#: models.py:75 models.py:487
+#: models.py:75 models.py:489
 msgid "unit"
 msgstr "unit"
 
@@ -229,8 +229,8 @@ msgstr "entry"
 msgid "cost accounting"
 msgstr "cost accounting"
 
-#: models.py:132 models.py:158 models.py:166 models.py:420 models.py:453
-#: models.py:500
+#: models.py:132 models.py:158 models.py:166 models.py:421 models.py:455
+#: models.py:502
 msgid "total"
 msgstr "total"
 
@@ -264,27 +264,27 @@ msgstr "vta account is not defined!"
 msgid "Error in accounting generator!"
 msgstr "Error in accounting generator!"
 
-#: models.py:475
+#: models.py:477
 msgid "bills"
 msgstr "bills"
 
-#: models.py:488
+#: models.py:490
 msgid "quantity"
 msgstr "quantity"
 
-#: models.py:490 models.py:500 models.py:508
+#: models.py:492 models.py:502 models.py:510
 msgid "reduce"
 msgstr "reduce"
 
-#: models.py:492
+#: models.py:494
 msgid "vta rate"
 msgstr "vta rate"
 
-#: models.py:596
+#: models.py:598
 msgid "detail"
 msgstr "detail"
 
-#: models.py:597
+#: models.py:599
 msgid "details"
 msgstr "details"
 

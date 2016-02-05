@@ -137,8 +137,12 @@ class AccountingMigrate(MigrateAbstract):
             if (len(num_cpt) > 1) and (num_cpt not in ('600', '700')):
                 self.print_debug(
                     "=> charts of account %s - %d", (num_cpt, exercice))
-                self.chartsaccount_list[chartsaccountid] = chartsaccount_mdl.objects.create(
-                    code=num_cpt, name=designation, year=self.year_list[exercice])
+                try:
+                    self.chartsaccount_list[chartsaccountid] = chartsaccount_mdl.objects.get(
+                        code=num_cpt, year=self.year_list[exercice])
+                except:
+                    self.chartsaccount_list[chartsaccountid] = chartsaccount_mdl.objects.create(
+                        code=num_cpt, name=designation, year=self.year_list[exercice])
                 if (num_cpt[0] == '2') or (num_cpt[0] == '3') or (num_cpt[0:2] == '41') or (num_cpt[0:2] == '45') or (num_cpt[0] == '5'):
                     self.chartsaccount_list[
                         chartsaccountid].type_of_account = 0  # Asset / 'actif'
@@ -228,9 +232,10 @@ class AccountingMigrate(MigrateAbstract):
             if self.chartsaccount_list[num_cpt] is not None:
                 self.print_debug(
                     "=> line entry account %f - %d", (montant, num_cpt))
-                self.entrylineaccount_list[entrylineaccountid] = entrylineaccount_mdl.objects.create(account=self.chartsaccount_list[num_cpt], entry=self.entryaccount_list[operation],
+                current_chartsaccount = self.chartsaccount_list[num_cpt]
+                self.entrylineaccount_list[entrylineaccountid] = entrylineaccount_mdl.objects.create(account=current_chartsaccount, entry=self.entryaccount_list[operation],
                                                                                                      amount=montant, reference=reference)
-                if tiers is not None:
+                if (tiers is not None) and (current_chartsaccount.code[0] == '4'):
                     self.entrylineaccount_list[
                         entrylineaccountid].third = self.third_list[tiers]
                     self.entrylineaccount_list[entrylineaccountid].save()

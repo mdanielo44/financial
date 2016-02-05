@@ -519,6 +519,17 @@ class ChartsAccount(LucteriosModel):
         else:
             return accounts[0]
 
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+        try:
+            exist_account = ChartsAccount.objects.get(
+                code=self.code, year=self.year)
+            if exist_account.id != self.id:
+                raise LucteriosException(
+                    IMPORTANT, _('Account already exists for this fiscal year!'))
+        except ObjectDoesNotExist:
+            pass
+        return LucteriosModel.save(self, force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields)
+
     @classmethod
     def import_initial(cls, year, account_list):
         for account_item in account_list:
