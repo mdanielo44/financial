@@ -654,7 +654,7 @@ class EntryAccount(LucteriosModel):
             self.date_value = date.today()
         if isinstance(self.date_value, date):
             self.date_value = self.date_value.isoformat()
-        if self.journal == 1:
+        if self.journal_id == 1:
             self.date_value = self.year.begin.isoformat()
         if self.date_value > self.year.end.isoformat():
             self.date_value = self.year.end.isoformat()
