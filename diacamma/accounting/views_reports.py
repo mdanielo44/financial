@@ -28,18 +28,19 @@ from datetime import date
 
 from django.utils.translation import ugettext_lazy as _
 from django.db.models import Q
+from django.db.models.aggregates import Sum
 from django.utils import six, formats
 
 from lucterios.framework.tools import MenuManage, FORMTYPE_NOMODAL, CLOSE_NO, FORMTYPE_REFRESH, \
     WrapAction
 from lucterios.framework.xfergraphic import XferContainerCustom
-from lucterios.framework.xfercomponents import XferCompImage, XferCompSelect, XferCompLabelForm, XferCompGrid
+from lucterios.framework.xfercomponents import XferCompImage, XferCompSelect, XferCompLabelForm, XferCompGrid, \
+    XferCompEdit
 from lucterios.contacts.models import LegalEntity
 from lucterios.CORE.xferprint import XferPrintAction
 
 from diacamma.accounting.models import FiscalYear, format_devise, EntryLineAccount, \
     ChartsAccount, CostAccounting
-from django.db.models.aggregates import Sum
 
 
 def get_spaces(size):
@@ -69,6 +70,7 @@ class FiscalYearReport(XferContainerCustom):
     icon = "accountingReport.png"
     model = FiscalYear
     field_id = 'year'
+    add_filtering = False
 
     def __init__(self, **kwargs):
         XferContainerCustom.__init__(self, **kwargs)
@@ -107,17 +109,33 @@ class FiscalYearReport(XferContainerCustom):
                                   'close': CLOSE_NO, 'modal': FORMTYPE_REFRESH})
             self.filter &= Q(entry__date_value__gte=self.item.begin)
             self.filter &= Q(entry__date_value__lte=self.item.end)
+
+        if self.add_filtering:
+            filtercode = self.getparam('filtercode', '')
+            lbl = XferCompLabelForm('filtercode_lbl')
+            lbl.set_value_as_name(_("Accounting code starting with"))
+            lbl.set_location(2, 3, 1)
+            self.add_component(lbl)
+            edt = XferCompEdit('filtercode')
+            edt.set_value(filtercode)
+            edt.set_location(3, 3, 2)
+            edt.set_action(self.request, self.__class__.get_action(), {
+                                   'close': CLOSE_NO, 'modal': FORMTYPE_REFRESH})
+            self.add_component(edt)
+            if filtercode != '':
+                self.filter &= Q(account__code__startswith=filtercode)
+
         lbl = XferCompLabelForm('sep1')
         lbl.set_value("{[br/]}")
-        lbl.set_location(0, 3)
+        lbl.set_location(0, 5)
         self.add_component(lbl)
         lbl = XferCompLabelForm("result")
         lbl.set_value_center(self.item.total_result_text)
-        lbl.set_location(0, 4, 6)
+        lbl.set_location(0, 6, 6)
         self.add_component(lbl)
         lbl = XferCompLabelForm('sep2')
         lbl.set_value("{[br/]}")
-        lbl.set_location(0, 5)
+        lbl.set_location(0, 7)
         self.add_component(lbl)
 
     def _add_left_right_accounting(self, left_filter, rigth_filter, total_in_left):
@@ -170,7 +188,7 @@ class FiscalYearReport(XferContainerCustom):
         pass
 
     def fill_body(self):
-        self.grid.set_location(0, 6, 6)
+        self.grid.set_location(0, 10, 6)
         self.add_component(self.grid)
         self.add_action(FiscalYearReportPrint.get_action(
             _("Print"), "images/print.png"), {'close': CLOSE_NO, 'params': {'classname': self.__class__.__name__}})
@@ -214,6 +232,7 @@ class FiscalYearIncomeStatement(FiscalYearReport):
 @MenuManage.describ('accounting.change_fiscalyear', FORMTYPE_NOMODAL, 'bookkeeping', _('Show ledger for current fiscal year'))
 class FiscalYearLedger(FiscalYearReport):
     caption = _("Ledger")
+    add_filtering = True
 
     def __init__(self, **kwargs):
         FiscalYearReport.__init__(self, **kwargs)
@@ -270,6 +289,7 @@ class FiscalYearLedger(FiscalYearReport):
 @MenuManage.describ('accounting.change_fiscalyear', FORMTYPE_NOMODAL, 'bookkeeping', _('Show trial balance for current fiscal year'))
 class FiscalYearTrialBalance(FiscalYearReport):
     caption = _("Trial balance")
+    add_filtering = True
 
     def __init__(self, **kwargs):
         FiscalYearReport.__init__(self, **kwargs)

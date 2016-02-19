@@ -41,8 +41,6 @@ def decode_html(data):
 
 
 def convert_code(num_cpt):
-    while len(num_cpt) > 3 and num_cpt[-1] == '0':
-        num_cpt = num_cpt[:-1]
     return num_cpt
 
 
@@ -134,7 +132,7 @@ class AccountingMigrate(MigrateAbstract):
             "SELECT id,numCpt,designation,exercice FROM fr_sdlibre_compta_Plan")
         for chartsaccountid, num_cpt, designation, exercice in cur.fetchall():
             num_cpt = convert_code(num_cpt)
-            if (len(num_cpt) > 1) and (num_cpt not in ('600', '700')):
+            if (len(num_cpt) > 1) and (num_cpt not in ('600000', '700000')):
                 self.print_debug(
                     "=> charts of account %s - %d", (num_cpt, exercice))
                 try:

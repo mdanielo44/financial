@@ -208,6 +208,8 @@ class ChartsAccountEditor(LucteriosEditor):
                        fieldnames, xfer)
         comp.add_action(xfer.request, ActionsManage.get_act_changed('EntryLineAccount', 'open', _('Edit'), 'images/edit.png'),
                         {'modal': FORMTYPE_MODAL, 'unique': SELECT_SINGLE, 'close': CLOSE_NO})
+        comp.add_action(xfer.request, ActionsManage.get_act_changed('EntryLineAccount', 'closeentry', _('Closed'), 'images/ok.png'),
+                        {'modal': FORMTYPE_MODAL, 'unique': SELECT_MULTI, 'close': CLOSE_NO})
         if self.item.is_third:
             comp.add_action(xfer.request, ActionsManage.get_act_changed('EntryLineAccount', 'link', _('Link/Unlink'), ''),
                             {'modal': FORMTYPE_MODAL, 'unique': SELECT_MULTI, 'close': CLOSE_NO})
@@ -443,7 +445,7 @@ class EntryLineAccountEditor(LucteriosEditor):
             if self.item.has_account and self.item.account.is_third:
                 edit_third_for_line(
                     xfer, column, row, self.item.account.code, self.item.third, vertical)
-            elif self.item.account.is_cash:
+            else:
                 lbl = XferCompLabelForm('referencelbl')
                 lbl.set_value_as_name(_('reference'))
                 edt = XferCompEdit('reference')
