@@ -129,7 +129,7 @@ class EntryTest(LucteriosTest):
                   {'year': '1', 'journal': '2', 'entryaccount': '1'}, False)
         self.assert_observer(
             'core.custom', 'diacamma.accounting', 'entryAccountEdit')
-        self.assert_count_equal('COMPONENTS/*', 21)
+        self.assert_count_equal('COMPONENTS/*', 23)
         self.assert_xml_equal("COMPONENTS/SELECT[@name='journal']", '2')
         self.assert_xml_equal(
             "COMPONENTS/DATE[@name='date_value']", '2015-12-31')
@@ -148,7 +148,7 @@ class EntryTest(LucteriosTest):
                   {'year': '1', 'journal': '2', 'entryaccount': '2'}, False)
         self.assert_observer(
             'core.custom', 'diacamma.accounting', 'entryAccountEdit')
-        self.assert_count_equal('COMPONENTS/*', 21)
+        self.assert_count_equal('COMPONENTS/*', 23)
         self.assert_xml_equal("COMPONENTS/SELECT[@name='journal']", '2')
         self.assert_xml_equal(
             "COMPONENTS/DATE[@name='date_value']", '2015-01-01')
@@ -167,7 +167,7 @@ class EntryTest(LucteriosTest):
                   {'year': '1', 'journal': '2', 'entryaccount': '1'}, False)
         self.assert_observer(
             'core.custom', 'diacamma.accounting', 'entryAccountEdit')
-        self.assert_count_equal('COMPONENTS/*', 21)
+        self.assert_count_equal('COMPONENTS/*', 23)
 
         self.assert_xml_equal("COMPONENTS/SELECT[@name='journal']", '2')
         self.assert_xml_equal(
@@ -223,7 +223,7 @@ class EntryTest(LucteriosTest):
                   {'year': '1', 'journal': '2', 'entryaccount': '1', 'serial_entry': "-1|4|0|152.340000|None|"}, False)
         self.assert_observer(
             'core.custom', 'diacamma.accounting', 'entryAccountEdit')
-        self.assert_count_equal('COMPONENTS/*', 21)
+        self.assert_count_equal('COMPONENTS/*', 23)
 
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD', 1)
@@ -249,7 +249,7 @@ class EntryTest(LucteriosTest):
                   {'year': '1', 'journal': '2', 'entryaccount': '1', 'serial_entry': "-1|4|0|152.340000|None|", 'num_cpt_txt': '60'}, False)
         self.assert_observer(
             'core.custom', 'diacamma.accounting', 'entryAccountEdit')
-        self.assert_count_equal('COMPONENTS/*', 22)
+        self.assert_count_equal('COMPONENTS/*', 24)
 
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD', 1)
@@ -282,7 +282,7 @@ class EntryTest(LucteriosTest):
                   {'year': '1', 'journal': '2', 'entryaccount': '1', 'serial_entry': "-1|4|0|152.340000|None|\n-2|12|0|152.340000|None|"}, False)
         self.assert_observer(
             'core.custom', 'diacamma.accounting', 'entryAccountEdit')
-        self.assert_count_equal('COMPONENTS/*', 21)
+        self.assert_count_equal('COMPONENTS/*', 23)
 
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD', 2)
@@ -355,7 +355,7 @@ class EntryTest(LucteriosTest):
                   {'year': '1', 'journal': '2', 'entryaccount': '1', 'serial_entry': "-2|12|0|152.340000|None|\n-3|4|3|152.340000|None|"}, False)
         self.assert_observer(
             'core.custom', 'diacamma.accounting', 'entryAccountEdit')
-        self.assert_count_equal('COMPONENTS/*', 21)
+        self.assert_count_equal('COMPONENTS/*', 23)
 
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD', 2)
@@ -573,7 +573,7 @@ class EntryTest(LucteriosTest):
                   {'year': '1', 'journal': '2', 'entryaccount': '1'}, False)
         self.assert_observer(
             'core.custom', 'diacamma.accounting', 'entryAccountEdit')
-        self.assert_count_equal('COMPONENTS/*', 21)
+        self.assert_count_equal('COMPONENTS/*', 23)
 
         self.assert_count_equal('ACTIONS/ACTION', 4)
         self.assert_attrib_equal(
@@ -592,7 +592,7 @@ class EntryTest(LucteriosTest):
                   {'year': '1', 'journal': '2', 'entryaccount': '1'}, False)
         self.assert_observer(
             'core.custom', 'diacamma.accounting', 'entryAccountEdit')
-        self.assert_count_equal('COMPONENTS/*', 22)
+        self.assert_count_equal('COMPONENTS/*', 24)
 
         self.assert_xml_equal(
             "COMPONENTS/LABELFORM[@name='asset_warning']", "{[center]}{[i]}écriture d'un avoir{[/i]}{[/center]}")
@@ -702,7 +702,7 @@ class EntryTest(LucteriosTest):
                                                             'serial_entry': "-3|4|3|-152.340000|None|\n-4|2|0|-152.340000|Ch N°12345|"}, False)
         self.assert_observer(
             'core.custom', 'diacamma.accounting', 'entryAccountEdit')
-        self.assert_count_equal('COMPONENTS/*', 24)
+        self.assert_count_equal('COMPONENTS/*', 26)
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD', 2)
         self.assert_xml_equal(
@@ -1060,7 +1060,7 @@ class EntryTest(LucteriosTest):
                   {'year': '1', 'journal': '2', 'entryaccount': '1'}, False)
         self.assert_observer(
             'core.custom', 'diacamma.accounting', 'entryAccountEdit')
-        self.assert_count_equal('COMPONENTS/*', 21)
+        self.assert_count_equal('COMPONENTS/*', 23)
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD', 2)
         self.assert_count_equal('ACTIONS/ACTION', 4)
@@ -1085,7 +1085,7 @@ class EntryTest(LucteriosTest):
                   {'year': '1', 'journal': '2', 'entryaccount': '1', "entrylineaccount_serial": '2', 'serial_entry': "1|9|0|364.91|None|"}, False)
         self.assert_observer(
             'core.custom', 'diacamma.accounting', 'entryAccountEdit')
-        self.assert_count_equal('COMPONENTS/*', 21)
+        self.assert_count_equal('COMPONENTS/*', 23)
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD', 1)
         self.assert_count_equal('ACTIONS/ACTION', 2)
