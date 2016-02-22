@@ -79,14 +79,16 @@ def comptenofound_payoff(known_codes, accompt_returned):
 @signal_and_lock.Signal.decorate('param_change')
 def paramchange_payoff(params):
     if 'accounting-sizecode' in params:
-        Parameter.change_value(
-            'payoff-cash-account', correct_accounting_code(Params.getvalue('payoff-cash-account')))
-        pvalue = Params.getvalue('payoff-bankcharges-account')
-        if pvalue != '':
-            Parameter.change_value(
-                'payoff-bankcharges-account', correct_accounting_code(pvalue))
-        Params.clear()
         for bank in BankAccount.objects.all():
             if bank.account_code != correct_accounting_code(bank.account_code):
                 bank.account_code = correct_accounting_code(bank.account_code)
                 bank.save()
+    if ('payoff-cash-account' in params) or ('accounting-sizecode' in params):
+        Parameter.change_value(
+            'payoff-cash-account', correct_accounting_code(Params.getvalue('payoff-cash-account')))
+    if ('payoff-bankcharges-account' in params) or ('accounting-sizecode' in params):
+        pvalue = Params.getvalue('payoff-bankcharges-account')
+        if pvalue != '':
+            Parameter.change_value(
+                'payoff-bankcharges-account', correct_accounting_code(pvalue))
+    Params.clear()

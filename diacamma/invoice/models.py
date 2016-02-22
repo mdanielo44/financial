@@ -44,7 +44,7 @@ from lucterios.CORE.parameters import Params
 
 from diacamma.accounting.models import FiscalYear, Third, EntryAccount, \
     CostAccounting, Journal, EntryLineAccount, ChartsAccount
-from diacamma.accounting.tools import current_system_account, format_devise, currency_round
+from diacamma.accounting.tools import current_system_account, format_devise, currency_round, correct_accounting_code
 from diacamma.payoff.models import Supporting
 
 
@@ -97,6 +97,10 @@ class Article(LucteriosModel):
     @property
     def price_txt(self):
         return format_devise(self.price, 5)
+
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+        self.sell_account = correct_accounting_code(self.sell_account)
+        return LucteriosModel.save(self, force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields)
 
     class Meta(object):
         verbose_name = _('article')

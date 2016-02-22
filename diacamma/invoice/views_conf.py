@@ -98,12 +98,18 @@ def comptenofound_invoice(known_codes, accompt_returned):
 
 @signal_and_lock.Signal.decorate('param_change')
 def paramchange_invoice(params):
+    invoice_params = ['invoice-default-sell-account', 'invoice-vatsell-account',
+                      'invoice-reduce-account', 'invoice-account-third']
     if 'accounting-sizecode' in params:
-        for param_item in ['invoice-default-sell-account', 'invoice-vatsell-account', 'invoice-reduce-account', 'invoice-account-third']:
-            pvalue = Params.getvalue(param_item)
-            Parameter.change_value(param_item, correct_accounting_code(pvalue))
+        for param_item in invoice_params:
+            Parameter.change_value(
+                param_item, correct_accounting_code(Params.getvalue(param_item)))
         Params.clear()
         for art in Article.objects.all():
             if art.sell_account != correct_accounting_code(art.sell_account):
                 art.sell_account = correct_accounting_code(art.sell_account)
                 art.save()
+    for invoice_param in invoice_params:
+        if invoice_param in params:
+            Parameter.change_value(
+                invoice_param, correct_accounting_code(Params.getvalue(invoice_param)))

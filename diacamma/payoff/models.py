@@ -153,6 +153,10 @@ class BankAccount(LucteriosModel):
     def __str__(self):
         return self.designation
 
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+        self.account_code = correct_accounting_code(self.account_code)
+        return LucteriosModel.save(self, force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields)
+
     class Meta(object):
         verbose_name = _('bank account')
         verbose_name_plural = _('bank accounts')
