@@ -292,6 +292,7 @@ class FiscalYear(LucteriosModel):
         current_system_account().import_lastyear(self)
 
     def getorcreate_chartaccount(self, code, name=None):
+        code = correct_accounting_code(code)
         try:
             return self.chartsaccount_set.get(code=code)
         except ObjectDoesNotExist:
