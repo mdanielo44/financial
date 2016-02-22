@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-02-19 21:36+0000\n"
+"POT-Creation-Date: 2016-02-22 15:18+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -93,7 +93,7 @@ msgstr "reference"
 msgid "account code"
 msgstr "account code"
 
-#: models.py:157 models.py:175 models.py:308 views_conf.py:68
+#: models.py:157 models.py:175 models.py:308 views_conf.py:70
 msgid "bank account"
 msgstr "bank account"
 
@@ -239,43 +239,43 @@ msgstr "Filtrer by contact"
 msgid "select"
 msgstr "select"
 
-#: views_conf.py:19
+#: views_conf.py:21
 msgid "Management of parameters and configuration of payoff"
 msgstr "Management of parameters and configuration of payoff"
 
-#: views_conf.py:24
+#: views_conf.py:26
 msgid "Payoff configuration"
 msgstr "Payoff configuration"
 
-#: views_conf.py:27
+#: views_conf.py:29
 msgid "Bank account"
 msgstr "Bank account"
 
-#: views_conf.py:31
+#: views_conf.py:33
 msgid "Parameters"
 msgstr "Parameters"
 
-#: views_conf.py:37 views_deposit.py:52
+#: views_conf.py:39 views_deposit.py:52
 msgid "Modify"
 msgstr "Modify"
 
-#: views_conf.py:47
+#: views_conf.py:49
 msgid "Add bank account"
 msgstr "Add bank account"
 
-#: views_conf.py:48
+#: views_conf.py:50
 msgid "Modify bank account"
 msgstr "Modify bank account"
 
-#: views_conf.py:57
+#: views_conf.py:59
 msgid "Delete bank account"
 msgstr "Delete bank account"
 
-#: views_conf.py:70
+#: views_conf.py:72
 msgid "parameters"
 msgstr "parameters"
 
-#: views_conf.py:73
+#: views_conf.py:75
 msgid "Payoff"
 msgstr "Payoff"
 

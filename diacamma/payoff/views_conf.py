@@ -3,7 +3,6 @@ from __future__ import unicode_literals
 
 from django.utils.translation import ugettext_lazy as _
 
-from diacamma.payoff.models import BankAccount
 
 from lucterios.framework.xferadvance import XferListEditor, XferDelete
 from lucterios.framework.xferadvance import XferAddEditor
@@ -13,6 +12,9 @@ from lucterios.framework.xfercomponents import XferCompButton
 from lucterios.CORE.views import ParamEdit
 from lucterios.framework import signal_and_lock
 from lucterios.CORE.models import Parameter
+
+from diacamma.accounting.tools import correct_accounting_code
+from diacamma.payoff.models import BankAccount
 
 
 @ActionsManage.affect('BankAccount', 'list')
@@ -72,3 +74,19 @@ def comptenofound_payoff(known_codes, accompt_returned):
         accompt_returned.append(
             "- {[i]}{[u]}%s{[/u]}: %s{[/i]}" % (_('Payoff'), comptenofound))
     return True
+
+
+@signal_and_lock.Signal.decorate('param_change')
+def paramchange_payoff(params):
+    if 'accounting-sizecode' in params:
+        Parameter.change_value(
+            'payoff-cash-account', correct_accounting_code(Params.getvalue('payoff-cash-account')))
+        pvalue = Params.getvalue('payoff-bankcharges-account')
+        if pvalue != '':
+            Parameter.change_value(
+                'payoff-bankcharges-account', correct_accounting_code(pvalue))
+        Params.clear()
+        for bank in BankAccount.objects.all():
+            if bank.account_code != correct_accounting_code(bank.account_code):
+                bank.account_code = correct_accounting_code(bank.account_code)
+                bank.save()

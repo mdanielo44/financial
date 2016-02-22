@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-02-19 21:36+0000\n"
+"POT-Creation-Date: 2016-02-22 15:18+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -25,7 +25,7 @@ msgstr "Diacamma accounting"
 msgid "Show"
 msgstr "Show"
 
-#: editors.py:88 models.py:199
+#: editors.py:88 models.py:202
 msgid "This fiscal year is not the last!"
 msgstr "This fiscal year is not the last!"
 
@@ -45,7 +45,7 @@ msgstr "This fiscal year is not 'in running'!"
 msgid "This fiscal year has entries not closed and not next fiscal year!"
 msgstr "This fiscal year has entries not closed and not next fiscal year!"
 
-#: editors.py:170 models.py:1058
+#: editors.py:170 models.py:1062
 msgid "Invalid code"
 msgstr "Invalid code"
 
@@ -54,16 +54,16 @@ msgid "Changment not allowed!"
 msgstr "Changment not allowed!"
 
 #: editors.py:193 editors.py:196 editors.py:199 editors.py:470
-#: migrations/0001_initial.py:100 models.py:828 models.py:833 models.py:838
-#: models.py:843 models.py:847 models.py:1049 views_reports.py:225
-#: views_reports.py:296
+#: migrations/0001_initial.py:100 models.py:832 models.py:837 models.py:842
+#: models.py:847 models.py:851 models.py:1053 views_reports.py:243
+#: views_reports.py:299
 msgid "debit"
 msgstr "debit"
 
 #: editors.py:193 editors.py:196 editors.py:199 editors.py:479
-#: migrations/0001_initial.py:101 models.py:828 models.py:833 models.py:838
-#: models.py:843 models.py:847 models.py:1049 views_reports.py:226
-#: views_reports.py:297
+#: migrations/0001_initial.py:101 models.py:832 models.py:837 models.py:842
+#: models.py:847 models.py:851 models.py:1053 views_reports.py:244
+#: views_reports.py:300
 msgid "credit"
 msgstr "credit"
 
@@ -88,7 +88,7 @@ msgstr "entry of accounting for an asset"
 msgid "Linked entries"
 msgstr "Linked entries"
 
-#: editors.py:286 editors.py:338 editors.py:351 views_admin.py:100
+#: editors.py:286 editors.py:338 editors.py:351 views_admin.py:102
 msgid "Modify"
 msgstr "Modify"
 
@@ -112,7 +112,7 @@ msgstr "Payment"
 msgid "Reverse"
 msgstr "Reverse"
 
-#: editors.py:344 views_other.py:77 views_reports.py:178
+#: editors.py:344 views_other.py:77 views_reports.py:195
 msgid "Close"
 msgstr "Close"
 
@@ -126,17 +126,17 @@ msgstr "Ok"
 msgid "Cancel"
 msgstr "Cancel"
 
-#: editors.py:380 models.py:119 models.py:125 models.py:824 models.py:1044
+#: editors.py:380 models.py:119 models.py:125 models.py:828 models.py:1048
 msgid "third"
 msgstr "third"
 
 #: editors.py:412 migrations/0001_initial.py:75 migrations/0001_initial.py:98
-#: models.py:168 models.py:818 models.py:828 models.py:832 models.py:838
-#: models.py:843 models.py:847
+#: models.py:171 models.py:822 models.py:832 models.py:836 models.py:842
+#: models.py:847 models.py:851
 msgid "account"
 msgstr "account"
 
-#: editors.py:450 models.py:822
+#: editors.py:450 models.py:826
 msgid "reference"
 msgstr "reference"
 
@@ -182,54 +182,58 @@ msgid "contact"
 msgstr "contact"
 
 #: migrations/0001_initial.py:77 models.py:67 models.py:75 models.py:141
-#: models.py:998 models.py:1006 views.py:336 views_reports.py:162
-#: views_reports.py:166 views_reports.py:251
+#: models.py:1002 models.py:1010 views.py:336 views_reports.py:179
+#: views_reports.py:183 views_reports.py:253
 msgid "total"
 msgstr "total"
 
-#: migrations/0001_initial.py:82 models.py:126 models.py:449 models.py:1042
+#: migrations/0001_initial.py:82 models.py:126 models.py:452 models.py:1046
 msgid "code"
 msgstr "code"
 
-#: migrations/0001_initial.py:83 migrations/0001_initial.py:99 models.py:391
-#: models.py:450 models.py:555 models.py:628 models.py:991
-#: views_reports.py:224 views_reports.py:293
+#: migrations/0001_initial.py:83 migrations/0001_initial.py:99 models.py:394
+#: models.py:453 models.py:559 models.py:632 models.py:995
+#: views_reports.py:242 views_reports.py:296
 msgid "name"
 msgstr "name"
 
-#: migrations/0001_initial.py:84 models.py:460 models.py:473
+#: migrations/0001_initial.py:84 models.py:463 models.py:476
 msgid "total of last year"
 msgstr "total of last year"
 
-#: migrations/0001_initial.py:86 models.py:461 models.py:474
+#: migrations/0001_initial.py:86 models.py:464 models.py:477
 msgid "total current"
 msgstr "total current"
 
-#: migrations/0001_initial.py:88 models.py:461 models.py:474
+#: migrations/0001_initial.py:88 models.py:464 models.py:477
 msgid "total validated"
 msgstr "total validated"
 
-#: migrations/0001_initial.py:93 models.py:620 views_reports.py:221
+#: migrations/0001_initial.py:93 models.py:624 views_reports.py:239
 msgid "numeros"
 msgstr "#"
 
-#: migrations/0001_initial.py:94 models.py:625 views_reports.py:222
+#: migrations/0001_initial.py:94 models.py:629 views_reports.py:240
 msgid "date entry"
 msgstr "date entry"
 
-#: migrations/0001_initial.py:96 models.py:627 views_reports.py:223
+#: migrations/0001_initial.py:96 models.py:631 views_reports.py:241
 msgid "date value"
 msgstr "date value"
 
-#: migrations/0001_initial.py:102 models.py:624
+#: migrations/0001_initial.py:102 models.py:628
 msgid "link"
 msgstr "link"
 
-#: migrations/0001_initial.py:226 models.py:398
+#: migrations/0001_initial.py:226 models.py:401
 msgid "default"
 msgstr "default"
 
-#: models.py:56 models.py:177 models.py:394
+#: migrations/0002_add_param.py:36
+msgid "accounting-sizecode"
+msgstr "accounting code size"
+
+#: models.py:56 models.py:180 models.py:397
 msgid "status"
 msgstr "status"
 
@@ -253,43 +257,43 @@ msgstr "thirds"
 msgid "This account has some entries!"
 msgstr "This account has some entries!"
 
-#: models.py:169
+#: models.py:172
 msgid "accounts"
 msgstr "accounts"
 
-#: models.py:175
+#: models.py:178
 msgid "begin"
 msgstr "begin"
 
-#: models.py:176
+#: models.py:179
 msgid "end"
 msgstr "end"
 
-#: models.py:178
+#: models.py:181
 msgid "building"
 msgstr "building"
 
-#: models.py:178
+#: models.py:181
 msgid "running"
 msgstr "running"
 
-#: models.py:178
+#: models.py:181
 msgid "finished"
 msgstr "finished"
 
-#: models.py:180
+#: models.py:183
 msgid "actif"
 msgstr "actif"
 
-#: models.py:182
+#: models.py:185
 msgid "last fiscal year"
 msgstr "last fiscal year"
 
-#: models.py:201 models.py:273
+#: models.py:204 models.py:276
 msgid "Fiscal year finished!"
 msgstr "Fiscal year finished!"
 
-#: models.py:259
+#: models.py:262
 #, python-format
 msgid ""
 "{[b]}Revenue:{[/b]} %(revenue)s - {[b]}Expense:{[/b]} %(expense)s = {[b]}"
@@ -300,210 +304,210 @@ msgstr ""
 "Result:{[/b]} %(result)s | {[b]}Cash:{[/b]} %(cash)s - {[b]}Closed:{[/b]} "
 "%(closed)s"
 
-#: models.py:271 models.py:285
+#: models.py:274 models.py:288
 msgid "This fiscal year has not a last fiscal year!"
 msgstr "This fiscal year has not a last fiscal year!"
 
-#: models.py:288
+#: models.py:291
 msgid "This fiscal year is not 'in building'!"
 msgstr "This fiscal year is not 'in building'!"
 
-#: models.py:322
+#: models.py:325
 msgid "No fiscal year define!"
 msgstr "No fiscal year define!"
 
-#: models.py:357
+#: models.py:360
 msgid "No export for this accounting system!"
 msgstr "No export for this accounting system!"
 
-#: models.py:370
+#: models.py:373
 #, python-format
 msgid "Fiscal year from %(begin)s to %(end)s [%(status)s]"
 msgstr "Fiscal year from %(begin)s to %(end)s [%(status)s]"
 
-#: models.py:385 models.py:452 models.py:619
+#: models.py:388 models.py:455 models.py:623
 msgid "fiscal year"
 msgstr "fiscal year"
 
-#: models.py:386
+#: models.py:389
 msgid "fiscal years"
 msgstr "fiscal years"
 
-#: models.py:393
+#: models.py:396
 msgid "description"
 msgstr "description"
 
-#: models.py:395
+#: models.py:398
 msgid "opened"
 msgstr "opened"
 
-#: models.py:395
+#: models.py:398
 msgid "closed"
 msgstr "closed"
 
-#: models.py:397
+#: models.py:400
 msgid "last cost accounting"
 msgstr "last cost accounting"
 
-#: models.py:405
+#: models.py:408
 msgid "total revenue"
 msgstr "total revenue"
 
-#: models.py:405
+#: models.py:408
 msgid "total expense"
 msgstr "total expense"
 
-#: models.py:443 models.py:630
+#: models.py:446 models.py:634
 msgid "cost accounting"
 msgstr "cost accounting"
 
-#: models.py:444 views_other.py:30
+#: models.py:447 views_other.py:30
 msgid "costs accounting"
 msgstr "costs accounting"
 
-#: models.py:453
+#: models.py:456
 msgid "type of account"
 msgstr "type of account"
 
-#: models.py:454
+#: models.py:457
 msgid "Asset"
 msgstr "Asset"
 
-#: models.py:454
+#: models.py:457
 msgid "Liability"
 msgstr "Liability"
 
-#: models.py:454
+#: models.py:457
 msgid "Equity"
 msgstr "Equity"
 
-#: models.py:455
+#: models.py:458
 msgid "Revenue"
 msgstr "Revenue"
 
-#: models.py:455
+#: models.py:458
 msgid "Expense"
 msgstr "Expense"
 
-#: models.py:455
+#: models.py:458
 msgid "Contra-accounts"
 msgstr "Contra-accounts"
 
-#: models.py:528
+#: models.py:532
 msgid "Account already exists for this fiscal year!"
 msgstr "Account already exists for this fiscal year!"
 
-#: models.py:549 views_accounts.py:55
+#: models.py:553 views_accounts.py:55
 msgid "charts of account"
 msgstr "charts of account"
 
-#: models.py:550
+#: models.py:554
 msgid "charts of accounts"
 msgstr "charts of accounts"
 
-#: models.py:562
+#: models.py:566
 msgid "journal reserved!"
 msgstr "journal reserved!"
 
-#: models.py:572
+#: models.py:576
 msgid "accounting journal"
 msgstr "accounting journal"
 
-#: models.py:573
+#: models.py:577
 msgid "accounting journals"
 msgstr "accounting journals"
 
-#: models.py:603
+#: models.py:607
 msgid "This entries are not in same fiscal year!"
 msgstr "This entries are not in same fiscal year!"
 
-#: models.py:612
+#: models.py:616
 msgid "letter"
 msgstr "letter"
 
-#: models.py:613
+#: models.py:617
 msgid "letters"
 msgstr "letters"
 
-#: models.py:622 models.py:990
+#: models.py:626 models.py:994
 msgid "journal"
 msgstr "journal"
 
-#: models.py:632
+#: models.py:636
 msgid "close"
 msgstr "close"
 
-#: models.py:648
+#: models.py:652
 msgid "entry of account closed!"
 msgstr "entry of account closed!"
 
-#: models.py:716
+#: models.py:720
 msgid "This kind of entry is not allowed for this journal!"
 msgstr "This kind of entry is not allowed for this journal!"
 
-#: models.py:775
+#: models.py:779
 #, python-format
 msgid "payment of %s"
 msgstr "payment of %s"
 
-#: models.py:811 views.py:357
+#: models.py:815 views.py:357
 msgid "entry of account"
 msgstr "entry of account"
 
-#: models.py:812
+#: models.py:816
 msgid "entries of account"
 msgstr "entries of account"
 
-#: models.py:820
+#: models.py:824
 msgid "entry"
 msgstr "entry"
 
-#: models.py:821 models.py:853 models.py:1045
+#: models.py:825 models.py:857 models.py:1049
 msgid "amount"
 msgstr "amount"
 
-#: models.py:982
+#: models.py:986
 msgid "entry line of account"
 msgstr "entry line of account"
 
-#: models.py:983
+#: models.py:987
 msgid "entry lines of account"
 msgstr "entry lines of account"
 
-#: models.py:1033
+#: models.py:1037
 msgid "Model of entry"
 msgstr "Model of entry"
 
-#: models.py:1034 views_other.py:116
+#: models.py:1038 views_other.py:116
 msgid "Models of entry"
 msgstr "Models of entry"
 
-#: models.py:1041
+#: models.py:1045
 msgid "model"
 msgstr "model"
 
-#: models.py:1107
+#: models.py:1111
 #, python-format
 msgid "Account code \"%s\" unknown for this fiscal year!"
 msgstr "Account code \"%s\" unknown for this fiscal year!"
 
-#: models.py:1111
+#: models.py:1118
 msgid "Model line"
 msgstr "Model line"
 
-#: models.py:1112
+#: models.py:1119
 msgid "Model lines"
 msgstr "Model lines"
 
-#: tools.py:86
+#: tools.py:95
 msgid "Credit"
 msgstr "Credit"
 
-#: tools.py:91
+#: tools.py:100
 msgid "Debit"
 msgstr "Debit"
 
-#: views.py:50 views.py:333 views_admin.py:47
+#: views.py:50 views.py:333 views_admin.py:49
 msgid "Financial"
 msgstr "Financial"
 
@@ -715,31 +719,31 @@ msgstr "Show an account"
 msgid "Delete an account"
 msgstr "Delete an account"
 
-#: views_admin.py:51
+#: views_admin.py:53
 msgid "Management of fiscal year and financial parameters"
 msgstr "Management of fiscal year and financial parameters"
 
-#: views_admin.py:56
+#: views_admin.py:58
 msgid "Accounting configuration"
 msgstr "Accounting configuration"
 
-#: views_admin.py:59
+#: views_admin.py:61
 msgid "Fiscal year list"
 msgstr "Fiscal year list"
 
-#: views_admin.py:62
+#: views_admin.py:64
 msgid "accounting system"
 msgstr "accounting system"
 
-#: views_admin.py:85
+#: views_admin.py:87
 msgid "Journals"
 msgstr "Journals"
 
-#: views_admin.py:93
+#: views_admin.py:95
 msgid "Parameters"
 msgstr "Parameters"
 
-#: views_admin.py:109
+#: views_admin.py:111
 #, python-format
 msgid ""
 "Do you confirm to select \"%s\" like accounting system?{[br/]}{[br/]}{[i]}"
@@ -748,43 +752,43 @@ msgstr ""
 "Do you confirm to select \"%s\" like accounting system?{[br/]}{[br/]}{[i]}"
 "{[u]}Warning{[/u]}: This choose is definitive.{[/i]}"
 
-#: views_admin.py:121
+#: views_admin.py:123
 msgid "Activate"
 msgstr "Activate"
 
-#: views_admin.py:133
+#: views_admin.py:135
 msgid "Add fiscal year"
 msgstr "Add fiscal year"
 
-#: views_admin.py:134
+#: views_admin.py:136
 msgid "Modify fiscal year"
 msgstr "Modify fiscal year"
 
-#: views_admin.py:140
+#: views_admin.py:142
 msgid "Account system not defined!"
 msgstr "Account system not defined!"
 
-#: views_admin.py:151
+#: views_admin.py:153
 msgid "Delete fiscal year"
 msgstr "Delete fiscal year"
 
-#: views_admin.py:160
+#: views_admin.py:162
 msgid "Add accounting journal"
 msgstr "Add accounting journal"
 
-#: views_admin.py:161
+#: views_admin.py:163
 msgid "Modify accounting journal"
 msgstr "Add accounting journal"
 
-#: views_admin.py:170
+#: views_admin.py:172
 msgid "Delete accounting journal"
 msgstr "Delete accounting journal"
 
-#: views_admin.py:178
+#: views_admin.py:180
 msgid "Export"
 msgstr "Export"
 
-#: views_admin.py:189
+#: views_admin.py:191
 msgid "Export fiscal year"
 msgstr "Export fiscal year"
 
@@ -977,83 +981,83 @@ msgstr "model name"
 msgid "factor"
 msgstr "factor"
 
-#: views_reports.py:148 views_reports.py:157
-msgid "result"
-msgstr "result"
-
-#: views_reports.py:177
-msgid "Print"
-msgstr "Print"
-
-#: views_reports.py:181
-msgid "Show balance sheet for current fiscal year"
-msgstr "Show balance sheet for current fiscal year"
-
-#: views_reports.py:183
-msgid "Balance sheet"
-msgstr "Balance sheet"
-
-#: views_reports.py:187
-msgid "Assets"
-msgstr "Assets"
-
-#: views_reports.py:188 views_reports.py:191 views_reports.py:205
-#: views_reports.py:208 views_reports.py:378 views_reports.py:381
-msgid "Value"
-msgstr "Value"
-
-#: views_reports.py:190
-msgid "Liabilities"
-msgstr "Liabilities"
-
-#: views_reports.py:198
-msgid "Show income statement for current fiscal year"
-msgstr "Show income statement for current fiscal year"
-
-#: views_reports.py:200
-msgid "Income statement"
-msgstr "Income statement"
-
-#: views_reports.py:204 views_reports.py:377
-msgid "Expenses"
-msgstr "Expenses"
-
-#: views_reports.py:207 views_reports.py:380
-msgid "Revenues"
-msgstr "Revenues"
-
-#: views_reports.py:215
-msgid "Show ledger for current fiscal year"
-msgstr "Show ledger for current fiscal year"
-
-#: views_reports.py:217
-msgid "Ledger"
-msgstr "Ledger"
-
-#: views_reports.py:236
+#: views_reports.py:116
 msgid "Accounting code starting with"
 msgstr "Accounting code starting with"
 
-#: views_reports.py:287
+#: views_reports.py:165 views_reports.py:174
+msgid "result"
+msgstr "result"
+
+#: views_reports.py:194
+msgid "Print"
+msgstr "Print"
+
+#: views_reports.py:198
+msgid "Show balance sheet for current fiscal year"
+msgstr "Show balance sheet for current fiscal year"
+
+#: views_reports.py:200
+msgid "Balance sheet"
+msgstr "Balance sheet"
+
+#: views_reports.py:204
+msgid "Assets"
+msgstr "Assets"
+
+#: views_reports.py:205 views_reports.py:208 views_reports.py:222
+#: views_reports.py:225 views_reports.py:381 views_reports.py:384
+msgid "Value"
+msgstr "Value"
+
+#: views_reports.py:207
+msgid "Liabilities"
+msgstr "Liabilities"
+
+#: views_reports.py:215
+msgid "Show income statement for current fiscal year"
+msgstr "Show income statement for current fiscal year"
+
+#: views_reports.py:217
+msgid "Income statement"
+msgstr "Income statement"
+
+#: views_reports.py:221 views_reports.py:380
+msgid "Expenses"
+msgstr "Expenses"
+
+#: views_reports.py:224 views_reports.py:383
+msgid "Revenues"
+msgstr "Revenues"
+
+#: views_reports.py:232
+msgid "Show ledger for current fiscal year"
+msgstr "Show ledger for current fiscal year"
+
+#: views_reports.py:234
+msgid "Ledger"
+msgstr "Ledger"
+
+#: views_reports.py:289
 msgid "Show trial balance for current fiscal year"
 msgstr "Show trial balance for current fiscal year"
 
-#: views_reports.py:289
+#: views_reports.py:291
 msgid "Trial balance"
 msgstr "Trial balance"
 
-#: views_reports.py:294
+#: views_reports.py:297
 msgid "debit sum"
 msgstr "debit sum"
 
-#: views_reports.py:295
+#: views_reports.py:298
 msgid "credit sum"
 msgstr "credit sum"
 
-#: views_reports.py:346
+#: views_reports.py:349
 msgid "Print report fiscal year"
 msgstr "Print report fiscal year"
 
-#: views_reports.py:373
+#: views_reports.py:376
 msgid "Income statement of cost accounting"
 msgstr "Income statement of cost accounting"

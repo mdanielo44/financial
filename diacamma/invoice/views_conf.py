@@ -25,8 +25,6 @@ from __future__ import unicode_literals
 
 from django.utils.translation import ugettext_lazy as _
 
-from diacamma.invoice.models import Vat, Article
-
 from lucterios.framework.xferadvance import XferListEditor
 from lucterios.framework.xferadvance import XferAddEditor
 from lucterios.framework.xferadvance import XferDelete
@@ -36,6 +34,9 @@ from lucterios.framework import signal_and_lock
 from lucterios.CORE.parameters import Params
 from lucterios.CORE.views import ParamEdit
 from lucterios.CORE.models import Parameter
+
+from diacamma.accounting.tools import correct_accounting_code
+from diacamma.invoice.models import Vat, Article
 
 
 @ActionsManage.affect('Vat', 'list')
@@ -93,3 +94,16 @@ def comptenofound_invoice(known_codes, accompt_returned):
         accompt_returned.append(
             "- {[i]}{[u]}%s{[/u]}: %s{[/i]}" % (_('Invoice'), comptenofound))
     return True
+
+
+@signal_and_lock.Signal.decorate('param_change')
+def paramchange_invoice(params):
+    if 'accounting-sizecode' in params:
+        for param_item in ['invoice-default-sell-account', 'invoice-vatsell-account', 'invoice-reduce-account', 'invoice-account-third']:
+            pvalue = Params.getvalue(param_item)
+            Parameter.change_value(param_item, correct_accounting_code(pvalue))
+        Params.clear()
+        for art in Article.objects.all():
+            if art.sell_account != correct_accounting_code(art.sell_account):
+                art.sell_account = correct_accounting_code(art.sell_account)
+                art.save()

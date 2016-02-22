@@ -31,20 +31,22 @@ from lucterios.framework.tools import FORMTYPE_MODAL, ActionsManage, MenuManage,
     SELECT_SINGLE, CLOSE_NO
 from lucterios.framework.xfergraphic import XferContainerAcknowledge,\
     XferContainerCustom
-from lucterios.CORE.parameters import Params
-from lucterios.CORE.views import ParamEdit
 from lucterios.framework.xfercomponents import XferCompButton, XferCompGrid, \
     XferCompLabelForm, XferCompSelect, XferCompImage, XferCompDownLoad
+from lucterios.framework.error import LucteriosException, IMPORTANT
+from lucterios.CORE.parameters import Params
+from lucterios.CORE.views import ParamEdit
+from lucterios.CORE.models import Parameter
 
-from diacamma.accounting.models import FiscalYear, Journal
+from diacamma.accounting.models import FiscalYear, Journal, AccountThird, ChartsAccount, ModelLineEntry
 from diacamma.accounting.system import accounting_system_list, \
     accounting_system_name
-from lucterios.CORE.models import Parameter
-from lucterios.framework.error import LucteriosException, IMPORTANT
 
-from diacamma.accounting.tools import clear_system_account
+from diacamma.accounting.tools import clear_system_account, correct_accounting_code
+from lucterios.framework import signal_and_lock
 
-MenuManage.add_sub("financial.conf", "core.extensions", "", _("Financial"), "", 2)
+MenuManage.add_sub(
+    "financial.conf", "core.extensions", "", _("Financial"), "", 2)
 
 
 @ActionsManage.affect('FiscalYear', 'list')
@@ -92,7 +94,7 @@ class Configuration(XferListEditor):
         self.add_component(grid)
         self.new_tab(_('Parameters'))
         self.params['params'] = [
-            'accounting-devise', 'accounting-devise-iso', 'accounting-devise-prec']
+            'accounting-devise', 'accounting-devise-iso', 'accounting-devise-prec', 'accounting-sizecode']
         Params.fill(self, self.params['params'], 1, 1)
         btn = XferCompButton('editparam')
         btn.set_location(1, self.get_max_row() + 1, 2, 1)
@@ -196,3 +198,21 @@ class FiscalYearExport(XferContainerCustom):
         down.set_filename("CORE/download?filename=" + destination_file)
         down.set_location(1, 1)
         self.add_component(down)
+
+
+@signal_and_lock.Signal.decorate('param_change')
+def paramchange_accounting(params):
+    if 'accounting-sizecode' in params:
+        for account in AccountThird.objects.all():
+            if account.code != correct_accounting_code(account.code):
+                account.code = correct_accounting_code(account.code)
+                account.save()
+        for charts_account in ChartsAccount.objects.filter(year__status__in=(0, 1)):
+            if charts_account.code != correct_accounting_code(charts_account.code):
+                charts_account.code = correct_accounting_code(
+                    charts_account.code)
+                charts_account.save()
+        for model_line in ModelLineEntry.objects.all():
+            if model_line.code != correct_accounting_code(model_line.code):
+                model_line.code = correct_accounting_code(model_line.code)
+                model_line.save()

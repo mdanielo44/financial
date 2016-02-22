@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-02-19 21:36+0000\n"
+"POT-Creation-Date: 2016-02-22 15:18+0000\n"
 "PO-Revision-Date: 2016-01-14 21:59+0000\n"
 "Last-Translator: b'Paul ARULATEDA <paul531@orange.fr>'\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -147,7 +147,7 @@ msgstr "taux"
 msgid "is actif"
 msgstr "actif?"
 
-#: models.py:66 views_conf.py:59
+#: models.py:66 views_conf.py:60
 msgid "VAT"
 msgstr "TVA"
 
@@ -171,7 +171,7 @@ msgstr "compte de vente"
 msgid "vat"
 msgstr "TVA"
 
-#: models.py:103 views_conf.py:89
+#: models.py:103 views_conf.py:90
 msgid "articles"
 msgstr "articles"
 
@@ -539,39 +539,39 @@ msgstr "Financier"
 msgid "There are %(build)d bills in building and %(valid)d validated"
 msgstr "Il y a %(build)d factures en construction et %(valid)d validées"
 
-#: views.py:557 views.py:578 views_conf.py:94
+#: views.py:557 views.py:578 views_conf.py:95
 msgid "Invoice"
 msgstr "Facturier"
 
-#: views_conf.py:42
+#: views_conf.py:43
 msgid "Management of parameters and configuration of invoice"
 msgstr "Gestion des paramètres et configuraiton du facturier"
 
-#: views_conf.py:47
+#: views_conf.py:48
 msgid "Invoice configuration"
 msgstr "Configuration du facturier"
 
-#: views_conf.py:50
+#: views_conf.py:51
 msgid "Parameters"
 msgstr "Paramètres"
 
-#: views_conf.py:57
+#: views_conf.py:58
 msgid "Modify"
 msgstr "Modifier"
 
-#: views_conf.py:68
+#: views_conf.py:69
 msgid "Add VAT"
 msgstr "Ajouter une TVA"
 
-#: views_conf.py:69
+#: views_conf.py:70
 msgid "Modify VAT"
 msgstr "Modifier une TVA"
 
-#: views_conf.py:78
+#: views_conf.py:79
 msgid "Delete VAT"
 msgstr "Supprimer une TVA"
 
-#: views_conf.py:91
+#: views_conf.py:92
 msgid "parameters"
 msgstr "paramètres"
 

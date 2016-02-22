@@ -120,7 +120,7 @@ class FiscalYearReport(XferContainerCustom):
             edt.set_value(filtercode)
             edt.set_location(3, 3, 2)
             edt.set_action(self.request, self.__class__.get_action(), {
-                                   'close': CLOSE_NO, 'modal': FORMTYPE_REFRESH})
+                           'close': CLOSE_NO, 'modal': FORMTYPE_REFRESH})
             self.add_component(edt)
             if filtercode != '':
                 self.filter &= Q(account__code__startswith=filtercode)

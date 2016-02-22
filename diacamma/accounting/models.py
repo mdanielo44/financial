@@ -43,7 +43,7 @@ from lucterios.framework.filetools import read_file, xml_validator, save_file,\
     get_user_path
 
 from diacamma.accounting.tools import get_amount_sum, format_devise, \
-    current_system_account, currency_round
+    current_system_account, currency_round, correct_accounting_code
 from csv import DictReader
 from _csv import QUOTE_NONE
 from lucterios.framework.signal_and_lock import RecordLocker
@@ -163,8 +163,11 @@ class AccountThird(LucteriosModel):
     def total(self):
         return get_amount_sum(EntryLineAccount.objects.filter(third=self.third, account__code=self.code).aggregate(Sum('amount')))
 
-    class Meta(object):
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+        self.code = correct_accounting_code(self.code)
+        return LucteriosModel.save(self, force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields)
 
+    class Meta(object):
         verbose_name = _('account')
         verbose_name_plural = _('accounts')
         default_permissions = []
@@ -521,6 +524,7 @@ class ChartsAccount(LucteriosModel):
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         try:
+            self.code = correct_accounting_code(self.code)
             exist_account = ChartsAccount.objects.get(
                 code=self.code, year=self.year)
             if exist_account.id != self.id:
@@ -1106,8 +1110,11 @@ class ModelLineEntry(LucteriosModel):
             raise LucteriosException(
                 IMPORTANT, _('Account code "%s" unknown for this fiscal year!') % self.code)
 
-    class Meta(object):
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+        self.code = correct_accounting_code(self.code)
+        return LucteriosModel.save(self, force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields)
 
+    class Meta(object):
         verbose_name = _('Model line')
         verbose_name_plural = _('Model lines')
         default_permissions = []

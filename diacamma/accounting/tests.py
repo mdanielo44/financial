@@ -678,7 +678,7 @@ class AdminTest(LucteriosTest):
         self.assert_observer(
             'core.custom', 'diacamma.accounting', 'configuration')
         self.assert_count_equal('COMPONENTS/TAB', 3)
-        self.assert_count_equal('COMPONENTS/*', 2 + 3 + 4 + 1 + 7)
+        self.assert_count_equal('COMPONENTS/*', 2 + 3 + 4 + 1 + 9)
 
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="fiscalyear"]/HEADER', 4)

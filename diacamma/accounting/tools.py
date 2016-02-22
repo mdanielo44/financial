@@ -60,6 +60,15 @@ def currency_round(amount):
     return round(float(amount), currency_decimal)
 
 
+def correct_accounting_code(code):
+    code_size = Params.getvalue("accounting-sizecode")
+    while len(code) > code_size and code[-1] == '0':
+        code = code[:-1]
+    while len(code) < code_size:
+        code += '0'
+    return code
+
+
 def format_devise(amount, mode):
 
     # mode 0 25.45 => 25,45€ / -25.45 =>

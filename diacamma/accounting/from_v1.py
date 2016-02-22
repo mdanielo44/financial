@@ -268,6 +268,7 @@ class AccountingMigrate(MigrateAbstract):
         from lucterios.CORE.models import Parameter
         Parameter.change_value(
             'accounting-system', 'diacamma.accounting.system.french.FrenchSystemAcounting')
+        Parameter.change_value("accounting-sizecode", 6)
         cur_p = self.old_db.open()
         cur_p.execute(
             "SELECT paramName,value FROM CORE_extension_params WHERE extensionId LIKE 'fr_sdlibre_compta' and paramName in ('Devise','DeviseOff','PrecDevise')")
