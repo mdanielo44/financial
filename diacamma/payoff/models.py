@@ -33,7 +33,7 @@ from lucterios.framework.models import LucteriosModel, get_value_converted
 
 from diacamma.accounting.models import EntryAccount, FiscalYear, Third, Journal, \
     ChartsAccount, EntryLineAccount, AccountLink
-from diacamma.accounting.tools import format_devise, currency_round
+from diacamma.accounting.tools import format_devise, currency_round, correct_accounting_code
 from lucterios.framework.error import LucteriosException, IMPORTANT
 from django.utils import six
 from lucterios.CORE.parameters import Params
