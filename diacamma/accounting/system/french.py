@@ -441,10 +441,10 @@ class FrenchSystemAcounting(DefaultSystemAccounting):
         new_entry = EntryAccount.objects.create(
             year=year, journal=end_journ, designation=end_desig, date_value=year.begin)
         for charts_account in year.last_fiscalyear.chartsaccount_set.filter(type_of_account__in=(0, 1, 2)):
-            if charts_account.code.starts_with('120'):
+            if charts_account.code[:3] == '120':
                 code = "110"
                 name = None
-            elif charts_account.code.starts_with('129'):
+            elif charts_account.code[:3] == '129':
                 code = "119"
                 name = None
             else:
