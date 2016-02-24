@@ -195,7 +195,7 @@ class FiscalYearExport(XferContainerCustom):
         down.compress = False
         down.set_value('export_year_%s_%s.xml' %
                        (self.item.begin.isoformat(), self.item.end.isoformat()))
-        down.set_filename("CORE/download?filename=" + destination_file)
+        down.set_download(destination_file)
         down.set_location(1, 1)
         self.add_component(down)
 
