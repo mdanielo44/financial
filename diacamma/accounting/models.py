@@ -304,9 +304,15 @@ class FiscalYear(LucteriosModel):
 
     def move_entry_noclose(self):
         if self.status == 1:
-            next_ficalyear = FiscalYear.objects.get(
-                last_fiscalyear=self)
+            next_ficalyear = None
             for entry_noclose in EntryAccount.objects.filter(close=False, entrylineaccount__account__year=self).distinct():
+                if next_ficalyear is None:
+                    try:
+                        next_ficalyear = FiscalYear.objects.get(
+                            last_fiscalyear=self)
+                    except:
+                        raise LucteriosException(IMPORTANT, _(
+                            "This fiscal year has entries not closed and not next fiscal year!"))
                 for entryline in entry_noclose.entrylineaccount_set.all():
                     entryline.account = next_ficalyear.getorcreate_chartaccount(
                         entryline.account.code, entryline.account.name)
