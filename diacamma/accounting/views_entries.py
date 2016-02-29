@@ -315,7 +315,7 @@ class EntryAccountShow(XferShowEditor):
 
     def fillresponse(self):
         self.action_list = []
-        if (self.item.link is None) and self.item.has_third and not self.item.has_cash:
+        if (self.item.link is None) and self.item.has_third and not self.item.has_cash and (self.item.year.status < 2):
             self.action_list = [('payement', _('Payment'), '', CLOSE_YES)]
         XferShowEditor.fillresponse(self)
 

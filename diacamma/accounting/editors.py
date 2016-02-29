@@ -208,11 +208,12 @@ class ChartsAccountEditor(LucteriosEditor):
                        fieldnames, xfer)
         comp.add_action(xfer.request, ActionsManage.get_act_changed('EntryLineAccount', 'open', _('Edit'), 'images/edit.png'),
                         {'modal': FORMTYPE_MODAL, 'unique': SELECT_SINGLE, 'close': CLOSE_NO})
-        comp.add_action(xfer.request, ActionsManage.get_act_changed('EntryLineAccount', 'closeentry', _('Closed'), 'images/ok.png'),
-                        {'modal': FORMTYPE_MODAL, 'unique': SELECT_MULTI, 'close': CLOSE_NO})
-        if self.item.is_third:
-            comp.add_action(xfer.request, ActionsManage.get_act_changed('EntryLineAccount', 'link', _('Link/Unlink'), ''),
+        if self.item.year.status < 2:
+            comp.add_action(xfer.request, ActionsManage.get_act_changed('EntryLineAccount', 'closeentry', _('Closed'), 'images/ok.png'),
                             {'modal': FORMTYPE_MODAL, 'unique': SELECT_MULTI, 'close': CLOSE_NO})
+            if self.item.is_third:
+                comp.add_action(xfer.request, ActionsManage.get_act_changed('EntryLineAccount', 'link', _('Link/Unlink'), ''),
+                                {'modal': FORMTYPE_MODAL, 'unique': SELECT_MULTI, 'close': CLOSE_NO})
         comp.set_location(2, row)
         xfer.add_component(comp)
 

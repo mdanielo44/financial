@@ -224,6 +224,11 @@ class ChartsAccountShow(XferShowEditor):
     field_id = 'chartsaccount'
     caption = _("Show an account")
 
+    def fillresponse(self):
+        if self.item.year.status > 1:
+            self.action_list = []
+        XferShowEditor.fillresponse(self)
+
 
 @ActionsManage.affect('ChartsAccount', 'delete')
 @MenuManage.describ('accounting.delete_chartsaccount')

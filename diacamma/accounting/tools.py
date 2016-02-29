@@ -80,13 +80,17 @@ def format_devise(amount, mode):
     # mode 3 25.45 => 25,45 / -25.45 => -25.45
     # mode 4 25.45 => 25,45€ / -25.45 => 25.45€
     # mode 5+ 25.45 => 25,45€ / -25.45 => -25.45€
+    from decimal import InvalidOperation
     result = ''
     currency_short = Params.getvalue("accounting-devise")
     currency_decimal = Params.getvalue("accounting-devise-prec")
     currency_format = "%%0.%df" % currency_decimal
     currency_epsilon = pow(10, -1 * currency_decimal - 1)
-    if (amount is None) or (abs(amount) < currency_epsilon):
-        amount = 0
+    try:
+        if (amount is None) or (abs(amount) < currency_epsilon):
+            amount = 0
+    except InvalidOperation:
+        return "???"
     if (abs(amount) >= currency_epsilon) or (mode in (1, 2)):
         if amount >= 0:
             if mode == 2:

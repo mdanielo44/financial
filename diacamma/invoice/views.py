@@ -473,7 +473,9 @@ class BillStatistic(XferContainerCustom):
         self.add_component(lbl)
         self.item.fiscal_year = FiscalYear.get_current(select_year)
         self.fill_from_model(1, 1, False, ['fiscal_year'])
-        self.get_components('fiscal_year').set_action(
+        fiscal_year = self.get_components('fiscal_year')
+        fiscal_year.set_needed(True)
+        fiscal_year.set_action(
             self.request, self.get_action(), {'close': CLOSE_NO, 'modal': FORMTYPE_REFRESH})
 
     def fill_customers(self):
