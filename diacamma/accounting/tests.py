@@ -769,8 +769,12 @@ class AdminTest(LucteriosTest):
 
     def test_configuration_fiscalyear(self):
         to_day = date.today()
-        to_day_plus_1 = date(
-            to_day.year + 1, to_day.month, to_day.day) - timedelta(days=1)
+        try:
+            to_day_plus_1 = date(
+                to_day.year + 1, to_day.month, to_day.day) - timedelta(days=1)
+        except ValueError:
+            to_day_plus_1 = date(
+                to_day.year + 1, to_day.month, to_day.day - 1)
 
         self.factory.xfer = FiscalYearAddModify()
         self.call('/diacamma.accounting/fiscalYearAddModify', {}, False)

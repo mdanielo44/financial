@@ -192,8 +192,12 @@ class FiscalYear(LucteriosModel):
         else:
             last_fiscal_year = fiscal_years[len(fiscal_years) - 1]
             self.begin = last_fiscal_year.end + timedelta(days=1)
-        self.end = date(
-            self.begin.year + 1, self.begin.month, self.begin.day) - timedelta(days=1)
+        try:
+            self.end = date(
+                self.begin.year + 1, self.begin.month, self.begin.day) - timedelta(days=1)
+        except ValueError:
+            self.end = date(
+                self.begin.year + 1, self.begin.month, self.begin.day - 1)
 
     def can_delete(self):
         fiscal_years = FiscalYear.objects.order_by(
