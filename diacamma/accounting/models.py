@@ -281,7 +281,7 @@ class FiscalYear(LucteriosModel):
         for last_charts_account in self.last_fiscalyear.chartsaccount_set.all():
             try:
                 self.chartsaccount_set.get(
-                    code=last_charts_account.code)
+                    code=correct_accounting_code(last_charts_account.code))
             except ObjectDoesNotExist:
                 ChartsAccount.objects.create(year=self, code=last_charts_account.code, name=last_charts_account.name,
                                              type_of_account=last_charts_account.type_of_account)
