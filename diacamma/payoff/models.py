@@ -180,7 +180,7 @@ class Payoff(LucteriosModel):
 
     @classmethod
     def get_default_fields(cls):
-        return ["date", (_('value'), "value"), "mode", "reference", "payer"]
+        return ["date", (_('value'), "value"), "mode", "reference", "payer", "bank_account"]
 
     @classmethod
     def get_edit_fields(cls):
@@ -202,10 +202,13 @@ class Payoff(LucteriosModel):
     def generate_accountlink(self):
         supporting = self.supporting.get_final_child()
         if (self.entry is not None) and (abs(supporting.get_total_rest_topay()) < 0.0001) and (supporting.entry_links() is not None) and (len(supporting.entry_links()) > 0):
-            entryline = supporting.entry_links()
-            for all_payoff in supporting.payoff_set.filter(supporting.payoff_query):
-                entryline.append(all_payoff.entry)
-            AccountLink.create_link(entryline)
+            try:
+                entryline = supporting.entry_links()
+                for all_payoff in supporting.payoff_set.filter(supporting.payoff_query):
+                    entryline.append(all_payoff.entry)
+                AccountLink.create_link(entryline)
+            except LucteriosException:
+                pass
 
     def generate_accounting(self, third_amounts):
         supporting = self.supporting.get_final_child()
