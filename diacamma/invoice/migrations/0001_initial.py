@@ -343,7 +343,7 @@ class Migration(migrations.Migration):
             name='Bill',
             fields=[
                 ('supporting_ptr', models.OneToOneField(auto_created=True, parent_link=True,
-                                                        serialize=False, primary_key=True, to='payoff.Supporting')),
+                                                        serialize=False, primary_key=True, to='payoff.Supporting', on_delete=models.CASCADE)),
                 ('fiscal_year', models.ForeignKey(on_delete=deletion.PROTECT,
                                                   null=True, to='accounting.FiscalYear', default=None, verbose_name='fiscal year')),
                 ('bill_type', models.IntegerField(null=False, default=0, db_index=True, verbose_name='bill type', choices=[
@@ -384,7 +384,7 @@ class Migration(migrations.Migration):
                 ('article', models.ForeignKey(null=True, default=None, to='invoice.Article',
                                               on_delete=deletion.PROTECT, verbose_name='article')),
                 ('bill', models.ForeignKey(
-                    to='invoice.Bill', verbose_name='bill')),
+                    to='invoice.Bill', verbose_name='bill', on_delete=models.CASCADE)),
             ],
             options={
                 'verbose_name_plural': 'details',

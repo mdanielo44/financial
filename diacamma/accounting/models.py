@@ -51,7 +51,7 @@ from lucterios.framework.signal_and_lock import RecordLocker
 
 class Third(LucteriosModel):
     contact = models.ForeignKey(
-        'contacts.AbstractContact', verbose_name=_('contact'), null=False)
+        'contacts.AbstractContact', verbose_name=_('contact'), null=False, on_delete=models.CASCADE)
     status = models.IntegerField(
         verbose_name=_('status'), choices=((0, _('Enable')), (1, _('Disable'))))
 

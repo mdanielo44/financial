@@ -70,7 +70,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(
                     auto_created=True, serialize=False, primary_key=True, verbose_name='ID')),
                 ('supporting', models.ForeignKey(
-                    to='payoff.Supporting', verbose_name='supporting')),
+                    to='payoff.Supporting', verbose_name='supporting', on_delete=models.CASCADE)),
                 ('date', models.DateField(verbose_name='date')),
                 ('amount', models.DecimalField(decimal_places=3, max_digits=10, validators=[django.core.validators.MinValueValidator(
                     0.0), django.core.validators.MaxValueValidator(9999999.999)], verbose_name='amount', default=0.0)),

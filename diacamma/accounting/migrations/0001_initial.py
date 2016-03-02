@@ -118,7 +118,7 @@ class Migration(migrations.Migration):
                 ('status', models.IntegerField(
                     choices=[(0, 'Enable'), (1, 'Disable')], verbose_name='status')),
                 ('contact', models.ForeignKey(
-                    verbose_name='contact', to='contacts.AbstractContact')),
+                    verbose_name='contact', to='contacts.AbstractContact', on_delete=models.CASCADE)),
             ],
             options={
                 'verbose_name': 'third',
@@ -309,7 +309,7 @@ class Migration(migrations.Migration):
                 ('amount', models.FloatField(
                     verbose_name='amount', default=0)),
                 ('model', models.ForeignKey(
-                    default=0, verbose_name='model', to='accounting.ModelEntry')),
+                    default=0, verbose_name='model', to='accounting.ModelEntry', on_delete=models.CASCADE)),
                 ('third', models.ForeignKey(to='accounting.Third',
                                             verbose_name='third', on_delete=models.PROTECT, null=True)),
             ],
