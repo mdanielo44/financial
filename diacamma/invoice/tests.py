@@ -1192,7 +1192,7 @@ class BillTest(InvoiceTest):
         self.assert_xml_equal(
             'COMPONENTS/LABELFORM[@name="total_rest_topay"]', "100.00€")
         self.assert_count_equal(
-            'COMPONENTS/GRID[@name="payoff"]/HEADER', 5)
+            'COMPONENTS/GRID[@name="payoff"]/HEADER', 6)
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="payoff"]/RECORD', 0)
         self.assert_count_equal(
@@ -1229,7 +1229,7 @@ class BillTest(InvoiceTest):
         self.assert_xml_equal(
             'COMPONENTS/LABELFORM[@name="total_rest_topay"]', "40.00€")
         self.assert_count_equal(
-            'COMPONENTS/GRID[@name="payoff"]/HEADER', 5)
+            'COMPONENTS/GRID[@name="payoff"]/HEADER', 6)
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="payoff"]/RECORD', 1)
         self.assert_count_equal(
@@ -1244,6 +1244,8 @@ class BillTest(InvoiceTest):
             'COMPONENTS/GRID[@name="payoff"]/RECORD[1]/VALUE[@name="payer"]', "Ma'a Dalton")
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="payoff"]/RECORD[1]/VALUE[@name="reference"]', "abc")
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="payoff"]/RECORD[1]/VALUE[@name="bank_account"]', "---")
 
         self.factory.xfer = EntryLineAccountList()
         self.call('/diacamma.accounting/entryLineAccountList',
@@ -1285,7 +1287,7 @@ class BillTest(InvoiceTest):
         self.assert_xml_equal(
             'COMPONENTS/LABELFORM[@name="total_rest_topay"]', "0.00€")
         self.assert_count_equal(
-            'COMPONENTS/GRID[@name="payoff"]/HEADER', 5)
+            'COMPONENTS/GRID[@name="payoff"]/HEADER', 6)
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="payoff"]/RECORD', 2)
         self.assert_count_equal(
@@ -1345,7 +1347,7 @@ class BillTest(InvoiceTest):
         self.assert_xml_equal(
             'COMPONENTS/LABELFORM[@name="total_rest_topay"]', "0.00€")
         self.assert_count_equal(
-            'COMPONENTS/GRID[@name="payoff"]/HEADER', 4)
+            'COMPONENTS/GRID[@name="payoff"]/HEADER', 5)
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="payoff"]/RECORD', 1)
         self.assert_count_equal(
@@ -1358,6 +1360,8 @@ class BillTest(InvoiceTest):
             'COMPONENTS/GRID[@name="payoff"]/RECORD[1]/VALUE[@name="value"]', "50.00€")
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="payoff"]/RECORD[1]/VALUE[@name="reference"]', "ijk")
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="payoff"]/RECORD[1]/VALUE[@name="bank_account"]', "My bank")
 
         self.factory.xfer = EntryLineAccountList()
         self.call('/diacamma.accounting/entryLineAccountList',
