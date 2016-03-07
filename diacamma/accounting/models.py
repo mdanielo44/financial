@@ -421,7 +421,7 @@ class CostAccounting(LucteriosModel):
 
     @classmethod
     def get_edit_fields(cls):
-        return ['name', 'description']
+        return ['name', 'description', 'last_costaccounting']
 
     @property
     def total_revenue(self):

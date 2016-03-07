@@ -47,23 +47,34 @@ def get_spaces(size):
     return ''.ljust(size, '-').replace('-', '&#160;')
 
 
-def convert_query_to_account(query):
-    total = 0
+def convert_query_to_account(query1, query2=None):
+    total1 = 0
+    total2 = None
     dict_account = {}
-    for data_line in query:
+    for data_line in EntryLineAccount.objects.filter(query1).values('account').annotate(data_sum=Sum('amount')):
         account = ChartsAccount.objects.get(
             id=data_line['account'])
-        account_txt = six.text_type(account)
         if abs(data_line['data_sum']) > 0.0001:
             dict_account[account.code] = [
-                account_txt, format_devise(data_line['data_sum'], 5)]
-            total += data_line['data_sum']
+                six.text_type(account), format_devise(data_line['data_sum'], 5), None]
+            total1 += data_line['data_sum']
+    if query2 is not None:
+        total2 = 0
+        for data_line in EntryLineAccount.objects.filter(query2).values('account').annotate(data_sum=Sum('amount')):
+            account = ChartsAccount.objects.get(id=data_line['account'])
+            if abs(data_line['data_sum']) > 0.0001:
+                if account.code not in dict_account.keys():
+                    dict_account[account.code] = [
+                        six.text_type(account), None, 0]
+                dict_account[account.code][2] = format_devise(
+                    data_line['data_sum'], 5)
+                total2 += data_line['data_sum']
     res = []
     keys = list(dict_account.keys())
     keys.sort()
     for key in keys:
         res.append(dict_account[key])
-    return res, total
+    return res, total1, total2
 
 
 class FiscalYearReport(XferContainerCustom):
@@ -76,6 +87,7 @@ class FiscalYearReport(XferContainerCustom):
         XferContainerCustom.__init__(self, **kwargs)
         self.grid = XferCompGrid('report')
         self.filter = None
+        self.lastfilter = None
 
     def fillresponse(self):
         self.fill_header()
@@ -94,6 +106,7 @@ class FiscalYearReport(XferContainerCustom):
         select_year.set_select_query(
             FiscalYear.objects.all())
         select_year.set_value(self.item.id)
+        select_year.set_needed(True)
         select_year.set_action(self.request, self.__class__.get_action(), {
                                'close': CLOSE_NO, 'modal': FORMTYPE_REFRESH})
         self.add_component(select_year)
@@ -139,10 +152,10 @@ class FiscalYearReport(XferContainerCustom):
         self.add_component(lbl)
 
     def _add_left_right_accounting(self, left_filter, rigth_filter, total_in_left):
-        data_line_left, total_left = convert_query_to_account(EntryLineAccount.objects.filter(
-            self.filter & left_filter).values('account').annotate(data_sum=Sum('amount')))
-        data_line_right, total_right = convert_query_to_account(EntryLineAccount.objects.filter(
-            self.filter & rigth_filter).values('account').annotate(data_sum=Sum('amount')))
+        data_line_left, total1_left, total2_left = convert_query_to_account(
+            self.filter & left_filter, self.lastfilter & left_filter if self.lastfilter is not None else None)
+        data_line_right, total1_right, total2_right = convert_query_to_account(
+            self.filter & rigth_filter, self.lastfilter & rigth_filter if self.lastfilter is not None else None)
         line_idx = 0
         for line_idx in range(max(len(data_line_left), len(data_line_right))):
             if line_idx < len(data_line_left):
@@ -150,39 +163,59 @@ class FiscalYearReport(XferContainerCustom):
                     line_idx, 'left', data_line_left[line_idx][0])
                 self.grid.set_value(
                     line_idx, 'left_n', data_line_left[line_idx][1])
+                if self.lastfilter is not None:
+                    self.grid.set_value(
+                        line_idx, 'left_n_1', data_line_left[line_idx][2])
             if line_idx < len(data_line_right):
                 self.grid.set_value(
                     line_idx, 'right', data_line_right[line_idx][0])
                 self.grid.set_value(
                     line_idx, 'right_n', data_line_right[line_idx][1])
+                if self.lastfilter is not None:
+                    self.grid.set_value(
+                        line_idx, 'right_n_1', data_line_right[line_idx][2])
         line_idx += 1
         self.grid.set_value(line_idx, 'left', '')
         self.grid.set_value(line_idx, 'right', '')
         line_idx += 1
-        if abs(total_left - total_right) > 0.0001:
+        if (abs(total1_left - total1_right) > 0.0001) or ((total2_left is not None) and (total2_right is not None) and (abs(total2_left - total2_right) > 0.0001)):
             if total_in_left:
                 self.grid.set_value(
                     line_idx, 'left', get_spaces(5) + "{[i]}%s{[/i]}" % _('result'))
                 self.grid.set_value(
-                    line_idx, 'left_n', format_devise(total_right - total_left, 5))
+                    line_idx, 'left_n', format_devise(total1_right - total1_left, 5))
+                if (self.lastfilter is not None) and (abs(total2_left - total2_right) > 0.0001):
+                    self.grid.set_value(
+                        line_idx, 'left_n_1', format_devise(total2_right - total2_left, 5))
                 self.grid.set_value(line_idx, 'right', '')
                 self.grid.set_value(line_idx, 'right_n', '')
+                self.grid.set_value(line_idx, 'right_n_1', '')
             else:
                 self.grid.set_value(line_idx, 'left', '')
                 self.grid.set_value(line_idx, 'left_n', '')
+                self.grid.set_value(line_idx, 'left_n_1', '')
                 self.grid.set_value(
                     line_idx, 'right', get_spaces(5) + "{[i]}%s{[/i]}" % _('result'))
                 self.grid.set_value(
-                    line_idx, 'right_n', "{[i]}%s{[/i]}" % format_devise(total_left - total_right, 5))
+                    line_idx, 'right_n', "{[i]}%s{[/i]}" % format_devise(total1_left - total1_right, 5))
+                if (self.lastfilter is not None) and (abs(total2_left - total2_right) > 0.0001):
+                    self.grid.set_value(
+                        line_idx, 'right_n_1', format_devise(total2_left - total2_right, 5))
             line_idx += 1
         self.grid.set_value(
             line_idx, 'left', get_spaces(10) + "{[u]}{[b]}%s{[/b]}{[/u]}" % _('total'))
         self.grid.set_value(
-            line_idx, 'left_n', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(total_left, total_right), 5))
+            line_idx, 'left_n', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(total1_left, total1_right), 5))
+        if self.lastfilter is not None:
+            self.grid.set_value(
+                line_idx, 'left_n_1', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(total2_left, total2_right), 5))
         self.grid.set_value(
             line_idx, 'right', get_spaces(10) + "{[u]}{[b]}%s{[/b]}{[/u]}" % _('total'))
         self.grid.set_value(
-            line_idx, 'right_n', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(total_left, total_right), 5))
+            line_idx, 'right_n', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(total1_left, total1_right), 5))
+        if self.lastfilter is not None:
+            self.grid.set_value(
+                line_idx, 'right_n_1', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(total2_left, total2_right), 5))
 
     def calcul_table(self):
         pass
@@ -199,13 +232,31 @@ class FiscalYearReport(XferContainerCustom):
 class FiscalYearBalanceSheet(FiscalYearReport):
     caption = _("Balance sheet")
 
-    def __init__(self, **kwargs):
-        FiscalYearReport.__init__(self, **kwargs)
+    def fill_header(self):
+        FiscalYearReport.fill_header(self)
+        if self.item.last_fiscalyear is not None:
+            self.lastfilter = Q(entry__year=self.item.last_fiscalyear)
+            lbl = XferCompLabelForm('lbllast_year')
+            lbl.set_value_as_name(_("Last year"))
+            lbl.set_location(1, 8)
+            self.add_component(lbl)
+            lbl = XferCompLabelForm('last_year')
+            lbl.set_value(six.text_type(self.item.last_fiscalyear))
+            lbl.set_location(2, 8, 3)
+            self.add_component(lbl)
+            lbl = XferCompLabelForm('last_result')
+            lbl.set_value(self.item.last_fiscalyear.total_result_text)
+            lbl.set_location(2, 9, 3)
+            self.add_component(lbl)
         self.grid.add_header('left', _('Assets'))
         self.grid.add_header('left_n', _('Value'))
+        if self.lastfilter is not None:
+            self.grid.add_header('left_n_1', _('Last year'))
         self.grid.add_header('space', '')
         self.grid.add_header('right', _('Liabilities'))
         self.grid.add_header('right_n', _('Value'))
+        if self.lastfilter is not None:
+            self.grid.add_header('right_n_1', _('Last year'))
 
     def calcul_table(self):
         self._add_left_right_accounting(
@@ -216,13 +267,31 @@ class FiscalYearBalanceSheet(FiscalYearReport):
 class FiscalYearIncomeStatement(FiscalYearReport):
     caption = _("Income statement")
 
-    def __init__(self, **kwargs):
-        FiscalYearReport.__init__(self, **kwargs)
+    def fill_header(self):
+        FiscalYearReport.fill_header(self)
+        if self.item.last_fiscalyear is not None:
+            self.lastfilter = Q(entry__year=self.item.last_fiscalyear)
+            lbl = XferCompLabelForm('lbllast_year')
+            lbl.set_value_as_name(_("Last year"))
+            lbl.set_location(1, 8)
+            self.add_component(lbl)
+            lbl = XferCompLabelForm('last_year')
+            lbl.set_value(six.text_type(self.item.last_fiscalyear))
+            lbl.set_location(2, 8, 3)
+            self.add_component(lbl)
+            lbl = XferCompLabelForm('last_result')
+            lbl.set_value(self.item.last_fiscalyear.total_result_text)
+            lbl.set_location(2, 9, 3)
+            self.add_component(lbl)
         self.grid.add_header('left', _('Expenses'))
         self.grid.add_header('left_n', _('Value'))
+        if self.lastfilter is not None:
+            self.grid.add_header('left_n_1', _('Last year'))
         self.grid.add_header('space', '')
         self.grid.add_header('right', _('Revenues'))
         self.grid.add_header('right_n', _('Value'))
+        if self.lastfilter is not None:
+            self.grid.add_header('right_n_1', _('Last year'))
 
     def calcul_table(self):
         self._add_left_right_accounting(
@@ -350,6 +419,7 @@ class FiscalYearReportPrint(XferPrintAction):
     icon = "accountingReport.png"
     model = FiscalYear
     field_id = 'year'
+    with_text_export = True
 
     def __init__(self):
         XferPrintAction.__init__(self)
@@ -375,14 +445,6 @@ class CostAccountingIncomeStatement(FiscalYearReport):
     field_id = 'costaccounting'
     caption = _("Income statement of cost accounting")
 
-    def __init__(self, **kwargs):
-        FiscalYearReport.__init__(self, **kwargs)
-        self.grid.add_header('left', _('Expenses'))
-        self.grid.add_header('left_n', _('Value'))
-        self.grid.add_header('space', '')
-        self.grid.add_header('right', _('Revenues'))
-        self.grid.add_header('right_n', _('Value'))
-
     def fill_header(self):
         img = XferCompImage('img')
         img.set_value(self.icon_path())
@@ -402,6 +464,26 @@ class CostAccountingIncomeStatement(FiscalYearReport):
         lbl.set_location(0, 3)
         self.add_component(lbl)
         self.filter = Q(entry__costaccounting=self.item)
+        if self.item.last_costaccounting is not None:
+            self.lastfilter = Q(entry__costaccounting=self.item.last_costaccounting)
+            lbl = XferCompLabelForm('lbllast')
+            lbl.set_value_as_name(_("Last"))
+            lbl.set_location(1, 8)
+            self.add_component(lbl)
+            lbl = XferCompLabelForm('last')
+            lbl.set_value(six.text_type(self.item.last_costaccounting))
+            lbl.set_location(2, 8, 3)
+            self.add_component(lbl)
+
+        self.grid.add_header('left', _('Expenses'))
+        self.grid.add_header('left_n', _('Value'))
+        if self.lastfilter is not None:
+            self.grid.add_header('left_n_1', _('Last'))
+        self.grid.add_header('space', '')
+        self.grid.add_header('right', _('Revenues'))
+        self.grid.add_header('right_n', _('Value'))
+        if self.lastfilter is not None:
+            self.grid.add_header('right_n_1', _('Last'))
 
     def calcul_table(self):
         self._add_left_right_accounting(

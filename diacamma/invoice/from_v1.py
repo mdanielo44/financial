@@ -199,6 +199,8 @@ class InvoiceMigrate(MigrateAbstract):
             pname = ''
             if param_name == 'ModeTVA':
                 pname = 'invoice-vat-mode'
+                if param_value == '':
+                    param_value = '0'
             elif param_name == 'DefaultCompteVente':
                 pname = 'invoice-default-sell-account'
                 param_value = convert_code(param_value)

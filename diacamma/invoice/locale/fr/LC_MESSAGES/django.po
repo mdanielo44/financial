@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-02-24 13:03+0000\n"
+"POT-Creation-Date: 2016-03-07 15:39+0000\n"
 "PO-Revision-Date: 2016-01-14 21:59+0000\n"
 "Last-Translator: b'Paul ARULATEDA <paul531@orange.fr>'\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -81,7 +81,7 @@ msgid "bill"
 msgstr "facture"
 
 #: migrations/0001_initial.py:150 migrations/0001_initial.py:276 models.py:106
-#: models.py:488 views.py:498
+#: models.py:488 views.py:500
 msgid "article"
 msgstr "article"
 
@@ -314,7 +314,7 @@ msgstr "Gestion de liste de factures"
 msgid "Bill"
 msgstr "Facture"
 
-#: views.py:99 views.py:586
+#: views.py:99 views.py:588
 msgid "Edit"
 msgstr "Editer"
 
@@ -326,7 +326,7 @@ msgstr "Valider"
 msgid "Archive"
 msgstr "Archiver"
 
-#: views.py:112 views.py:170 views.py:522
+#: views.py:112 views.py:170 views.py:524
 msgid "Print"
 msgstr "Imprimer"
 
@@ -457,7 +457,7 @@ msgstr "Supprimer un détail"
 msgid "Management of article list"
 msgstr "Gestion de liste d'articles"
 
-#: views.py:416 views.py:519
+#: views.py:416 views.py:521
 msgid "Articles"
 msgstr "Articles"
 
@@ -498,48 +498,48 @@ msgstr "Statistique"
 msgid "Statistics in date of %s"
 msgstr "Statistique en date du %s"
 
-#: views.py:482
+#: views.py:484
 msgid "customer"
 msgstr "client"
 
-#: views.py:483 views.py:499
+#: views.py:485 views.py:501
 msgid "amount"
 msgstr "montant"
 
-#: views.py:484 views.py:502
+#: views.py:486 views.py:504
 msgid "ratio (%)"
 msgstr "ratio (%)"
 
-#: views.py:500
+#: views.py:502
 msgid "number"
 msgstr "nombre"
 
-#: views.py:501
+#: views.py:503
 msgid "mean"
 msgstr "moyen"
 
-#: views.py:517
+#: views.py:519
 msgid "Customers"
 msgstr "Clients"
 
-#: views.py:523
+#: views.py:525
 msgid "Close"
 msgstr "Fermer"
 
-#: views.py:528
+#: views.py:530
 msgid "Print statistic"
 msgstr "Impression de statistique"
 
-#: views.py:542
+#: views.py:544
 msgid "Financial"
 msgstr "Financier"
 
-#: views.py:547 views.py:564
+#: views.py:549 views.py:566
 #, python-format
 msgid "There are %(build)d bills in building and %(valid)d validated"
 msgstr "Il y a %(build)d factures en construction et %(valid)d validées"
 
-#: views.py:557 views.py:578 views_conf.py:95
+#: views.py:559 views.py:580 views_conf.py:95
 msgid "Invoice"
 msgstr "Facturier"
 
