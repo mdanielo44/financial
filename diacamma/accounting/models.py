@@ -378,6 +378,12 @@ class FiscalYear(LucteriosModel):
         save_file(get_user_path("accounting", file_name), fiscal_year_xml)
         return join("accounting", file_name)
 
+    def get_identify(self):
+        if self.begin.year != self.end.year:
+            return "%d/%d" % (self.begin.year, self.end.year)
+        else:
+            return six.text_type(self.begin.year)
+
     def __str__(self):
         status = get_value_if_choices(self.status, self._meta.get_field(
             'status'))
@@ -489,6 +495,9 @@ class ChartsAccount(LucteriosModel):
 
     def __str__(self):
         return "[%s] %s" % (self.code, self.name)
+
+    def get_name(self):
+        return "[%s] %s" % (correct_accounting_code(self.code), self.name)
 
     def get_last_year_total(self):
         return get_amount_sum(self.entrylineaccount_set.filter(entry__journal__id=1).aggregate(Sum('amount')))
