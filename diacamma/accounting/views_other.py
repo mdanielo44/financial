@@ -6,7 +6,7 @@ from django.db.models import Q
 
 from lucterios.framework.xferadvance import XferDelete, XferShowEditor
 from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage, \
-    SELECT_SINGLE, CLOSE_NO, FORMTYPE_REFRESH, WrapAction
+    SELECT_SINGLE, CLOSE_NO, FORMTYPE_REFRESH, WrapAction, SELECT_MULTI
 from lucterios.framework.xferadvance import XferListEditor
 from lucterios.framework.xferadvance import XferAddEditor
 from lucterios.framework.xfergraphic import XferContainerAcknowledge
@@ -16,7 +16,8 @@ from lucterios.framework.xfercomponents import XferCompCheck, XferCompLabelForm,
 
 from diacamma.accounting.models import CostAccounting, ModelLineEntry, \
     ModelEntry, EntryAccount, FiscalYear
-from diacamma.accounting.views_reports import CostAccountingIncomeStatement
+from diacamma.accounting.views_reports import CostAccountingIncomeStatement,\
+    CostAccountingLedger, CostAccountingTrialBalance
 from diacamma.accounting.views_entries import EntryAccountEdit
 from datetime import date
 
@@ -55,7 +56,11 @@ class CostAccountingList(XferListEditor):
         grid.add_action(self.request, CostAccountingClose.get_action(), {
                         'unique': SELECT_SINGLE, 'close': CLOSE_NO})
         grid.add_action(self.request, CostAccountingIncomeStatement.get_action(
-            _('Report'), 'images/print.png'), {'unique': SELECT_SINGLE, 'close': CLOSE_NO, 'modal': FORMTYPE_NOMODAL})
+            _("Report"), 'images/print.png'), {'unique': SELECT_MULTI, 'close': CLOSE_NO, 'modal': FORMTYPE_NOMODAL})
+        grid.add_action(self.request, CostAccountingLedger.get_action(
+            _("Ledger"), 'images/print.png'), {'unique': SELECT_MULTI, 'close': CLOSE_NO, 'modal': FORMTYPE_NOMODAL})
+        grid.add_action(self.request, CostAccountingTrialBalance.get_action(
+            _("Trial balance"), 'images/print.png'), {'unique': SELECT_MULTI, 'close': CLOSE_NO, 'modal': FORMTYPE_NOMODAL})
 
 
 @MenuManage.describ('accounting.add_fiscalyear')

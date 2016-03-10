@@ -87,7 +87,6 @@ class FiscalYearReport(XferContainerCustom):
 
     def __init__(self, **kwargs):
         XferContainerCustom.__init__(self, **kwargs)
-        self.grid = XferCompGrid('report')
         self.filter = None
         self.lastfilter = None
 
@@ -95,6 +94,40 @@ class FiscalYearReport(XferContainerCustom):
         self.fill_header()
         self.calcul_table()
         self.fill_body()
+        self.fill_buttons()
+
+    def define_gridheader(self):
+        self.grid = XferCompGrid('report_%d' % self.item.id)
+        self.grid.add_header('left', _('Assets'))
+        self.grid.add_header('left_n', self.item.get_identify())
+        if self.lastfilter is not None:
+            self.grid.add_header(
+                'left_n_1', self.item.last_fiscalyear.get_identify())
+        self.grid.add_header('space', '')
+        self.grid.add_header('right', _('Liabilities'))
+        self.grid.add_header('right_n', self.item.get_identify())
+        if self.lastfilter is not None:
+            self.grid.add_header(
+                'right_n_1', self.item.last_fiscalyear.get_identify())
+
+    def fill_filterheader(self):
+        pass
+
+    def fill_filterCode(self):
+        if self.add_filtering:
+            filtercode = self.getparam('filtercode', '')
+            lbl = XferCompLabelForm('filtercode_lbl')
+            lbl.set_value_as_name(_("Accounting code starting with"))
+            lbl.set_location(2, 3, 1)
+            self.add_component(lbl)
+            edt = XferCompEdit('filtercode')
+            edt.set_value(filtercode)
+            edt.set_location(3, 3, 2)
+            edt.set_action(self.request, self.__class__.get_action(), {
+                           'close': CLOSE_NO, 'modal': FORMTYPE_REFRESH})
+            self.add_component(edt)
+            if filtercode != '':
+                self.filter &= Q(account__code__startswith=filtercode)
 
     def fill_header(self):
         self.item = FiscalYear.get_current(self.getparam("year"))
@@ -124,25 +157,13 @@ class FiscalYearReport(XferContainerCustom):
                                   'close': CLOSE_NO, 'modal': FORMTYPE_REFRESH})
             self.filter &= Q(entry__date_value__gte=self.item.begin)
             self.filter &= Q(entry__date_value__lte=self.item.end)
-
-        if self.add_filtering:
-            filtercode = self.getparam('filtercode', '')
-            lbl = XferCompLabelForm('filtercode_lbl')
-            lbl.set_value_as_name(_("Accounting code starting with"))
-            lbl.set_location(2, 3, 1)
-            self.add_component(lbl)
-            edt = XferCompEdit('filtercode')
-            edt.set_value(filtercode)
-            edt.set_location(3, 3, 2)
-            edt.set_action(self.request, self.__class__.get_action(), {
-                           'close': CLOSE_NO, 'modal': FORMTYPE_REFRESH})
-            self.add_component(edt)
-            if filtercode != '':
-                self.filter &= Q(account__code__startswith=filtercode)
+        self.fill_filterCode()
         lbl = XferCompLabelForm("result")
         lbl.set_value_center(self.item.total_result_text)
         lbl.set_location(0, 6, 6)
         self.add_component(lbl)
+        self.fill_filterheader()
+        self.define_gridheader()
 
     def _add_left_right_accounting(self, left_filter, rigth_filter, total_in_left):
         data_line_left, total1_left, total2_left = convert_query_to_account(
@@ -216,6 +237,8 @@ class FiscalYearReport(XferContainerCustom):
     def fill_body(self):
         self.grid.set_location(0, 10, 6)
         self.add_component(self.grid)
+
+    def fill_buttons(self):
         self.add_action(FiscalYearReportPrint.get_action(
             _("Print"), "images/print.png"), {'close': CLOSE_NO, 'params': {'classname': self.__class__.__name__}})
         self.add_action(WrapAction(_('Close'), 'images/close.png'), {})
@@ -225,8 +248,7 @@ class FiscalYearReport(XferContainerCustom):
 class FiscalYearBalanceSheet(FiscalYearReport):
     caption = _("Balance sheet")
 
-    def fill_header(self):
-        FiscalYearReport.fill_header(self)
+    def fill_filterheader(self):
         if self.item.last_fiscalyear is not None:
             self.lastfilter = Q(entry__year=self.item.last_fiscalyear)
             lbl = XferCompLabelForm('sep_last')
@@ -245,15 +267,6 @@ class FiscalYearBalanceSheet(FiscalYearReport):
             lbl.set_value(self.item.last_fiscalyear.total_result_text)
             lbl.set_location(2, 13, 4)
             self.add_component(lbl)
-        self.grid.add_header('left', _('Assets'))
-        self.grid.add_header('left_n', self.item.get_identify())
-        if self.lastfilter is not None:
-            self.grid.add_header('left_n_1', self.item.last_fiscalyear.get_identify())
-        self.grid.add_header('space', '')
-        self.grid.add_header('right', _('Liabilities'))
-        self.grid.add_header('right_n', self.item.get_identify())
-        if self.lastfilter is not None:
-            self.grid.add_header('right_n_1', self.item.last_fiscalyear.get_identify())
 
     def calcul_table(self):
         self._add_left_right_accounting(
@@ -264,8 +277,7 @@ class FiscalYearBalanceSheet(FiscalYearReport):
 class FiscalYearIncomeStatement(FiscalYearReport):
     caption = _("Income statement")
 
-    def fill_header(self):
-        FiscalYearReport.fill_header(self)
+    def fill_filterheader(self):
         if self.item.last_fiscalyear is not None:
             self.lastfilter = Q(entry__year=self.item.last_fiscalyear)
             lbl = XferCompLabelForm('sep_last')
@@ -284,15 +296,6 @@ class FiscalYearIncomeStatement(FiscalYearReport):
             lbl.set_value(self.item.last_fiscalyear.total_result_text)
             lbl.set_location(2, 13, 4)
             self.add_component(lbl)
-        self.grid.add_header('left', _('Expenses'))
-        self.grid.add_header('left_n', self.item.get_identify())
-        if self.lastfilter is not None:
-            self.grid.add_header('left_n_1', self.item.last_fiscalyear.get_identify())
-        self.grid.add_header('space', '')
-        self.grid.add_header('right', _('Revenues'))
-        self.grid.add_header('right_n', self.item.get_identify())
-        if self.lastfilter is not None:
-            self.grid.add_header('right_n_1', self.item.last_fiscalyear.get_identify())
 
     def calcul_table(self):
         self._add_left_right_accounting(
@@ -306,16 +309,19 @@ class FiscalYearLedger(FiscalYearReport):
 
     def __init__(self, **kwargs):
         FiscalYearReport.__init__(self, **kwargs)
+        self.last_account = None
+        self.last_third = None
+        self.last_total = 0
+        self.line_idx = 1
+
+    def define_gridheader(self):
+        self.grid = XferCompGrid('report_%d' % self.item.id)
         self.grid.add_header('entry.num', _('numeros'))
         self.grid.add_header('entry.date_entry', _('date entry'))
         self.grid.add_header('entry.date_value', _('date value'))
         self.grid.add_header('entry.designation', _('name'))
         self.grid.add_header('debit', _('debit'))
         self.grid.add_header('credit', _('credit'))
-        self.last_account = None
-        self.last_third = None
-        self.last_total = 0
-        self.line_idx = 1
 
     def _add_total_account(self):
         if self.last_account is not None:
@@ -361,8 +367,8 @@ class FiscalYearTrialBalance(FiscalYearReport):
     caption = _("Trial balance")
     add_filtering = True
 
-    def __init__(self, **kwargs):
-        FiscalYearReport.__init__(self, **kwargs)
+    def define_gridheader(self):
+        self.grid = XferCompGrid('report_%d' % self.item.id)
         self.grid.add_header('designation', _('name'))
         self.grid.add_header('total_debit', _('debit sum'))
         self.grid.add_header('total_credit', _('credit sum'))
@@ -421,6 +427,7 @@ class FiscalYearReportPrint(XferPrintAction):
     model = FiscalYear
     field_id = 'year'
     with_text_export = True
+    tab_change_page = True
 
     def __init__(self):
         XferPrintAction.__init__(self)
@@ -439,12 +446,33 @@ class FiscalYearReportPrint(XferPrintAction):
         return gen
 
 
-@MenuManage.describ('accounting.change_entryaccount')
-class CostAccountingIncomeStatement(FiscalYearReport):
+class CostAccountingReport(FiscalYearReport):
     icon = "costAccounting.png"
     model = CostAccounting
     field_id = 'costaccounting'
-    caption = _("Income statement of cost accounting")
+
+    def fillresponse(self):
+        for self.item in self.items:
+            self.new_tab(six.text_type(self.item))
+            self.fill_header()
+            self.calcul_table()
+            self.fill_body()
+        self.fill_buttons()
+
+    def define_gridheader(self):
+        self.grid = XferCompGrid('report_%d' % self.item.id)
+        self.grid.add_header('left', _('Expenses'))
+        self.grid.add_header('left_n', _('Value'))
+        if self.lastfilter is not None:
+            self.grid.add_header('left_n_1', _('Last'))
+        self.grid.add_header('space', '')
+        self.grid.add_header('right', _('Revenues'))
+        self.grid.add_header('right_n', _('Value'))
+        if self.lastfilter is not None:
+            self.grid.add_header('right_n_1', _('Last'))
+
+    def fill_filterheader(self):
+        pass
 
     def fill_header(self):
         img = XferCompImage('img')
@@ -458,35 +486,76 @@ class CostAccountingIncomeStatement(FiscalYearReport):
         self.add_component(lbl)
         lbl = XferCompLabelForm('name')
         lbl.set_value(self.item)
-        lbl.set_location(2, 2)
+        lbl.set_location(2, 2, 4)
         self.add_component(lbl)
-        lbl = XferCompLabelForm('sep1')
-        lbl.set_value("{[br/]}")
-        lbl.set_location(0, 3)
-        self.add_component(lbl)
+        self.filltab_from_model(1, 6, True, [(
+            (_('total revenue'), 'total_revenue'), (_('total expense'), 'total_expense'))])
         self.filter = Q(entry__costaccounting=self.item)
+        self.fill_filterCode()
+        self.fill_filterheader()
+        self.define_gridheader()
+
+
+@MenuManage.describ('accounting.change_entryaccount')
+class CostAccountingIncomeStatement(CostAccountingReport, FiscalYearIncomeStatement):
+    caption = _("Income statement of cost accounting")
+
+    def fill_header(self):
+        CostAccountingReport.fill_header(self)
+
+    def fill_filterheader(self):
         if self.item.last_costaccounting is not None:
             self.lastfilter = Q(
                 entry__costaccounting=self.item.last_costaccounting)
+            lbl = XferCompLabelForm('sep_last')
+            lbl.set_value("{[br/]}{[br/]}")
+            lbl.set_location(2, 11, 3)
+            self.add_component(lbl)
             lbl = XferCompLabelForm('lbllast')
             lbl.set_value_as_name(_("Last"))
-            lbl.set_location(1, 8)
+            lbl.set_location(1, 12)
             self.add_component(lbl)
             lbl = XferCompLabelForm('last')
             lbl.set_value(six.text_type(self.item.last_costaccounting))
-            lbl.set_location(2, 8, 3)
+            lbl.set_location(2, 12, 4)
             self.add_component(lbl)
-
-        self.grid.add_header('left', _('Expenses'))
-        self.grid.add_header('left_n', _('Value'))
-        if self.lastfilter is not None:
-            self.grid.add_header('left_n_1', _('Last'))
-        self.grid.add_header('space', '')
-        self.grid.add_header('right', _('Revenues'))
-        self.grid.add_header('right_n', _('Value'))
-        if self.lastfilter is not None:
-            self.grid.add_header('right_n_1', _('Last'))
+            old_accounting = self.item
+            self.item = self.item.last_costaccounting
+            try:
+                self.filltab_from_model(1, 13, True, [(
+                    (_('total revenue'), 'total_revenue'), (_('total expense'), 'total_expense'))])
+            finally:
+                self.item = old_accounting
 
     def calcul_table(self):
-        self._add_left_right_accounting(
-            Q(account__type_of_account=4), Q(account__type_of_account=3), True)
+        FiscalYearIncomeStatement.calcul_table(self)
+
+
+@MenuManage.describ('accounting.change_entryaccount')
+class CostAccountingLedger(CostAccountingReport, FiscalYearLedger):
+    caption = _("Ledger of cost accounting")
+    add_filtering = True
+
+    def fill_header(self):
+        CostAccountingReport.fill_header(self)
+
+    def define_gridheader(self):
+        FiscalYearLedger.define_gridheader(self)
+
+    def calcul_table(self):
+        FiscalYearLedger.calcul_table(self)
+
+
+@MenuManage.describ('accounting.change_entryaccount')
+class CostAccountingTrialBalance(CostAccountingReport, FiscalYearTrialBalance):
+    caption = _("Trial balance of cost accounting")
+    add_filtering = True
+
+    def fill_header(self):
+        CostAccountingReport.fill_header(self)
+
+    def define_gridheader(self):
+        FiscalYearTrialBalance.define_gridheader(self)
+
+    def calcul_table(self):
+        FiscalYearTrialBalance.calcul_table(self)

@@ -854,7 +854,7 @@ class EntryLineAccount(LucteriosModel):
     @classmethod
     def get_other_fields(cls):
         return ['entry.num', 'entry.date_entry', 'entry.date_value', (_('account'), 'entry_account'),
-                'entry.designation', (_('debit'), 'debit'), (_('credit'), 'credit'), 'entry.link', 'entry.costaccounting']
+                (_('name'), 'designation_ref'), (_('debit'), 'debit'), (_('credit'), 'credit'), 'entry.link', 'entry.costaccounting']
 
     @classmethod
     def get_edit_fields(cls):
@@ -887,6 +887,13 @@ class EntryLineAccount(LucteriosModel):
             return six.text_type(self.account)
         else:
             return "[%s %s]" % (self.account.code, six.text_type(self.third))
+
+    @property
+    def designation_ref(self):
+        val = self.entry.designation
+        if (self.reference is not None) and (self.reference != ''):
+            val = "%s{[br/]}%s" % (val, self.reference)
+        return val
 
     def get_debit(self):
         try:
