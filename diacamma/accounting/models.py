@@ -981,8 +981,8 @@ class EntryLineAccount(LucteriosModel):
             new_entry_line.third = Third.objects.get(
                 id=int(serial_vals[2]))
         new_entry_line.amount = float(serial_vals[3])
-        new_entry_line.reference = "|".join(serial_vals[4:-1])
-        if new_entry_line.reference == "None":
+        new_entry_line.reference = "".join(serial_vals[4:-1])
+        if new_entry_line.reference.startswith("None"):
             new_entry_line.reference = None
         return new_entry_line
 

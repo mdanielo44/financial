@@ -505,7 +505,7 @@ class BillTest(InvoiceTest):
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="entry_account"]', '[411 Dalton Jack]')
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="entry.designation"]', 'facture A-1 - 1 avril 2015')
+            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="designation_ref"]', 'facture A-1 - 1 avril 2015')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="debit"]', '107.45€')
         self.assert_xml_equal(
@@ -524,7 +524,7 @@ class BillTest(InvoiceTest):
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="entry_account"]', '[709] 709')
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="entry.designation"]', 'facture A-1 - 1 avril 2015')
+            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="designation_ref"]', 'facture A-1 - 1 avril 2015')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="debit"]', '5.00€')
         self.assert_xml_equal(
@@ -541,7 +541,7 @@ class BillTest(InvoiceTest):
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[3]/VALUE[@name="entry_account"]', '[701] 701')
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[3]/VALUE[@name="entry.designation"]', 'facture A-1 - 1 avril 2015')
+            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[3]/VALUE[@name="designation_ref"]', 'facture A-1 - 1 avril 2015')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[3]/VALUE[@name="debit"]', None)
         self.assert_xml_equal(
@@ -558,7 +558,7 @@ class BillTest(InvoiceTest):
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[4]/VALUE[@name="entry_account"]', '[706] 706')
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[4]/VALUE[@name="entry.designation"]', 'facture A-1 - 1 avril 2015')
+            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[4]/VALUE[@name="designation_ref"]', 'facture A-1 - 1 avril 2015')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[4]/VALUE[@name="debit"]', None)
         self.assert_xml_equal(
@@ -575,7 +575,7 @@ class BillTest(InvoiceTest):
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[5]/VALUE[@name="entry_account"]', '[707] 707')
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[5]/VALUE[@name="entry.designation"]', 'facture A-1 - 1 avril 2015')
+            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[5]/VALUE[@name="designation_ref"]', 'facture A-1 - 1 avril 2015')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[5]/VALUE[@name="debit"]', None)
         self.assert_xml_equal(
@@ -803,7 +803,7 @@ class BillTest(InvoiceTest):
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="entry_account"]', '[411 Dalton Jack]')
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="entry.designation"]', 'avoir A-1 - 1 avril 2015')
+            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="designation_ref"]', 'avoir A-1 - 1 avril 2015')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="debit"]', None)
         self.assert_xml_equal(
@@ -820,7 +820,7 @@ class BillTest(InvoiceTest):
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="entry_account"]', '[706] 706')
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="entry.designation"]', 'avoir A-1 - 1 avril 2015')
+            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="designation_ref"]', 'avoir A-1 - 1 avril 2015')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="debit"]', "88.80€")
         self.assert_xml_equal(
@@ -882,7 +882,7 @@ class BillTest(InvoiceTest):
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="entry_account"]', '[411 Dalton Jack]')
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="entry.designation"]', 'reçu A-1 - 1 avril 2015')
+            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="designation_ref"]', 'reçu A-1 - 1 avril 2015')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="debit"]', '25.00€')
         self.assert_xml_equal(
@@ -901,7 +901,7 @@ class BillTest(InvoiceTest):
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="entry_account"]', '[707] 707')
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="entry.designation"]', 'reçu A-1 - 1 avril 2015')
+            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="designation_ref"]', 'reçu A-1 - 1 avril 2015')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="debit"]', None)
         self.assert_xml_equal(
