@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-03-07 15:39+0000\n"
+"POT-Creation-Date: 2016-03-15 16:14+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -132,6 +132,10 @@ msgstr "credit card"
 #: models.py:172
 msgid "other"
 msgstr "other"
+
+#: models.py:172
+msgid "levy"
+msgstr "levy"
 
 #: models.py:173 views_deposit.py:153
 msgid "payer"
@@ -358,15 +362,3 @@ msgstr "Save deposit detail"
 #: views_deposit.py:193
 msgid "Delete deposit detail"
 msgstr "Delete deposit detail"
-
-#~ msgid "01_payoff.html"
-#~ msgstr "Payoff"
-
-#~ msgid "02_deposit.html"
-#~ msgstr "Deposit"
-
-#~ msgid "03_config.html"
-#~ msgstr "Configuration"
-
-#~ msgid "third has not customer account"
-#~ msgstr "third has not customer account"

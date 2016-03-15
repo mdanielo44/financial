@@ -135,6 +135,10 @@ class PayoffEditor(LucteriosEditor):
         if len(banks.select_list) == 0:
             mode.select_list = [mode.select_list[0]]
         else:
+            # change order of payoff mode
+            levy = mode.select_list[5]
+            mode.select_list.insert(3, levy)
+            del mode.select_list[6]
             xfer.get_components("mode").set_action(
                 xfer.request, xfer.get_action(), {'close': CLOSE_NO, 'modal': FORMTYPE_REFRESH})
         if self.item.mode == 0:

@@ -169,7 +169,7 @@ class Payoff(LucteriosModel):
     amount = models.DecimalField(verbose_name=_('amount'), max_digits=10, decimal_places=3, default=0.0, validators=[
         MinValueValidator(0.0), MaxValueValidator(9999999.999)])
     mode = models.IntegerField(verbose_name=_('mode'),
-                               choices=((0, _('cash')), (1, _('cheque')), (2, _('transfer')), (3, _('crédit card')), (4, _('other'))), null=False, default=0, db_index=True)
+                               choices=((0, _('cash')), (1, _('cheque')), (2, _('transfer')), (3, _('crédit card')), (4, _('other')), (5, _('levy'))), null=False, default=0, db_index=True)
     payer = models.CharField(_('payer'), max_length=150, null=True, default='')
     reference = models.CharField(
         _('reference'), max_length=100, null=True, default='')
