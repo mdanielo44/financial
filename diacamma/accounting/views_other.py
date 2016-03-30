@@ -214,9 +214,9 @@ class ModelEntrySelector(XferContainerAcknowledge):
             for old_key in ['SAVE', 'model', 'factor']:
                 if old_key in self.params.keys():
                     del self.params[old_key]
-            serial_entry = self.item.get_serial_entry(factor)
-            date_value = date.today().isoformat()
             year = FiscalYear.get_current(self.getparam('year'))
+            serial_entry = self.item.get_serial_entry(factor, year)
+            date_value = date.today().isoformat()
             entry = EntryAccount.objects.create(
                 year=year, date_value=date_value, designation=self.item.designation, journal=self.item.journal)
             entry.editor.before_save(self)

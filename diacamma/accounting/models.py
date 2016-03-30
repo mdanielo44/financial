@@ -558,16 +558,17 @@ class ChartsAccount(LucteriosModel):
     def import_initial(cls, year, account_list):
         for account_item in account_list:
             if isfile(account_item):
-                with open(account_item, 'r') as fcsv:
+                with open(account_item, 'r', encoding='UTF-8') as fcsv:
                     csv_read = DictReader(
                         fcsv, delimiter=';', quotechar='', quoting=QUOTE_NONE)
                     for row in csv_read:
-                        if cls.get_account(row['code'], year) is None:
+                        new_code = correct_accounting_code(row['code'])
+                        if cls.get_account(new_code, year) is None:
                             account_desc = current_system_account().new_charts_account(
-                                row['code'])
+                                new_code)
                             if account_desc[1] >= 0:
-                                ChartsAccount.objects.create(year=year, code=row['code'],
-                                                             name=row['name'], type_of_account=account_desc[1])
+                                ChartsAccount.objects.create(
+                                    year=year, code=new_code, name=row['name'], type_of_account=account_desc[1])
 
     class Meta(object):
         verbose_name = _('charts of account')
@@ -1049,13 +1050,13 @@ class ModelEntry(LucteriosModel):
     def total(self):
         return format_devise(self.get_total(), 5)
 
-    def get_serial_entry(self, factor):
+    def get_serial_entry(self, factor, year):
         serial_val = ''
         num = 0
         for line in self.modellineentry_set.all():
             if serial_val != '':
                 serial_val += '\n'
-            serial_val += line.get_serial(factor, num)
+            serial_val += line.get_serial(factor, num, year)
             num += 1
         return serial_val
 
@@ -1120,7 +1121,7 @@ class ModelLineEntry(LucteriosModel):
         else:
             self.amount = 0
 
-    def get_serial(self, factor, num):
+    def get_serial(self, factor, num, year):
         import time
         try:
             new_entry_line = EntryLineAccount()
@@ -1128,7 +1129,7 @@ class ModelLineEntry(LucteriosModel):
                 int(time.time() * 60) + \
                 num
             new_entry_line.account = ChartsAccount.objects.get(
-                code=self.code)
+                year=year, code=self.code)
             new_entry_line.third = self.third
             new_entry_line.amount = currency_round(self.amount * factor)
             new_entry_line.reference = None
