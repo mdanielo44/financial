@@ -57,7 +57,10 @@ def get_amount_sum(val):
 
 def currency_round(amount):
     currency_decimal = Params.getvalue("accounting-devise-prec")
-    return round(float(amount), currency_decimal)
+    try:
+        return round(float(amount), currency_decimal)
+    except:
+        return round(0.0, currency_decimal)
 
 
 def correct_accounting_code(code):
