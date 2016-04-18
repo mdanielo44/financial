@@ -30,6 +30,7 @@ from _io import BytesIO
 from django.db import models
 from django.db.models.aggregates import Max
 from django.db.models import Q
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.utils.module_loading import import_module
 from django.utils.translation import ugettext_lazy as _
@@ -43,7 +44,7 @@ from lucterios.CORE.models import PrintModel
 from lucterios.CORE.parameters import Params
 
 from diacamma.accounting.models import FiscalYear, Third, EntryAccount, \
-    CostAccounting, Journal, EntryLineAccount, ChartsAccount
+    CostAccounting, Journal, EntryLineAccount, ChartsAccount, AccountThird
 from diacamma.accounting.tools import current_system_account, format_devise, currency_round, correct_accounting_code
 from diacamma.payoff.models import Supporting
 
@@ -97,6 +98,10 @@ class Article(LucteriosModel):
     @property
     def price_txt(self):
         return format_devise(self.price, 5)
+
+    @property
+    def ref_price(self):
+        return "%s [%s]" % (self.reference, self.price_txt)
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         self.sell_account = correct_accounting_code(self.sell_account)
@@ -513,6 +518,14 @@ class Detail(LucteriosModel):
     def get_show_fields(cls):
         return ["article", "designation", (_('price'), "price_txt"), "unit", "quantity", (_('reduce'), "reduce_txt")]
 
+    @classmethod
+    def create_for_bill(cls, bill, article, qty=1):
+        newdetail = cls(
+            bill=bill, article=article, designation=article.designation, price=article.price, unit=article.unit, quantity=qty)
+        newdetail.editor.before_save(None)
+        newdetail.save()
+        return newdetail
+
     def get_price(self):
         if (Params.getvalue("invoice-vat-mode") == 2) and (self.vta_rate > 0.001):
             return currency_round(self.price * self.vta_rate)
@@ -602,3 +615,14 @@ class Detail(LucteriosModel):
         verbose_name = _('detail')
         verbose_name_plural = _('details')
         default_permissions = []
+
+
+def get_or_create_customer(contact_id):
+    try:
+        third = Third.objects.get(contact_id=contact_id)
+    except ObjectDoesNotExist:
+        third = Third.objects.create(
+            contact_id=contact_id, status=0)
+        AccountThird.objects.create(
+            third=third, code=Params.getvalue("invoice-account-third"))
+    return third
