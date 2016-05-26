@@ -484,6 +484,7 @@ class Bill(Supporting):
     class Meta(object):
         verbose_name = _('bill')
         verbose_name_plural = _('bills')
+        ordering = ['-date', 'status']
 
 
 class Detail(LucteriosModel):
