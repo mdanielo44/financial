@@ -54,6 +54,7 @@ from diacamma.invoice.models import Article, Bill, Detail
 from diacamma.accounting.models import FiscalYear, Third
 from diacamma.payoff.views import PayoffAddModify
 from diacamma.payoff.models import Payoff
+from lucterios.contacts.models import Individual, LegalEntity
 
 MenuManage.add_sub("invoice", "financial", "diacamma.invoice/images/invoice.png",
                    _("invoice"), _("Manage of billing"), 20)
@@ -553,12 +554,27 @@ def show_contact_invoice(contact, xfer):
 
 @signal_and_lock.Signal.decorate('summary')
 def summary_invoice(xfer):
-    if WrapAction.is_permission(xfer.request, 'invoice.change_bill'):
+    is_right=WrapAction.is_permission(xfer.request, 'invoice.change_bill')
+    contacts = []
+    for contact in Individual.objects.filter(user=xfer.request.user):
+        contacts.append(contact.id)
+    for contact in LegalEntity.objects.filter(responsability__individual__user=xfer.request.user):
+        contacts.append(contact.id)
+    if is_right or (len(contacts)>0):
         row = xfer.get_max_row() + 1
         lab = XferCompLabelForm('invoicetitle')
         lab.set_value_as_infocenter(_("Invoice"))
         lab.set_location(0, row, 4)
-        xfer.add_component(lab)
+        xfer.add_component(lab)        
+    if len(contacts)>0:
+        nb_build = len(Bill.objects.filter(third__contact_id__in=contacts))
+        row = xfer.get_max_row() + 1
+        lab = XferCompLabelForm('invoicecurrent')
+        lab.set_value_as_header(_("You are %d bills") % nb_build)
+        lab.set_location(0, row, 4)
+        xfer.add_component(lab)                
+    if is_right:
+        row = xfer.get_max_row() + 1
         nb_build = len(Bill.objects.filter(status=0))
         nb_valid = len(Bill.objects.filter(status=1))
         lab = XferCompLabelForm('invoiceinfo')
@@ -566,10 +582,14 @@ def summary_invoice(xfer):
             _("There are %(build)d bills in building and %(valid)d validated") % {'build': nb_build, 'valid': nb_valid})
         lab.set_location(0, row + 1, 4)
         xfer.add_component(lab)
+    if is_right or (len(contacts)>0):
         lab = XferCompLabelForm('invoicesep')
         lab.set_value_as_infocenter("{[hr/]}")
         lab.set_location(0, row + 2, 4)
         xfer.add_component(lab)
+        return True
+    else:
+        return False
 
 
 @signal_and_lock.Signal.decorate('third_addon')
