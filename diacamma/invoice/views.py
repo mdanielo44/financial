@@ -556,10 +556,11 @@ def show_contact_invoice(contact, xfer):
 def summary_invoice(xfer):
     is_right=WrapAction.is_permission(xfer.request, 'invoice.change_bill')
     contacts = []
-    for contact in Individual.objects.filter(user=xfer.request.user):
-        contacts.append(contact.id)
-    for contact in LegalEntity.objects.filter(responsability__individual__user=xfer.request.user):
-        contacts.append(contact.id)
+    if not xfer.request.user.is_anonymous():
+        for contact in Individual.objects.filter(user=xfer.request.user):
+            contacts.append(contact.id)
+        for contact in LegalEntity.objects.filter(responsability__individual__user=xfer.request.user):
+            contacts.append(contact.id)
     if is_right or (len(contacts)>0):
         row = xfer.get_max_row() + 1
         lab = XferCompLabelForm('invoicetitle')
