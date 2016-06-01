@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-05-27 20:42+0000\n"
+"POT-Creation-Date: 2016-06-01 13:01+0000\n"
 "PO-Revision-Date: 2016-01-14 21:59+0000\n"
 "Last-Translator: b'Paul ARULATEDA <paul531@orange.fr>'\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -314,7 +314,7 @@ msgstr "Gestion de liste de factures"
 msgid "Bill"
 msgstr "Facture"
 
-#: views.py:100 views.py:608
+#: views.py:100 views.py:609
 msgid "Edit"
 msgstr "Editer"
 
@@ -534,16 +534,16 @@ msgstr "Impression de statistique"
 msgid "Financial"
 msgstr "Financier"
 
-#: views.py:550 views.py:582
+#: views.py:550 views.py:583
 #, python-format
 msgid "There are %(build)d bills in building and %(valid)d validated"
 msgstr "Il y a %(build)d factures en construction et %(valid)d validées"
 
-#: views.py:566 views.py:600 views_conf.py:95
+#: views.py:567 views.py:601 views_conf.py:95
 msgid "Invoice"
 msgstr "Facturier"
 
-#: views.py:573
+#: views.py:574
 #, python-format
 msgid "You are %d bills"
 msgstr "Vous avez %d factures"
@@ -581,9 +581,9 @@ msgid "parameters"
 msgstr "paramètres"
 
 #: views_summary.py:47
-msgid "View my invoices."
-msgstr "Voir mes factures."
+msgid "View your invoices."
+msgstr "Voir vos factures."
 
 #: views_summary.py:52
-msgid "My invoices"
-msgstr "Mes factures"
+msgid "Your invoices"
+msgstr "Vos factures"

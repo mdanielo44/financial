@@ -44,12 +44,12 @@ def current_bill_right(request):
     return right
 
 
-@MenuManage.describ(current_bill_right, FORMTYPE_MODAL, 'core.general', _('View my invoices.'))
+@MenuManage.describ(current_bill_right, FORMTYPE_MODAL, 'core.general', _('View your invoices.'))
 class CurrentBill(XferListEditor):
     icon = "bill.png"
     model = Bill
     field_id = 'bill'
-    caption = _("My invoices")
+    caption = _("Your invoices")
 
     def fillresponse_header(self):
         contacts = []
