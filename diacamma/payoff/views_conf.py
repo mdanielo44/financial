@@ -14,7 +14,7 @@ from lucterios.framework import signal_and_lock
 from lucterios.CORE.models import Parameter
 
 from diacamma.accounting.tools import correct_accounting_code
-from diacamma.payoff.models import BankAccount
+from diacamma.payoff.models import BankAccount, PaymentMethod
 
 
 @ActionsManage.affect('BankAccount', 'list')
@@ -30,6 +30,9 @@ class PayoffConf(XferListEditor):
 
     def fillresponse(self):
         XferListEditor.fillresponse(self)
+        self.new_tab(_('Payment method'))
+        self.fill_grid(
+            0, PaymentMethod, "paymentmethod", PaymentMethod.objects.all())
         self.new_tab(_('Parameters'))
         param_lists = ['payoff-cash-account', 'payoff-bankcharges-account']
         Params.fill(self, param_lists, 1, 1)
@@ -57,6 +60,25 @@ class BankAccountDelete(XferDelete):
     model = BankAccount
     field_id = 'bankaccount'
     caption = _("Delete bank account")
+
+
+@ActionsManage.affect('PaymentMethod', 'edit', 'add')
+@MenuManage.describ('payoff.add_bankaccount')
+class PaymentMethodAddModify(XferAddEditor):
+    icon = "bank.png"
+    model = PaymentMethod
+    field_id = 'paymentmethod'
+    caption_add = _("Add payment method")
+    caption_modify = _("Modify payment method")
+
+
+@ActionsManage.affect('PaymentMethod', 'delete')
+@MenuManage.describ('payoff.delete_bankaccount')
+class PaymentMethodDelete(XferDelete):
+    icon = "bank.png"
+    model = PaymentMethod
+    field_id = 'paymentmethod'
+    caption = _("Delete payment method")
 
 
 @signal_and_lock.Signal.decorate('compte_no_found')

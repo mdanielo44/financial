@@ -27,13 +27,15 @@ from __future__ import unicode_literals
 from django.utils.translation import ugettext_lazy as _
 from django.db.models import Q
 
-from lucterios.framework.tools import MenuManage, FORMTYPE_MODAL, ActionsManage, SELECT_SINGLE
+from lucterios.framework.tools import MenuManage, FORMTYPE_MODAL, ActionsManage, SELECT_SINGLE,\
+    CLOSE_NO
 from lucterios.framework.xferadvance import XferListEditor
 
 from lucterios.contacts.models import Individual, LegalEntity
 
 from diacamma.invoice.models import Bill
 from diacamma.invoice.views import BillPrint
+from diacamma.payoff.models import PaymentMethod
 
 
 def current_bill_right(request):
@@ -66,6 +68,13 @@ class CurrentBill(XferListEditor):
             del self.action_grid[add_act]
         self.action_grid.append(
             ('currentprintbill', _("Print"), "images/print.png", SELECT_SINGLE))
+
+    def fillresponse(self):
+        XferListEditor.fillresponse(self)
+        if (len(PaymentMethod.objects.all()) > 0):
+            bill_grid = self.get_components('bill')
+            bill_grid.add_action(self.request, ActionsManage.get_act_changed('Supporting', 'paymentmethod', _(
+                "Payment"), "diacamma.payoff/images/payments.png"), {'unique': SELECT_SINGLE, 'close': CLOSE_NO, 'params': {'item_name': 'bill'}})
 
 
 @ActionsManage.affect('Bill', 'currentprintbill')

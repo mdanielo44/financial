@@ -145,6 +145,10 @@ class Bill(Supporting):
             fields.append(Supporting.get_payoff_fields()[-1][-1])
         return fields
 
+    @classmethod
+    def get_payment_fields(cls):
+        return ["third", ("bill_type", (_('numeros'), "num_txt"),), ("date", (_('total'), 'total'),)]
+
     def get_third_mask(self):
         return current_system_account().get_customer_mask()
 
@@ -253,6 +257,9 @@ class Bill(Supporting):
 
     def payoff_is_revenu(self):
         return (self.bill_type != 0) and (self.bill_type != 2)
+
+    def payoff_have_payment(self):
+        return (self.bill_type != 2) and (self.status == 1) and (self.get_total_rest_topay() > 0.001)
 
     def default_date(self):
         return self.date

@@ -39,6 +39,7 @@ from lucterios.CORE.parameters import Params
 from diacamma.accounting.models import EntryAccount, FiscalYear, Third, Journal, \
     ChartsAccount, EntryLineAccount, AccountLink
 from diacamma.accounting.tools import format_devise, currency_round, correct_accounting_code
+from lucterios.contacts.models import LegalEntity
 
 
 class Supporting(LucteriosModel):
@@ -53,6 +54,10 @@ class Supporting(LucteriosModel):
     @classmethod
     def get_print_fields(cls):
         return ['payoff_set', (_('total payed'), 'total_payed'), (_('rest to pay'), 'total_rest_topay')]
+
+    @classmethod
+    def get_payment_fields(cls):
+        return cls.get_show_fields()
 
     class Meta(object):
         verbose_name = _('supporting')
@@ -69,6 +74,9 @@ class Supporting(LucteriosModel):
         return self.get_total_rest_topay(ignore_payoff)
 
     def payoff_is_revenu(self):
+        raise Exception('no implemented!')
+
+    def payoff_have_payment(self):
         raise Exception('no implemented!')
 
     def default_date(self):
@@ -447,3 +455,128 @@ class DepositDetail(LucteriosModel):
         verbose_name = _('deposit detail')
         verbose_name_plural = _('deposit details')
         default_permissions = []
+
+
+class PaymentMethod(LucteriosModel):
+    paytype = models.IntegerField(verbose_name=_('type'),
+                                  choices=((0, _('transfer')), (1, _('cheque')), (2, _('PayPal'))), null=False, default=0, db_index=True)
+    bank_account = models.ForeignKey(BankAccount,
+                                     verbose_name=_('bank account'), null=False, default=None, db_index=True, on_delete=models.PROTECT)
+    extra_data = models.TextField(_('data'), null=False)
+
+    @classmethod
+    def get_default_fields(cls):
+        return ['paytype', 'bank_account', (_('parameters'), 'info')]
+
+    @classmethod
+    def get_edit_fields(cls):
+        return ['paytype', 'bank_account']
+
+    def get_extra_fields(self):
+        self.paytype = int(self.paytype)
+        if self.paytype == 0:
+            return [(1, _('IBAN'), 0)]
+        elif self.paytype == 1:
+            return [(1, _('payable to'), 0), (2, _('address'), 1)]
+        elif self.paytype == 2:
+            return [(1, _('Paypal account'), 0)]
+        else:
+            return []
+
+    def set_items(self, items):
+        size = len(self.get_extra_fields())
+        while len(items) < size:
+            items.append("")
+        self.extra_data = "\n".join(items)
+
+    def get_items(self):
+        self.paytype = int(self.paytype)
+        if (self.id is None) and (self.paytype == 1) and (self.extra_data == ''):
+            current_legal = LegalEntity.objects.get(id=1)
+            items = [current_legal.name, "%s{[newline]}%s %s" % (
+                current_legal.address, current_legal.postal_code, current_legal.city)]
+        else:
+            items = self.extra_data.split("\n")
+        size = len(self.get_extra_fields())
+        while len(items) < size:
+            items.append("")
+        return items
+
+    @property
+    def info(self):
+        res = ""
+        items = self.get_items()
+        for fieldid, fieldtitle, _fieldtype in self.get_extra_fields():
+            res += "{[b]}%s{[/b]}{[br/]}" % fieldtitle
+            res += items[fieldid - 1]
+            res += "{[br/]}"
+        return res
+
+    def show_pay(self, absolute_uri, lang, supporting):
+        items = self.get_items()
+        if self.paytype == 0:
+            formTxt = "{[center]}"
+            formTxt += "{[table width='100%']}{[tr]}"
+            formTxt += "    {[td]}{[u]}{[i]}%s{[/i]}{[/u]}{[/td]}" % _('IBAN')
+            formTxt += "    {[td]}%s{[/td]}" % items[0]
+            formTxt += "{[/tr]}{[/table]}"
+            formTxt += "{[/center]}"
+        elif self.paytype == 1:
+            formTxt = "{[center]}"
+            formTxt += "{[table width='100%%']}"
+            formTxt += "    {[tr]}"
+            formTxt += "        {[td]}{[u]}{[i]}%s{[/i]}{[/u]}{[/td]}"
+            formTxt += "        {[td]}%s{[/td]}"
+            formTxt += "    {[/tr]}"
+            formTxt += "    {[tr]}"
+            formTxt += "        {[td]}{[u]}{[i]}%s{[/i]}{[/u]}{[/td]}"
+            formTxt += "        {[td]}%s{[/td]}"
+            formTxt += "    {[/tr]}"
+            formTxt += "{[/table]}"
+            formTxt += "{[/center]}"
+            formTxt = formTxt % (
+                _('payable to'), items[0], _('address'), items[1])
+        elif self.paytype == 2:
+            abs_url = absolute_uri.split('/')
+            paypal_dict = {
+                'paypal_url': 'https://www.paypal.com/cgi-bin/webscr'}
+            paypal_dict['business'] = items[0]
+            paypal_dict['currency'] = Params.getvalue("accounting-devise-iso")
+            paypal_dict['lang'] = lang
+            paypal_dict['site_url'] = '/'.join(abs_url[:-2])
+            paypal_dict[
+                'site_return_url'] = '/'.join(abs_url[:-1]) + '/validationPaymentPaypal'
+            paypal_dict['ref'] = six.text_type(supporting)
+            paypal_dict['bill'] = six.text_type(supporting.id)
+            paypal_dict['amount'] = six.text_type(
+                supporting.get_total_rest_topay())
+            formTxt = "{[center]}"
+            formTxt += "{[form action='%(paypal_url)s' method='post' target='_top' height='65px' ]}"
+            formTxt += "{[center]}"
+            formTxt += "{[input name='cmd' type='hidden' value='_xclick' /]}"
+            formTxt += "{[input name='currency_code' type='hidden' value='%(currency)s' /]}"
+            formTxt += "{[input name='no_note' type='hidden' value='1' /]}"
+            formTxt += "{[input name='no_shipping' type='hidden' value='1' /]}"
+            formTxt += "{[input name='lc' type='hidden' value='%(lang)s' /]}"
+            formTxt += "{[input name='bn' type='hidden' value='SDL_BuyNow_WPS_FR' /]}"
+            formTxt += "{[input name='return' type='hidden' value='%(site_url)s' /]}"
+            formTxt += "{[input name='cancel_return' type='hidden' value='%(site_url)s' /]}"
+            formTxt += "{[input name='notify_url' type='hidden' value='%(site_return_url)s' /]}"
+            formTxt += "{[input name='business' type='hidden' value='%(business)s' /]}"
+            formTxt += "{[input name='item_name' type='hidden' value='%(ref)s' /]}"
+            formTxt += "{[input name='custom' type='hidden' value='%(bill)s' /]}"
+            formTxt += "{[input name='amount' type='hidden' value='%(amount)s' /]}"
+            formTxt += "{[input alt='PayPal' name='submit' src='https://www.paypalobjects.com/webstatic/mktg/logo/pp_cc_mark_74x46.jpg' title='PayPal' type='image' /]}"
+            formTxt += "{[/center]}"
+            formTxt += "{[/form]}"
+            formTxt += "{[/center]}"
+            formTxt = formTxt % paypal_dict
+        else:
+            formTxt = "???"
+        return formTxt
+
+    class Meta(object):
+        verbose_name = _('payment method')
+        verbose_name_plural = _('payment methods')
+        default_permissions = []
+        ordering = ['paytype']

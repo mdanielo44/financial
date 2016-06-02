@@ -28,7 +28,8 @@ from django.utils.translation import ugettext_lazy as _
 from django.utils import six
 
 from lucterios.framework.editors import LucteriosEditor
-from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompButton
+from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompButton,\
+    XferCompEdit, XferCompMemo
 from lucterios.CORE.parameters import Params
 from lucterios.framework.tools import ActionsManage, CLOSE_NO, SELECT_NONE,\
     FORMTYPE_REFRESH, FORMTYPE_MODAL, WrapAction
@@ -174,3 +175,33 @@ class DepositSlipEditor(LucteriosEditor):
         depositdetail.colspan = 4
         if self.item.status != 0:
             depositdetail.actions = []
+
+
+class PaymentMethodEditor(LucteriosEditor):
+
+    def before_save(self, xfer):
+        values = []
+        for fieldid, _fieldtitle, _fieldtype in self.item.get_extra_fields():
+            values.append(xfer.getparam('item_%d' % fieldid, ''))
+        self.item.set_items(values)
+
+    def edit(self, xfer):
+        if xfer.item.id is None:
+            xfer.get_components("paytype").set_action(
+                xfer.request, xfer.get_action(), {'close': CLOSE_NO, 'modal': FORMTYPE_REFRESH})
+        else:
+            xfer.change_to_readonly('paytype')
+        items = self.item.get_items()
+        for fieldid, fieldtitle, fieldtype in self.item.get_extra_fields():
+            row = xfer.get_max_row() + 1
+            lbl = XferCompLabelForm('lbl_item_%d' % fieldid)
+            lbl.set_value_as_name(fieldtitle)
+            lbl.set_location(1, row)
+            xfer.add_component(lbl)
+            if fieldtype == 0:
+                edt = XferCompEdit('item_%d' % fieldid)
+            elif fieldtype == 1:
+                edt = XferCompMemo('item_%d' % fieldid)
+            edt.set_value(items[fieldid - 1])
+            edt.set_location(2, row)
+            xfer.add_component(edt)

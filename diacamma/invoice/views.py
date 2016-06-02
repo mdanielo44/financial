@@ -45,16 +45,18 @@ from lucterios.framework.xfergraphic import XferContainerAcknowledge,\
     XferContainerCustom
 from lucterios.framework.error import LucteriosException, IMPORTANT
 from lucterios.framework import signal_and_lock
+
 from lucterios.CORE.xferprint import XferPrintAction, XferPrintReporting
 from lucterios.CORE.parameters import Params
 from lucterios.CORE.editors import XferSavedCriteriaSearchEditor
 from lucterios.CORE.models import PrintModel
 
+from lucterios.contacts.models import Individual, LegalEntity
+
 from diacamma.invoice.models import Article, Bill, Detail
 from diacamma.accounting.models import FiscalYear, Third
-from diacamma.payoff.views import PayoffAddModify
-from diacamma.payoff.models import Payoff
-from lucterios.contacts.models import Individual, LegalEntity
+from diacamma.payoff.views import PayoffAddModify, get_html_payment
+from diacamma.payoff.models import Payoff, PaymentMethod
 
 MenuManage.add_sub("invoice", "financial", "diacamma.invoice/images/invoice.png",
                    _("invoice"), _("Manage of billing"), 20)
@@ -175,6 +177,9 @@ class BillShow(XferShowEditor):
                     self.action_list.insert(0,
                                             ('email', _("Send"), "lucterios.mailing/images/email.png", CLOSE_NO))
         XferShowEditor.fillresponse(self)
+        if self.item.payoff_have_payment() and (len(PaymentMethod.objects.all()) > 0):
+            self.add_action(ActionsManage.get_act_changed('Supporting', 'paymentmethod', _(
+                "Payment"), "diacamma.payoff/images/payments.png"), {'close': CLOSE_NO, 'params': {'item_name': 'bill'}}, 0)
 
 
 @ActionsManage.affect('Bill', 'valid')
@@ -337,7 +342,7 @@ class BillEmail(XferContainerAcknowledge):
     model = Bill
     field_id = 'bill'
 
-    def fillresponse(self, subject='', message='', model=0):
+    def fillresponse(self, subject='', message='', model=0, withpayment=False):
         if self.getparam("OK") is None:
             dlg = self.create_custom()
             icon = XferCompImage('img')
@@ -372,11 +377,28 @@ class BillEmail(XferContainerAcknowledge):
             sel.set_select(selectors[2])
             sel.set_location(2, 3)
             dlg.add_component(sel)
+
+            if self.item.payoff_have_payment() and (len(PaymentMethod.objects.all()) > 0):
+                lbl = XferCompLabelForm('lb_withpayment')
+                lbl.set_value_as_name(_('add payment methods in email'))
+                lbl.set_location(1, 4)
+                dlg.add_component(lbl)
+                sel = XferCompCheck('withpayment')
+                sel.set_value(True)
+                sel.set_location(2, 4)
+                dlg.add_component(sel)
+
             dlg.add_action(
                 self.get_action(_('Ok'), 'images/ok.png'), {'params': {"OK": "YES"}})
             dlg.add_action(WrapAction(_('Cancel'), 'images/cancel.png'), {})
         else:
-            self.item.send_bill(subject, message, model)
+            html_message = "<html>"
+            html_message += message.replace('\n', '<br/>\n')
+            if self.item.payoff_have_payment() and withpayment:
+                html_message += get_html_payment(
+                    self.request.build_absolute_uri(), self.language, self.item)
+            html_message += "</html>"
+            self.item.send_bill(subject, html_message, model)
 
 
 @ActionsManage.affect('Detail', 'edit', 'add')
@@ -554,26 +576,26 @@ def show_contact_invoice(contact, xfer):
 
 @signal_and_lock.Signal.decorate('summary')
 def summary_invoice(xfer):
-    is_right=WrapAction.is_permission(xfer.request, 'invoice.change_bill')
+    is_right = WrapAction.is_permission(xfer.request, 'invoice.change_bill')
     contacts = []
     if not xfer.request.user.is_anonymous():
         for contact in Individual.objects.filter(user=xfer.request.user):
             contacts.append(contact.id)
         for contact in LegalEntity.objects.filter(responsability__individual__user=xfer.request.user):
             contacts.append(contact.id)
-    if is_right or (len(contacts)>0):
+    if is_right or (len(contacts) > 0):
         row = xfer.get_max_row() + 1
         lab = XferCompLabelForm('invoicetitle')
         lab.set_value_as_infocenter(_("Invoice"))
         lab.set_location(0, row, 4)
-        xfer.add_component(lab)        
-    if len(contacts)>0:
+        xfer.add_component(lab)
+    if len(contacts) > 0:
         nb_build = len(Bill.objects.filter(third__contact_id__in=contacts))
         row = xfer.get_max_row() + 1
         lab = XferCompLabelForm('invoicecurrent')
         lab.set_value_as_header(_("You are %d bills") % nb_build)
         lab.set_location(0, row, 4)
-        xfer.add_component(lab)                
+        xfer.add_component(lab)
     if is_right:
         row = xfer.get_max_row() + 1
         nb_build = len(Bill.objects.filter(status=0))
@@ -583,7 +605,7 @@ def summary_invoice(xfer):
             _("There are %(build)d bills in building and %(valid)d validated") % {'build': nb_build, 'valid': nb_valid})
         lab.set_location(0, row + 1, 4)
         xfer.add_component(lab)
-    if is_right or (len(contacts)>0):
+    if is_right or (len(contacts) > 0):
         lab = XferCompLabelForm('invoicesep')
         lab.set_value_as_infocenter("{[hr/]}")
         lab.set_location(0, row + 2, 4)

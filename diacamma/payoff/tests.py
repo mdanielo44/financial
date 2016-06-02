@@ -39,12 +39,12 @@ class PayoffTest(LucteriosTest):
         LucteriosTest.setUp(self)
         rmtree(get_user_dir(), True)
 
-    def test_vat(self):
+    def test_bank(self):
         self.factory.xfer = PayoffConf()
         self.call('/diacamma.payoff/payoffConf', {}, False)
         self.assert_observer('core.custom', 'diacamma.payoff', 'payoffConf')
-        self.assert_count_equal('COMPONENTS/TAB', 2)
-        self.assert_count_equal('COMPONENTS/*', 2 + 2 + 2 + 5)
+        self.assert_count_equal('COMPONENTS/TAB', 3)
+        self.assert_count_equal('COMPONENTS/*', 2 + 2 + 2 + 3 + 5)
 
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="bankaccount"]/HEADER', 3)

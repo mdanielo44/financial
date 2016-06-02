@@ -31,11 +31,16 @@ from lucterios.framework.xferadvance import XferAddEditor, XferListEditor,\
     XferSave
 from lucterios.framework.xferadvance import XferDelete
 from lucterios.framework.tools import ActionsManage, MenuManage,\
-    FORMTYPE_REFRESH, CLOSE_NO, FORMTYPE_MODAL, CLOSE_YES, SELECT_SINGLE
-from lucterios.framework.xfergraphic import XferContainerAcknowledge
-from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompEdit
+    FORMTYPE_REFRESH, CLOSE_NO, FORMTYPE_MODAL, CLOSE_YES, SELECT_SINGLE,\
+    WrapAction
+from lucterios.framework.xfergraphic import XferContainerAcknowledge,\
+    XferContainerCustom
+from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompEdit,\
+    XferCompImage
+from lucterios.framework.error import LucteriosException, MINOR
+from lucterios.framework.models import get_value_if_choices
 
-from diacamma.payoff.models import Payoff, Supporting
+from diacamma.payoff.models import Payoff, Supporting, PaymentMethod
 from diacamma.accounting.models import Third
 
 
@@ -123,3 +128,73 @@ class SupportingThirdValid(XferSave):
     model = Supporting
     field_id = 'supporting'
     caption = _("Select third")
+
+
+@ActionsManage.affect('Supporting', 'paymentmethod')
+@MenuManage.describ(None)
+class SupportingPaymentMethod(XferContainerCustom):
+    caption = _("Payment")
+    icon = "payments.png"
+    model = Supporting
+    field_id = 'Supporting'
+
+    def fillresponse(self, item_name=''):
+        if item_name != '':
+            self.item = Supporting.objects.get(id=self.getparam(item_name, 0))
+        self.item = self.item.get_final_child()
+        payments = PaymentMethod.objects.all()
+        if not self.item.payoff_have_payment() or (len(payments) == 0):
+            raise LucteriosException(MINOR, _('No payment for this document.'))
+        max_row = self.get_max_row() + 1
+        img = XferCompImage('img')
+        img.set_value(self.icon_path())
+        img.set_location(0, 0, 1, 6)
+        self.add_component(img)
+        self.fill_from_model(1, max_row, True, self.item.get_payment_fields())
+        max_row = self.get_max_row() + 1
+        lbl = XferCompLabelForm('lb_sep')
+        lbl.set_value("{[hr/]}")
+        lbl.set_location(1, max_row, 4)
+        self.add_component(lbl)
+        lbl = XferCompLabelForm('lb_title')
+        lbl.set_value_as_infocenter(_("Payement methods"))
+        lbl.set_location(1, max_row + 1, 4)
+        self.add_component(lbl)
+        for paymeth in payments:
+            max_row = self.get_max_row() + 1
+            lbl = XferCompLabelForm('lb_paymeth_%d' % paymeth.id)
+            lbl.set_value_as_name(
+                get_value_if_choices(paymeth.paytype, paymeth.get_field_by_name('paytype')))
+            lbl.set_location(1, max_row)
+            self.add_component(lbl)
+            lbl = XferCompLabelForm('paymeth_%d' % paymeth.id)
+            lbl.set_value(
+                paymeth.show_pay(self.request.build_absolute_uri(), self.language, self.item))
+            lbl.set_location(2, max_row, 3)
+            self.add_component(lbl)
+            lbl = XferCompLabelForm('sep_paymeth_%d' % paymeth.id)
+            lbl.set_value("{[br/]}")
+            lbl.set_location(2, max_row + 1)
+            self.add_component(lbl)
+        self.add_action(WrapAction(_('Close'), 'images/close.png'), {})
+
+
+def get_html_payment(absolute_uri, lang, supporting):
+    html_message = "<hr/>"
+    html_message += "<center><i><u>%s</u></i></center>" % _(
+        "Payement methods")
+    html_message += "<table>"
+    for paymeth in PaymentMethod.objects.all():
+        html_message += "<tr>"
+        html_message += "<td><b>%s</b></td>" % get_value_if_choices(
+            paymeth.paytype, paymeth.get_field_by_name('paytype'))
+        html_message += "<td>%s</td>" % paymeth.show_pay(absolute_uri, lang, supporting)
+        html_message += "</tr>"
+        html_message += "<tr></tr>"
+    html_message += "</table>"
+    return html_message
+
+
+@MenuManage.describ(None)
+class ValidationPaymentPaypal(XferContainerAcknowledge):
+    pass

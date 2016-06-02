@@ -1573,10 +1573,10 @@ class BillTest(InvoiceTest):
             self.assertEqual(
                 ['Jack.Dalton@worldcompany.com'], server.get(0)[2])
             msg, msg_file = server.check_first_message('my bill', 2)
-            self.assertEqual('text/plain', msg.get_content_type())
+            self.assertEqual('text/html', msg.get_content_type())
             self.assertEqual(
                 'base64', msg.get('Content-Transfer-Encoding', ''))
-            self.assertEqual('this is a bill.', decode_b64(msg.get_payload()))
+            self.assertEqual('<html>this is a bill.</html>', decode_b64(msg.get_payload()))
             self.assertTrue(
                 'facture_A-1_Dalton Jack.pdf' in msg_file.get('Content-Type', ''), msg_file.get('Content-Type', ''))
             self.assertEqual(
