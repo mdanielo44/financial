@@ -169,7 +169,7 @@ class PayoffEditor(LucteriosEditor):
         if not supporting_list[0].is_revenu:
             xfer.remove_component("payer")
             xfer.remove_component("lbl_payer")
-        if (fee_code=='') or (self.item.mode == 0):
+        if (fee_code == '') or (self.item.mode == 0):
             xfer.remove_component("bank_fee")
             xfer.remove_component("lbl_bank_fee")
         else:

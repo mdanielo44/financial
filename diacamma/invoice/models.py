@@ -45,14 +45,17 @@ from lucterios.CORE.parameters import Params
 
 from diacamma.accounting.models import FiscalYear, Third, EntryAccount, \
     CostAccounting, Journal, EntryLineAccount, ChartsAccount, AccountThird
-from diacamma.accounting.tools import current_system_account, format_devise, currency_round, correct_accounting_code
+from diacamma.accounting.tools import current_system_account, format_devise, \
+    currency_round, correct_accounting_code
 from diacamma.payoff.models import Supporting
 
 
 class Vat(LucteriosModel):
     name = models.CharField(_('name'), max_length=20)
-    rate = models.DecimalField(_('rate'), max_digits=6, decimal_places=2, default=10.0, validators=[
-        MinValueValidator(0.0), MaxValueValidator(100.0)])
+    rate = models.DecimalField(_('rate'), max_digits=6, decimal_places=2,
+                               default=10.0,
+                               validators=[MinValueValidator(0.0),
+                                           MaxValueValidator(100.0)])
     isactif = models.BooleanField(
         verbose_name=_('is actif'), default=True)
 
@@ -71,14 +74,15 @@ class Vat(LucteriosModel):
 class Article(LucteriosModel):
     reference = models.CharField(_('reference'), max_length=30)
     designation = models.TextField(_('designation'))
-    price = models.DecimalField(_('price'), max_digits=10, decimal_places=3, default=0.0, validators=[
-        MinValueValidator(0.0), MaxValueValidator(9999999.999)])
+    price = models.DecimalField(_('price'), max_digits=10, decimal_places=3,
+                                default=0.0, validators=[MinValueValidator(0.0),
+                                                         MaxValueValidator(9999999.999)])
     unit = models.CharField(_('unit'), null=True, default='', max_length=10)
     isdisabled = models.BooleanField(
         verbose_name=_('is disabled'), default=False)
     sell_account = models.CharField(_('sell account'), max_length=50)
-    vat = models.ForeignKey(
-        Vat, verbose_name=_('vat'), null=True, default=None, on_delete=models.PROTECT)
+    vat = models.ForeignKey(Vat, verbose_name=_('vat'), null=True,
+                            default=None, on_delete=models.PROTECT)
 
     def __str__(self):
         return six.text_type(self.reference)
@@ -490,11 +494,13 @@ class Bill(Supporting):
 
     def support_validated(self):
         if (self.bill_type == 2) or (self.status != 1):
-            raise LucteriosException(IMPORTANT, _("This item can't be validated!"))        
+            raise LucteriosException(
+                IMPORTANT, _("This item can't be validated!"))
         if (self.bill_type == 0):
             new_bill = self.convert_to_bill()
             if (new_bill is None) or (new_bill.get_info_state() != ''):
-                raise LucteriosException(IMPORTANT, _("This item can't be validated!"))
+                raise LucteriosException(
+                    IMPORTANT, _("This item can't be validated!"))
             new_bill.valid()
         else:
             new_bill = self

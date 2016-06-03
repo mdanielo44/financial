@@ -533,7 +533,7 @@ class PaymentMethod(LucteriosModel):
                 return ''.join((letter for letter in unicodedata.normalize('NFD', text) if unicodedata.category(letter) != 'Mn'))
             except:
                 return text
-        
+
         items = self.get_items()
         if self.paytype == 0:
             formTxt = "{[center]}"
@@ -613,7 +613,7 @@ class BankTransaction(LucteriosModel):
     amount = models.DecimalField(verbose_name=_('amount'), max_digits=10, decimal_places=3, default=0.0, validators=[
         MinValueValidator(0.0), MaxValueValidator(9999999.999)], null=True)
     contains = models.TextField(_('contains'), null=True)
-    
+
     @classmethod
     def get_default_fields(cls):
         return ['date', 'status', 'payer', 'amount']
@@ -621,7 +621,7 @@ class BankTransaction(LucteriosModel):
     @classmethod
     def get_show_fields(cls):
         return [('date', 'status'), ('payer', 'amount'), 'contains']
-    
+
     class Meta(object):
         verbose_name = _('bank transaction')
         verbose_name_plural = _('bank transactions')

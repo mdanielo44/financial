@@ -38,15 +38,14 @@ from lucterios.framework.tools import ActionsManage, MenuManage, \
     WrapAction
 from lucterios.framework.xfergraphic import XferContainerAcknowledge, \
     XferContainerCustom
-from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompEdit, \
-    XferCompImage
+from lucterios.framework.xfercomponents import XferCompLabelForm, \
+    XferCompEdit, XferCompImage
 from lucterios.framework.error import LucteriosException, MINOR, IMPORTANT
 from lucterios.framework.models import get_value_if_choices
 
 from diacamma.payoff.models import Payoff, Supporting, PaymentMethod, \
     BankTransaction
 from diacamma.accounting.models import Third
-from datetime import date
 
 
 @ActionsManage.affect('Payoff', 'edit', 'append')
@@ -58,7 +57,9 @@ class PayoffAddModify(XferAddEditor):
     caption_add = _("Add payoff")
     caption_modify = _("Modify payoff")
 
-    def fillresponse_multisave(self, supportings=(), amount=0.0, mode=0, payer='', reference='', bank_account=0, date=None):
+    def fillresponse_multisave(self, supportings=(), amount=0.0,
+                               mode=0, payer='', reference='',
+                               bank_account=0, date=None):
         Payoff.multi_save(
             supportings, amount, mode, payer, reference, bank_account, date)
 
@@ -115,8 +116,7 @@ class SupportingThird(XferListEditor):
         if contact_filter != "":
             q_legalentity = Q(
                 contact__legalentity__name__contains=contact_filter)
-            q_individual = (Q(contact__individual__firstname__contains=contact_filter) | Q(
-                contact__individual__lastname__contains=contact_filter))
+            q_individual = (Q(contact__individual__firstname__contains=contact_filter) | Q(contact__individual__lastname__contains=contact_filter))
             self.filter &= (q_legalentity | q_individual)
 
     def fillresponse(self):
@@ -205,11 +205,11 @@ class ValidationPaymentPaypal(XferContainerAbstract):
     caption = 'ValidationPaymentPaypal'
     model = BankTransaction
     field_id = 'banktransaction'
-    
+
     def __init__(self, **kwargs):
         XferContainerAbstract.__init__(self, **kwargs)
         self.success = False
-    
+
     def confirm_paypal(self):
         from urllib.parse import quote_plus
         from urllib.request import Request, urlopen
@@ -220,17 +220,17 @@ class ValidationPaymentPaypal(XferContainerAbstract):
             url = 'https://www.paypal.com/cgi-bin/webscr'
         fields = 'cmd=_notify-validate'
         for key, value in self.request.POST.items():
-            fields += "&%s=%s" % (key, quote_plus(value)) 
-        res = urlopen(Request(url, fields.encode(), {"Content-Type":"application/x-www-form-urlencoded", 'Content-Length':len(fields)}))
+            fields += "&%s=%s" % (key, quote_plus(value))
+        res = urlopen(Request(url, fields.encode(), {"Content-Type": "application/x-www-form-urlencoded", 'Content-Length': len(fields)}))
         return res.read().decode()
-    
+
     def fillresponse(self):
         try:
             self.item.contains = ""
             self.item.payer = self.getparam('first_name', '') + " " + self.getparam('last_name', '')
             self.item.amount = self.getparam('mc_gross', 0.0)
             self.item.date = timezone.now()
-            self.item.contains += "{[newline]}".join(["%s = %s" % item for item in self.request.POST.items() ]) 
+            self.item.contains += "{[newline]}".join(["%s = %s" % item for item in self.request.POST.items()])
             conf_res = self.confirm_paypal()
             if conf_res == 'VERIFIED':
                 bank_account = None
@@ -253,7 +253,7 @@ class ValidationPaymentPaypal(XferContainerAbstract):
                 self.item.status = 1
                 self.success = True
             if conf_res == 'INVALID':
-                self.item.contains += "{[newline]}--- INVALID ---{[newline]}" 
+                self.item.contains += "{[newline]}--- INVALID ---{[newline]}"
             else:
                 self.item.contains += "{[newline]}"
                 self.item.contains += conf_res.replace('\n', '{[newline]}')
