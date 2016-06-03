@@ -28,10 +28,10 @@ from django.utils.translation import ugettext_lazy as _
 from django.utils import six
 
 from lucterios.framework.editors import LucteriosEditor
-from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompButton,\
+from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompButton, \
     XferCompEdit, XferCompMemo
 from lucterios.CORE.parameters import Params
-from lucterios.framework.tools import ActionsManage, CLOSE_NO, SELECT_NONE,\
+from lucterios.framework.tools import ActionsManage, CLOSE_NO, SELECT_NONE, \
     FORMTYPE_REFRESH, FORMTYPE_MODAL, WrapAction
 from lucterios.framework.error import LucteriosException, IMPORTANT
 from lucterios.contacts.models import LegalEntity
@@ -52,14 +52,15 @@ class SupportingEditor(LucteriosEditor):
         if WrapAction.is_permission(xfer.request, right):
             btn = XferCompButton('change_third')
             btn.set_location(third.col + third.colspan, third.row)
-            btn.set_action(xfer.request, ActionsManage.get_act_changed("Supporting", 'third', _('change'), ''),
+            btn.set_action(xfer.request, ActionsManage.get_act_changed("Supporting", 'third', _('change'), 'images/edit.png'),
                            {'modal': FORMTYPE_MODAL, 'close': CLOSE_NO})
             xfer.add_component(btn)
 
         if self.item.third is not None:
             btn = XferCompButton('show_third')
+            btn.set_is_mini(True)
             btn.set_location(third.col + third.colspan + 1, third.row)
-            btn.set_action(xfer.request, ActionsManage.get_act_changed('Third', 'show', _('show'), ''),
+            btn.set_action(xfer.request, ActionsManage.get_act_changed('Third', 'show', _('show'), 'images/show.png'),
                            {'modal': FORMTYPE_MODAL, 'close': CLOSE_NO, 'params': {'third': self.item.third.id}})
             xfer.add_component(btn)
         lbl = XferCompLabelForm('info')
@@ -67,6 +68,18 @@ class SupportingEditor(LucteriosEditor):
         lbl.set_location(1, xfer.get_max_row() + 1, 4)
         lbl.set_value(self.item.get_info_state())
         xfer.add_component(lbl)
+
+    def show_third_ex(self, xfer):
+        xfer.params['supporting'] = self.item.id
+        third = xfer.get_components('third')
+        third.colspan -= 1
+        if self.item.third is not None:
+            btn = XferCompButton('show_third')
+            btn.set_is_mini(True)
+            btn.set_location(third.col + third.colspan, third.row)
+            btn.set_action(xfer.request, ActionsManage.get_act_changed('Third', 'show', _('show'), 'images/show.png'),
+                           {'modal': FORMTYPE_MODAL, 'close': CLOSE_NO, 'params': {'third': self.item.third.id}})
+            xfer.add_component(btn)
 
     def show(self, xfer):
         xfer.params['supporting'] = self.item.id
@@ -77,7 +90,7 @@ class SupportingEditor(LucteriosEditor):
             payoff.delete_header('payer')
         if self.item.get_max_payoff() > 0.001:
             payoff.add_action(xfer.request, ActionsManage.get_act_changed(
-                'Payoff', 'append', _("Add"), "images/add.png", ), {'close': CLOSE_NO, 'unique': SELECT_NONE})
+                'Payoff', 'append', _("Add"), "images/add.png",), {'close': CLOSE_NO, 'unique': SELECT_NONE})
 
 
 class PayoffEditor(LucteriosEditor):
@@ -92,6 +105,7 @@ class PayoffEditor(LucteriosEditor):
 
     def edit(self, xfer):
         currency_decimal = Params.getvalue("accounting-devise-prec")
+        fee_code = Params.getvalue("payoff-bankcharges-account")
         supportings = xfer.getparam('supportings', ())
         if len(supportings) > 0:
             supporting_list = Supporting.objects.filter(
@@ -155,6 +169,14 @@ class PayoffEditor(LucteriosEditor):
         if not supporting_list[0].is_revenu:
             xfer.remove_component("payer")
             xfer.remove_component("lbl_payer")
+        if (fee_code=='') or (self.item.mode == 0):
+            xfer.remove_component("bank_fee")
+            xfer.remove_component("lbl_bank_fee")
+        else:
+            bank_fee = xfer.get_components("bank_fee")
+            bank_fee.prec = currency_decimal
+            bank_fee.min = 0.0
+            bank_fee.max = float(amount_max)
 
 
 class DepositSlipEditor(LucteriosEditor):

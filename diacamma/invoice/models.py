@@ -404,7 +404,7 @@ class Bill(Supporting):
                 detail.save()
             self.status = 3
             self.save()
-            return new_bill.id
+            return new_bill
         else:
             return None
 
@@ -487,6 +487,18 @@ class Bill(Supporting):
         pdf_file = BytesIO(gen.generate_report(None, False))
         fct_mailing_mod.send_email(
             self.third.contact.email, subject, message, [(pdf_name, pdf_file)])
+
+    def support_validated(self):
+        if (self.bill_type == 2) or (self.status != 1):
+            raise LucteriosException(IMPORTANT, _("This item can't be validated!"))        
+        if (self.bill_type == 0):
+            new_bill = self.convert_to_bill()
+            if (new_bill is None) or (new_bill.get_info_state() != ''):
+                raise LucteriosException(IMPORTANT, _("This item can't be validated!"))
+            new_bill.valid()
+        else:
+            new_bill = self
+        return new_bill
 
     class Meta(object):
         verbose_name = _('bill')

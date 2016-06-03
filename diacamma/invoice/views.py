@@ -36,12 +36,12 @@ from lucterios.framework.xferadvance import XferListEditor, XferShowEditor
 from lucterios.framework.xferadvance import XferAddEditor
 from lucterios.framework.xferadvance import XferDelete
 from lucterios.framework.xfercomponents import XferCompLabelForm, \
-    XferCompSelect, XferCompHeader, XferCompImage, XferCompGrid,\
+    XferCompSelect, XferCompHeader, XferCompImage, XferCompGrid, \
     DEFAULT_ACTION_LIST, XferCompMemo, XferCompEdit, XferCompCheck
 from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage, \
-    FORMTYPE_MODAL, CLOSE_YES, SELECT_SINGLE, FORMTYPE_REFRESH, CLOSE_NO,\
+    FORMTYPE_MODAL, CLOSE_YES, SELECT_SINGLE, FORMTYPE_REFRESH, CLOSE_NO, \
     SELECT_MULTI, WrapAction
-from lucterios.framework.xfergraphic import XferContainerAcknowledge,\
+from lucterios.framework.xfergraphic import XferContainerAcknowledge, \
     XferContainerCustom
 from lucterios.framework.error import LucteriosException, IMPORTANT
 from lucterios.framework import signal_and_lock
@@ -207,10 +207,10 @@ class BillValid(XferContainerAcknowledge):
                     _("Do you want validate '%s'?") % self.item)
                 lbl.set_location(1, 1, 4)
                 dlg.add_component(lbl)
-                lbl = XferCompCheck('withpayoff')
-                lbl.set_value(withpayoff)
-                lbl.set_location(1, 2)
-                lbl.java_script = """
+                check_payoff = XferCompCheck('withpayoff')
+                check_payoff.set_value(withpayoff)
+                check_payoff.set_location(1, 2)
+                check_payoff.java_script = """
 var type=current.getValue();
 parent.get('date_payoff').setEnabled(type);
 parent.get('amount').setEnabled(type);
@@ -221,13 +221,15 @@ if (parent.get('bank_account')) {
     parent.get('bank_account').setEnabled(type);
 }
 """
-                dlg.add_component(lbl)
+                dlg.add_component(check_payoff)
                 lbl = XferCompLabelForm('lb_withpayoff')
                 lbl.set_value_as_name(_("Payment of deposit or cash"))
                 lbl.set_location(2, 2)
                 dlg.add_component(lbl)
                 dlg.item.supporting = self.item
                 dlg.fill_from_model(2, 3, False)
+                if dlg.get_components("bank_fee") is not None:
+                    check_payoff.java_script += "parent.get('bank_fee').setEnabled(type);\n"
                 dlg.get_components("date").name = "date_payoff"
                 dlg.get_components("mode").set_action(
                     self.request, self.get_action(), {'close': CLOSE_NO, 'modal': FORMTYPE_REFRESH})
@@ -265,9 +267,10 @@ class BillFromQuotation(XferContainerAcknowledge):
 
     def fillresponse(self):
         if (self.item.bill_type == 0) and (self.item.status == 1) and self.confirme(_("Do you want convert '%s' to bill?") % self.item):
-            new_id = self.item.convert_to_bill()
-            self.redirect_action(ActionsManage.get_act_changed(
-                self.model.__name__, 'show', '', ''), {'params': {self.field_id: new_id}})
+            new_bill = self.item.convert_to_bill()
+            if new_bill is not None:
+                self.redirect_action(ActionsManage.get_act_changed(
+                    self.model.__name__, 'show', '', ''), {'params': {self.field_id: new_bill.id}})
 
 
 @ActionsManage.affect('Bill', 'cancel')
@@ -395,8 +398,7 @@ class BillEmail(XferContainerAcknowledge):
             html_message = "<html>"
             html_message += message.replace('\n', '<br/>\n')
             if self.item.payoff_have_payment() and withpayment:
-                html_message += get_html_payment(
-                    self.request.build_absolute_uri(), self.language, self.item)
+                html_message += get_html_payment(self.request.META.get('HTTP_REFERER', self.request.build_absolute_uri()), self.language, self.item)
             html_message += "</html>"
             self.item.send_bill(subject, html_message, model)
 

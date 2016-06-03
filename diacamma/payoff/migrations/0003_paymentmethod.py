@@ -24,6 +24,7 @@ class Migration(migrations.Migration):
             options={
                 'verbose_name': 'payment method',
                 'default_permissions': [],
+                'ordering': ['paytype'],
                 'verbose_name_plural': 'payment methods',
             },
         ),

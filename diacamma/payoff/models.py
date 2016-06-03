@@ -25,6 +25,7 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import unicode_literals
 from datetime import date
 
+from django.conf import settings
 from django.db import models
 from django.db.models import Q
 from django.db.models.aggregates import Sum
@@ -35,11 +36,11 @@ from django.utils import six
 from lucterios.framework.models import LucteriosModel, get_value_converted
 from lucterios.framework.error import LucteriosException, IMPORTANT
 from lucterios.CORE.parameters import Params
+from lucterios.contacts.models import LegalEntity
 
 from diacamma.accounting.models import EntryAccount, FiscalYear, Third, Journal, \
     ChartsAccount, EntryLineAccount, AccountLink
 from diacamma.accounting.tools import format_devise, currency_round, correct_accounting_code
-from lucterios.contacts.models import LegalEntity
 
 
 class Supporting(LucteriosModel):
@@ -136,6 +137,9 @@ class Supporting(LucteriosModel):
                 IMPORTANT, _("third has not correct account"))
         return third_account
 
+    def support_validated(self):
+        return self
+
     @property
     def total_payed(self):
         return format_devise(self.get_total_payed(), 5)
@@ -185,6 +189,8 @@ class Payoff(LucteriosModel):
         EntryAccount, verbose_name=_('entry'), null=True, default=None, db_index=True, on_delete=models.CASCADE)
     bank_account = models.ForeignKey(BankAccount, verbose_name=_(
         'bank account'), null=True, default=None, db_index=True, on_delete=models.PROTECT)
+    bank_fee = models.DecimalField(verbose_name=_('bank fee'), max_digits=10, decimal_places=3, default=0.0, validators=[
+        MinValueValidator(0.0), MaxValueValidator(9999999.999)])
 
     @classmethod
     def get_default_fields(cls):
@@ -192,7 +198,7 @@ class Payoff(LucteriosModel):
 
     @classmethod
     def get_edit_fields(cls):
-        return ["date", "amount", "payer", "mode", "bank_account", "reference"]
+        return ["date", "amount", "payer", "mode", "bank_account", "reference", "bank_fee"]
 
     @property
     def value(self):
@@ -247,15 +253,23 @@ class Payoff(LucteriosModel):
             EntryLineAccount.objects.create(
                 account=third_account, amount=is_liability * is_revenu * amount, third=third, entry=new_entry)
         if self.bank_account is None:
-            cash_code = Params.getvalue("payoff-cash-account")
+            bank_code = Params.getvalue("payoff-cash-account")
         else:
-            cash_code = self.bank_account.account_code
-        cash_account = ChartsAccount.get_account(cash_code, fiscal_year)
-        if cash_account is None:
+            bank_code = self.bank_account.account_code
+        bank_account = ChartsAccount.get_account(bank_code, fiscal_year)
+        if bank_account is None:
             raise LucteriosException(
-                IMPORTANT, _("cash-account is not defined!"))
-        EntryLineAccount.objects.create(
-            account=cash_account, amount=-1 * is_revenu * float(self.amount), entry=new_entry)
+                IMPORTANT, _("account is not defined!"))
+        amount_to_bank = float(self.amount)
+        fee_code = Params.getvalue("payoff-bankcharges-account")
+        if (fee_code != '') and (float(self.bank_fee) > 0.001):
+            fee_account = ChartsAccount.get_account(fee_code, fiscal_year)
+            if fee_account is not None:
+                EntryLineAccount.objects.create(account=fee_account,
+                                                amount=-1 * is_revenu * float(self.bank_fee), entry=new_entry)
+                amount_to_bank -= float(self.bank_fee)
+        EntryLineAccount.objects.create(account=bank_account,
+                                        amount=-1 * is_revenu * amount_to_bank, entry=new_entry)
         return new_entry
 
     def save(self, force_insert=False, force_update=False, using=None,
@@ -513,6 +527,13 @@ class PaymentMethod(LucteriosModel):
         return res
 
     def show_pay(self, absolute_uri, lang, supporting):
+        def remove_accent(text):
+            try:
+                import unicodedata
+                return ''.join((letter for letter in unicodedata.normalize('NFD', text) if unicodedata.category(letter) != 'Mn'))
+            except:
+                return text
+        
         items = self.get_items()
         if self.paytype == 0:
             formTxt = "{[center]}"
@@ -537,19 +558,22 @@ class PaymentMethod(LucteriosModel):
             formTxt = formTxt % (
                 _('payable to'), items[0], _('address'), items[1])
         elif self.paytype == 2:
+            paypal_debug = getattr(settings, 'DIACAMMA_PAYOFF_PAYPALDEBUG', False)
             abs_url = absolute_uri.split('/')
-            paypal_dict = {
-                'paypal_url': 'https://www.paypal.com/cgi-bin/webscr'}
+            if paypal_debug:
+                paypal_dict = {
+                    'paypal_url': 'https://www.sandbox.paypal.com/cgi-bin/webscr'}
+            else:
+                paypal_dict = {
+                    'paypal_url': 'https://www.paypal.com/cgi-bin/webscr'}
             paypal_dict['business'] = items[0]
             paypal_dict['currency'] = Params.getvalue("accounting-devise-iso")
             paypal_dict['lang'] = lang
             paypal_dict['site_url'] = '/'.join(abs_url[:-2])
-            paypal_dict[
-                'site_return_url'] = '/'.join(abs_url[:-1]) + '/validationPaymentPaypal'
-            paypal_dict['ref'] = six.text_type(supporting)
+            paypal_dict['site_return_url'] = paypal_dict['site_url'] + '/diacamma.payoff/validationPaymentPaypal'
+            paypal_dict['ref'] = remove_accent(six.text_type(supporting))
             paypal_dict['bill'] = six.text_type(supporting.id)
-            paypal_dict['amount'] = six.text_type(
-                supporting.get_total_rest_topay())
+            paypal_dict['amount'] = six.text_type(supporting.get_total_rest_topay())
             formTxt = "{[center]}"
             formTxt += "{[form action='%(paypal_url)s' method='post' target='_top' height='65px' ]}"
             formTxt += "{[center]}"
@@ -580,3 +604,26 @@ class PaymentMethod(LucteriosModel):
         verbose_name_plural = _('payment methods')
         default_permissions = []
         ordering = ['paytype']
+
+
+class BankTransaction(LucteriosModel):
+    date = models.DateTimeField(verbose_name=_('date'), null=False)
+    status = models.IntegerField(verbose_name=_('status'), choices=((0, _('failure')), (1, _('success'))), null=False, default=0, db_index=True)
+    payer = models.CharField(_('payer'), max_length=200, null=False)
+    amount = models.DecimalField(verbose_name=_('amount'), max_digits=10, decimal_places=3, default=0.0, validators=[
+        MinValueValidator(0.0), MaxValueValidator(9999999.999)], null=True)
+    contains = models.TextField(_('contains'), null=True)
+    
+    @classmethod
+    def get_default_fields(cls):
+        return ['date', 'status', 'payer', 'amount']
+
+    @classmethod
+    def get_show_fields(cls):
+        return [('date', 'status'), ('payer', 'amount'), 'contains']
+    
+    class Meta(object):
+        verbose_name = _('bank transaction')
+        verbose_name_plural = _('bank transactions')
+        default_permissions = ['change']
+        ordering = ['-date']

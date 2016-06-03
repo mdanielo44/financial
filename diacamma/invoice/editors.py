@@ -101,6 +101,7 @@ class BillEditor(SupportingEditor):
         if self.item.status == 0:
             SupportingEditor.show_third(self, xfer, 'invoice.add_bill')
         else:
+            SupportingEditor.show_third_ex(self, xfer)
             details.actions = []
             if self.item.bill_type != 0:
                 SupportingEditor.show(self, xfer)

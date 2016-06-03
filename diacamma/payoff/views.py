@@ -26,22 +26,27 @@ from __future__ import unicode_literals
 
 from django.utils.translation import ugettext_lazy as _
 from django.db.models import Q
+from django.conf import settings
+from django.utils import six, timezone
 
-from lucterios.framework.xferadvance import XferAddEditor, XferListEditor,\
+from lucterios.framework.xferbasic import XferContainerAbstract
+from lucterios.framework.xferadvance import XferAddEditor, XferListEditor, \
     XferSave
 from lucterios.framework.xferadvance import XferDelete
-from lucterios.framework.tools import ActionsManage, MenuManage,\
-    FORMTYPE_REFRESH, CLOSE_NO, FORMTYPE_MODAL, CLOSE_YES, SELECT_SINGLE,\
+from lucterios.framework.tools import ActionsManage, MenuManage, \
+    FORMTYPE_REFRESH, CLOSE_NO, FORMTYPE_MODAL, CLOSE_YES, SELECT_SINGLE, \
     WrapAction
-from lucterios.framework.xfergraphic import XferContainerAcknowledge,\
+from lucterios.framework.xfergraphic import XferContainerAcknowledge, \
     XferContainerCustom
-from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompEdit,\
+from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompEdit, \
     XferCompImage
-from lucterios.framework.error import LucteriosException, MINOR
+from lucterios.framework.error import LucteriosException, MINOR, IMPORTANT
 from lucterios.framework.models import get_value_if_choices
 
-from diacamma.payoff.models import Payoff, Supporting, PaymentMethod
+from diacamma.payoff.models import Payoff, Supporting, PaymentMethod, \
+    BankTransaction
 from diacamma.accounting.models import Third
+from datetime import date
 
 
 @ActionsManage.affect('Payoff', 'edit', 'append')
@@ -169,7 +174,7 @@ class SupportingPaymentMethod(XferContainerCustom):
             self.add_component(lbl)
             lbl = XferCompLabelForm('paymeth_%d' % paymeth.id)
             lbl.set_value(
-                paymeth.show_pay(self.request.build_absolute_uri(), self.language, self.item))
+                paymeth.show_pay(self.request.META.get('HTTP_REFERER', self.request.build_absolute_uri()), self.language, self.item))
             lbl.set_location(2, max_row, 3)
             self.add_component(lbl)
             lbl = XferCompLabelForm('sep_paymeth_%d' % paymeth.id)
@@ -195,6 +200,64 @@ def get_html_payment(absolute_uri, lang, supporting):
     return html_message
 
 
-@MenuManage.describ(None)
-class ValidationPaymentPaypal(XferContainerAcknowledge):
-    pass
+@MenuManage.describ('')
+class ValidationPaymentPaypal(XferContainerAbstract):
+    caption = 'ValidationPaymentPaypal'
+    model = BankTransaction
+    field_id = 'banktransaction'
+    
+    def __init__(self, **kwargs):
+        XferContainerAbstract.__init__(self, **kwargs)
+        self.success = False
+    
+    def confirm_paypal(self):
+        from urllib.parse import quote_plus
+        from urllib.request import Request, urlopen
+        paypal_debug = getattr(settings, 'DIACAMMA_PAYOFF_PAYPALDEBUG', False)
+        if paypal_debug:
+            url = 'https://www.sandbox.paypal.com/cgi-bin/webscr'
+        else:
+            url = 'https://www.paypal.com/cgi-bin/webscr'
+        fields = 'cmd=_notify-validate'
+        for key, value in self.request.POST.items():
+            fields += "&%s=%s" % (key, quote_plus(value)) 
+        res = urlopen(Request(url, fields.encode(), {"Content-Type":"application/x-www-form-urlencoded", 'Content-Length':len(fields)}))
+        return res.read().decode()
+    
+    def fillresponse(self):
+        try:
+            self.item.contains = ""
+            self.item.payer = self.getparam('first_name', '') + " " + self.getparam('last_name', '')
+            self.item.amount = self.getparam('mc_gross', 0.0)
+            self.item.date = timezone.now()
+            self.item.contains += "{[newline]}".join(["%s = %s" % item for item in self.request.POST.items() ]) 
+            conf_res = self.confirm_paypal()
+            if conf_res == 'VERIFIED':
+                bank_account = None
+                for payment_meth in PaymentMethod.objects.filter(paytype=2):
+                    if payment_meth.get_items()[0] == self.getparam('receiver_email', ''):
+                        bank_account = payment_meth.bank_account
+                if bank_account is None:
+                    raise LucteriosException(IMPORTANT, "No paypal account!")
+                support = Supporting.objects.get(id=self.getparam('custom', 0))
+                new_payoff = Payoff()
+                new_payoff.supporting = support.get_final_child().support_validated()
+                new_payoff.date = self.item.date
+                new_payoff.amount = self.item.amount
+                new_payoff.payer = self.item.payer
+                new_payoff.mode = 2
+                new_payoff.bank_account = bank_account
+                new_payoff.reference = "PayPal " + self.getparam('txn_id', '')
+                new_payoff.bank_fee = self.getparam('mc_fee', 0.0)
+                new_payoff.save()
+                self.item.status = 1
+                self.success = True
+            if conf_res == 'INVALID':
+                self.item.contains += "{[newline]}--- INVALID ---{[newline]}" 
+            else:
+                self.item.contains += "{[newline]}"
+                self.item.contains += conf_res.replace('\n', '{[newline]}')
+        except Exception as err:
+            self.item.contains += "{[newline]}"
+            self.item.contains += six.text_type(err)
+        self.item.save()

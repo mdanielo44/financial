@@ -8,14 +8,14 @@ from lucterios.framework.xferadvance import XferAddEditor
 from lucterios.framework.xferadvance import XferShowEditor
 from lucterios.framework.xferadvance import XferDelete
 from lucterios.CORE.xferprint import XferPrintAction
-from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage,\
+from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage, \
     CLOSE_YES, CLOSE_NO, FORMTYPE_REFRESH, SELECT_MULTI, WrapAction
-from lucterios.framework.xfergraphic import XferContainerCustom,\
+from lucterios.framework.xfergraphic import XferContainerCustom, \
     XferContainerAcknowledge
 from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompImage
 from lucterios.framework.xfercomponents import XferCompEdit, XferCompGrid
 
-from diacamma.payoff.models import DepositSlip, DepositDetail
+from diacamma.payoff.models import DepositSlip, DepositDetail, BankTransaction
 
 
 @ActionsManage.affect('DepositSlip', 'list')
@@ -191,3 +191,21 @@ class DepositDetailDel(XferDelete):
     model = DepositDetail
     field_id = 'depositdetail'
     caption = _("Delete deposit detail")
+
+
+@ActionsManage.affect('BankTransaction', 'list')
+@MenuManage.describ('payoff.change_banktransaction', FORMTYPE_NOMODAL, 'financial', _('show bank transactions'))
+class BankTransactionList(XferListEditor):
+    icon = "transfer.png"
+    model = BankTransaction
+    field_id = 'banktransaction'
+    caption = _("Bank transactions")
+
+
+@ActionsManage.affect('BankTransaction', 'show')
+@MenuManage.describ('payoff.change_banktransaction')
+class BankTransactionShow(XferShowEditor):
+    icon = "transfer.png"
+    model = BankTransaction
+    field_id = 'banktransaction'
+    caption = _("Show bank transaction")
