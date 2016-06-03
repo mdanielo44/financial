@@ -28,8 +28,11 @@ from shutil import rmtree
 from lucterios.framework.test import LucteriosTest
 from lucterios.framework.xfergraphic import XferContainerAcknowledge
 from lucterios.framework.filetools import get_user_dir
+
+from lucterios.contacts.tests_contacts import change_ourdetail
+
 from diacamma.payoff.views_conf import PayoffConf, BankAccountAddModify,\
-    BankAccountDelete
+    BankAccountDelete, PaymentMethodAddModify
 
 
 class PayoffTest(LucteriosTest):
@@ -38,6 +41,7 @@ class PayoffTest(LucteriosTest):
         self.xfer_class = XferContainerAcknowledge
         LucteriosTest.setUp(self)
         rmtree(get_user_dir(), True)
+        change_ourdetail()
 
     def test_bank(self):
         self.factory.xfer = PayoffConf()
@@ -90,3 +94,102 @@ class PayoffTest(LucteriosTest):
         self.call('/diacamma.payoff/payoffConf', {}, False)
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="bankaccount"]/RECORD', 0)
+
+    def test_method(self):
+        self.factory.xfer = BankAccountAddModify()
+        self.call('/diacamma.payoff/bankAccountAddModify',
+                  {'designation': 'My bank', 'reference': '0123 456789 654 12', 'account_code': '512', 'SAVE': 'YES'}, False)
+
+        self.factory.xfer = PayoffConf()
+        self.call('/diacamma.payoff/payoffConf', {}, False)
+        self.assert_observer('core.custom', 'diacamma.payoff', 'payoffConf')
+        self.assert_count_equal('COMPONENTS/TAB', 3)
+        self.assert_count_equal('COMPONENTS/*', 2 + 2 + 2 + 3 + 5)
+        self.assert_count_equal(
+            'COMPONENTS/GRID[@name="paymentmethod"]/HEADER', 3)
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="paymentmethod"]/HEADER[@name="paytype"]', "type")
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="paymentmethod"]/HEADER[@name="bank_account"]', "compte bancaire")
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="paymentmethod"]/HEADER[@name="info"]', "paramètres")
+        self.assert_count_equal(
+            'COMPONENTS/GRID[@name="paymentmethod"]/RECORD', 0)
+
+        self.factory.xfer = PaymentMethodAddModify()
+        self.call('/diacamma.payoff/paymentMethodAddModify', {}, False)
+        self.assert_observer(
+            'core.custom', 'diacamma.payoff', 'paymentMethodAddModify')
+        self.assert_count_equal('COMPONENTS/*', 7)
+        self.assert_count_equal('COMPONENTS/SELECT[@name="bank_account"]/CASE', 1)
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="lbl_item_1"]', "{[b]}IBAN{[/b]}")
+        self.assert_xml_equal('COMPONENTS/EDIT[@name="item_1"]', None)
+
+        self.factory.xfer = PaymentMethodAddModify()
+        self.call('/diacamma.payoff/paymentMethodAddModify', {'paytype': 0}, False)
+        self.assert_observer(
+            'core.custom', 'diacamma.payoff', 'paymentMethodAddModify')
+        self.assert_count_equal('COMPONENTS/*', 7)
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="lbl_item_1"]', "{[b]}IBAN{[/b]}")
+        self.assert_xml_equal('COMPONENTS/EDIT[@name="item_1"]', None)
+
+        self.factory.xfer = PaymentMethodAddModify()
+        self.call('/diacamma.payoff/paymentMethodAddModify', {'paytype': 1}, False)
+        self.assert_observer(
+            'core.custom', 'diacamma.payoff', 'paymentMethodAddModify')
+        self.assert_count_equal('COMPONENTS/*', 9)
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="lbl_item_1"]', "{[b]}libellé à{[/b]}")
+        self.assert_xml_equal('COMPONENTS/EDIT[@name="item_1"]', "WoldCompany")
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="lbl_item_2"]', "{[b]}adresse{[/b]}")
+        self.assert_xml_equal('COMPONENTS/MEMO[@name="item_2"]', "Place des cocotiers{[newline]}97200 FORT DE FRANCE")
+
+        self.factory.xfer = PaymentMethodAddModify()
+        self.call('/diacamma.payoff/paymentMethodAddModify', {'paytype': 2}, False)
+        self.assert_observer(
+            'core.custom', 'diacamma.payoff', 'paymentMethodAddModify')
+        self.assert_count_equal('COMPONENTS/*', 7)
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="lbl_item_1"]', "{[b]}compte Paypal{[/b]}")
+        self.assert_xml_equal('COMPONENTS/EDIT[@name="item_1"]', None)
+
+        self.factory.xfer = PaymentMethodAddModify()
+        self.call('/diacamma.payoff/paymentMethodAddModify',
+                  {'paytype': 0, 'bank_account': 1, 'item_1': '123456798', 'SAVE': 'YES'}, False)
+        self.assert_observer(
+            'core.acknowledge', 'diacamma.payoff', 'paymentMethodAddModify')
+
+        self.factory.xfer = PaymentMethodAddModify()
+        self.call('/diacamma.payoff/paymentMethodAddModify',
+                  {'paytype': 1, 'bank_account': 1, 'item_1': 'Truc', 'item_2': '1 rue de la Paix{[newline]}99000 LA-BAS', 'SAVE': 'YES'}, False)
+        self.assert_observer(
+            'core.acknowledge', 'diacamma.payoff', 'paymentMethodAddModify')
+
+        self.factory.xfer = PaymentMethodAddModify()
+        self.call('/diacamma.payoff/paymentMethodAddModify',
+                  {'paytype': 2, 'bank_account': 1, 'item_1': 'monney@truc.org', 'SAVE': 'YES'}, False)
+        self.assert_observer(
+            'core.acknowledge', 'diacamma.payoff', 'paymentMethodAddModify')
+
+        self.factory.xfer = PayoffConf()
+        self.call('/diacamma.payoff/payoffConf', {}, False)
+        self.assert_observer('core.custom', 'diacamma.payoff', 'payoffConf')
+        self.assert_count_equal(
+            'COMPONENTS/GRID[@name="paymentmethod"]/HEADER', 3)
+        self.assert_count_equal(
+            'COMPONENTS/GRID[@name="paymentmethod"]/RECORD', 3)
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="paymentmethod"]/RECORD[1]/VALUE[@name="paytype"]', "virement")
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="paymentmethod"]/RECORD[1]/VALUE[@name="bank_account"]', "My bank")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="paymentmethod"]/RECORD[1]/VALUE[@name="info"]', '{[b]}IBAN{[/b]}{[br/]}123456798{[br/]}')
+
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="paymentmethod"]/RECORD[2]/VALUE[@name="paytype"]', "chèque")
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="paymentmethod"]/RECORD[2]/VALUE[@name="bank_account"]', "My bank")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="paymentmethod"]/RECORD[2]/VALUE[@name="info"]', '{[b]}libellé à{[/b]}{[br/]}Truc{[br/]}', True)
+
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="paymentmethod"]/RECORD[3]/VALUE[@name="paytype"]', "PayPal")
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="paymentmethod"]/RECORD[3]/VALUE[@name="bank_account"]', "My bank")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="paymentmethod"]/RECORD[3]/VALUE[@name="info"]', '{[b]}compte Paypal{[/b]}{[br/]}monney@truc.org{[br/]}')

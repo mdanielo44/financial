@@ -193,7 +193,7 @@ def get_html_payment(absolute_uri, lang, supporting):
         html_message += "<tr>"
         html_message += "<td><b>%s</b></td>" % get_value_if_choices(
             paymeth.paytype, paymeth.get_field_by_name('paytype'))
-        html_message += "<td>%s</td>" % paymeth.show_pay(absolute_uri, lang, supporting)
+        html_message += "<td>%s</td>" % paymeth.show_pay(absolute_uri, lang, supporting).replace('{[', '<').replace(']}', '>')
         html_message += "</tr>"
         html_message += "<tr></tr>"
     html_message += "</table>"
@@ -213,15 +213,11 @@ class ValidationPaymentPaypal(XferContainerAbstract):
     def confirm_paypal(self):
         from urllib.parse import quote_plus
         from urllib.request import Request, urlopen
-        paypal_debug = getattr(settings, 'DIACAMMA_PAYOFF_PAYPALDEBUG', False)
-        if paypal_debug:
-            url = 'https://www.sandbox.paypal.com/cgi-bin/webscr'
-        else:
-            url = 'https://www.paypal.com/cgi-bin/webscr'
+        paypal_url = getattr(settings, 'DIACAMMA_PAYOFF_PAYPAL_URL', 'https://www.paypal.com/cgi-bin/webscr')
         fields = 'cmd=_notify-validate'
         for key, value in self.request.POST.items():
             fields += "&%s=%s" % (key, quote_plus(value))
-        res = urlopen(Request(url, fields.encode(), {"Content-Type": "application/x-www-form-urlencoded", 'Content-Length': len(fields)}))
+        res = urlopen(Request(paypal_url, fields.encode(), {"Content-Type": "application/x-www-form-urlencoded", 'Content-Length': len(fields)}))
         return res.read().decode()
 
     def fillresponse(self):

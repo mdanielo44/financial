@@ -34,8 +34,13 @@ from diacamma.invoice.test_tools import default_articles, InvoiceTest
 from diacamma.payoff.views_deposit import DepositSlipList, DepositSlipAddModify,\
     DepositSlipShow, DepositDetailAddModify, DepositDetailSave, DepositSlipClose,\
     DepositSlipValidate
-from diacamma.payoff.views import PayoffAddModify
-from diacamma.payoff.test_tools import default_bankaccount
+from diacamma.payoff.views import PayoffAddModify, SupportingPaymentMethod
+from diacamma.payoff.test_tools import default_bankaccount,\
+    default_paymentmethod
+from diacamma.invoice.views import BillShow, BillEmail
+from django.utils import six
+from lucterios.mailing.tests import configSMTP, TestReceiver, decode_b64
+from base64 import b64decode
 
 
 class DepositTest(InvoiceTest):
@@ -409,3 +414,194 @@ class DepositTest(InvoiceTest):
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[12]/VALUE[@name="entry_account"]', '[512] 512')
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[12]/VALUE[@name="debit"]', '50.00€')
+
+
+class MethodTest(InvoiceTest):
+
+    def setUp(self):
+        self.xfer_class = XferContainerAcknowledge
+        initial_thirds()
+        InvoiceTest.setUp(self)
+        default_compta()
+        default_articles()
+        default_bankaccount()
+        default_paymentmethod()
+        rmtree(get_user_dir(), True)
+        self.add_bills()
+
+    def add_bills(self):
+        details = [
+            {'article': 0, 'designation': 'article 0', 'price': '100.00', 'quantity': 1}]
+        self._create_bill(details, 0, '2015-04-01', 6, True)
+        details = [
+            {'article': 0, 'designation': 'article 0', 'price': '100.00', 'quantity': 1}]
+        self._create_bill(details, 1, '2015-04-01', 4, True)
+        details = [
+            {'article': 0, 'designation': 'article 0', 'price': '100.00', 'quantity': 1}]
+        self._create_bill(details, 2, '2015-04-01', 5, True)
+        details = [
+            {'article': 0, 'designation': 'article 0', 'price': '100.00', 'quantity': 1}]
+        self._create_bill(details, 3, '2015-04-01', 7, True)
+        details = [
+            {'article': 0, 'designation': 'article 0', 'price': '100.00', 'quantity': 1}]
+        self._create_bill(details, 1, '2015-04-01', 6, False)
+
+    def check_payment(self, billid, title):
+        self.assert_count_equal('COMPONENTS/*', 22)
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="num_txt"]', 'A-1')
+
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="lb_paymeth_1"]', '{[b]}virement{[/b]}')
+        txt_value = self.get_first_xpath('COMPONENTS/LABELFORM[@name="paymeth_1"]').text
+        self.assertTrue(txt_value.find('{[u]}{[i]}IBAN{[/i]}{[/u]}') != -1, txt_value)
+        self.assertTrue(txt_value.find('123456789') != -1, txt_value)
+
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="lb_paymeth_2"]', '{[b]}chèque{[/b]}')
+        txt_value = self.get_first_xpath('COMPONENTS/LABELFORM[@name="paymeth_2"]').text
+        self.assertTrue(txt_value.find('{[u]}{[i]}libellé à{[/i]}{[/u]}') != -1, txt_value)
+        self.assertTrue(txt_value.find('{[u]}{[i]}adresse{[/i]}{[/u]}') != -1, txt_value)
+        self.assertTrue(txt_value.find('Truc') != -1, txt_value)
+        self.assertTrue(txt_value.find('1 rue de la Paix{[newline]}99000 LA-BAS') != -1, txt_value)
+
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="lb_paymeth_3"]', '{[b]}PayPal{[/b]}')
+        txt_value = self.get_first_xpath('COMPONENTS/LABELFORM[@name="paymeth_3"]').text
+        self.assertTrue(txt_value.find("{[input name='currency_code' type='hidden' value='EUR' /]}") != -1, txt_value)
+        self.assertTrue(txt_value.find("{[input name='lc' type='hidden' value='fr' /]}") != -1, txt_value)
+        self.assertTrue(txt_value.find("{[input name='return' type='hidden' value='http://testserver' /]}") != -1, txt_value)
+        self.assertTrue(txt_value.find("{[input name='cancel_return' type='hidden' value='http://testserver' /]}") != -1, txt_value)
+        self.assertTrue(txt_value.find("{[input name='notify_url' type='hidden' value='http://testserver/diacamma.payoff/validationPaymentPaypal' /]}") != -1, txt_value)
+        self.assertTrue(txt_value.find("{[input name='business' type='hidden' value='monney@truc.org' /]}") != -1, txt_value)
+        self.assertTrue(txt_value.find("{[input name='item_name' type='hidden' value='%s' /]}" % title) != -1, txt_value)
+        self.assertTrue(txt_value.find("{[input name='custom' type='hidden' value='%d' /]}" % billid) != -1, txt_value)
+        self.assertTrue(txt_value.find("{[input name='amount' type='hidden' value='100.0' /]}") != -1, txt_value)
+
+    def test_payment_asset(self):
+        self.factory.xfer = BillShow()
+        self.call('/diacamma.invoice/billShow', {'bill': 3}, False)
+        self.assert_observer(
+            'core.custom', 'diacamma.invoice', 'billShow')
+        self.assert_xml_equal(
+            'COMPONENTS/LABELFORM[@name="title"]', "{[br/]}{[center]}{[u]}{[b]}avoir{[/b]}{[/u]}{[/center]}")
+        self.assert_xml_equal(
+            'COMPONENTS/LABELFORM[@name="status"]', "validé")
+        self.assert_count_equal('ACTIONS/ACTION', 3)
+
+        self.factory.xfer = SupportingPaymentMethod()
+        self.call('/diacamma.payoff/supportingPaymentMethod', {'bill': 3, 'item_name': 'bill'}, False)
+        self.assert_observer('core.exception', 'diacamma.payoff', 'supportingPaymentMethod')
+
+    def test_payment_building(self):
+        self.factory.xfer = BillShow()
+        self.call('/diacamma.invoice/billShow', {'bill': 5}, False)
+        self.assert_observer(
+            'core.custom', 'diacamma.invoice', 'billShow')
+        self.assert_xml_equal(
+            'COMPONENTS/LABELFORM[@name="title"]', "{[br/]}{[center]}{[u]}{[b]}facture{[/b]}{[/u]}{[/center]}")
+        self.assert_xml_equal(
+            'COMPONENTS/LABELFORM[@name="status"]', "en création")
+        self.assert_count_equal('ACTIONS/ACTION', 3)
+
+        self.factory.xfer = SupportingPaymentMethod()
+        self.call('/diacamma.payoff/supportingPaymentMethod', {'bill': 5, 'item_name': 'bill'}, False)
+        self.assert_observer('core.exception', 'diacamma.payoff', 'supportingPaymentMethod')
+
+    def test_payment_cotation(self):
+        self.factory.xfer = BillShow()
+        self.call('/diacamma.invoice/billShow', {'bill': 1}, False)
+        self.assert_observer(
+            'core.custom', 'diacamma.invoice', 'billShow')
+        self.assert_xml_equal(
+            'COMPONENTS/LABELFORM[@name="title"]', "{[br/]}{[center]}{[u]}{[b]}devis{[/b]}{[/u]}{[/center]}")
+        self.assert_xml_equal(
+            'COMPONENTS/LABELFORM[@name="status"]', "validé")
+        self.assert_count_equal('ACTIONS/ACTION', 5)
+        self.assert_action_equal('ACTIONS/ACTION[1]', (six.text_type('Règlement'), 'diacamma.payoff/images/payments.png', 'diacamma.payoff', 'supportingPaymentMethod', 0, 1, 1))
+
+        self.factory.xfer = SupportingPaymentMethod()
+        self.call('/diacamma.payoff/supportingPaymentMethod', {'bill': 1, 'item_name': 'bill'}, False)
+        self.assert_observer('core.custom', 'diacamma.payoff', 'supportingPaymentMethod')
+        self.check_payment(1, 'devis A-1 - 1 avril 2015')
+
+    def test_payment_bill(self):
+        self.factory.xfer = BillShow()
+        self.call('/diacamma.invoice/billShow', {'bill': 2}, False)
+        self.assert_observer(
+            'core.custom', 'diacamma.invoice', 'billShow')
+        self.assert_xml_equal(
+            'COMPONENTS/LABELFORM[@name="title"]', "{[br/]}{[center]}{[u]}{[b]}facture{[/b]}{[/u]}{[/center]}")
+        self.assert_xml_equal(
+            'COMPONENTS/LABELFORM[@name="status"]', "validé")
+        self.assert_count_equal('ACTIONS/ACTION', 5)
+        self.assert_action_equal('ACTIONS/ACTION[1]', (six.text_type('Règlement'), 'diacamma.payoff/images/payments.png', 'diacamma.payoff', 'supportingPaymentMethod', 0, 1, 1))
+
+        self.factory.xfer = SupportingPaymentMethod()
+        self.call('/diacamma.payoff/supportingPaymentMethod', {'bill': 2, 'item_name': 'bill'}, False)
+        self.assert_observer('core.custom', 'diacamma.payoff', 'supportingPaymentMethod')
+        self.check_payment(2, 'facture A-1 - 1 avril 2015')
+
+    def test_send_bill(self):
+        configSMTP('localhost', 1025)
+        server = TestReceiver()
+        server.start(1025)
+        try:
+            self.assertEqual(0, server.count())
+            self.factory.xfer = BillEmail()
+            self.call('/diacamma.invoice/billEmail', {'bill': 2}, False)
+            self.assert_observer(
+                'core.custom', 'diacamma.invoice', 'billEmail')
+            self.assert_count_equal('COMPONENTS/*', 9)
+
+            self.factory.xfer = BillEmail()
+            self.call('/diacamma.invoice/billEmail',
+                      {'bill': 2, 'OK': 'YES', 'subject': 'my bill', 'message': 'this is a bill.', 'model': 8, 'withpayment': 1}, False)
+            self.assert_observer(
+                'core.acknowledge', 'diacamma.invoice', 'billEmail')
+            self.assertEqual(1, server.count())
+            self.assertEqual(
+                'mr-sylvestre@worldcompany.com', server.get(0)[1])
+            self.assertEqual(
+                ['Minimum@worldcompany.com'], server.get(0)[2])
+            msg, msg_file = server.check_first_message('my bill', 2)
+            self.assertEqual('text/html', msg.get_content_type())
+            self.assertEqual(
+                'base64', msg.get('Content-Transfer-Encoding', ''))
+            email_content = decode_b64(msg.get_payload())
+            self.assertTrue('<html>this is a bill.<hr/>' in email_content, email_content)
+            self.assertTrue(email_content.find('<u><i>IBAN</i></u>') != -1, email_content)
+            self.assertTrue(email_content.find('123456789') != -1, email_content)
+            self.assertTrue(email_content.find('<u><i>libellé à</i></u>') != -1, email_content)
+            self.assertTrue(email_content.find('<u><i>adresse</i></u>') != -1, email_content)
+            self.assertTrue(email_content.find('Truc') != -1, email_content)
+            self.assertTrue(email_content.find('1 rue de la Paix<newline>99000 LA-BAS') != -1, email_content)
+            self.assertTrue(email_content.find("<input name='currency_code' type='hidden' value='EUR' />") != -1, email_content)
+            self.assertTrue(email_content.find("<input name='lc' type='hidden' value='fr' />") != -1, email_content)
+            self.assertTrue(email_content.find("<input name='return' type='hidden' value='http://testserver' />") != -1, email_content)
+            self.assertTrue(email_content.find("<input name='cancel_return' type='hidden' value='http://testserver' />") != -1, email_content)
+            self.assertTrue(email_content.find("<input name='notify_url' type='hidden' value='http://testserver/diacamma.payoff/validationPaymentPaypal' />") != -1, email_content)
+            self.assertTrue(email_content.find("<input name='business' type='hidden' value='monney@truc.org' />") != -1, email_content)
+            self.assertTrue(email_content.find("<input name='item_name' type='hidden' value='facture A-1 - 1 avril 2015' />") != -1, email_content)
+            self.assertTrue(email_content.find("<input name='custom' type='hidden' value='2' />") != -1, email_content)
+            self.assertTrue(email_content.find("<input name='amount' type='hidden' value='100.0' />") != -1, email_content)
+
+            self.assertTrue(
+                'facture_A-1_Minimum.pdf' in msg_file.get('Content-Type', ''), msg_file.get('Content-Type', ''))
+            self.assertEqual(
+                "%PDF".encode('ascii', 'ignore'), b64decode(msg_file.get_payload())[:4])
+        finally:
+            server.stop()
+
+    def test_payment_recip(self):
+        self.factory.xfer = BillShow()
+        self.call('/diacamma.invoice/billShow', {'bill': 4}, False)
+        self.assert_observer(
+            'core.custom', 'diacamma.invoice', 'billShow')
+        self.assert_xml_equal(
+            'COMPONENTS/LABELFORM[@name="title"]', "{[br/]}{[center]}{[u]}{[b]}reçu{[/b]}{[/u]}{[/center]}")
+        self.assert_xml_equal(
+            'COMPONENTS/LABELFORM[@name="status"]', "validé")
+        self.assert_count_equal('ACTIONS/ACTION', 5)
+        self.assert_action_equal('ACTIONS/ACTION[1]', (six.text_type('Règlement'), 'diacamma.payoff/images/payments.png', 'diacamma.payoff', 'supportingPaymentMethod', 0, 1, 1))
+
+        self.factory.xfer = SupportingPaymentMethod()
+        self.call('/diacamma.payoff/supportingPaymentMethod', {'bill': 4, 'item_name': 'bill'}, False)
+        self.assert_observer('core.custom', 'diacamma.payoff', 'supportingPaymentMethod')
+        self.check_payment(4, 'recu A-1 - 1 avril 2015')

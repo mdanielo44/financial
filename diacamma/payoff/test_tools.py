@@ -26,7 +26,7 @@ from __future__ import unicode_literals
 
 from diacamma.accounting.test_tools import create_account
 from diacamma.accounting.models import FiscalYear
-from diacamma.payoff.models import BankAccount
+from diacamma.payoff.models import BankAccount, PaymentMethod
 
 
 def default_bankaccount():
@@ -35,3 +35,9 @@ def default_bankaccount():
         designation="My bank", reference="0123 456789 321654 12", account_code="512")
     BankAccount.objects.create(
         designation="PayPal", reference="paypal@moi.com", account_code="581")
+
+
+def default_paymentmethod():
+    PaymentMethod.objects.create(paytype=0, bank_account_id=1, extra_data='123456789')
+    PaymentMethod.objects.create(paytype=1, bank_account_id=1, extra_data='Truc\n1 rue de la Paix{[newline]}99000 LA-BAS')
+    PaymentMethod.objects.create(paytype=2, bank_account_id=2, extra_data='monney@truc.org')

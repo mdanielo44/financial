@@ -558,14 +558,9 @@ class PaymentMethod(LucteriosModel):
             formTxt = formTxt % (
                 _('payable to'), items[0], _('address'), items[1])
         elif self.paytype == 2:
-            paypal_debug = getattr(settings, 'DIACAMMA_PAYOFF_PAYPALDEBUG', False)
+            paypal_url = getattr(settings, 'DIACAMMA_PAYOFF_PAYPAL_URL', 'https://www.paypal.com/cgi-bin/webscr')
             abs_url = absolute_uri.split('/')
-            if paypal_debug:
-                paypal_dict = {
-                    'paypal_url': 'https://www.sandbox.paypal.com/cgi-bin/webscr'}
-            else:
-                paypal_dict = {
-                    'paypal_url': 'https://www.paypal.com/cgi-bin/webscr'}
+            paypal_dict = {'paypal_url': paypal_url}
             paypal_dict['business'] = items[0]
             paypal_dict['currency'] = Params.getvalue("accounting-devise-iso")
             paypal_dict['lang'] = lang
@@ -575,7 +570,7 @@ class PaymentMethod(LucteriosModel):
             paypal_dict['bill'] = six.text_type(supporting.id)
             paypal_dict['amount'] = six.text_type(supporting.get_total_rest_topay())
             formTxt = "{[center]}"
-            formTxt += "{[form action='%(paypal_url)s' method='post' target='_top' height='65px' ]}"
+            formTxt += "{[form action='%(paypal_url)s' method='post' target='_blank' height='65px' ]}"
             formTxt += "{[center]}"
             formTxt += "{[input name='cmd' type='hidden' value='_xclick' /]}"
             formTxt += "{[input name='currency_code' type='hidden' value='%(currency)s' /]}"

@@ -396,7 +396,7 @@ class BillEmail(XferContainerAcknowledge):
             dlg.add_action(WrapAction(_('Cancel'), 'images/cancel.png'), {})
         else:
             html_message = "<html>"
-            html_message += message.replace('\n', '<br/>\n')
+            html_message += message.replace('{[newline]}', '<br/>\n')
             if self.item.payoff_have_payment() and withpayment:
                 html_message += get_html_payment(self.request.META.get('HTTP_REFERER', self.request.build_absolute_uri()), self.language, self.item)
             html_message += "</html>"
