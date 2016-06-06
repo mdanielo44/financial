@@ -211,6 +211,9 @@ class Bill(Supporting):
             val += detail.get_vta()
         return val
 
+    def get_tax_sum(self):
+        return self.get_vta_sum()
+
     @property
     def vta_sum(self):
         return format_devise(self.get_vta_sum(), 5)

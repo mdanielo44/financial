@@ -16,6 +16,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='payoff',
             name='bank_fee',
-            field=models.DecimalField(decimal_places=3, default=0.0, max_digits=10, validators=[django.core.validators.MinValueValidator(0.0), django.core.validators.MaxValueValidator(9999999.999)], verbose_name='bank fee'),
+            field=models.DecimalField(decimal_places=3, default=0.0, max_digits=10, validators=[django.core.validators.MinValueValidator(
+                0.0), django.core.validators.MaxValueValidator(9999999.999)], verbose_name='bank fee'),
         ),
     ]

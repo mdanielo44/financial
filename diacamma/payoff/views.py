@@ -138,7 +138,7 @@ class SupportingThirdValid(XferSave):
 
 
 @ActionsManage.affect('Supporting', 'paymentmethod')
-@MenuManage.describ(None)
+@MenuManage.describ('')
 class SupportingPaymentMethod(XferContainerCustom):
     caption = _("Payment")
     icon = "payments.png"
@@ -215,16 +215,19 @@ class ValidationPaymentPaypal(XferContainerAbstract):
         self.success = False
 
     def confirm_paypal(self):
-        from urllib.parse import quote_plus
-        from urllib.request import Request, urlopen
+        try:
+            from urllib.parse import quote_plus
+        except:
+            from urllib import quote_plus
+        from requests import post
         paypal_url = getattr(
             settings, 'DIACAMMA_PAYOFF_PAYPAL_URL', 'https://www.paypal.com/cgi-bin/webscr')
         fields = 'cmd=_notify-validate'
         for key, value in self.request.POST.items():
             fields += "&%s=%s" % (key, quote_plus(value))
-        res = urlopen(Request(paypal_url, fields.encode(), {
-                      "Content-Type": "application/x-www-form-urlencoded", 'Content-Length': len(fields)}))
-        return res.read().decode()
+        res = post(paypal_url, data=fields.encode(), headers={
+                   "Content-Type": "application/x-www-form-urlencoded", 'Content-Length': len(fields)})
+        return res.text
 
     def fillresponse(self):
         try:

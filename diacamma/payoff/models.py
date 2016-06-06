@@ -151,6 +151,9 @@ class Supporting(LucteriosModel):
     def total_rest_topay(self):
         return format_devise(self.get_total_rest_topay(), 5)
 
+    def get_tax_sum(self):
+        return 0.0
+
 
 class BankAccount(LucteriosModel):
     designation = models.TextField(_('designation'), null=False)
@@ -558,17 +561,23 @@ class PaymentMethod(LucteriosModel):
             formTxt = formTxt % (
                 _('payable to'), items[0], _('address'), items[1])
         elif self.paytype == 2:
-            paypal_url = getattr(settings, 'DIACAMMA_PAYOFF_PAYPAL_URL', 'https://www.paypal.com/cgi-bin/webscr')
+            paypal_url = getattr(
+                settings, 'DIACAMMA_PAYOFF_PAYPAL_URL', 'https://www.paypal.com/cgi-bin/webscr')
             abs_url = absolute_uri.split('/')
             paypal_dict = {'paypal_url': paypal_url}
             paypal_dict['business'] = items[0]
             paypal_dict['currency'] = Params.getvalue("accounting-devise-iso")
             paypal_dict['lang'] = lang
             paypal_dict['site_url'] = '/'.join(abs_url[:-2])
-            paypal_dict['site_return_url'] = paypal_dict['site_url'] + '/diacamma.payoff/validationPaymentPaypal'
+            paypal_dict['site_return_url'] = paypal_dict[
+                'site_url'] + '/diacamma.payoff/validationPaymentPaypal'
             paypal_dict['ref'] = remove_accent(six.text_type(supporting))
             paypal_dict['bill'] = six.text_type(supporting.id)
-            paypal_dict['amount'] = six.text_type(supporting.get_total_rest_topay())
+            tax_part = currency_round(supporting.get_tax_sum() * supporting.get_total_rest_topay() /
+                                      supporting.get_total_incltax())
+            paypal_dict['tax'] = six.text_type(tax_part)
+            paypal_dict['amount'] = six.text_type(
+                supporting.get_total_rest_topay() - tax_part)
             formTxt = "{[center]}"
             formTxt += "{[form action='%(paypal_url)s' method='post' target='_blank' height='65px' ]}"
             formTxt += "{[center]}"
@@ -577,13 +586,13 @@ class PaymentMethod(LucteriosModel):
             formTxt += "{[input name='no_note' type='hidden' value='1' /]}"
             formTxt += "{[input name='no_shipping' type='hidden' value='1' /]}"
             formTxt += "{[input name='lc' type='hidden' value='%(lang)s' /]}"
-            formTxt += "{[input name='bn' type='hidden' value='SDL_BuyNow_WPS_FR' /]}"
             formTxt += "{[input name='return' type='hidden' value='%(site_url)s' /]}"
             formTxt += "{[input name='cancel_return' type='hidden' value='%(site_url)s' /]}"
             formTxt += "{[input name='notify_url' type='hidden' value='%(site_return_url)s' /]}"
             formTxt += "{[input name='business' type='hidden' value='%(business)s' /]}"
             formTxt += "{[input name='item_name' type='hidden' value='%(ref)s' /]}"
             formTxt += "{[input name='custom' type='hidden' value='%(bill)s' /]}"
+            formTxt += "{[input name='tax' type='hidden' value='%(tax)s' /]}"
             formTxt += "{[input name='amount' type='hidden' value='%(amount)s' /]}"
             formTxt += "{[input alt='PayPal' name='submit' src='https://www.paypalobjects.com/webstatic/mktg/logo/pp_cc_mark_74x46.jpg' title='PayPal' type='image' /]}"
             formTxt += "{[/center]}"
@@ -603,7 +612,8 @@ class PaymentMethod(LucteriosModel):
 
 class BankTransaction(LucteriosModel):
     date = models.DateTimeField(verbose_name=_('date'), null=False)
-    status = models.IntegerField(verbose_name=_('status'), choices=((0, _('failure')), (1, _('success'))), null=False, default=0, db_index=True)
+    status = models.IntegerField(verbose_name=_('status'), choices=(
+        (0, _('failure')), (1, _('success'))), null=False, default=0, db_index=True)
     payer = models.CharField(_('payer'), max_length=200, null=False)
     amount = models.DecimalField(verbose_name=_('amount'), max_digits=10, decimal_places=3, default=0.0, validators=[
         MinValueValidator(0.0), MaxValueValidator(9999999.999)], null=True)
