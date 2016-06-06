@@ -23,6 +23,7 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
 from __future__ import unicode_literals
+from datetime import datetime, timedelta
 
 from django.utils.translation import ugettext_lazy as _
 from django.db.models import Q
@@ -202,6 +203,7 @@ def get_html_payment(absolute_uri, lang, supporting):
 
 @MenuManage.describ('')
 class ValidationPaymentPaypal(XferContainerAbstract):
+    observer_name = 'PayPal'
     caption = 'ValidationPaymentPaypal'
     model = BankTransaction
     field_id = 'banktransaction'
@@ -225,7 +227,11 @@ class ValidationPaymentPaypal(XferContainerAbstract):
             self.item.contains = ""
             self.item.payer = self.getparam('first_name', '') + " " + self.getparam('last_name', '')
             self.item.amount = self.getparam('mc_gross', 0.0)
-            self.item.date = timezone.now()
+            try:
+                self.item.date = datetime.strptime(self.getparam("payment_date", '').replace('PDT', 'GMT'), '%H:%M:%S %b %d, %Y %Z')
+                self.item.date += timedelta(hours=7)
+            except:
+                self.item.date = timezone.now()
             self.item.contains += "{[newline]}".join(["%s = %s" % item for item in self.request.POST.items()])
             conf_res = self.confirm_paypal()
             if conf_res == 'VERIFIED':

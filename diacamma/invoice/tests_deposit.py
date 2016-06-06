@@ -33,14 +33,19 @@ from diacamma.accounting.views_entries import EntryLineAccountList
 from diacamma.invoice.test_tools import default_articles, InvoiceTest
 from diacamma.payoff.views_deposit import DepositSlipList, DepositSlipAddModify,\
     DepositSlipShow, DepositDetailAddModify, DepositDetailSave, DepositSlipClose,\
-    DepositSlipValidate
-from diacamma.payoff.views import PayoffAddModify, SupportingPaymentMethod
+    DepositSlipValidate, BankTransactionList
+from diacamma.payoff.views import PayoffAddModify, SupportingPaymentMethod,\
+    ValidationPaymentPaypal
 from diacamma.payoff.test_tools import default_bankaccount,\
     default_paymentmethod
 from diacamma.invoice.views import BillShow, BillEmail
 from django.utils import six
 from lucterios.mailing.tests import configSMTP, TestReceiver, decode_b64
 from base64 import b64decode
+from http.server import BaseHTTPRequestHandler, HTTPServer
+from socketserver import ThreadingMixIn
+from threading import Thread
+from django.conf import settings
 
 
 class DepositTest(InvoiceTest):
@@ -605,3 +610,75 @@ class MethodTest(InvoiceTest):
         self.call('/diacamma.payoff/supportingPaymentMethod', {'bill': 4, 'item_name': 'bill'}, False)
         self.assert_observer('core.custom', 'diacamma.payoff', 'supportingPaymentMethod')
         self.check_payment(4, 'recu A-1 - 1 avril 2015')
+
+    def test_payment_paypal(self):
+        paypal_validation_fields = {"txn_id": "2X7444647R1155525", "residence_country": "FR",
+                                    "payer_status": "verified", "protection_eligibility": "Ineligible",
+                                    "mc_gross": "100.00", "charset": "windows-1252",
+                                    "test_ipn": "1", "first_name": "test",
+                                    "payment_date": "13:52:34 Apr 03, 2015 PDT", "transaction_subject": "",
+                                    "ipn_track_id": "dda0f18cb9279", "shipping": "0.00",
+                                    "item_number": "", "payment_type": "instant",
+                                    "txn_type": "web_accept", "mc_fee": "3.67",
+                                    "payer_email": "test-buy@gmail.com", "payment_status": "Completed",
+                                    "payment_fee": "", "payment_gross": "",
+                                    "business": "monney@truc.org", "tax": "0.00",
+                                    "handling_amount": "0.00", "item_name": "facture A-1 - 1 avril 2015",
+                                    "notify_version": "3.8", "last_name": "buyer",
+                                    "custom": "2", "verify_sign": "A7lgc2.jwEO6kvL1E5vEX03Q2la0A8TLpWtV5daGrDAvTm8c8AewCHR3",
+                                    "mc_currency": "EUR", "payer_id": "BGZCL28GZVFHE",
+                                    "receiver_id": "4P9LXTHC9TRYS", "quantity": "1",
+                                    "receiver_email": "monney@truc.org", }
+
+        self.factory.xfer = BankTransactionList()
+        self.call('/diacamma.payoff/bankTransactionList', {}, False)
+        self.assert_observer(
+            'core.custom', 'diacamma.payoff', 'bankTransactionList')
+        self.assert_count_equal(
+            'COMPONENTS/GRID[@name="banktransaction"]/RECORD', 0)
+        self.assert_count_equal(
+            'COMPONENTS/GRID[@name="banktransaction"]/HEADER', 4)
+
+        setattr(settings, "DIACAMMA_PAYOFF_PAYPAL_URL", "http://localhost:9000")
+        httpd = MultiThreadedHTTPServer(('localhost', 9000), MyHandler)
+        th_httpd = Thread(target=httpd.serve_forever)
+        th_httpd.start()
+        try:
+            self.factory.xfer = ValidationPaymentPaypal()
+            self.call('/diacamma.payoff/validationPaymentPaypal', paypal_validation_fields, False)
+            self.assert_observer('PayPal', 'diacamma.payoff', 'validationPaymentPaypal')
+        finally:
+            httpd.server_close()
+
+        self.factory.xfer = BankTransactionList()
+        self.call('/diacamma.payoff/bankTransactionList', {}, False)
+        self.assert_observer(
+            'core.custom', 'diacamma.payoff', 'bankTransactionList')
+        self.assert_count_equal(
+            'COMPONENTS/GRID[@name="banktransaction"]/RECORD', 1)
+        self.assert_count_equal(
+            'COMPONENTS/GRID[@name="banktransaction"]/HEADER', 4)
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="depositslip"]/RECORD[1]/VALUE[@name="date"]', '3 avril 2015')
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="depositslip"]/RECORD[1]/VALUE[@name="status"]', 'sucès')
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="depositslip"]/RECORD[1]/VALUE[@name="payer"]', 'test buyer')
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="depositslip"]/RECORD[1]/VALUE[@name="amount"]', '100.000')
+
+
+class MultiThreadedHTTPServer(ThreadingMixIn, HTTPServer):
+    pass
+
+
+class MyHandler(BaseHTTPRequestHandler):
+
+    result = 'VERIFIED'
+
+    def do_POST(self):
+        """Respond to a POST request."""
+        self.send_response(200)
+        self.send_header("Content-type", "text/plain")
+        self.end_headers()
+        self.wfile.write(self.result.encode())
