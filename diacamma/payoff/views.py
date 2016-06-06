@@ -117,7 +117,8 @@ class SupportingThird(XferListEditor):
         if contact_filter != "":
             q_legalentity = Q(
                 contact__legalentity__name__contains=contact_filter)
-            q_individual = (Q(contact__individual__firstname__contains=contact_filter) | Q(contact__individual__lastname__contains=contact_filter))
+            q_individual = (Q(contact__individual__firstname__contains=contact_filter) | Q(
+                contact__individual__lastname__contains=contact_filter))
             self.filter &= (q_legalentity | q_individual)
 
     def fillresponse(self):
@@ -194,7 +195,8 @@ def get_html_payment(absolute_uri, lang, supporting):
         html_message += "<tr>"
         html_message += "<td><b>%s</b></td>" % get_value_if_choices(
             paymeth.paytype, paymeth.get_field_by_name('paytype'))
-        html_message += "<td>%s</td>" % paymeth.show_pay(absolute_uri, lang, supporting).replace('{[', '<').replace(']}', '>')
+        html_message += "<td>%s</td>" % paymeth.show_pay(
+            absolute_uri, lang, supporting).replace('{[', '<').replace(']}', '>')
         html_message += "</tr>"
         html_message += "<tr></tr>"
     html_message += "</table>"
@@ -215,24 +217,29 @@ class ValidationPaymentPaypal(XferContainerAbstract):
     def confirm_paypal(self):
         from urllib.parse import quote_plus
         from urllib.request import Request, urlopen
-        paypal_url = getattr(settings, 'DIACAMMA_PAYOFF_PAYPAL_URL', 'https://www.paypal.com/cgi-bin/webscr')
+        paypal_url = getattr(
+            settings, 'DIACAMMA_PAYOFF_PAYPAL_URL', 'https://www.paypal.com/cgi-bin/webscr')
         fields = 'cmd=_notify-validate'
         for key, value in self.request.POST.items():
             fields += "&%s=%s" % (key, quote_plus(value))
-        res = urlopen(Request(paypal_url, fields.encode(), {"Content-Type": "application/x-www-form-urlencoded", 'Content-Length': len(fields)}))
+        res = urlopen(Request(paypal_url, fields.encode(), {
+                      "Content-Type": "application/x-www-form-urlencoded", 'Content-Length': len(fields)}))
         return res.read().decode()
 
     def fillresponse(self):
         try:
             self.item.contains = ""
-            self.item.payer = self.getparam('first_name', '') + " " + self.getparam('last_name', '')
+            self.item.payer = self.getparam(
+                'first_name', '') + " " + self.getparam('last_name', '')
             self.item.amount = self.getparam('mc_gross', 0.0)
             try:
-                self.item.date = datetime.strptime(self.getparam("payment_date", '').replace('PDT', 'GMT'), '%H:%M:%S %b %d, %Y %Z')
+                self.item.date = datetime.strptime(
+                    self.getparam("payment_date", '').replace('PDT', 'GMT'), '%H:%M:%S %b %d, %Y %Z')
                 self.item.date += timedelta(hours=7)
             except:
                 self.item.date = timezone.now()
-            self.item.contains += "{[newline]}".join(["%s = %s" % item for item in self.request.POST.items()])
+            self.item.contains += "{[newline]}".join(
+                ["%s = %s" % item for item in self.request.POST.items()])
             conf_res = self.confirm_paypal()
             if conf_res == 'VERIFIED':
                 bank_account = None
@@ -243,7 +250,8 @@ class ValidationPaymentPaypal(XferContainerAbstract):
                     raise LucteriosException(IMPORTANT, "No paypal account!")
                 support = Supporting.objects.get(id=self.getparam('custom', 0))
                 new_payoff = Payoff()
-                new_payoff.supporting = support.get_final_child().support_validated()
+                new_payoff.supporting = support.get_final_child().support_validated(
+                    self.item.date)
                 new_payoff.date = self.item.date
                 new_payoff.amount = self.item.amount
                 new_payoff.payer = self.item.payer

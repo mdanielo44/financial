@@ -39,3 +39,16 @@ Printing
 --------
 
 Since the profile of a document (estimate, invoice, receipt or have) you can at any time print or re-print it if it is not in the state "in progress".
+
+Payoff
+------
+
+If they are configured ("Administration/Payoff configuration"), you can view the payment of an invoice, a receipt or a quotation.
+If you send it by email, you can also make them appear in your message.
+
+In the case of a payment via PayPal, if your _Diacamma_ is accessible via the Internet, the software will be automatically notified of the regulation.
+For a quotation, it will be automatically archived and a similar bill will be generated.
+A new regulation will be added to your bill.
+
+In the "Financial / Banking Transactions" screen, you can consulted precisely the notification received from PayPal.
+If state "failure", the reason is then clear: you have to manually check your PayPal account and restore possibly erroneous payment manually.

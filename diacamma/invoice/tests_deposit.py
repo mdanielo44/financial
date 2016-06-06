@@ -24,6 +24,14 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
 from shutil import rmtree
+from base64 import b64decode
+try:
+    from http.server import BaseHTTPRequestHandler, HTTPServer
+except:
+    from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
+from threading import Thread
+
+from django.conf import settings
 
 from lucterios.framework.xfergraphic import XferContainerAcknowledge
 from lucterios.framework.filetools import get_user_dir
@@ -33,7 +41,7 @@ from diacamma.accounting.views_entries import EntryLineAccountList
 from diacamma.invoice.test_tools import default_articles, InvoiceTest
 from diacamma.payoff.views_deposit import DepositSlipList, DepositSlipAddModify,\
     DepositSlipShow, DepositDetailAddModify, DepositDetailSave, DepositSlipClose,\
-    DepositSlipValidate, BankTransactionList
+    DepositSlipValidate, BankTransactionList, BankTransactionShow
 from diacamma.payoff.views import PayoffAddModify, SupportingPaymentMethod,\
     ValidationPaymentPaypal
 from diacamma.payoff.test_tools import default_bankaccount,\
@@ -41,11 +49,6 @@ from diacamma.payoff.test_tools import default_bankaccount,\
 from diacamma.invoice.views import BillShow, BillEmail
 from django.utils import six
 from lucterios.mailing.tests import configSMTP, TestReceiver, decode_b64
-from base64 import b64decode
-from http.server import BaseHTTPRequestHandler, HTTPServer
-from socketserver import ThreadingMixIn
-from threading import Thread
-from django.conf import settings
 
 
 class DepositTest(InvoiceTest):
@@ -455,29 +458,48 @@ class MethodTest(InvoiceTest):
         self.assert_count_equal('COMPONENTS/*', 22)
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="num_txt"]', 'A-1')
 
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="lb_paymeth_1"]', '{[b]}virement{[/b]}')
-        txt_value = self.get_first_xpath('COMPONENTS/LABELFORM[@name="paymeth_1"]').text
-        self.assertTrue(txt_value.find('{[u]}{[i]}IBAN{[/i]}{[/u]}') != -1, txt_value)
+        self.assert_xml_equal(
+            'COMPONENTS/LABELFORM[@name="lb_paymeth_1"]', '{[b]}virement{[/b]}')
+        txt_value = self.get_first_xpath(
+            'COMPONENTS/LABELFORM[@name="paymeth_1"]').text
+        self.assertTrue(
+            txt_value.find('{[u]}{[i]}IBAN{[/i]}{[/u]}') != -1, txt_value)
         self.assertTrue(txt_value.find('123456789') != -1, txt_value)
 
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="lb_paymeth_2"]', '{[b]}chèque{[/b]}')
-        txt_value = self.get_first_xpath('COMPONENTS/LABELFORM[@name="paymeth_2"]').text
-        self.assertTrue(txt_value.find('{[u]}{[i]}libellé à{[/i]}{[/u]}') != -1, txt_value)
-        self.assertTrue(txt_value.find('{[u]}{[i]}adresse{[/i]}{[/u]}') != -1, txt_value)
+        self.assert_xml_equal(
+            'COMPONENTS/LABELFORM[@name="lb_paymeth_2"]', '{[b]}chèque{[/b]}')
+        txt_value = self.get_first_xpath(
+            'COMPONENTS/LABELFORM[@name="paymeth_2"]').text
+        self.assertTrue(
+            txt_value.find('{[u]}{[i]}libellé à{[/i]}{[/u]}') != -1, txt_value)
+        self.assertTrue(
+            txt_value.find('{[u]}{[i]}adresse{[/i]}{[/u]}') != -1, txt_value)
         self.assertTrue(txt_value.find('Truc') != -1, txt_value)
-        self.assertTrue(txt_value.find('1 rue de la Paix{[newline]}99000 LA-BAS') != -1, txt_value)
+        self.assertTrue(
+            txt_value.find('1 rue de la Paix{[newline]}99000 LA-BAS') != -1, txt_value)
 
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="lb_paymeth_3"]', '{[b]}PayPal{[/b]}')
-        txt_value = self.get_first_xpath('COMPONENTS/LABELFORM[@name="paymeth_3"]').text
-        self.assertTrue(txt_value.find("{[input name='currency_code' type='hidden' value='EUR' /]}") != -1, txt_value)
-        self.assertTrue(txt_value.find("{[input name='lc' type='hidden' value='fr' /]}") != -1, txt_value)
-        self.assertTrue(txt_value.find("{[input name='return' type='hidden' value='http://testserver' /]}") != -1, txt_value)
-        self.assertTrue(txt_value.find("{[input name='cancel_return' type='hidden' value='http://testserver' /]}") != -1, txt_value)
-        self.assertTrue(txt_value.find("{[input name='notify_url' type='hidden' value='http://testserver/diacamma.payoff/validationPaymentPaypal' /]}") != -1, txt_value)
-        self.assertTrue(txt_value.find("{[input name='business' type='hidden' value='monney@truc.org' /]}") != -1, txt_value)
-        self.assertTrue(txt_value.find("{[input name='item_name' type='hidden' value='%s' /]}" % title) != -1, txt_value)
-        self.assertTrue(txt_value.find("{[input name='custom' type='hidden' value='%d' /]}" % billid) != -1, txt_value)
-        self.assertTrue(txt_value.find("{[input name='amount' type='hidden' value='100.0' /]}") != -1, txt_value)
+        self.assert_xml_equal(
+            'COMPONENTS/LABELFORM[@name="lb_paymeth_3"]', '{[b]}PayPal{[/b]}')
+        txt_value = self.get_first_xpath(
+            'COMPONENTS/LABELFORM[@name="paymeth_3"]').text
+        self.assertTrue(txt_value.find(
+            "{[input name='currency_code' type='hidden' value='EUR' /]}") != -1, txt_value)
+        self.assertTrue(txt_value.find(
+            "{[input name='lc' type='hidden' value='fr' /]}") != -1, txt_value)
+        self.assertTrue(txt_value.find(
+            "{[input name='return' type='hidden' value='http://testserver' /]}") != -1, txt_value)
+        self.assertTrue(txt_value.find(
+            "{[input name='cancel_return' type='hidden' value='http://testserver' /]}") != -1, txt_value)
+        self.assertTrue(txt_value.find(
+            "{[input name='notify_url' type='hidden' value='http://testserver/diacamma.payoff/validationPaymentPaypal' /]}") != -1, txt_value)
+        self.assertTrue(txt_value.find(
+            "{[input name='business' type='hidden' value='monney@truc.org' /]}") != -1, txt_value)
+        self.assertTrue(txt_value.find(
+            "{[input name='item_name' type='hidden' value='%s' /]}" % title) != -1, txt_value)
+        self.assertTrue(txt_value.find(
+            "{[input name='custom' type='hidden' value='%d' /]}" % billid) != -1, txt_value)
+        self.assertTrue(txt_value.find(
+            "{[input name='amount' type='hidden' value='100.0' /]}") != -1, txt_value)
 
     def test_payment_asset(self):
         self.factory.xfer = BillShow()
@@ -488,11 +510,15 @@ class MethodTest(InvoiceTest):
             'COMPONENTS/LABELFORM[@name="title"]', "{[br/]}{[center]}{[u]}{[b]}avoir{[/b]}{[/u]}{[/center]}")
         self.assert_xml_equal(
             'COMPONENTS/LABELFORM[@name="status"]', "validé")
+        self.assert_xml_equal(
+            'COMPONENTS/LABELFORM[@name="total_rest_topay"]', "100.00€")
         self.assert_count_equal('ACTIONS/ACTION', 3)
 
         self.factory.xfer = SupportingPaymentMethod()
-        self.call('/diacamma.payoff/supportingPaymentMethod', {'bill': 3, 'item_name': 'bill'}, False)
-        self.assert_observer('core.exception', 'diacamma.payoff', 'supportingPaymentMethod')
+        self.call('/diacamma.payoff/supportingPaymentMethod',
+                  {'bill': 3, 'item_name': 'bill'}, False)
+        self.assert_observer(
+            'core.exception', 'diacamma.payoff', 'supportingPaymentMethod')
 
     def test_payment_building(self):
         self.factory.xfer = BillShow()
@@ -506,8 +532,10 @@ class MethodTest(InvoiceTest):
         self.assert_count_equal('ACTIONS/ACTION', 3)
 
         self.factory.xfer = SupportingPaymentMethod()
-        self.call('/diacamma.payoff/supportingPaymentMethod', {'bill': 5, 'item_name': 'bill'}, False)
-        self.assert_observer('core.exception', 'diacamma.payoff', 'supportingPaymentMethod')
+        self.call('/diacamma.payoff/supportingPaymentMethod',
+                  {'bill': 5, 'item_name': 'bill'}, False)
+        self.assert_observer(
+            'core.exception', 'diacamma.payoff', 'supportingPaymentMethod')
 
     def test_payment_cotation(self):
         self.factory.xfer = BillShow()
@@ -519,11 +547,14 @@ class MethodTest(InvoiceTest):
         self.assert_xml_equal(
             'COMPONENTS/LABELFORM[@name="status"]', "validé")
         self.assert_count_equal('ACTIONS/ACTION', 5)
-        self.assert_action_equal('ACTIONS/ACTION[1]', (six.text_type('Règlement'), 'diacamma.payoff/images/payments.png', 'diacamma.payoff', 'supportingPaymentMethod', 0, 1, 1))
+        self.assert_action_equal('ACTIONS/ACTION[1]', (six.text_type(
+            'Règlement'), 'diacamma.payoff/images/payments.png', 'diacamma.payoff', 'supportingPaymentMethod', 0, 1, 1))
 
         self.factory.xfer = SupportingPaymentMethod()
-        self.call('/diacamma.payoff/supportingPaymentMethod', {'bill': 1, 'item_name': 'bill'}, False)
-        self.assert_observer('core.custom', 'diacamma.payoff', 'supportingPaymentMethod')
+        self.call('/diacamma.payoff/supportingPaymentMethod',
+                  {'bill': 1, 'item_name': 'bill'}, False)
+        self.assert_observer(
+            'core.custom', 'diacamma.payoff', 'supportingPaymentMethod')
         self.check_payment(1, 'devis A-1 - 1 avril 2015')
 
     def test_payment_bill(self):
@@ -535,12 +566,17 @@ class MethodTest(InvoiceTest):
             'COMPONENTS/LABELFORM[@name="title"]', "{[br/]}{[center]}{[u]}{[b]}facture{[/b]}{[/u]}{[/center]}")
         self.assert_xml_equal(
             'COMPONENTS/LABELFORM[@name="status"]', "validé")
+        self.assert_xml_equal(
+            'COMPONENTS/LABELFORM[@name="total_rest_topay"]', "100.00€")
         self.assert_count_equal('ACTIONS/ACTION', 5)
-        self.assert_action_equal('ACTIONS/ACTION[1]', (six.text_type('Règlement'), 'diacamma.payoff/images/payments.png', 'diacamma.payoff', 'supportingPaymentMethod', 0, 1, 1))
+        self.assert_action_equal('ACTIONS/ACTION[1]', (six.text_type(
+            'Règlement'), 'diacamma.payoff/images/payments.png', 'diacamma.payoff', 'supportingPaymentMethod', 0, 1, 1))
 
         self.factory.xfer = SupportingPaymentMethod()
-        self.call('/diacamma.payoff/supportingPaymentMethod', {'bill': 2, 'item_name': 'bill'}, False)
-        self.assert_observer('core.custom', 'diacamma.payoff', 'supportingPaymentMethod')
+        self.call('/diacamma.payoff/supportingPaymentMethod',
+                  {'bill': 2, 'item_name': 'bill'}, False)
+        self.assert_observer(
+            'core.custom', 'diacamma.payoff', 'supportingPaymentMethod')
         self.check_payment(2, 'facture A-1 - 1 avril 2015')
 
     def test_send_bill(self):
@@ -570,22 +606,37 @@ class MethodTest(InvoiceTest):
             self.assertEqual(
                 'base64', msg.get('Content-Transfer-Encoding', ''))
             email_content = decode_b64(msg.get_payload())
-            self.assertTrue('<html>this is a bill.<hr/>' in email_content, email_content)
-            self.assertTrue(email_content.find('<u><i>IBAN</i></u>') != -1, email_content)
-            self.assertTrue(email_content.find('123456789') != -1, email_content)
-            self.assertTrue(email_content.find('<u><i>libellé à</i></u>') != -1, email_content)
-            self.assertTrue(email_content.find('<u><i>adresse</i></u>') != -1, email_content)
+            self.assertTrue(
+                '<html>this is a bill.<hr/>' in email_content, email_content)
+            self.assertTrue(
+                email_content.find('<u><i>IBAN</i></u>') != -1, email_content)
+            self.assertTrue(
+                email_content.find('123456789') != -1, email_content)
+            self.assertTrue(
+                email_content.find('<u><i>libellé à</i></u>') != -1, email_content)
+            self.assertTrue(
+                email_content.find('<u><i>adresse</i></u>') != -1, email_content)
             self.assertTrue(email_content.find('Truc') != -1, email_content)
-            self.assertTrue(email_content.find('1 rue de la Paix<newline>99000 LA-BAS') != -1, email_content)
-            self.assertTrue(email_content.find("<input name='currency_code' type='hidden' value='EUR' />") != -1, email_content)
-            self.assertTrue(email_content.find("<input name='lc' type='hidden' value='fr' />") != -1, email_content)
-            self.assertTrue(email_content.find("<input name='return' type='hidden' value='http://testserver' />") != -1, email_content)
-            self.assertTrue(email_content.find("<input name='cancel_return' type='hidden' value='http://testserver' />") != -1, email_content)
-            self.assertTrue(email_content.find("<input name='notify_url' type='hidden' value='http://testserver/diacamma.payoff/validationPaymentPaypal' />") != -1, email_content)
-            self.assertTrue(email_content.find("<input name='business' type='hidden' value='monney@truc.org' />") != -1, email_content)
-            self.assertTrue(email_content.find("<input name='item_name' type='hidden' value='facture A-1 - 1 avril 2015' />") != -1, email_content)
-            self.assertTrue(email_content.find("<input name='custom' type='hidden' value='2' />") != -1, email_content)
-            self.assertTrue(email_content.find("<input name='amount' type='hidden' value='100.0' />") != -1, email_content)
+            self.assertTrue(email_content.find(
+                '1 rue de la Paix<newline>99000 LA-BAS') != -1, email_content)
+            self.assertTrue(email_content.find(
+                "<input name='currency_code' type='hidden' value='EUR' />") != -1, email_content)
+            self.assertTrue(email_content.find(
+                "<input name='lc' type='hidden' value='fr' />") != -1, email_content)
+            self.assertTrue(email_content.find(
+                "<input name='return' type='hidden' value='http://testserver' />") != -1, email_content)
+            self.assertTrue(email_content.find(
+                "<input name='cancel_return' type='hidden' value='http://testserver' />") != -1, email_content)
+            self.assertTrue(email_content.find(
+                "<input name='notify_url' type='hidden' value='http://testserver/diacamma.payoff/validationPaymentPaypal' />") != -1, email_content)
+            self.assertTrue(email_content.find(
+                "<input name='business' type='hidden' value='monney@truc.org' />") != -1, email_content)
+            self.assertTrue(email_content.find(
+                "<input name='item_name' type='hidden' value='facture A-1 - 1 avril 2015' />") != -1, email_content)
+            self.assertTrue(email_content.find(
+                "<input name='custom' type='hidden' value='2' />") != -1, email_content)
+            self.assertTrue(email_content.find(
+                "<input name='amount' type='hidden' value='100.0' />") != -1, email_content)
 
             self.assertTrue(
                 'facture_A-1_Minimum.pdf' in msg_file.get('Content-Type', ''), msg_file.get('Content-Type', ''))
@@ -603,15 +654,20 @@ class MethodTest(InvoiceTest):
             'COMPONENTS/LABELFORM[@name="title"]', "{[br/]}{[center]}{[u]}{[b]}reçu{[/b]}{[/u]}{[/center]}")
         self.assert_xml_equal(
             'COMPONENTS/LABELFORM[@name="status"]', "validé")
+        self.assert_xml_equal(
+            'COMPONENTS/LABELFORM[@name="total_rest_topay"]', "100.00€")
         self.assert_count_equal('ACTIONS/ACTION', 5)
-        self.assert_action_equal('ACTIONS/ACTION[1]', (six.text_type('Règlement'), 'diacamma.payoff/images/payments.png', 'diacamma.payoff', 'supportingPaymentMethod', 0, 1, 1))
+        self.assert_action_equal('ACTIONS/ACTION[1]', (six.text_type(
+            'Règlement'), 'diacamma.payoff/images/payments.png', 'diacamma.payoff', 'supportingPaymentMethod', 0, 1, 1))
 
         self.factory.xfer = SupportingPaymentMethod()
-        self.call('/diacamma.payoff/supportingPaymentMethod', {'bill': 4, 'item_name': 'bill'}, False)
-        self.assert_observer('core.custom', 'diacamma.payoff', 'supportingPaymentMethod')
+        self.call('/diacamma.payoff/supportingPaymentMethod',
+                  {'bill': 4, 'item_name': 'bill'}, False)
+        self.assert_observer(
+            'core.custom', 'diacamma.payoff', 'supportingPaymentMethod')
         self.check_payment(4, 'recu A-1 - 1 avril 2015')
 
-    def test_payment_paypal(self):
+    def check_payment_paypal(self, billid, title, success=True):
         paypal_validation_fields = {"txn_id": "2X7444647R1155525", "residence_country": "FR",
                                     "payer_status": "verified", "protection_eligibility": "Ineligible",
                                     "mc_gross": "100.00", "charset": "windows-1252",
@@ -623,9 +679,9 @@ class MethodTest(InvoiceTest):
                                     "payer_email": "test-buy@gmail.com", "payment_status": "Completed",
                                     "payment_fee": "", "payment_gross": "",
                                     "business": "monney@truc.org", "tax": "0.00",
-                                    "handling_amount": "0.00", "item_name": "facture A-1 - 1 avril 2015",
+                                    "handling_amount": "0.00", "item_name": title,
                                     "notify_version": "3.8", "last_name": "buyer",
-                                    "custom": "2", "verify_sign": "A7lgc2.jwEO6kvL1E5vEX03Q2la0A8TLpWtV5daGrDAvTm8c8AewCHR3",
+                                    "custom": "%d" % billid, "verify_sign": "A7lgc2.jwEO6kvL1E5vEX03Q2la0A8TLpWtV5daGrDAvTm8c8AewCHR3",
                                     "mc_currency": "EUR", "payer_id": "BGZCL28GZVFHE",
                                     "receiver_id": "4P9LXTHC9TRYS", "quantity": "1",
                                     "receiver_email": "monney@truc.org", }
@@ -639,16 +695,18 @@ class MethodTest(InvoiceTest):
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="banktransaction"]/HEADER', 4)
 
-        setattr(settings, "DIACAMMA_PAYOFF_PAYPAL_URL", "http://localhost:9000")
-        httpd = MultiThreadedHTTPServer(('localhost', 9000), MyHandler)
-        th_httpd = Thread(target=httpd.serve_forever)
-        th_httpd.start()
+        setattr(
+            settings, "DIACAMMA_PAYOFF_PAYPAL_URL", "http://localhost:9100")
+        httpd = TestHTTPServer(('localhost', 9100))
+        httpd.start()
         try:
             self.factory.xfer = ValidationPaymentPaypal()
-            self.call('/diacamma.payoff/validationPaymentPaypal', paypal_validation_fields, False)
-            self.assert_observer('PayPal', 'diacamma.payoff', 'validationPaymentPaypal')
+            self.call('/diacamma.payoff/validationPaymentPaypal',
+                      paypal_validation_fields, False)
+            self.assert_observer(
+                'PayPal', 'diacamma.payoff', 'validationPaymentPaypal')
         finally:
-            httpd.server_close()
+            httpd.shutdown()
 
         self.factory.xfer = BankTransactionList()
         self.call('/diacamma.payoff/bankTransactionList', {}, False)
@@ -659,20 +717,119 @@ class MethodTest(InvoiceTest):
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="banktransaction"]/HEADER', 4)
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="depositslip"]/RECORD[1]/VALUE[@name="date"]', '3 avril 2015')
+            'COMPONENTS/GRID[@name="banktransaction"]/RECORD[1]/VALUE[@name="date"]', '3 avril 2015 20:52')
+        if success:
+            self.assert_xml_equal(
+                'COMPONENTS/GRID[@name="banktransaction"]/RECORD[1]/VALUE[@name="status"]', 'succès')
+        else:
+            self.assert_xml_equal(
+                'COMPONENTS/GRID[@name="banktransaction"]/RECORD[1]/VALUE[@name="status"]', 'échec')
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="depositslip"]/RECORD[1]/VALUE[@name="status"]', 'sucès')
+            'COMPONENTS/GRID[@name="banktransaction"]/RECORD[1]/VALUE[@name="payer"]', 'test buyer')
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="depositslip"]/RECORD[1]/VALUE[@name="payer"]', 'test buyer')
+            'COMPONENTS/GRID[@name="banktransaction"]/RECORD[1]/VALUE[@name="amount"]', '100.000')
+
+        self.factory.xfer = BankTransactionShow()
+        self.call('/diacamma.payoff/bankTransactionShow',
+                  {'banktransaction': 1}, False)
+        self.assert_observer(
+            'core.custom', 'diacamma.payoff', 'bankTransactionShow')
         self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="depositslip"]/RECORD[1]/VALUE[@name="amount"]', '100.000')
+            'COMPONENTS/LABELFORM[@name="date"]', "3 avril 2015 20:52")
+        if success:
+            self.assert_xml_equal(
+                'COMPONENTS/LABELFORM[@name="status"]', "succès")
+        else:
+            self.assert_xml_equal(
+                'COMPONENTS/LABELFORM[@name="status"]', "échec")
+        self.assert_xml_equal(
+            'COMPONENTS/LABELFORM[@name="payer"]', "test buyer")
+        self.assert_xml_equal(
+            'COMPONENTS/LABELFORM[@name="amount"]', "100.000")
+        contains = self.get_first_xpath(
+            'COMPONENTS/LABELFORM[@name="contains"]').text
+        self.assertTrue("item_name = %s" % title in contains, contains)
+        self.assertTrue("custom = %d" % billid in contains, contains)
+        self.assertTrue("business = monney@truc.org" in contains, contains)
+
+    def test_payment_paypal_bill(self):
+        self.check_payment_paypal(2, "facture A-1 - 1 avril 2015")
+        self.factory.xfer = BillShow()
+        self.call('/diacamma.invoice/billShow', {'bill': 2}, False)
+        self.assert_observer(
+            'core.custom', 'diacamma.invoice', 'billShow')
+        self.assert_xml_equal(
+            'COMPONENTS/LABELFORM[@name="title"]', "{[br/]}{[center]}{[u]}{[b]}facture{[/b]}{[/u]}{[/center]}")
+        self.assert_xml_equal(
+            'COMPONENTS/LABELFORM[@name="status"]', "validé")
+        self.assert_xml_equal(
+            'COMPONENTS/LABELFORM[@name="total_rest_topay"]', "0.00€")
+        self.assert_count_equal('ACTIONS/ACTION', 4)
+
+    def test_payment_paypal_cotation(self):
+        self.check_payment_paypal(1, "devis A-1 - 1 avril 2015")
+        self.factory.xfer = BillShow()
+        self.call('/diacamma.invoice/billShow', {'bill': 1}, False)
+        self.assert_observer(
+            'core.custom', 'diacamma.invoice', 'billShow')
+        self.assert_xml_equal(
+            'COMPONENTS/LABELFORM[@name="title"]', "{[br/]}{[center]}{[u]}{[b]}devis{[/b]}{[/u]}{[/center]}")
+        self.assert_xml_equal(
+            'COMPONENTS/LABELFORM[@name="date"]', "1 avril 2015")
+        self.assert_xml_equal(
+            'COMPONENTS/LABELFORM[@name="status"]', "archivé")
+
+        self.factory.xfer = BillShow()
+        self.call('/diacamma.invoice/billShow', {'bill': 6}, False)
+        self.assert_observer(
+            'core.custom', 'diacamma.invoice', 'billShow')
+        self.assert_xml_equal(
+            'COMPONENTS/LABELFORM[@name="title"]', "{[br/]}{[center]}{[u]}{[b]}facture{[/b]}{[/u]}{[/center]}")
+        self.assert_xml_equal(
+            'COMPONENTS/LABELFORM[@name="status"]', "validé")
+        self.assert_xml_equal(
+            'COMPONENTS/LABELFORM[@name="date"]', "3 avril 2015")
+        self.assert_xml_equal(
+            'COMPONENTS/LABELFORM[@name="total_rest_topay"]', "0.00€")
+        self.assert_count_equal('ACTIONS/ACTION', 4)
+
+    def test_payment_paypal_recip(self):
+        self.check_payment_paypal(4, "recu A-1 - 1 avril 2015")
+        self.factory.xfer = BillShow()
+        self.call('/diacamma.invoice/billShow', {'bill': 4}, False)
+        self.assert_observer(
+            'core.custom', 'diacamma.invoice', 'billShow')
+        self.assert_xml_equal(
+            'COMPONENTS/LABELFORM[@name="title"]', "{[br/]}{[center]}{[u]}{[b]}reçu{[/b]}{[/u]}{[/center]}")
+        self.assert_xml_equal(
+            'COMPONENTS/LABELFORM[@name="status"]', "validé")
+        self.assert_xml_equal(
+            'COMPONENTS/LABELFORM[@name="total_rest_topay"]', "0.00€")
+        self.assert_count_equal('ACTIONS/ACTION', 4)
+
+    def test_payment_paypal_asset(self):
+        self.check_payment_paypal(5, "avoir A-1 - 1 avril 2015", False)
+        self.factory.xfer = BillShow()
+        self.call('/diacamma.invoice/billShow', {'bill': 3}, False)
+        self.assert_observer(
+            'core.custom', 'diacamma.invoice', 'billShow')
+        self.assert_xml_equal(
+            'COMPONENTS/LABELFORM[@name="title"]', "{[br/]}{[center]}{[u]}{[b]}avoir{[/b]}{[/u]}{[/center]}")
+        self.assert_xml_equal(
+            'COMPONENTS/LABELFORM[@name="status"]', "validé")
+        self.assert_xml_equal(
+            'COMPONENTS/LABELFORM[@name="total_rest_topay"]', "100.00€")
+        self.assert_count_equal('ACTIONS/ACTION', 3)
 
 
-class MultiThreadedHTTPServer(ThreadingMixIn, HTTPServer):
-    pass
+class TestHTTPServer(HTTPServer, BaseHTTPRequestHandler, Thread):
+
+    def __init__(self, server_address):
+        HTTPServer.__init__(self, server_address, TestHandle)
+        Thread.__init__(self, target=self.serve_forever)
 
 
-class MyHandler(BaseHTTPRequestHandler):
+class TestHandle(BaseHTTPRequestHandler):
 
     result = 'VERIFIED'
 

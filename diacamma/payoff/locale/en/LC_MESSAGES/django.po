@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-06-03 16:09+0000\n"
+"POT-Creation-Date: 2016-06-06 08:57+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -101,11 +101,11 @@ msgstr "bank account"
 msgid "bank accounts"
 msgstr "bank accounts"
 
-#: models.py:180 models.py:338 models.py:610 views_deposit.py:155
+#: models.py:180 models.py:338 models.py:605 views_deposit.py:155
 msgid "date"
 msgstr "date"
 
-#: models.py:181 models.py:410 models.py:613 views_deposit.py:154
+#: models.py:181 models.py:410 models.py:608 views_deposit.py:154
 msgid "amount"
 msgstr "amount"
 
@@ -137,7 +137,7 @@ msgstr "other"
 msgid "levy"
 msgstr "levy"
 
-#: models.py:185 models.py:612 views_deposit.py:153
+#: models.py:185 models.py:607 views_deposit.py:153
 msgid "payer"
 msgstr "payer"
 
@@ -174,7 +174,7 @@ msgstr "payoff"
 msgid "payoffs"
 msgstr "payoffs"
 
-#: models.py:334 models.py:611
+#: models.py:334 models.py:606
 msgid "status"
 msgstr "status"
 
@@ -255,31 +255,31 @@ msgstr "address"
 msgid "Paypal account"
 msgstr "Paypal account"
 
-#: models.py:603
+#: models.py:598
 msgid "payment method"
 msgstr "payment method"
 
-#: models.py:604
+#: models.py:599
 msgid "payment methods"
 msgstr "payment methods"
 
-#: models.py:611
+#: models.py:606
 msgid "failure"
 msgstr "failure"
 
-#: models.py:611
+#: models.py:606
 msgid "success"
 msgstr "success"
 
-#: models.py:615
+#: models.py:610
 msgid "contains"
 msgstr "contains"
 
-#: models.py:626
+#: models.py:621
 msgid "bank transaction"
 msgstr "bank transaction"
 
-#: models.py:627
+#: models.py:622
 msgid "bank transactions"
 msgstr "bank transactions"
 
@@ -291,35 +291,35 @@ msgstr "Add payoff"
 msgid "Modify payoff"
 msgstr "Modify payoff"
 
-#: views.py:87
+#: views.py:89
 msgid "Delete payoff"
 msgstr "Delete payoff"
 
-#: views.py:96 views.py:135
+#: views.py:98 views.py:136
 msgid "Select third"
 msgstr "Select third"
 
-#: views.py:105
+#: views.py:107
 msgid "Filtrer by contact"
 msgstr "Filtrer by contact"
 
-#: views.py:126 views_deposit.py:169
+#: views.py:127 views_deposit.py:169
 msgid "select"
 msgstr "select"
 
-#: views.py:141
+#: views.py:142
 msgid "Payment"
 msgstr "Payment"
 
-#: views.py:152
+#: views.py:153
 msgid "No payment for this document."
 msgstr "No payment for this document."
 
-#: views.py:165 views.py:190
+#: views.py:166 views.py:191
 msgid "Payement methods"
 msgstr "Payement methods"
 
-#: views.py:184
+#: views.py:185
 msgid "Close"
 msgstr "Close"
 

@@ -492,12 +492,14 @@ class Bill(Supporting):
         fct_mailing_mod.send_email(
             self.third.contact.email, subject, message, [(pdf_name, pdf_file)])
 
-    def support_validated(self):
+    def support_validated(self, validate_date):
         if (self.bill_type == 2) or (self.status != 1):
             raise LucteriosException(
                 IMPORTANT, _("This item can't be validated!"))
         if (self.bill_type == 0):
             new_bill = self.convert_to_bill()
+            new_bill.date = validate_date
+            new_bill.save()
             if (new_bill is None) or (new_bill.get_info_state() != ''):
                 raise LucteriosException(
                     IMPORTANT, _("This item can't be validated!"))

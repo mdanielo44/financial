@@ -137,7 +137,7 @@ class Supporting(LucteriosModel):
                 IMPORTANT, _("third has not correct account"))
         return third_account
 
-    def support_validated(self):
+    def support_validated(self, validate_date):
         return self
 
     @property
