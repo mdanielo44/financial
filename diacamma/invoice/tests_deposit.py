@@ -812,6 +812,13 @@ class MethodTest(InvoiceTest):
             'core.custom', 'diacamma.payoff', 'bankTransactionShow')
         self.assert_xml_equal(
             'COMPONENTS/LABELFORM[@name="date"]', "3 avril 2015 20:52")
+        contains = self.get_first_xpath(
+            'COMPONENTS/LABELFORM[@name="contains"]').text
+        if success:
+            self.assertEqual(len(contains), 1107 + len(title), contains)
+        self.assertTrue("item_name = %s" % title in contains, contains)
+        self.assertTrue("custom = %d" % billid in contains, contains)
+        self.assertTrue("business = monney@truc.org" in contains, contains)
         if success:
             self.assert_xml_equal(
                 'COMPONENTS/LABELFORM[@name="status"]', "succès")
@@ -822,13 +829,6 @@ class MethodTest(InvoiceTest):
             'COMPONENTS/LABELFORM[@name="payer"]', "test buyer")
         self.assert_xml_equal(
             'COMPONENTS/LABELFORM[@name="amount"]', "100.000")
-        contains = self.get_first_xpath(
-            'COMPONENTS/LABELFORM[@name="contains"]').text
-        if success:
-            self.assertEqual(len(contains), 1107 + len(title), contains)
-        self.assertTrue("item_name = %s" % title in contains, contains)
-        self.assertTrue("custom = %d" % billid in contains, contains)
-        self.assertTrue("business = monney@truc.org" in contains, contains)
 
     def test_payment_paypal_bill(self):
         self.check_payment_paypal(2, "facture A-1 - 1 avril 2015")
