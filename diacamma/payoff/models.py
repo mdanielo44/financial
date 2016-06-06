@@ -43,7 +43,32 @@ from diacamma.accounting.models import EntryAccount, FiscalYear, Third, Journal,
 from diacamma.accounting.tools import format_devise, currency_round, correct_accounting_code
 
 
-class Supporting(LucteriosModel):
+class Payable(LucteriosModel):
+
+    @classmethod
+    def get_payment_fields(cls):
+        raise Exception('no implemented!')
+
+    def support_validated(self, validate_date):
+        raise Exception('no implemented!')
+
+    def get_tax(self):
+        raise Exception('no implemented!')
+
+    def get_payable_without_tax(self):
+        raise Exception('no implemented!')
+
+    def payoff_have_payment(self):
+        raise Exception('no implemented!')
+
+    class Meta(object):
+        verbose_name = _('payable')
+        verbose_name_plural = _('payables')
+        default_permissions = []
+        abstract = True
+
+
+class Supporting(Payable):
     third = models.ForeignKey(
         Third, verbose_name=_('third'), null=True, default=None, db_index=True, on_delete=models.PROTECT)
     is_revenu = models.BooleanField(verbose_name=_('is revenu'), default=True)
@@ -75,9 +100,6 @@ class Supporting(LucteriosModel):
         return self.get_total_rest_topay(ignore_payoff)
 
     def payoff_is_revenu(self):
-        raise Exception('no implemented!')
-
-    def payoff_have_payment(self):
         raise Exception('no implemented!')
 
     def default_date(self):
@@ -136,9 +158,6 @@ class Supporting(LucteriosModel):
             raise LucteriosException(
                 IMPORTANT, _("third has not correct account"))
         return third_account
-
-    def support_validated(self, validate_date):
-        return self
 
     @property
     def total_payed(self):
@@ -573,11 +592,9 @@ class PaymentMethod(LucteriosModel):
                 'site_url'] + '/diacamma.payoff/validationPaymentPaypal'
             paypal_dict['ref'] = remove_accent(six.text_type(supporting))
             paypal_dict['bill'] = six.text_type(supporting.id)
-            tax_part = currency_round(supporting.get_tax_sum() * supporting.get_total_rest_topay() /
-                                      supporting.get_total_incltax())
-            paypal_dict['tax'] = six.text_type(tax_part)
+            paypal_dict['tax'] = six.text_type(supporting.get_tax())
             paypal_dict['amount'] = six.text_type(
-                supporting.get_total_rest_topay() - tax_part)
+                supporting.get_payable_without_tax())
             formTxt = "{[center]}"
             formTxt += "{[form action='%(paypal_url)s' method='post' target='_blank' height='65px' ]}"
             formTxt += "{[center]}"

@@ -178,8 +178,8 @@ class BillShow(XferShowEditor):
                                             ('email', _("Send"), "lucterios.mailing/images/email.png", CLOSE_NO))
         XferShowEditor.fillresponse(self)
         if self.item.payoff_have_payment() and (len(PaymentMethod.objects.all()) > 0):
-            self.add_action(ActionsManage.get_act_changed('Supporting', 'paymentmethod', _(
-                "Payment"), "diacamma.payoff/images/payments.png"), {'close': CLOSE_NO, 'params': {'item_name': 'bill'}}, 0)
+            self.add_action(ActionsManage.get_act_changed('Payable', 'show', _(
+                "Payment"), "diacamma.payoff/images/payments.png"), {'close': CLOSE_NO, 'params': {'item_name': self.field_id, 'model_name': self.model.get_long_name()}}, 0)
 
 
 @ActionsManage.affect('Bill', 'valid')
@@ -398,7 +398,8 @@ class BillEmail(XferContainerAcknowledge):
             html_message = "<html>"
             html_message += message.replace('{[newline]}', '<br/>\n')
             if self.item.payoff_have_payment() and withpayment:
-                html_message += get_html_payment(self.request.META.get('HTTP_REFERER', self.request.build_absolute_uri()), self.language, self.item)
+                html_message += get_html_payment(self.request.META.get(
+                    'HTTP_REFERER', self.request.build_absolute_uri()), self.language, self.item)
             html_message += "</html>"
             self.item.send_bill(subject, html_message, model)
 

@@ -44,8 +44,7 @@ from diacamma.invoice.test_tools import default_articles, InvoiceTest
 from diacamma.payoff.views_deposit import DepositSlipList, DepositSlipAddModify,\
     DepositSlipShow, DepositDetailAddModify, DepositDetailSave, DepositSlipClose,\
     DepositSlipValidate, BankTransactionList, BankTransactionShow
-from diacamma.payoff.views import PayoffAddModify, SupportingPaymentMethod,\
-    ValidationPaymentPaypal
+from diacamma.payoff.views import PayoffAddModify, ValidationPaymentPaypal, PayableShow
 from diacamma.payoff.test_tools import default_bankaccount,\
     default_paymentmethod
 from diacamma.invoice.views import BillShow, BillEmail
@@ -516,9 +515,9 @@ class MethodTest(InvoiceTest):
             'COMPONENTS/LABELFORM[@name="total_rest_topay"]', "100.00€")
         self.assert_count_equal('ACTIONS/ACTION', 3)
 
-        self.factory.xfer = SupportingPaymentMethod()
+        self.factory.xfer = PayableShow()
         self.call('/diacamma.payoff/supportingPaymentMethod',
-                  {'bill': 3, 'item_name': 'bill'}, False)
+                  {'bill': 3, 'item_name': 'bill', 'model_name': 'invoice.Bill'}, False)
         self.assert_observer(
             'core.exception', 'diacamma.payoff', 'supportingPaymentMethod')
 
@@ -533,9 +532,9 @@ class MethodTest(InvoiceTest):
             'COMPONENTS/LABELFORM[@name="status"]', "en création")
         self.assert_count_equal('ACTIONS/ACTION', 3)
 
-        self.factory.xfer = SupportingPaymentMethod()
+        self.factory.xfer = PayableShow()
         self.call('/diacamma.payoff/supportingPaymentMethod',
-                  {'bill': 5, 'item_name': 'bill'}, False)
+                  {'bill': 5, 'item_name': 'bill', 'model_name': 'invoice.Bill'}, False)
         self.assert_observer(
             'core.exception', 'diacamma.payoff', 'supportingPaymentMethod')
 
@@ -550,11 +549,11 @@ class MethodTest(InvoiceTest):
             'COMPONENTS/LABELFORM[@name="status"]', "validé")
         self.assert_count_equal('ACTIONS/ACTION', 5)
         self.assert_action_equal('ACTIONS/ACTION[1]', (six.text_type(
-            'Règlement'), 'diacamma.payoff/images/payments.png', 'diacamma.payoff', 'supportingPaymentMethod', 0, 1, 1))
+            'Règlement'), 'diacamma.payoff/images/payments.png', 'diacamma.payoff', 'payableShow', 0, 1, 1))
 
-        self.factory.xfer = SupportingPaymentMethod()
+        self.factory.xfer = PayableShow()
         self.call('/diacamma.payoff/supportingPaymentMethod',
-                  {'bill': 1, 'item_name': 'bill'}, False)
+                  {'bill': 1, 'item_name': 'bill', 'model_name': 'invoice.Bill'}, False)
         self.assert_observer(
             'core.custom', 'diacamma.payoff', 'supportingPaymentMethod')
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="num_txt"]', 'A-1')
@@ -575,11 +574,11 @@ class MethodTest(InvoiceTest):
             'COMPONENTS/LABELFORM[@name="total_rest_topay"]', "100.00€")
         self.assert_count_equal('ACTIONS/ACTION', 5)
         self.assert_action_equal('ACTIONS/ACTION[1]', (six.text_type(
-            'Règlement'), 'diacamma.payoff/images/payments.png', 'diacamma.payoff', 'supportingPaymentMethod', 0, 1, 1))
+            'Règlement'), 'diacamma.payoff/images/payments.png', 'diacamma.payoff', 'payableShow', 0, 1, 1))
 
-        self.factory.xfer = SupportingPaymentMethod()
+        self.factory.xfer = PayableShow()
         self.call('/diacamma.payoff/supportingPaymentMethod',
-                  {'bill': 2, 'item_name': 'bill'}, False)
+                  {'bill': 2, 'item_name': 'bill', 'model_name': 'invoice.Bill'}, False)
         self.assert_observer(
             'core.custom', 'diacamma.payoff', 'supportingPaymentMethod')
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="num_txt"]', 'A-1')
@@ -671,11 +670,11 @@ class MethodTest(InvoiceTest):
             'COMPONENTS/LABELFORM[@name="vta_sum"]', "4.76€")
         self.assert_count_equal('ACTIONS/ACTION', 5)
         self.assert_action_equal('ACTIONS/ACTION[1]', (six.text_type(
-            'Règlement'), 'diacamma.payoff/images/payments.png', 'diacamma.payoff', 'supportingPaymentMethod', 0, 1, 1))
+            'Règlement'), 'diacamma.payoff/images/payments.png', 'diacamma.payoff', 'payableShow', 0, 1, 1))
 
-        self.factory.xfer = SupportingPaymentMethod()
+        self.factory.xfer = PayableShow()
         self.call('/diacamma.payoff/supportingPaymentMethod',
-                  {'bill': 6, 'item_name': 'bill'}, False)
+                  {'bill': 6, 'item_name': 'bill', 'model_name': 'invoice.Bill'}, False)
         self.assert_observer(
             'core.custom', 'diacamma.payoff', 'supportingPaymentMethod')
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="num_txt"]', 'A-2')
@@ -710,11 +709,11 @@ class MethodTest(InvoiceTest):
             'COMPONENTS/LABELFORM[@name="vta_sum"]', "4.76€")
         self.assert_count_equal('ACTIONS/ACTION', 5)
         self.assert_action_equal('ACTIONS/ACTION[1]', (six.text_type(
-            'Règlement'), 'diacamma.payoff/images/payments.png', 'diacamma.payoff', 'supportingPaymentMethod', 0, 1, 1))
+            'Règlement'), 'diacamma.payoff/images/payments.png', 'diacamma.payoff', 'payableShow', 0, 1, 1))
 
-        self.factory.xfer = SupportingPaymentMethod()
+        self.factory.xfer = PayableShow()
         self.call('/diacamma.payoff/supportingPaymentMethod',
-                  {'bill': 6, 'item_name': 'bill'}, False)
+                  {'bill': 6, 'item_name': 'bill', 'model_name': 'invoice.Bill'}, False)
         self.assert_observer(
             'core.custom', 'diacamma.payoff', 'supportingPaymentMethod')
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="num_txt"]', 'A-2')
@@ -735,11 +734,11 @@ class MethodTest(InvoiceTest):
             'COMPONENTS/LABELFORM[@name="total_rest_topay"]', "100.00€")
         self.assert_count_equal('ACTIONS/ACTION', 5)
         self.assert_action_equal('ACTIONS/ACTION[1]', (six.text_type(
-            'Règlement'), 'diacamma.payoff/images/payments.png', 'diacamma.payoff', 'supportingPaymentMethod', 0, 1, 1))
+            'Règlement'), 'diacamma.payoff/images/payments.png', 'diacamma.payoff', 'payableShow', 0, 1, 1))
 
-        self.factory.xfer = SupportingPaymentMethod()
+        self.factory.xfer = PayableShow()
         self.call('/diacamma.payoff/supportingPaymentMethod',
-                  {'bill': 4, 'item_name': 'bill'}, False)
+                  {'bill': 4, 'item_name': 'bill', 'model_name': 'invoice.Bill'}, False)
         self.assert_observer(
             'core.custom', 'diacamma.payoff', 'supportingPaymentMethod')
         self.check_payment(4, 'recu A-1 - 1 avril 2015')

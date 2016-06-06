@@ -73,8 +73,8 @@ class CurrentBill(XferListEditor):
         XferListEditor.fillresponse(self)
         if (len(PaymentMethod.objects.all()) > 0):
             bill_grid = self.get_components('bill')
-            bill_grid.add_action(self.request, ActionsManage.get_act_changed('Supporting', 'paymentmethod', _(
-                "Payment"), "diacamma.payoff/images/payments.png"), {'unique': SELECT_SINGLE, 'close': CLOSE_NO, 'params': {'item_name': 'bill'}})
+            bill_grid.add_action(self.request, ActionsManage.get_act_changed('Payable', 'show', _(
+                "Payment"), "diacamma.payoff/images/payments.png"), {'unique': SELECT_SINGLE, 'close': CLOSE_NO, 'params': {'item_name': self.field_id, 'model_name': self.model.get_long_name()}})
 
 
 @ActionsManage.affect('Bill', 'currentprintbill')

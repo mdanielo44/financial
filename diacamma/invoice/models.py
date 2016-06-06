@@ -265,9 +265,6 @@ class Bill(Supporting):
     def payoff_is_revenu(self):
         return (self.bill_type != 0) and (self.bill_type != 2)
 
-    def payoff_have_payment(self):
-        return (self.bill_type != 2) and (self.status == 1) and (self.get_total_rest_topay() > 0.001)
-
     def default_date(self):
         return self.date
 
@@ -510,6 +507,15 @@ class Bill(Supporting):
         else:
             new_bill = self
         return new_bill
+
+    def get_tax(self):
+        return currency_round(self.get_tax_sum() * self.get_total_rest_topay() / self.get_total_incltax())
+
+    def get_payable_without_tax(self):
+        return self.get_total_rest_topay() - self.get_tax()
+
+    def payoff_have_payment(self):
+        return (self.bill_type != 2) and (self.status == 1) and (self.get_total_rest_topay() > 0.001)
 
     class Meta(object):
         verbose_name = _('bill')
