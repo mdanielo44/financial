@@ -3,7 +3,19 @@
 from __future__ import unicode_literals
 
 import django.core.validators
+from django.utils.translation import ugettext_lazy as _
 from django.db import migrations, models
+
+from lucterios.CORE.models import Parameter
+
+
+def add_values(*args):
+    param = Parameter.objects.create(
+        name='payoff-email-message', typeparam=0)
+    param.title = _("payoff-email-message")
+    param.args = "{'Multi':True}"
+    param.value = _('%(name)s\n\nJoint in this email %(doc)s.\n\nRegards')
+    param.save()
 
 
 class Migration(migrations.Migration):
@@ -19,4 +31,5 @@ class Migration(migrations.Migration):
             field=models.DecimalField(decimal_places=3, default=0.0, max_digits=10, validators=[django.core.validators.MinValueValidator(
                 0.0), django.core.validators.MaxValueValidator(9999999.999)], verbose_name='bank fee'),
         ),
+        migrations.RunPython(add_values),
     ]

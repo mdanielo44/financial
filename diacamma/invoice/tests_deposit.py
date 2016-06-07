@@ -42,7 +42,7 @@ from diacamma.payoff.test_tools import default_bankaccount,\
     default_paymentmethod, PaymentTest
 from diacamma.invoice.views import BillShow
 from django.utils import six
-from lucterios.mailing.tests import configSMTP, TestReceiver, decode_b64
+from lucterios.mailing.tests import configSMTP, TestReceiver
 
 
 class DepositTest(InvoiceTest):
@@ -504,9 +504,7 @@ class MethodTest(InvoiceTest, PaymentTest):
             'core.custom', 'diacamma.payoff', 'supportingPaymentMethod')
         self.assert_count_equal('COMPONENTS/*', 22)
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="num_txt"]', 'A-1')
-        txt_value = self.check_payment(1, 'devis A-1 - 1 avril 2015')
-        self.assertTrue(txt_value.find(
-            "{[input name='tax' type='hidden' value='0.0' /]}") != -1, txt_value)
+        self.check_payment(1, 'devis A-1 - 1 avril 2015')
 
     def test_payment_bill(self):
         self.factory.xfer = BillShow()
@@ -557,45 +555,10 @@ class MethodTest(InvoiceTest, PaymentTest):
                 ['Minimum@worldcompany.com'], server.get(0)[2])
             msg, msg_file = server.check_first_message('my bill', 2)
             self.assertEqual('text/html', msg.get_content_type())
-            self.assertEqual(
-                'base64', msg.get('Content-Transfer-Encoding', ''))
-            email_content = decode_b64(msg.get_payload())
-            self.assertTrue(
-                '<html>this is a bill.<hr/>' in email_content, email_content)
-            self.assertTrue(
-                email_content.find('<u><i>IBAN</i></u>') != -1, email_content)
-            self.assertTrue(
-                email_content.find('123456789') != -1, email_content)
-            self.assertTrue(
-                email_content.find('<u><i>libellé à</i></u>') != -1, email_content)
-            self.assertTrue(
-                email_content.find('<u><i>adresse</i></u>') != -1, email_content)
-            self.assertTrue(email_content.find('Truc') != -1, email_content)
-            self.assertTrue(email_content.find(
-                '1 rue de la Paix<newline>99000 LA-BAS') != -1, email_content)
-            self.assertTrue(email_content.find(
-                "<input name='currency_code' type='hidden' value='EUR' />") != -1, email_content)
-            self.assertTrue(email_content.find(
-                "<input name='lc' type='hidden' value='fr' />") != -1, email_content)
-            self.assertTrue(email_content.find(
-                "<input name='return' type='hidden' value='http://testserver' />") != -1, email_content)
-            self.assertTrue(email_content.find(
-                "<input name='cancel_return' type='hidden' value='http://testserver' />") != -1, email_content)
-            self.assertTrue(email_content.find(
-                "<input name='notify_url' type='hidden' value='http://testserver/diacamma.payoff/validationPaymentPaypal' />") != -1, email_content)
-            self.assertTrue(email_content.find(
-                "<input name='business' type='hidden' value='monney@truc.org' />") != -1, email_content)
-            self.assertTrue(email_content.find(
-                "<input name='item_name' type='hidden' value='facture A-1 - 1 avril 2015' />") != -1, email_content)
-            self.assertTrue(email_content.find(
-                "<input name='custom' type='hidden' value='2' />") != -1, email_content)
-            self.assertTrue(email_content.find(
-                "<input name='amount' type='hidden' value='100.0' />") != -1, email_content)
-
-            self.assertTrue(
-                'facture_A-1_Minimum.pdf' in msg_file.get('Content-Type', ''), msg_file.get('Content-Type', ''))
-            self.assertEqual(
-                "%PDF".encode('ascii', 'ignore'), b64decode(msg_file.get_payload())[:4])
+            self.assertEqual('base64', msg.get('Content-Transfer-Encoding', ''))
+            self.check_email_msg(msg, '2', 'facture A-1 - 1 avril 2015')
+            self.assertTrue('facture_A-1_Minimum.pdf' in msg_file.get('Content-Type', ''), msg_file.get('Content-Type', ''))
+            self.assertEqual("%PDF".encode('ascii', 'ignore'), b64decode(msg_file.get_payload())[:4])
         finally:
             server.stop()
 
@@ -622,15 +585,10 @@ class MethodTest(InvoiceTest, PaymentTest):
             'Règlement'), 'diacamma.payoff/images/payments.png', 'diacamma.payoff', 'payableShow', 0, 1, 1))
 
         self.factory.xfer = PayableShow()
-        self.call('/diacamma.payoff/supportingPaymentMethod',
-                  {'bill': 6, 'item_name': 'bill'}, False)
-        self.assert_observer(
-            'core.custom', 'diacamma.payoff', 'supportingPaymentMethod')
+        self.call('/diacamma.payoff/supportingPaymentMethod', {'bill': 6, 'item_name': 'bill'}, False)
+        self.assert_observer('core.custom', 'diacamma.payoff', 'supportingPaymentMethod')
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="num_txt"]', 'A-2')
-        txt_value = self.check_payment(
-            6, 'facture A-2 - 2 avril 2015', '95.24')
-        self.assertTrue(txt_value.find(
-            "{[input name='tax' type='hidden' value='4.76' /]}") != -1, txt_value)
+        self.check_payment(6, 'facture A-2 - 2 avril 2015', '95.24', '4.76')
 
     def test_payment_billpartial_with_tax(self):
         Parameter.change_value('invoice-vat-mode', '2')
@@ -661,14 +619,10 @@ class MethodTest(InvoiceTest, PaymentTest):
             'Règlement'), 'diacamma.payoff/images/payments.png', 'diacamma.payoff', 'payableShow', 0, 1, 1))
 
         self.factory.xfer = PayableShow()
-        self.call('/diacamma.payoff/supportingPaymentMethod',
-                  {'bill': 6, 'item_name': 'bill'}, False)
-        self.assert_observer(
-            'core.custom', 'diacamma.payoff', 'supportingPaymentMethod')
+        self.call('/diacamma.payoff/supportingPaymentMethod', {'bill': 6, 'item_name': 'bill'}, False)
+        self.assert_observer('core.custom', 'diacamma.payoff', 'supportingPaymentMethod')
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="num_txt"]', 'A-2')
-        txt_value = self.check_payment(6, 'facture A-2 - 2 avril 2015', '38.1')
-        self.assertTrue(txt_value.find(
-            "{[input name='tax' type='hidden' value='1.9' /]}") != -1, txt_value)
+        self.check_payment(6, 'facture A-2 - 2 avril 2015', '38.1', '1.9')
 
     def test_payment_recip(self):
         self.factory.xfer = BillShow()

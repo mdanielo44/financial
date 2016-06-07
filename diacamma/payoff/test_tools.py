@@ -23,21 +23,29 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
 from __future__ import unicode_literals
-from lucterios.framework.test import LucteriosTest
-from diacamma.payoff.views_deposit import BankTransactionList,\
-    BankTransactionShow
-from diacamma.payoff.views import ValidationPaymentPaypal
-from django.utils import six
-from django.conf import settings
+from re import match
+try:
+    from urllib.parse import urlsplit, parse_qsl
+except:
+    from urlparse import urlsplit, parse_qsl
 try:
     from http.server import BaseHTTPRequestHandler, HTTPServer
 except:
     from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 from threading import Thread
 
+from django.utils import six
+from django.conf import settings
+
+from lucterios.framework.test import LucteriosTest
+from lucterios.mailing.tests import decode_b64
+
 from diacamma.accounting.test_tools import create_account
 from diacamma.accounting.models import FiscalYear
 from diacamma.payoff.models import BankAccount, PaymentMethod
+from diacamma.payoff.views_deposit import BankTransactionList,\
+    BankTransactionShow
+from diacamma.payoff.views import ValidationPaymentPaypal
 
 
 def default_bankaccount():
@@ -59,7 +67,32 @@ def default_paymentmethod():
 
 class PaymentTest(LucteriosTest):
 
-    def check_payment(self, billid, title, amount='100.0'):
+    def check_email_msg(self, msg, itemid, title, amount='100.0', tax='0.0'):
+        email_content = decode_b64(msg.get_payload())
+        self.assertTrue('<html>this is a bill.<hr/>' in email_content, email_content)
+        self.assertTrue(email_content.find('<u><i>IBAN</i></u>') != -1, email_content)
+        self.assertTrue(email_content.find('123456789') != -1, email_content)
+        self.assertTrue(email_content.find('<u><i>libellé à</i></u>') != -1, email_content)
+        self.assertTrue(email_content.find('<u><i>adresse</i></u>') != -1, email_content)
+        self.assertTrue(email_content.find('Truc') != -1, email_content)
+        self.assertTrue(email_content.find('1 rue de la Paix<newline>99000 LA-BAS') != -1, email_content)
+        self.check_paypal_msg(email_content, itemid, title, amount, tax)
+
+    def check_paypal_msg(self, html_content, itemid, title, amount='100.0', tax='0.0'):
+        paypal_href = match(".*<a href='(.*)' target='_blank'>.*", html_content)
+        paypal_params = dict(parse_qsl(urlsplit(paypal_href.group(1)).query))
+        self.assertEqual(paypal_params['currency_code'], 'EUR', paypal_params)
+        self.assertEqual(paypal_params['lc'], 'fr', paypal_params)
+        self.assertEqual(paypal_params['return'], 'http://testserver', paypal_params)
+        self.assertEqual(paypal_params['cancel_return'], 'http://testserver', paypal_params)
+        self.assertEqual(paypal_params['notify_url'], 'http://testserver/diacamma.payoff/validationPaymentPaypal', paypal_params)
+        self.assertEqual(paypal_params['business'], 'monney@truc.org', paypal_params)
+        self.assertEqual(paypal_params['item_name'], title, paypal_params)
+        self.assertEqual(paypal_params['custom'], six.text_type(itemid), paypal_params)
+        self.assertEqual(paypal_params['amount'], amount, paypal_params)
+        self.assertEqual(paypal_params['tax'], tax, paypal_params)
+
+    def check_payment(self, itemid, title, amount='100.0', tax='0.0'):
         self.assert_xml_equal(
             'COMPONENTS/LABELFORM[@name="lb_paymeth_1"]', '{[b]}virement{[/b]}')
         txt_value = self.get_first_xpath(
@@ -84,27 +117,10 @@ class PaymentTest(LucteriosTest):
             'COMPONENTS/LABELFORM[@name="lb_paymeth_3"]', '{[b]}PayPal{[/b]}')
         txt_value = self.get_first_xpath(
             'COMPONENTS/LABELFORM[@name="paymeth_3"]').text
-        self.assertTrue(txt_value.find(
-            "{[input name='currency_code' type='hidden' value='EUR' /]}") != -1, txt_value)
-        self.assertTrue(txt_value.find(
-            "{[input name='lc' type='hidden' value='fr' /]}") != -1, txt_value)
-        self.assertTrue(txt_value.find(
-            "{[input name='return' type='hidden' value='http://testserver' /]}") != -1, txt_value)
-        self.assertTrue(txt_value.find(
-            "{[input name='cancel_return' type='hidden' value='http://testserver' /]}") != -1, txt_value)
-        self.assertTrue(txt_value.find(
-            "{[input name='notify_url' type='hidden' value='http://testserver/diacamma.payoff/validationPaymentPaypal' /]}") != -1, txt_value)
-        self.assertTrue(txt_value.find(
-            "{[input name='business' type='hidden' value='monney@truc.org' /]}") != -1, txt_value)
-        self.assertTrue(txt_value.find(
-            "{[input name='item_name' type='hidden' value='%s' /]}" % title) != -1, txt_value)
-        self.assertTrue(txt_value.find(
-            "{[input name='custom' type='hidden' value='%d' /]}" % billid) != -1, txt_value)
-        self.assertTrue(txt_value.find(
-            "{[input name='amount' type='hidden' value='%s' /]}" % amount) != -1, txt_value)
+        self.check_paypal_msg(txt_value.replace('{[', '<').replace(']}', '>'), itemid, title, amount, tax)
         return txt_value
 
-    def check_payment_paypal(self, billid, title, success=True, amount=100.0):
+    def check_payment_paypal(self, itemid, title, success=True, amount=100.0):
         paypal_validation_fields = {"txn_id": "2X7444647R1155525", "residence_country": "FR",
                                     "payer_status": "verified", "protection_eligibility": "Ineligible",
                                     "mc_gross": "%.2f" % amount, "charset": "windows-1252",
@@ -118,7 +134,7 @@ class PaymentTest(LucteriosTest):
                                     "business": "monney@truc.org", "tax": "0.00",
                                     "handling_amount": "0.00", "item_name": title,
                                     "notify_version": "3.8", "last_name": "buyer",
-                                    "custom": "%d" % billid, "verify_sign": "A7lgc2.jwEO6kvL1E5vEX03Q2la0A8TLpWtV5daGrDAvTm8c8AewCHR3",
+                                    "custom": "%d" % itemid, "verify_sign": "A7lgc2.jwEO6kvL1E5vEX03Q2la0A8TLpWtV5daGrDAvTm8c8AewCHR3",
                                     "mc_currency": "EUR", "payer_id": "BGZCL28GZVFHE",
                                     "receiver_id": "4P9LXTHC9TRYS", "quantity": "1",
                                     "receiver_email": "monney@truc.org", }
@@ -157,7 +173,7 @@ class PaymentTest(LucteriosTest):
             self.assertEqual(
                 len(contains), 1101 + len(title) + len("%.2f" % amount), contains)
         self.assertTrue("item_name = %s" % title in contains, contains)
-        self.assertTrue("custom = %d" % billid in contains, contains)
+        self.assertTrue("custom = %d" % itemid in contains, contains)
         self.assertTrue("business = monney@truc.org" in contains, contains)
         if success:
             self.assert_xml_equal(

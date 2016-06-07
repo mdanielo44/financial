@@ -47,6 +47,7 @@ from lucterios.framework.models import get_value_if_choices
 from diacamma.payoff.models import Payoff, Supporting, PaymentMethod, BankTransaction
 from diacamma.accounting.models import Third
 from lucterios.CORE.models import PrintModel
+from lucterios.CORE.parameters import Params
 
 
 @ActionsManage.affect('Payoff', 'edit', 'append')
@@ -168,7 +169,7 @@ class PayableEmail(XferContainerAcknowledge):
             lbl.set_location(1, 2)
             dlg.add_component(lbl)
             lbl = XferCompMemo('message')
-            lbl.set_value(_('%(name)s\n\nJoint in this email %(doc)s.\n\nRegards') % {
+            lbl.set_value(Params.getvalue('payoff-email-message') % {
                           'name': six.text_type(self.item.third), 'doc': self.item.get_docname()})
             lbl.with_hypertext = True
             lbl.set_size(130, 450)

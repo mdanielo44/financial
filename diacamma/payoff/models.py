@@ -590,45 +590,36 @@ class PaymentMethod(LucteriosModel):
             formTxt += "    {[/tr]}"
             formTxt += "{[/table]}"
             formTxt += "{[/center]}"
-            formTxt = formTxt % (
-                _('payable to'), items[0], _('address'), items[1])
+            formTxt = formTxt % (_('payable to'), items[0], _('address'), items[1])
         elif self.paytype == 2:
-            paypal_url = getattr(
-                settings, 'DIACAMMA_PAYOFF_PAYPAL_URL', 'https://www.paypal.com/cgi-bin/webscr')
+            try:
+                from urllib.parse import quote_plus
+            except:
+                from urllib import quote_plus
+            paypal_url = getattr(settings, 'DIACAMMA_PAYOFF_PAYPAL_URL', 'https://www.paypal.com/cgi-bin/webscr')
             abs_url = absolute_uri.split('/')
-            paypal_dict = {'paypal_url': paypal_url}
+            paypal_dict = {}
             paypal_dict['business'] = items[0]
-            paypal_dict['currency'] = Params.getvalue("accounting-devise-iso")
-            paypal_dict['lang'] = lang
-            paypal_dict['site_url'] = '/'.join(abs_url[:-2])
-            paypal_dict['site_return_url'] = paypal_dict[
-                'site_url'] + '/diacamma.payoff/validationPaymentPaypal'
-            paypal_dict['ref'] = remove_accent(supporting.get_payment_name())
-            paypal_dict['bill'] = six.text_type(supporting.id)
+            paypal_dict['currency_code'] = Params.getvalue("accounting-devise-iso")
+            paypal_dict['lc'] = lang
+            paypal_dict['return'] = '/'.join(abs_url[:-2])
+            paypal_dict['cancel_return'] = '/'.join(abs_url[:-2])
+            paypal_dict['notify_url'] = paypal_dict['return'] + '/diacamma.payoff/validationPaymentPaypal'
+            paypal_dict['item_name'] = remove_accent(supporting.get_payment_name())
+            paypal_dict['custom'] = six.text_type(supporting.id)
             paypal_dict['tax'] = six.text_type(supporting.get_tax())
-            paypal_dict['amount'] = six.text_type(
-                supporting.get_payable_without_tax())
+            paypal_dict['amount'] = six.text_type(supporting.get_payable_without_tax())
+            paypal_dict['cmd'] = '_xclick'
+            paypal_dict['no_note'] = '1'
+            paypal_dict['no_shipping'] = '1'
+            args = ""
+            for key, val in paypal_dict.items():
+                args += "&%s=%s" % (key, quote_plus(val))
             formTxt = "{[center]}"
-            formTxt += "{[form action='%(paypal_url)s' method='post' target='_blank' height='65px' ]}"
-            formTxt += "{[center]}"
-            formTxt += "{[input name='cmd' type='hidden' value='_xclick' /]}"
-            formTxt += "{[input name='currency_code' type='hidden' value='%(currency)s' /]}"
-            formTxt += "{[input name='no_note' type='hidden' value='1' /]}"
-            formTxt += "{[input name='no_shipping' type='hidden' value='1' /]}"
-            formTxt += "{[input name='lc' type='hidden' value='%(lang)s' /]}"
-            formTxt += "{[input name='return' type='hidden' value='%(site_url)s' /]}"
-            formTxt += "{[input name='cancel_return' type='hidden' value='%(site_url)s' /]}"
-            formTxt += "{[input name='notify_url' type='hidden' value='%(site_return_url)s' /]}"
-            formTxt += "{[input name='business' type='hidden' value='%(business)s' /]}"
-            formTxt += "{[input name='item_name' type='hidden' value='%(ref)s' /]}"
-            formTxt += "{[input name='custom' type='hidden' value='%(bill)s' /]}"
-            formTxt += "{[input name='tax' type='hidden' value='%(tax)s' /]}"
-            formTxt += "{[input name='amount' type='hidden' value='%(amount)s' /]}"
-            formTxt += "{[input alt='PayPal' name='submit' src='https://www.paypalobjects.com/webstatic/mktg/logo/pp_cc_mark_74x46.jpg' title='PayPal' type='image' /]}"
+            formTxt += "{[a href='%s?%s' target='_blank']}" % (paypal_url, args[1:])
+            formTxt += "{[img src='https://www.paypalobjects.com/webstatic/mktg/logo/pp_cc_mark_74x46.jpg' title='PayPal' alt='PayPal' /]}"
+            formTxt += "{[/a]}"
             formTxt += "{[/center]}"
-            formTxt += "{[/form]}"
-            formTxt += "{[/center]}"
-            formTxt = formTxt % paypal_dict
         else:
             formTxt = "???"
         return formTxt

@@ -34,7 +34,7 @@ class PayoffConf(XferListEditor):
         self.fill_grid(
             0, PaymentMethod, "paymentmethod", PaymentMethod.objects.all())
         self.new_tab(_('Parameters'))
-        param_lists = ['payoff-cash-account', 'payoff-bankcharges-account']
+        param_lists = ['payoff-cash-account', 'payoff-bankcharges-account', 'payoff-email-message']
         Params.fill(self, param_lists, 1, 1)
         btn = XferCompButton('editparam')
         btn.set_location(1, self.get_max_row() + 1, 2, 1)
