@@ -41,9 +41,9 @@ from diacamma.invoice.test_tools import default_articles, InvoiceTest
 from diacamma.invoice.views_conf import InvoiceConf, VatAddModify, VatDel
 from diacamma.invoice.views import ArticleList, ArticleAddModify, ArticleDel,\
     BillList, BillAddModify, BillShow, DetailAddModify, DetailDel, BillValid, BillDel, BillArchive, BillCancel, BillFromQuotation,\
-    BillStatistic, BillStatisticPrint, BillPrint, BillMultiPay, BillEmail
+    BillStatistic, BillStatisticPrint, BillPrint, BillMultiPay
 from diacamma.payoff.views import PayoffAddModify, PayoffDel, SupportingThird,\
-    SupportingThirdValid
+    SupportingThirdValid, PayableEmail
 from diacamma.payoff.test_tools import default_bankaccount
 from lucterios.mailing.tests import configSMTP, TestReceiver, decode_b64
 
@@ -1556,17 +1556,18 @@ class BillTest(InvoiceTest):
                 {'article': 0, 'designation': 'article 0', 'price': '100.00', 'quantity': 1}]
             bill_id = self._create_bill(
                 details, 1, '2015-04-01', 6, True)  # 59.50
-            self.factory.xfer = BillEmail()
-            self.call('/diacamma.invoice/billEmail', {'bill': bill_id}, False)
+            self.factory.xfer = PayableEmail()
+            self.call('/diacamma.payoff/payableEmail',
+                      {'item_name': 'bill', 'bill': bill_id}, False)
             self.assert_observer(
-                'core.custom', 'diacamma.invoice', 'billEmail')
+                'core.custom', 'diacamma.payoff', 'payableEmail')
             self.assert_count_equal('COMPONENTS/*', 7)
 
-            self.factory.xfer = BillEmail()
-            self.call('/diacamma.invoice/billEmail',
-                      {'bill': bill_id, 'OK': 'YES', 'subject': 'my bill', 'message': 'this is a bill.', 'model': 8}, False)
+            self.factory.xfer = PayableEmail()
+            self.call('/diacamma.payoff/payableEmail',
+                      {'bill': bill_id, 'OK': 'YES', 'item_name': 'bill', 'subject': 'my bill', 'message': 'this is a bill.', 'model': 8}, False)
             self.assert_observer(
-                'core.acknowledge', 'diacamma.invoice', 'billEmail')
+                'core.acknowledge', 'diacamma.payoff', 'payableEmail')
             self.assertEqual(1, server.count())
             self.assertEqual(
                 'mr-sylvestre@worldcompany.com', server.get(0)[1])
@@ -1576,7 +1577,8 @@ class BillTest(InvoiceTest):
             self.assertEqual('text/html', msg.get_content_type())
             self.assertEqual(
                 'base64', msg.get('Content-Transfer-Encoding', ''))
-            self.assertEqual('<html>this is a bill.</html>', decode_b64(msg.get_payload()))
+            self.assertEqual(
+                '<html>this is a bill.</html>', decode_b64(msg.get_payload()))
             self.assertTrue(
                 'facture_A-1_Dalton Jack.pdf' in msg_file.get('Content-Type', ''), msg_file.get('Content-Type', ''))
             self.assertEqual(

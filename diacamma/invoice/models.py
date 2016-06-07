@@ -25,22 +25,18 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import unicode_literals
 from re import match
 from datetime import date
-from _io import BytesIO
 
 from django.db import models
 from django.db.models.aggregates import Max
 from django.db.models import Q
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.validators import MaxValueValidator, MinValueValidator
-from django.utils.module_loading import import_module
 from django.utils.translation import ugettext_lazy as _
 from django.utils import six
 
 from lucterios.framework.models import LucteriosModel, get_value_if_choices, \
     get_value_converted
 from lucterios.framework.error import LucteriosException, IMPORTANT, GRAVE
-from lucterios.framework.printgenerators import ReportingGenerator
-from lucterios.CORE.models import PrintModel
 from lucterios.CORE.parameters import Params
 
 from diacamma.accounting.models import FiscalYear, Third, EntryAccount, \
@@ -477,21 +473,6 @@ class Bill(Supporting):
                              "{[b]}%.2f %%{[/b]}" % 100, total_art))
         return art_list
 
-    def get_bill_name(self):
-        billtype = get_value_if_choices(
-            self.bill_type, self.get_field_by_name('bill_type'))
-        return "%s_%s_%s" % (billtype, self.num_txt, six.text_type(self.third))
-
-    def send_bill(self, subject, message, model):
-        fct_mailing_mod = import_module('lucterios.mailing.functions')
-        pdf_name = "%s.pdf" % self.get_bill_name()
-        gen = ReportingGenerator()
-        gen.items = [self]
-        gen.model_text = PrintModel.objects.get(id=model).value
-        pdf_file = BytesIO(gen.generate_report(None, False))
-        fct_mailing_mod.send_email(
-            self.third.contact.email, subject, message, [(pdf_name, pdf_file)])
-
     def support_validated(self, validate_date):
         if (self.bill_type == 2) or (self.status != 1):
             raise LucteriosException(
@@ -516,6 +497,11 @@ class Bill(Supporting):
 
     def payoff_have_payment(self):
         return (self.bill_type != 2) and (self.status == 1) and (self.get_total_rest_topay() > 0.001)
+
+    def get_document_filename(self):
+        billtype = get_value_if_choices(
+            self.bill_type, self.get_field_by_name('bill_type'))
+        return "%s_%s_%s" % (billtype, self.num_txt, six.text_type(self.third))
 
     class Meta(object):
         verbose_name = _('bill')

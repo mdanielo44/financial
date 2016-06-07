@@ -40,12 +40,13 @@ from lucterios.framework.tools import ActionsManage, MenuManage, \
 from lucterios.framework.xfergraphic import XferContainerAcknowledge, \
     XferContainerCustom
 from lucterios.framework.xfercomponents import XferCompLabelForm, \
-    XferCompEdit, XferCompImage
+    XferCompEdit, XferCompImage, XferCompMemo, XferCompSelect, XferCompCheck
 from lucterios.framework.error import LucteriosException, MINOR, IMPORTANT
 from lucterios.framework.models import get_value_if_choices
 
 from diacamma.payoff.models import Payoff, Supporting, PaymentMethod, BankTransaction
 from diacamma.accounting.models import Third
+from lucterios.CORE.models import PrintModel
 
 
 @ActionsManage.affect('Payoff', 'edit', 'append')
@@ -134,6 +135,77 @@ class SupportingThirdValid(XferSave):
     model = Supporting
     field_id = 'supporting'
     caption = _("Select third")
+
+
+@ActionsManage.affect('Supporting', 'email')
+@MenuManage.describ('invoice.change_bill')
+class PayableEmail(XferContainerAcknowledge):
+    caption = _("Send by email")
+    icon = "payments.png"
+    model = Supporting
+    field_id = 'supporting'
+
+    def fillresponse(self, item_name='', subject='', message='', model=0, withpayment=False):
+        if item_name != '':
+            self.item = Supporting.objects.get(id=self.getparam(item_name, 0))
+        self.item = self.item.get_final_child()
+        if self.getparam("OK") is None:
+            dlg = self.create_custom()
+            icon = XferCompImage('img')
+            icon.set_location(0, 0, 1, 6)
+            icon.set_value(self.icon_path())
+            dlg.add_component(icon)
+            lbl = XferCompLabelForm('lb_subject')
+            lbl.set_value_as_name(_('subject'))
+            lbl.set_location(1, 1)
+            dlg.add_component(lbl)
+            lbl = XferCompEdit('subject')
+            lbl.set_value(six.text_type(self.item))
+            lbl.set_location(2, 1)
+            dlg.add_component(lbl)
+            lbl = XferCompLabelForm('lb_message')
+            lbl.set_value_as_name(_('message'))
+            lbl.set_location(1, 2)
+            dlg.add_component(lbl)
+            lbl = XferCompMemo('message')
+            lbl.set_value(_('%(name)s\n\nJoint in this email %(doc)s.\n\nRegards') % {
+                          'name': six.text_type(self.item.third), 'doc': self.item.get_docname()})
+            lbl.with_hypertext = True
+            lbl.set_size(130, 450)
+            lbl.set_location(2, 2)
+            dlg.add_component(lbl)
+            selectors = PrintModel.get_print_selector(
+                2, self.item.__class__)[0]
+            lbl = XferCompLabelForm('lb_model')
+            lbl.set_value_as_name(selectors[1])
+            lbl.set_location(1, 3)
+            dlg.add_component(lbl)
+            sel = XferCompSelect('model')
+            sel.set_select(selectors[2])
+            sel.set_location(2, 3)
+            dlg.add_component(sel)
+
+            if self.item.payoff_have_payment() and (len(PaymentMethod.objects.all()) > 0):
+                lbl = XferCompLabelForm('lb_withpayment')
+                lbl.set_value_as_name(_('add payment methods in email'))
+                lbl.set_location(1, 4)
+                dlg.add_component(lbl)
+                sel = XferCompCheck('withpayment')
+                sel.set_value(True)
+                sel.set_location(2, 4)
+                dlg.add_component(sel)
+
+            dlg.add_action(
+                self.get_action(_('Ok'), 'images/ok.png'), {'params': {"OK": "YES"}})
+            dlg.add_action(WrapAction(_('Cancel'), 'images/cancel.png'), {})
+        else:
+            html_message = "<html>"
+            html_message += message.replace('{[newline]}', '<br/>\n')
+            if self.item.payoff_have_payment() and withpayment:
+                html_message += get_html_payment(self.request.META.get(
+                    'HTTP_REFERER', self.request.build_absolute_uri()), self.language, self.item)
+            html_message += "</html>"
+            self.item.send_email(subject, html_message, model)
 
 
 @ActionsManage.affect('Supporting', 'showpay')

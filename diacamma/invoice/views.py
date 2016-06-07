@@ -37,7 +37,7 @@ from lucterios.framework.xferadvance import XferAddEditor
 from lucterios.framework.xferadvance import XferDelete
 from lucterios.framework.xfercomponents import XferCompLabelForm, \
     XferCompSelect, XferCompHeader, XferCompImage, XferCompGrid, \
-    DEFAULT_ACTION_LIST, XferCompMemo, XferCompEdit, XferCompCheck
+    DEFAULT_ACTION_LIST, XferCompCheck
 from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage, \
     FORMTYPE_MODAL, CLOSE_YES, SELECT_SINGLE, FORMTYPE_REFRESH, CLOSE_NO, \
     SELECT_MULTI, WrapAction
@@ -49,13 +49,12 @@ from lucterios.framework import signal_and_lock
 from lucterios.CORE.xferprint import XferPrintAction, XferPrintReporting
 from lucterios.CORE.parameters import Params
 from lucterios.CORE.editors import XferSavedCriteriaSearchEditor
-from lucterios.CORE.models import PrintModel
 
 from lucterios.contacts.models import Individual, LegalEntity
 
 from diacamma.invoice.models import Article, Bill, Detail
 from diacamma.accounting.models import FiscalYear, Third
-from diacamma.payoff.views import PayoffAddModify, get_html_payment
+from diacamma.payoff.views import PayoffAddModify
 from diacamma.payoff.models import Payoff, PaymentMethod
 
 MenuManage.add_sub("invoice", "financial", "diacamma.invoice/images/invoice.png",
@@ -171,15 +170,16 @@ class BillShow(XferShowEditor):
         if self.item.status in (1, 3):
             self.action_list.insert(0,
                                     ('printbill', _("Print"), "images/print.png", CLOSE_NO))
-            if apps.is_installed("lucterios.mailing"):
-                fct_mailing_mod = import_module('lucterios.mailing.functions')
-                if fct_mailing_mod.will_mail_send():
-                    self.action_list.insert(0,
-                                            ('email', _("Send"), "lucterios.mailing/images/email.png", CLOSE_NO))
         XferShowEditor.fillresponse(self)
         if self.item.payoff_have_payment() and (len(PaymentMethod.objects.all()) > 0):
             self.add_action(ActionsManage.get_act_changed('Supporting', 'showpay', _(
                 "Payment"), "diacamma.payoff/images/payments.png"), {'close': CLOSE_NO, 'params': {'item_name': self.field_id}}, 0)
+        if self.item.status in (1, 3):
+            if apps.is_installed("lucterios.mailing"):
+                fct_mailing_mod = import_module('lucterios.mailing.functions')
+                if fct_mailing_mod.will_mail_send():
+                    self.add_action(ActionsManage.get_act_changed('Supporting', 'email', _(
+                        "Send"), "lucterios.mailing/images/email.png"), {'close': CLOSE_NO, 'params': {'item_name': self.field_id}}, 0)
 
 
 @ActionsManage.affect('Bill', 'valid')
@@ -323,7 +323,7 @@ class BillPrint(XferPrintReporting):
     def get_print_name(self):
         if len(self.items) == 1:
             current_bill = self.items[0]
-            return current_bill.get_bill_name()
+            return current_bill.get_document_filename()
         else:
             return six.text_type(self.caption)
 
@@ -335,73 +335,6 @@ class BillPrint(XferPrintReporting):
                 yield item
         if not has_item:
             raise LucteriosException(IMPORTANT, _("No invoice to print!"))
-
-
-@ActionsManage.affect('Bill', 'email')
-@MenuManage.describ('invoice.change_bill')
-class BillEmail(XferContainerAcknowledge):
-    caption = _("Send bill")
-    icon = "bill.png"
-    model = Bill
-    field_id = 'bill'
-
-    def fillresponse(self, subject='', message='', model=0, withpayment=False):
-        if self.getparam("OK") is None:
-            dlg = self.create_custom()
-            icon = XferCompImage('img')
-            icon.set_location(0, 0, 1, 6)
-            icon.set_value(self.icon_path())
-            dlg.add_component(icon)
-            lbl = XferCompLabelForm('lb_subject')
-            lbl.set_value_as_name(_('subject'))
-            lbl.set_location(1, 1)
-            dlg.add_component(lbl)
-            lbl = XferCompEdit('subject')
-            lbl.set_value(six.text_type(self.item))
-            lbl.set_location(2, 1)
-            dlg.add_component(lbl)
-            lbl = XferCompLabelForm('lb_message')
-            lbl.set_value_as_name(_('message'))
-            lbl.set_location(1, 2)
-            dlg.add_component(lbl)
-            lbl = XferCompMemo('message')
-            lbl.set_value(_('%(name)s\n\nJoint in this email your bill %(bill)s.\n\nRegards') % {
-                          'name': six.text_type(self.item.third), 'bill': six.text_type(self.item)})
-            lbl.with_hypertext = True
-            lbl.set_size(130, 450)
-            lbl.set_location(2, 2)
-            dlg.add_component(lbl)
-            selectors = PrintModel.get_print_selector(2, self.model)[0]
-            lbl = XferCompLabelForm('lb_model')
-            lbl.set_value_as_name(selectors[1])
-            lbl.set_location(1, 3)
-            dlg.add_component(lbl)
-            sel = XferCompSelect('model')
-            sel.set_select(selectors[2])
-            sel.set_location(2, 3)
-            dlg.add_component(sel)
-
-            if self.item.payoff_have_payment() and (len(PaymentMethod.objects.all()) > 0):
-                lbl = XferCompLabelForm('lb_withpayment')
-                lbl.set_value_as_name(_('add payment methods in email'))
-                lbl.set_location(1, 4)
-                dlg.add_component(lbl)
-                sel = XferCompCheck('withpayment')
-                sel.set_value(True)
-                sel.set_location(2, 4)
-                dlg.add_component(sel)
-
-            dlg.add_action(
-                self.get_action(_('Ok'), 'images/ok.png'), {'params': {"OK": "YES"}})
-            dlg.add_action(WrapAction(_('Cancel'), 'images/cancel.png'), {})
-        else:
-            html_message = "<html>"
-            html_message += message.replace('{[newline]}', '<br/>\n')
-            if self.item.payoff_have_payment() and withpayment:
-                html_message += get_html_payment(self.request.META.get(
-                    'HTTP_REFERER', self.request.build_absolute_uri()), self.language, self.item)
-            html_message += "</html>"
-            self.item.send_bill(subject, html_message, model)
 
 
 @ActionsManage.affect('Detail', 'edit', 'add')

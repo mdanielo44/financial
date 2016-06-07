@@ -24,6 +24,7 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
 from datetime import date
+from _io import BytesIO
 
 from django.conf import settings
 from django.db import models
@@ -31,16 +32,29 @@ from django.db.models import Q
 from django.db.models.aggregates import Sum
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.utils.translation import ugettext_lazy as _
+from django.utils.module_loading import import_module
 from django.utils import six
 
 from lucterios.framework.models import LucteriosModel, get_value_converted
 from lucterios.framework.error import LucteriosException, IMPORTANT
+from lucterios.framework.printgenerators import ReportingGenerator
+from lucterios.CORE.models import PrintModel
 from lucterios.CORE.parameters import Params
 from lucterios.contacts.models import LegalEntity
 
 from diacamma.accounting.models import EntryAccount, FiscalYear, Third, Journal, \
     ChartsAccount, EntryLineAccount, AccountLink
 from diacamma.accounting.tools import format_devise, currency_round, correct_accounting_code
+
+
+def remove_accent(text, replace_space=False):
+    if replace_space:
+        text = text.replace(' ', '_').replace('-', '')
+    try:
+        import unicodedata
+        return ''.join((letter for letter in unicodedata.normalize('NFD', text) if unicodedata.category(letter) != 'Mn'))
+    except:
+        return text
 
 
 class Supporting(LucteriosModel):
@@ -144,6 +158,19 @@ class Supporting(LucteriosModel):
     def get_tax_sum(self):
         return 0.0
 
+    def send_email(self, subject, message, model):
+        fct_mailing_mod = import_module('lucterios.mailing.functions')
+        pdf_name = "%s.pdf" % self.get_document_filename()
+        gen = ReportingGenerator()
+        gen.items = [self]
+        gen.model_text = PrintModel.objects.get(id=model).value
+        pdf_file = BytesIO(gen.generate_report(None, False))
+        fct_mailing_mod.send_email(
+            self.third.contact.email, subject, message, [(pdf_name, pdf_file)])
+
+    def get_document_filename(self):
+        return remove_accent(self.get_payment_name(), True)
+
     @classmethod
     def get_payment_fields(cls):
         raise Exception('no implemented!')
@@ -159,6 +186,12 @@ class Supporting(LucteriosModel):
 
     def payoff_have_payment(self):
         raise Exception('no implemented!')
+
+    def get_payment_name(self):
+        return six.text_type(self)
+
+    def get_docname(self):
+        return six.text_type(self)
 
 
 class BankAccount(LucteriosModel):
@@ -536,13 +569,6 @@ class PaymentMethod(LucteriosModel):
         return res
 
     def show_pay(self, absolute_uri, lang, supporting):
-        def remove_accent(text):
-            try:
-                import unicodedata
-                return ''.join((letter for letter in unicodedata.normalize('NFD', text) if unicodedata.category(letter) != 'Mn'))
-            except:
-                return text
-
         items = self.get_items()
         if self.paytype == 0:
             formTxt = "{[center]}"
@@ -577,7 +603,7 @@ class PaymentMethod(LucteriosModel):
             paypal_dict['site_url'] = '/'.join(abs_url[:-2])
             paypal_dict['site_return_url'] = paypal_dict[
                 'site_url'] + '/diacamma.payoff/validationPaymentPaypal'
-            paypal_dict['ref'] = remove_accent(six.text_type(supporting))
+            paypal_dict['ref'] = remove_accent(supporting.get_payment_name())
             paypal_dict['bill'] = six.text_type(supporting.id)
             paypal_dict['tax'] = six.text_type(supporting.get_tax())
             paypal_dict['amount'] = six.text_type(
