@@ -43,32 +43,7 @@ from diacamma.accounting.models import EntryAccount, FiscalYear, Third, Journal,
 from diacamma.accounting.tools import format_devise, currency_round, correct_accounting_code
 
 
-class Payable(LucteriosModel):
-
-    @classmethod
-    def get_payment_fields(cls):
-        raise Exception('no implemented!')
-
-    def support_validated(self, validate_date):
-        raise Exception('no implemented!')
-
-    def get_tax(self):
-        raise Exception('no implemented!')
-
-    def get_payable_without_tax(self):
-        raise Exception('no implemented!')
-
-    def payoff_have_payment(self):
-        raise Exception('no implemented!')
-
-    class Meta(object):
-        verbose_name = _('payable')
-        verbose_name_plural = _('payables')
-        default_permissions = []
-        abstract = True
-
-
-class Supporting(Payable):
+class Supporting(LucteriosModel):
     third = models.ForeignKey(
         Third, verbose_name=_('third'), null=True, default=None, db_index=True, on_delete=models.PROTECT)
     is_revenu = models.BooleanField(verbose_name=_('is revenu'), default=True)
@@ -80,10 +55,6 @@ class Supporting(Payable):
     @classmethod
     def get_print_fields(cls):
         return ['payoff_set', (_('total payed'), 'total_payed'), (_('rest to pay'), 'total_rest_topay')]
-
-    @classmethod
-    def get_payment_fields(cls):
-        return cls.get_show_fields()
 
     class Meta(object):
         verbose_name = _('supporting')
@@ -172,6 +143,22 @@ class Supporting(Payable):
 
     def get_tax_sum(self):
         return 0.0
+
+    @classmethod
+    def get_payment_fields(cls):
+        raise Exception('no implemented!')
+
+    def support_validated(self, validate_date):
+        raise Exception('no implemented!')
+
+    def get_tax(self):
+        raise Exception('no implemented!')
+
+    def get_payable_without_tax(self):
+        raise Exception('no implemented!')
+
+    def payoff_have_payment(self):
+        raise Exception('no implemented!')
 
 
 class BankAccount(LucteriosModel):

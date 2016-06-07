@@ -44,8 +44,7 @@ from lucterios.framework.xfercomponents import XferCompLabelForm, \
 from lucterios.framework.error import LucteriosException, MINOR, IMPORTANT
 from lucterios.framework.models import get_value_if_choices
 
-from diacamma.payoff.models import Payoff, Supporting, PaymentMethod, \
-    BankTransaction, Payable
+from diacamma.payoff.models import Payoff, Supporting, PaymentMethod, BankTransaction
 from diacamma.accounting.models import Third
 
 
@@ -137,19 +136,17 @@ class SupportingThirdValid(XferSave):
     caption = _("Select third")
 
 
-@ActionsManage.affect('Payable', 'show')
+@ActionsManage.affect('Supporting', 'showpay')
 @MenuManage.describ('')
 class PayableShow(XferContainerCustom):
     caption = _("Payment")
     icon = "payments.png"
-    model = Payable
-    field_id = 'payable'
+    model = Supporting
+    field_id = 'supporting'
 
-    def fillresponse(self, model_name='', item_name=''):
-        if (item_name != '') and (model_name != ''):
-            from django.apps import apps
-            model = apps.get_model(model_name)
-            self.item = model.objects.get(id=self.getparam(item_name, 0))
+    def fillresponse(self, item_name=''):
+        if item_name != '':
+            self.item = Supporting.objects.get(id=self.getparam(item_name, 0))
         self.item = self.item.get_final_child()
         payments = PaymentMethod.objects.all()
         if not self.item.payoff_have_payment() or (len(payments) == 0):

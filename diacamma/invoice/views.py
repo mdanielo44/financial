@@ -178,8 +178,8 @@ class BillShow(XferShowEditor):
                                             ('email', _("Send"), "lucterios.mailing/images/email.png", CLOSE_NO))
         XferShowEditor.fillresponse(self)
         if self.item.payoff_have_payment() and (len(PaymentMethod.objects.all()) > 0):
-            self.add_action(ActionsManage.get_act_changed('Payable', 'show', _(
-                "Payment"), "diacamma.payoff/images/payments.png"), {'close': CLOSE_NO, 'params': {'item_name': self.field_id, 'model_name': self.model.get_long_name()}}, 0)
+            self.add_action(ActionsManage.get_act_changed('Supporting', 'showpay', _(
+                "Payment"), "diacamma.payoff/images/payments.png"), {'close': CLOSE_NO, 'params': {'item_name': self.field_id}}, 0)
 
 
 @ActionsManage.affect('Bill', 'valid')

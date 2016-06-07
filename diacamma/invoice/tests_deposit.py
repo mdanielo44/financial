@@ -517,7 +517,7 @@ class MethodTest(InvoiceTest):
 
         self.factory.xfer = PayableShow()
         self.call('/diacamma.payoff/supportingPaymentMethod',
-                  {'bill': 3, 'item_name': 'bill', 'model_name': 'invoice.Bill'}, False)
+                  {'bill': 3, 'item_name': 'bill'}, False)
         self.assert_observer(
             'core.exception', 'diacamma.payoff', 'supportingPaymentMethod')
 
@@ -534,7 +534,7 @@ class MethodTest(InvoiceTest):
 
         self.factory.xfer = PayableShow()
         self.call('/diacamma.payoff/supportingPaymentMethod',
-                  {'bill': 5, 'item_name': 'bill', 'model_name': 'invoice.Bill'}, False)
+                  {'bill': 5, 'item_name': 'bill'}, False)
         self.assert_observer(
             'core.exception', 'diacamma.payoff', 'supportingPaymentMethod')
 
@@ -553,7 +553,7 @@ class MethodTest(InvoiceTest):
 
         self.factory.xfer = PayableShow()
         self.call('/diacamma.payoff/supportingPaymentMethod',
-                  {'bill': 1, 'item_name': 'bill', 'model_name': 'invoice.Bill'}, False)
+                  {'bill': 1, 'item_name': 'bill'}, False)
         self.assert_observer(
             'core.custom', 'diacamma.payoff', 'supportingPaymentMethod')
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="num_txt"]', 'A-1')
@@ -578,7 +578,7 @@ class MethodTest(InvoiceTest):
 
         self.factory.xfer = PayableShow()
         self.call('/diacamma.payoff/supportingPaymentMethod',
-                  {'bill': 2, 'item_name': 'bill', 'model_name': 'invoice.Bill'}, False)
+                  {'bill': 2, 'item_name': 'bill'}, False)
         self.assert_observer(
             'core.custom', 'diacamma.payoff', 'supportingPaymentMethod')
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="num_txt"]', 'A-1')
@@ -674,7 +674,7 @@ class MethodTest(InvoiceTest):
 
         self.factory.xfer = PayableShow()
         self.call('/diacamma.payoff/supportingPaymentMethod',
-                  {'bill': 6, 'item_name': 'bill', 'model_name': 'invoice.Bill'}, False)
+                  {'bill': 6, 'item_name': 'bill'}, False)
         self.assert_observer(
             'core.custom', 'diacamma.payoff', 'supportingPaymentMethod')
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="num_txt"]', 'A-2')
@@ -713,7 +713,7 @@ class MethodTest(InvoiceTest):
 
         self.factory.xfer = PayableShow()
         self.call('/diacamma.payoff/supportingPaymentMethod',
-                  {'bill': 6, 'item_name': 'bill', 'model_name': 'invoice.Bill'}, False)
+                  {'bill': 6, 'item_name': 'bill'}, False)
         self.assert_observer(
             'core.custom', 'diacamma.payoff', 'supportingPaymentMethod')
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="num_txt"]', 'A-2')
@@ -738,7 +738,7 @@ class MethodTest(InvoiceTest):
 
         self.factory.xfer = PayableShow()
         self.call('/diacamma.payoff/supportingPaymentMethod',
-                  {'bill': 4, 'item_name': 'bill', 'model_name': 'invoice.Bill'}, False)
+                  {'bill': 4, 'item_name': 'bill'}, False)
         self.assert_observer(
             'core.custom', 'diacamma.payoff', 'supportingPaymentMethod')
         self.check_payment(4, 'recu A-1 - 1 avril 2015')
@@ -784,27 +784,6 @@ class MethodTest(InvoiceTest):
         finally:
             httpd.shutdown()
 
-        self.factory.xfer = BankTransactionList()
-        self.call('/diacamma.payoff/bankTransactionList', {}, False)
-        self.assert_observer(
-            'core.custom', 'diacamma.payoff', 'bankTransactionList')
-        self.assert_count_equal(
-            'COMPONENTS/GRID[@name="banktransaction"]/RECORD', 1)
-        self.assert_count_equal(
-            'COMPONENTS/GRID[@name="banktransaction"]/HEADER', 4)
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="banktransaction"]/RECORD[1]/VALUE[@name="date"]', '3 avril 2015 20:52')
-        if success:
-            self.assert_xml_equal(
-                'COMPONENTS/GRID[@name="banktransaction"]/RECORD[1]/VALUE[@name="status"]', six.text_type('succès'))
-        else:
-            self.assert_xml_equal(
-                'COMPONENTS/GRID[@name="banktransaction"]/RECORD[1]/VALUE[@name="status"]', six.text_type('échec'))
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="banktransaction"]/RECORD[1]/VALUE[@name="payer"]', 'test buyer')
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="banktransaction"]/RECORD[1]/VALUE[@name="amount"]', '100.000')
-
         self.factory.xfer = BankTransactionShow()
         self.call('/diacamma.payoff/bankTransactionShow',
                   {'banktransaction': 1}, False)
@@ -829,6 +808,27 @@ class MethodTest(InvoiceTest):
             'COMPONENTS/LABELFORM[@name="payer"]', "test buyer")
         self.assert_xml_equal(
             'COMPONENTS/LABELFORM[@name="amount"]', "100.000")
+
+        self.factory.xfer = BankTransactionList()
+        self.call('/diacamma.payoff/bankTransactionList', {}, False)
+        self.assert_observer(
+            'core.custom', 'diacamma.payoff', 'bankTransactionList')
+        self.assert_count_equal(
+            'COMPONENTS/GRID[@name="banktransaction"]/RECORD', 1)
+        self.assert_count_equal(
+            'COMPONENTS/GRID[@name="banktransaction"]/HEADER', 4)
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="banktransaction"]/RECORD[1]/VALUE[@name="date"]', '3 avril 2015 20:52')
+        if success:
+            self.assert_xml_equal(
+                'COMPONENTS/GRID[@name="banktransaction"]/RECORD[1]/VALUE[@name="status"]', six.text_type('succès'))
+        else:
+            self.assert_xml_equal(
+                'COMPONENTS/GRID[@name="banktransaction"]/RECORD[1]/VALUE[@name="status"]', six.text_type('échec'))
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="banktransaction"]/RECORD[1]/VALUE[@name="payer"]', 'test buyer')
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="banktransaction"]/RECORD[1]/VALUE[@name="amount"]', '100.000')
 
     def test_payment_paypal_bill(self):
         self.check_payment_paypal(2, "facture A-1 - 1 avril 2015")
