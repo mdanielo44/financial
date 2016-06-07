@@ -38,7 +38,6 @@ from django.utils import six
 from django.conf import settings
 
 from lucterios.framework.test import LucteriosTest
-from lucterios.mailing.tests import decode_b64
 
 from diacamma.accounting.test_tools import create_account
 from diacamma.accounting.models import FiscalYear
@@ -68,6 +67,7 @@ def default_paymentmethod():
 class PaymentTest(LucteriosTest):
 
     def check_email_msg(self, msg, itemid, title, amount='100.0', tax='0.0'):
+        from lucterios.mailing.tests import decode_b64
         email_content = decode_b64(msg.get_payload())
         self.assertTrue('<html>this is a bill.<hr/>' in email_content, email_content)
         self.assertTrue(email_content.find('<u><i>IBAN</i></u>') != -1, email_content)

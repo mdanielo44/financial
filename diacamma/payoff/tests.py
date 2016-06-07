@@ -48,7 +48,7 @@ class PayoffTest(LucteriosTest):
         self.call('/diacamma.payoff/payoffConf', {}, False)
         self.assert_observer('core.custom', 'diacamma.payoff', 'payoffConf')
         self.assert_count_equal('COMPONENTS/TAB', 3)
-        self.assert_count_equal('COMPONENTS/*', 2 + 2 + 2 + 3 + 5)
+        self.assert_count_equal('COMPONENTS/*', 2 + 2 + 2 + 3 + 7)
 
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="bankaccount"]/HEADER', 3)
@@ -104,7 +104,7 @@ class PayoffTest(LucteriosTest):
         self.call('/diacamma.payoff/payoffConf', {}, False)
         self.assert_observer('core.custom', 'diacamma.payoff', 'payoffConf')
         self.assert_count_equal('COMPONENTS/TAB', 3)
-        self.assert_count_equal('COMPONENTS/*', 2 + 2 + 2 + 3 + 5)
+        self.assert_count_equal('COMPONENTS/*', 2 + 2 + 2 + 3 + 7)
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="paymentmethod"]/HEADER', 3)
         self.assert_xml_equal(
