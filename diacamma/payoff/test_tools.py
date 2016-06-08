@@ -57,7 +57,7 @@ def default_bankaccount():
 
 def default_paymentmethod():
     PaymentMethod.objects.create(
-        paytype=0, bank_account_id=1, extra_data='123456789')
+        paytype=0, bank_account_id=1, extra_data='123456789\nAABBCCDD')
     PaymentMethod.objects.create(
         paytype=1, bank_account_id=1, extra_data='Truc\n1 rue de la Paix{[newline]}99000 LA-BAS')
     PaymentMethod.objects.create(

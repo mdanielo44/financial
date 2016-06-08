@@ -203,8 +203,8 @@ class PayableEmail(XferContainerAcknowledge):
             html_message = "<html>"
             html_message += message.replace('{[newline]}', '<br/>\n')
             if self.item.payoff_have_payment() and withpayment:
-                html_message += get_html_payment(self.request.META.get(
-                    'HTTP_REFERER', self.request.build_absolute_uri()), self.language, self.item)
+                html_message += get_html_payment(self.request.META.get('HTTP_REFERER', self.request.build_absolute_uri()),
+                                                 self.language, self.item)
             html_message += "</html>"
             self.item.send_email(subject, html_message, model)
 
@@ -260,15 +260,12 @@ class PayableShow(XferContainerCustom):
 
 def get_html_payment(absolute_uri, lang, supporting):
     html_message = "<hr/>"
-    html_message += "<center><i><u>%s</u></i></center>" % _(
-        "Payement methods")
-    html_message += "<table>"
+    html_message += "<center><i><u>%s</u></i></center>" % _("Payement methods")
+    html_message += "<table width='90%'>"
     for paymeth in PaymentMethod.objects.all():
         html_message += "<tr>"
-        html_message += "<td><b>%s</b></td>" % get_value_if_choices(
-            paymeth.paytype, paymeth.get_field_by_name('paytype'))
-        html_message += "<td>%s</td>" % paymeth.show_pay(
-            absolute_uri, lang, supporting).replace('{[', '<').replace(']}', '>')
+        html_message += "<td><b>%s</b></td>" % get_value_if_choices(paymeth.paytype, paymeth.get_field_by_name('paytype'))
+        html_message += "<td>%s</td>" % paymeth.show_pay(absolute_uri, lang, supporting).replace('{[', '<').replace(']}', '>')
         html_message += "</tr>"
         html_message += "<tr></tr>"
     html_message += "</table>"

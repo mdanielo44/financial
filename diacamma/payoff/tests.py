@@ -120,18 +120,22 @@ class PayoffTest(LucteriosTest):
         self.call('/diacamma.payoff/paymentMethodAddModify', {}, False)
         self.assert_observer(
             'core.custom', 'diacamma.payoff', 'paymentMethodAddModify')
-        self.assert_count_equal('COMPONENTS/*', 7)
+        self.assert_count_equal('COMPONENTS/*', 9)
         self.assert_count_equal('COMPONENTS/SELECT[@name="bank_account"]/CASE', 1)
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="lbl_item_1"]', "{[b]}IBAN{[/b]}")
         self.assert_xml_equal('COMPONENTS/EDIT[@name="item_1"]', None)
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="lbl_item_2"]', "{[b]}ref. SWIFT{[/b]}")
+        self.assert_xml_equal('COMPONENTS/EDIT[@name="item_2"]', None)
 
         self.factory.xfer = PaymentMethodAddModify()
         self.call('/diacamma.payoff/paymentMethodAddModify', {'paytype': 0}, False)
         self.assert_observer(
             'core.custom', 'diacamma.payoff', 'paymentMethodAddModify')
-        self.assert_count_equal('COMPONENTS/*', 7)
+        self.assert_count_equal('COMPONENTS/*', 9)
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="lbl_item_1"]', "{[b]}IBAN{[/b]}")
         self.assert_xml_equal('COMPONENTS/EDIT[@name="item_1"]', None)
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="lbl_item_2"]', "{[b]}ref. SWIFT{[/b]}")
+        self.assert_xml_equal('COMPONENTS/EDIT[@name="item_2"]', None)
 
         self.factory.xfer = PaymentMethodAddModify()
         self.call('/diacamma.payoff/paymentMethodAddModify', {'paytype': 1}, False)
@@ -153,7 +157,7 @@ class PayoffTest(LucteriosTest):
 
         self.factory.xfer = PaymentMethodAddModify()
         self.call('/diacamma.payoff/paymentMethodAddModify',
-                  {'paytype': 0, 'bank_account': 1, 'item_1': '123456798', 'SAVE': 'YES'}, False)
+                  {'paytype': 0, 'bank_account': 1, 'item_1': '123456798', 'item_2': 'AADDVVCC', 'SAVE': 'YES'}, False)
         self.assert_observer(
             'core.acknowledge', 'diacamma.payoff', 'paymentMethodAddModify')
 
@@ -180,7 +184,7 @@ class PayoffTest(LucteriosTest):
             'COMPONENTS/GRID[@name="paymentmethod"]/RECORD[1]/VALUE[@name="paytype"]', "virement")
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="paymentmethod"]/RECORD[1]/VALUE[@name="bank_account"]', "My bank")
-        self.assert_xml_equal('COMPONENTS/GRID[@name="paymentmethod"]/RECORD[1]/VALUE[@name="info"]', '{[b]}IBAN{[/b]}{[br/]}123456798{[br/]}')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="paymentmethod"]/RECORD[1]/VALUE[@name="info"]', '{[b]}IBAN{[/b]}{[br/]}123456798{[br/]}{[b]}ref. SWIFT{[/b]}{[br/]}AADDVVCC{[br/]}')
 
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="paymentmethod"]/RECORD[2]/VALUE[@name="paytype"]', "chèque")

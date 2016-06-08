@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-06-07 15:56+0000\n"
+"POT-Creation-Date: 2016-06-08 12:30+0000\n"
 "PO-Revision-Date: 2016-01-14 22:21+0000\n"
 "Last-Translator: b'Paul ARULATEDA <paul531@orange.fr>'\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -122,11 +122,11 @@ msgstr "compte bancaire"
 msgid "bank accounts"
 msgstr "comptes bancaire"
 
-#: models.py:222 models.py:380 models.py:635 views_deposit.py:155
+#: models.py:222 models.py:380 models.py:637 views_deposit.py:155
 msgid "date"
 msgstr "date"
 
-#: models.py:223 models.py:452 models.py:639 views_deposit.py:154
+#: models.py:223 models.py:452 models.py:641 views_deposit.py:154
 msgid "amount"
 msgstr "montant"
 
@@ -158,7 +158,7 @@ msgstr "autre"
 msgid "levy"
 msgstr "prélèvement"
 
-#: models.py:227 models.py:638 views_deposit.py:153
+#: models.py:227 models.py:640 views_deposit.py:153
 msgid "payer"
 msgstr "payeur"
 
@@ -195,7 +195,7 @@ msgstr "réglement"
 msgid "payoffs"
 msgstr "réglements"
 
-#: models.py:376 models.py:636
+#: models.py:376 models.py:638
 msgid "status"
 msgstr "status"
 
@@ -264,11 +264,15 @@ msgstr "paramètres"
 msgid "IBAN"
 msgstr "IBAN"
 
-#: models.py:536 models.py:593
+#: models.py:534 models.py:579
+msgid "SWIFT"
+msgstr "ref. SWIFT"
+
+#: models.py:536 models.py:587
 msgid "payable to"
 msgstr "libellé à"
 
-#: models.py:536 models.py:593
+#: models.py:536 models.py:591
 msgid "address"
 msgstr "adresse"
 
@@ -276,31 +280,31 @@ msgstr "adresse"
 msgid "Paypal account"
 msgstr "compte Paypal"
 
-#: models.py:628
+#: models.py:630
 msgid "payment method"
 msgstr "moyen de paiement"
 
-#: models.py:629
+#: models.py:631
 msgid "payment methods"
 msgstr "moyens de paiement"
 
-#: models.py:637
+#: models.py:639
 msgid "failure"
 msgstr "échec"
 
-#: models.py:637
+#: models.py:639
 msgid "success"
 msgstr "succès"
 
-#: models.py:641
+#: models.py:643
 msgid "contains"
 msgstr "contenu"
 
-#: models.py:652
+#: models.py:654
 msgid "bank transaction"
 msgstr "transaction bancaire"
 
-#: models.py:653
+#: models.py:655
 msgid "bank transactions"
 msgstr "transactions bancaires"
 

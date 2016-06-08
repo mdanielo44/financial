@@ -531,7 +531,7 @@ class PaymentMethod(LucteriosModel):
     def get_extra_fields(self):
         self.paytype = int(self.paytype)
         if self.paytype == 0:
-            return [(1, _('IBAN'), 0)]
+            return [(1, _('IBAN'), 0), (2, _('SWIFT'), 0)]
         elif self.paytype == 1:
             return [(1, _('payable to'), 0), (2, _('address'), 1)]
         elif self.paytype == 2:
@@ -575,22 +575,24 @@ class PaymentMethod(LucteriosModel):
             formTxt += "{[table width='100%']}{[tr]}"
             formTxt += "    {[td]}{[u]}{[i]}%s{[/i]}{[/u]}{[/td]}" % _('IBAN')
             formTxt += "    {[td]}%s{[/td]}" % items[0]
+            formTxt += "{[/tr]}{[tr]}"
+            formTxt += "    {[td]}{[u]}{[i]}%s{[/i]}{[/u]}{[/td]}" % _('SWIFT')
+            formTxt += "    {[td]}%s{[/td]}" % items[1]
             formTxt += "{[/tr]}{[/table]}"
             formTxt += "{[/center]}"
         elif self.paytype == 1:
             formTxt = "{[center]}"
             formTxt += "{[table width='100%%']}"
             formTxt += "    {[tr]}"
-            formTxt += "        {[td]}{[u]}{[i]}%s{[/i]}{[/u]}{[/td]}"
-            formTxt += "        {[td]}%s{[/td]}"
+            formTxt += "        {[td]}{[u]}{[i]}%s{[/i]}{[/u]}{[/td]}" % _('payable to')
+            formTxt += "        {[td]}%s{[/td]}" % items[0]
             formTxt += "    {[/tr]}"
             formTxt += "    {[tr]}"
-            formTxt += "        {[td]}{[u]}{[i]}%s{[/i]}{[/u]}{[/td]}"
-            formTxt += "        {[td]}%s{[/td]}"
+            formTxt += "        {[td]}{[u]}{[i]}%s{[/i]}{[/u]}{[/td]}" % _('address')
+            formTxt += "        {[td]}%s{[/td]}" % items[1]
             formTxt += "    {[/tr]}"
             formTxt += "{[/table]}"
             formTxt += "{[/center]}"
-            formTxt = formTxt % (_('payable to'), items[0], _('address'), items[1])
         elif self.paytype == 2:
             try:
                 from urllib.parse import quote_plus

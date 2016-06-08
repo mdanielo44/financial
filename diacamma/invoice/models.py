@@ -44,6 +44,7 @@ from diacamma.accounting.models import FiscalYear, Third, EntryAccount, \
 from diacamma.accounting.tools import current_system_account, format_devise, \
     currency_round, correct_accounting_code
 from diacamma.payoff.models import Supporting
+from lucterios.framework.signal_and_lock import Signal
 
 
 class Vat(LucteriosModel):
@@ -374,6 +375,7 @@ class Bill(Supporting):
             if self.bill_type != 0:
                 self.generate_entry()
             self.save()
+            Signal.call_signal("change_bill", 'valid', self, None)
 
     def cancel(self):
         if (self.status == 1) and (self.bill_type in (1, 3)):
@@ -385,6 +387,7 @@ class Bill(Supporting):
                 detail.save()
             self.status = 2
             self.save()
+            Signal.call_signal("change_bill", 'cancel', self, new_asset)
             return new_asset.id
         else:
             return None
@@ -404,6 +407,7 @@ class Bill(Supporting):
                 detail.save()
             self.status = 3
             self.save()
+            Signal.call_signal("change_bill", 'convert', self, new_bill)
             return new_bill
         else:
             return None
@@ -412,6 +416,7 @@ class Bill(Supporting):
         if self.status == 1:
             self.status = 3
             self.save()
+            Signal.call_signal("change_bill", 'archive', self, None)
 
     def get_statistics_customer(self):
         cust_list = []
