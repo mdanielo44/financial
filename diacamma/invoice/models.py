@@ -378,16 +378,20 @@ class Bill(Supporting):
             Signal.call_signal("change_bill", 'valid', self, None)
 
     def cancel(self):
-        if (self.status == 1) and (self.bill_type in (1, 3)):
-            new_asset = Bill.objects.create(
-                bill_type=2, date=date.today(), third=self.third, status=0, cost_accounting=self.cost_accounting)
-            for detail in self.detail_set.all():
-                detail.id = None
-                detail.bill = new_asset
-                detail.save()
-            self.status = 2
-            self.save()
-            Signal.call_signal("change_bill", 'cancel', self, new_asset)
+        new_asset = None
+        if (self.status == 1):
+            if (self.bill_type in (1, 3)):
+                new_asset = Bill.objects.create(
+                    bill_type=2, date=date.today(), third=self.third, status=0, cost_accounting=self.cost_accounting)
+                for detail in self.detail_set.all():
+                    detail.id = None
+                    detail.bill = new_asset
+                    detail.save()
+            if (self.bill_type != 2):
+                self.status = 2
+                self.save()
+                Signal.call_signal("change_bill", 'cancel', self, new_asset)
+        if new_asset is not None:
             return new_asset.id
         else:
             return None

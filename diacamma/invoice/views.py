@@ -164,7 +164,7 @@ class BillShow(XferShowEditor):
             if self.item.bill_type == 0:
                 self.action_list.insert(
                     0, ('convertbill', _("=> Bill"), "images/ok.png", CLOSE_YES))
-            if self.item.bill_type in (1, 3):
+            if self.item.bill_type != 2:
                 self.action_list.insert(
                     1, ('cancel', _("Cancel"), "images/cancel.png", CLOSE_NO))
         if self.item.status in (1, 3):
@@ -282,7 +282,7 @@ class BillCancel(XferContainerAcknowledge):
     field_id = 'bill'
 
     def fillresponse(self):
-        if (self.item.status == 1) and (self.item.bill_type in (1, 3)) and self.confirme(_("Do you want cancel '%s'?") % self.item):
+        if (self.item.status == 1) and (self.item.bill_type in (0, 1, 3)) and self.confirme(_("Do you want cancel '%s'?") % self.item):
             asset_id = self.item.cancel()
             if asset_id is not None:
                 self.redirect_action(ActionsManage.get_act_changed(
