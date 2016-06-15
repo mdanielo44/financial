@@ -694,7 +694,7 @@ class BillTest(InvoiceTest):
             'COMPONENTS/LABELFORM[@name="date"]', "1 avril 2015")
         self.assert_xml_equal(
             'COMPONENTS/LABELFORM[@name="total_excltax"]', "62.50€")
-        self.assert_count_equal('ACTIONS/ACTION', 4)
+        self.assert_count_equal('ACTIONS/ACTION', 5)
 
         self.factory.xfer = EntryLineAccountList()
         self.call('/diacamma.accounting/entryLineAccountList',

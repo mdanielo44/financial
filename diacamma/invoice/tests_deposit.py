@@ -493,7 +493,7 @@ class MethodTest(InvoiceTest, PaymentTest):
             'COMPONENTS/LABELFORM[@name="title"]', "{[br/]}{[center]}{[u]}{[b]}devis{[/b]}{[/u]}{[/center]}")
         self.assert_xml_equal(
             'COMPONENTS/LABELFORM[@name="status"]', "validé")
-        self.assert_count_equal('ACTIONS/ACTION', 5)
+        self.assert_count_equal('ACTIONS/ACTION', 6)
         self.assert_action_equal('ACTIONS/ACTION[1]', (six.text_type(
             'Règlement'), 'diacamma.payoff/images/payments.png', 'diacamma.payoff', 'payableShow', 0, 1, 1))
 

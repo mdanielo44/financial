@@ -59,7 +59,7 @@ class CurrentBill(XferListEditor):
             contacts.append(contact.id)
         for contact in LegalEntity.objects.filter(responsability__individual__user=self.request.user):
             contacts.append(contact.id)
-        self.filter = Q(third__contact_id__in=contacts)
+        self.filter = Q(third__contact_id__in=contacts) & Q(status__gt=0)
         add_act = -1
         for idx in range(len(self.action_grid)):
             if self.action_grid[idx][0] == 'add':
@@ -78,6 +78,6 @@ class CurrentBill(XferListEditor):
 
 
 @ActionsManage.affect('Bill', 'currentprintbill')
-@MenuManage.describ(None)
+@MenuManage.describ(current_bill_right)
 class CurrentBillPrint(BillPrint):
     pass
