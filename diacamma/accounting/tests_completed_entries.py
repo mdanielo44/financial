@@ -270,6 +270,9 @@ class CompletedEntryTest(LucteriosTest):
     def _check_result(self):
         return self.assert_xml_equal("COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit:{[/b]} 230.62€ - {[b]}Charge:{[/b]} 348.60€ = {[b]}Résultat:{[/b]} -117.98€ | {[b]}Trésorie:{[/b]} 1050.66€ - {[b]}Validé:{[/b]} 1244.74€{[/center]}')
 
+    def _check_result_with_filter(self):
+        return self.assert_xml_equal("COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit:{[/b]} 34.01€ - {[b]}Charge:{[/b]} 0.00€ = {[b]}Résultat:{[/b]} 34.01€ | {[b]}Trésorie:{[/b]} 70.64€ - {[b]}Validé:{[/b]} 70.64€{[/center]}')
+
     def test_all(self):
         self._goto_entrylineaccountlist(-1, 0, 23)
         self._check_result()
@@ -546,12 +549,26 @@ class CompletedEntryTest(LucteriosTest):
             'core.custom', 'diacamma.accounting', 'fiscalYearBalanceSheet')
         self._check_result()
 
+    def test_fiscalyear_balancesheet_filter(self):
+        self.factory.xfer = FiscalYearBalanceSheet()
+        self.call('/diacamma.accounting/fiscalYearBalanceSheet', {'begin': '2015-02-22', 'end': '2015-02-28'}, False)
+        self.assert_observer(
+            'core.custom', 'diacamma.accounting', 'fiscalYearBalanceSheet')
+        self._check_result_with_filter()
+
     def test_fiscalyear_incomestatement(self):
         self.factory.xfer = FiscalYearIncomeStatement()
         self.call('/diacamma.accounting/fiscalYearIncomeStatement', {}, False)
         self.assert_observer(
             'core.custom', 'diacamma.accounting', 'fiscalYearIncomeStatement')
         self._check_result()
+
+    def test_fiscalyear_incomestatement_filter(self):
+        self.factory.xfer = FiscalYearIncomeStatement()
+        self.call('/diacamma.accounting/fiscalYearIncomeStatement', {'begin': '2015-02-22', 'end': '2015-02-28'}, False)
+        self.assert_observer(
+            'core.custom', 'diacamma.accounting', 'fiscalYearIncomeStatement')
+        self._check_result_with_filter()
 
     def test_fiscalyear_ledger(self):
         self.factory.xfer = FiscalYearLedger()
@@ -560,12 +577,26 @@ class CompletedEntryTest(LucteriosTest):
             'core.custom', 'diacamma.accounting', 'fiscalYearLedger')
         self._check_result()
 
+    def test_fiscalyear_ledger_filter(self):
+        self.factory.xfer = FiscalYearLedger()
+        self.call('/diacamma.accounting/fiscalYearLedger', {'begin': '2015-02-22', 'end': '2015-02-28'}, False)
+        self.assert_observer(
+            'core.custom', 'diacamma.accounting', 'fiscalYearLedger')
+        self._check_result_with_filter()
+
     def test_fiscalyear_trialbalance(self):
         self.factory.xfer = FiscalYearTrialBalance()
         self.call('/diacamma.accounting/fiscalYearTrialBalance', {}, False)
         self.assert_observer(
             'core.custom', 'diacamma.accounting', 'fiscalYearTrialBalance')
         self._check_result()
+
+    def test_fiscalyear_trialbalance_filter(self):
+        self.factory.xfer = FiscalYearTrialBalance()
+        self.call('/diacamma.accounting/fiscalYearTrialBalance', {'begin': '2015-02-22', 'end': '2015-02-28'}, False)
+        self.assert_observer(
+            'core.custom', 'diacamma.accounting', 'fiscalYearTrialBalance')
+        self._check_result_with_filter()
 
     def test_export(self):
         self.assertFalse(

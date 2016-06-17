@@ -185,23 +185,19 @@ class FiscalYear(LucteriosModel):
         'last fiscal year'), related_name='next_fiscalyear', null=True, on_delete=models.SET_NULL)
 
     def init_dates(self):
-        fiscal_years = FiscalYear.objects.order_by(
-            'end')
+        fiscal_years = FiscalYear.objects.order_by('end')
         if len(fiscal_years) == 0:
             self.begin = date.today()
         else:
             last_fiscal_year = fiscal_years[len(fiscal_years) - 1]
             self.begin = last_fiscal_year.end + timedelta(days=1)
         try:
-            self.end = date(
-                self.begin.year + 1, self.begin.month, self.begin.day) - timedelta(days=1)
+            self.end = date(self.begin.year + 1, self.begin.month, self.begin.day) - timedelta(days=1)
         except ValueError:
-            self.end = date(
-                self.begin.year + 1, self.begin.month, self.begin.day - 1)
+            self.end = date(self.begin.year + 1, self.begin.month, self.begin.day - 1)
 
     def can_delete(self):
-        fiscal_years = FiscalYear.objects.order_by(
-            'end')
+        fiscal_years = FiscalYear.objects.order_by('end')
         if (len(fiscal_years) != 0) and (fiscal_years[len(fiscal_years) - 1].id != self.id):
             return _('This fiscal year is not the last!')
         elif self.status == 2:
@@ -231,7 +227,6 @@ class FiscalYear(LucteriosModel):
 
     @property
     def total_revenue(self):
-
         return get_amount_sum(EntryLineAccount.objects.filter(account__type_of_account=3, account__year=self,
                                                               entry__date_value__gte=self.begin, entry__date_value__lte=self.end).aggregate(Sum('amount')))
 

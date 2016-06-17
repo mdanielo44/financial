@@ -32,7 +32,7 @@ from django.db.models.aggregates import Sum
 from django.utils import six, formats
 
 from lucterios.framework.tools import MenuManage, FORMTYPE_NOMODAL, CLOSE_NO, FORMTYPE_REFRESH, \
-    WrapAction
+    WrapAction, convert_date
 from lucterios.framework.xfergraphic import XferContainerCustom
 from lucterios.framework.xfercomponents import XferCompImage, XferCompSelect, XferCompLabelForm, XferCompGrid, \
     XferCompEdit
@@ -131,6 +131,8 @@ class FiscalYearReport(XferContainerCustom):
 
     def fill_header(self):
         self.item = FiscalYear.get_current(self.getparam("year"))
+        self.item.begin = convert_date(self.getparam("begin"), self.item.begin)
+        self.item.end = convert_date(self.getparam("end"), self.item.end)
         img = XferCompImage('img')
         img.set_value(self.icon_path())
         img.set_location(0, 0, 1, 3)
@@ -138,8 +140,7 @@ class FiscalYearReport(XferContainerCustom):
 
         select_year = XferCompSelect(self.field_id)
         select_year.set_location(1, 0, 4)
-        select_year.set_select_query(
-            FiscalYear.objects.all())
+        select_year.set_select_query(FiscalYear.objects.all())
         select_year.set_value(self.item.id)
         select_year.set_needed(True)
         select_year.set_action(self.request, self.__class__.get_action(), {
