@@ -124,7 +124,7 @@ class PayoffTest(LucteriosTest):
         self.assert_count_equal('COMPONENTS/SELECT[@name="bank_account"]/CASE', 1)
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="lbl_item_1"]', "{[b]}IBAN{[/b]}")
         self.assert_xml_equal('COMPONENTS/EDIT[@name="item_1"]', None)
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="lbl_item_2"]', "{[b]}ref. SWIFT{[/b]}")
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="lbl_item_2"]', "{[b]}BIC{[/b]}")
         self.assert_xml_equal('COMPONENTS/EDIT[@name="item_2"]', None)
 
         self.factory.xfer = PaymentMethodAddModify()
@@ -134,7 +134,7 @@ class PayoffTest(LucteriosTest):
         self.assert_count_equal('COMPONENTS/*', 9)
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="lbl_item_1"]', "{[b]}IBAN{[/b]}")
         self.assert_xml_equal('COMPONENTS/EDIT[@name="item_1"]', None)
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="lbl_item_2"]', "{[b]}ref. SWIFT{[/b]}")
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="lbl_item_2"]', "{[b]}BIC{[/b]}")
         self.assert_xml_equal('COMPONENTS/EDIT[@name="item_2"]', None)
 
         self.factory.xfer = PaymentMethodAddModify()
@@ -184,7 +184,7 @@ class PayoffTest(LucteriosTest):
             'COMPONENTS/GRID[@name="paymentmethod"]/RECORD[1]/VALUE[@name="paytype"]', "virement")
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="paymentmethod"]/RECORD[1]/VALUE[@name="bank_account"]', "My bank")
-        self.assert_xml_equal('COMPONENTS/GRID[@name="paymentmethod"]/RECORD[1]/VALUE[@name="info"]', '{[b]}IBAN{[/b]}{[br/]}123456798{[br/]}{[b]}ref. SWIFT{[/b]}{[br/]}AADDVVCC{[br/]}')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="paymentmethod"]/RECORD[1]/VALUE[@name="info"]', '{[b]}IBAN{[/b]}{[br/]}123456798{[br/]}{[b]}BIC{[/b]}{[br/]}AADDVVCC{[br/]}')
 
         self.assert_xml_equal(
             'COMPONENTS/GRID[@name="paymentmethod"]/RECORD[2]/VALUE[@name="paytype"]', "chèque")

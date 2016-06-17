@@ -83,6 +83,7 @@ class CostAccountingClose(XferContainerAcknowledge):
 
     def fillresponse(self):
         if self.item.status == 0:
+            EntryAccount.clear_ghost()
             if self.item.entryaccount_set.filter(close=False).count() > 0:
                 raise LucteriosException(
                     IMPORTANT, _('This costa accounting has some not validated entry!'))

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-06-08 12:30+0000\n"
+"POT-Creation-Date: 2016-06-17 14:47+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -263,8 +263,8 @@ msgid "IBAN"
 msgstr "IBAN"
 
 #: models.py:534 models.py:579
-msgid "SWIFT"
-msgstr "ref. SWIFT"
+msgid "BIC"
+msgstr "BIC"
 
 #: models.py:536 models.py:587
 msgid "payable to"
@@ -362,7 +362,7 @@ msgstr "Payment"
 msgid "No payment for this document."
 msgstr "No payment for this document."
 
-#: views.py:239 views.py:264
+#: views.py:239 views.py:263
 msgid "Payement methods"
 msgstr "Payement methods"
 
@@ -509,3 +509,6 @@ msgstr "Bank transactions"
 #: views_deposit.py:211
 msgid "Show bank transaction"
 msgstr "Show bank transaction"
+
+#~ msgid "SWIFT"
+#~ msgstr "ref. SWIFT"

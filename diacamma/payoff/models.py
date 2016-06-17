@@ -531,7 +531,7 @@ class PaymentMethod(LucteriosModel):
     def get_extra_fields(self):
         self.paytype = int(self.paytype)
         if self.paytype == 0:
-            return [(1, _('IBAN'), 0), (2, _('SWIFT'), 0)]
+            return [(1, _('IBAN'), 0), (2, _('BIC'), 0)]
         elif self.paytype == 1:
             return [(1, _('payable to'), 0), (2, _('address'), 1)]
         elif self.paytype == 2:
@@ -576,7 +576,7 @@ class PaymentMethod(LucteriosModel):
             formTxt += "    {[td]}{[u]}{[i]}%s{[/i]}{[/u]}{[/td]}" % _('IBAN')
             formTxt += "    {[td]}%s{[/td]}" % items[0]
             formTxt += "{[/tr]}{[tr]}"
-            formTxt += "    {[td]}{[u]}{[i]}%s{[/i]}{[/u]}{[/td]}" % _('SWIFT')
+            formTxt += "    {[td]}{[u]}{[i]}%s{[/i]}{[/u]}{[/td]}" % _('BIC')
             formTxt += "    {[td]}%s{[/td]}" % items[1]
             formTxt += "{[/tr]}{[/table]}"
             formTxt += "{[/center]}"

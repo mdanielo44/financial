@@ -210,6 +210,7 @@ class FiscalYear(LucteriosModel):
         LucteriosModel.delete(self, using=using)
 
     def set_has_actif(self):
+        EntryAccount.clear_ghost()
         all_year = FiscalYear.objects.all()
         for year_item in all_year:
             year_item.is_actif = False
@@ -602,8 +603,7 @@ class AccountLink(LucteriosModel):
     @property
     def letter(self):
         year = self.entryaccount_set.all()[0].year
-        nb_link = AccountLink.objects.filter(
-            entryaccount__year=year, id__lt=self.id).count()
+        nb_link = AccountLink.objects.filter(entryaccount__year=year, id__lt=self.id).count()
         letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
         res = ''
         while nb_link >= 26:
@@ -662,6 +662,13 @@ class EntryAccount(LucteriosModel):
     @classmethod
     def get_show_fields(cls):
         return ['num', 'journal', 'date_entry', 'date_value', 'designation']
+
+    @classmethod
+    def clear_ghost(cls):
+        if not RecordLocker.has_item_lock(cls):
+            for entry in cls.objects.filter(close=False):
+                if len(entry.entrylineaccount_set.all()) == 0:
+                    entry.delete()
 
     def can_delete(self):
         if self.close:

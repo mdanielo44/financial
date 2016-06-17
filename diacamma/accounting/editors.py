@@ -113,24 +113,21 @@ class FiscalYearEditor(LucteriosEditor):
 
     def run_begin(self, xfer):
         if self.item.status == 0:
-            nb_entry_noclose = EntryLineAccount.objects.filter(
-                entry__journal__id=1, entry__close=False, account__year=self.item).count()
+            EntryAccount.clear_ghost()
+            nb_entry_noclose = EntryLineAccount.objects.filter(entry__journal__id=1, entry__close=False, account__year=self.item).count()
             if nb_entry_noclose > 0:
-                raise LucteriosException(
-                    IMPORTANT, _("Some enties for last year report are not closed!"))
+                raise LucteriosException(IMPORTANT, _("Some enties for last year report are not closed!"))
             if current_system_account().check_begin(self.item, xfer):
                 self.item.status = 1
                 self.item.save()
 
     def run_close(self, xfer):
         if self.item.status == 0:
-            raise LucteriosException(
-                IMPORTANT, _("This fiscal year is not 'in running'!"))
-        nb_entry_noclose = EntryAccount.objects.filter(
-            close=False, entrylineaccount__account__year=self.item).distinct().count()
+            raise LucteriosException(IMPORTANT, _("This fiscal year is not 'in running'!"))
+        EntryAccount.clear_ghost()
+        nb_entry_noclose = EntryAccount.objects.filter(close=False, entrylineaccount__account__year=self.item).distinct().count()
         if (nb_entry_noclose > 0) and (FiscalYear.objects.filter(last_fiscalyear=self.item).count() == 0):
-            raise LucteriosException(IMPORTANT, _(
-                "This fiscal year has entries not closed and not next fiscal year!"))
+            raise LucteriosException(IMPORTANT, _("This fiscal year has entries not closed and not next fiscal year!"))
         if current_system_account().check_end(self.item, xfer, nb_entry_noclose):
             self.item.status = 2
             self.item.save()
