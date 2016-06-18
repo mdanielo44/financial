@@ -292,7 +292,7 @@ class EntryAccountOpenFromLine(XferContainerAcknowledge):
     caption = _("accounting entries")
 
     def fillresponse(self, entrylineaccount_link=0):
-        for old_key in ["SAVE", 'entrylineaccount', 'entrylineaccount_link', 'third', 'reference']:
+        for old_key in ["SAVE", 'entrylineaccount', 'entrylineaccount_link', 'third', 'reference', 'serial_entry']:
             if old_key in self.params.keys():
                 del self.params[old_key]
         if (self.item.id is None) and (entrylineaccount_link != 0):
