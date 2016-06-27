@@ -25,10 +25,10 @@ from __future__ import unicode_literals
 
 from django.utils.translation import ugettext_lazy as _
 
-from lucterios.framework.xferadvance import XferListEditor
+from lucterios.framework.xferadvance import XferListEditor, TITLE_MODIFY, TITLE_DELETE, TITLE_ADD
 from lucterios.framework.xferadvance import XferAddEditor
 from lucterios.framework.xferadvance import XferDelete
-from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage
+from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage, CLOSE_NO, SELECT_MULTI, SELECT_SINGLE
 from lucterios.framework.xfercomponents import XferCompButton
 from lucterios.framework import signal_and_lock
 from lucterios.CORE.parameters import Params
@@ -39,7 +39,6 @@ from diacamma.accounting.tools import correct_accounting_code
 from diacamma.invoice.models import Vat, Article
 
 
-@ActionsManage.affect('Vat', 'list')
 @MenuManage.describ('invoice.change_vat', FORMTYPE_NOMODAL, 'financial.conf', _('Management of parameters and configuration of invoice'))
 class InvoiceConf(XferListEditor):
     icon = "invoice_conf.png"
@@ -54,13 +53,13 @@ class InvoiceConf(XferListEditor):
         Params.fill(self, param_lists, 1, 1)
         btn = XferCompButton('editparam')
         btn.set_location(1, self.get_max_row() + 1, 2, 1)
-        btn.set_action(self.request, ParamEdit.get_action(
-            _('Modify'), 'images/edit.png'), {'close': 0, 'params': {'params': param_lists}})
+        btn.set_action(self.request, ParamEdit.get_action(TITLE_MODIFY, 'images/edit.png'), close=CLOSE_NO, params={'params': param_lists})
         self.add_component(btn)
         self.new_tab(_('VAT'))
 
 
-@ActionsManage.affect('Vat', 'edit', 'add')
+@ActionsManage.affect_grid(TITLE_ADD, "images/add.png")
+@ActionsManage.affect_grid(TITLE_MODIFY, "images/edit.png", unique=SELECT_SINGLE)
 @MenuManage.describ('invoice.add_vat')
 class VatAddModify(XferAddEditor):
     icon = "invoice_conf.png"
@@ -70,7 +69,7 @@ class VatAddModify(XferAddEditor):
     caption_modify = _("Modify VAT")
 
 
-@ActionsManage.affect('Vat', 'delete')
+@ActionsManage.affect_grid(TITLE_DELETE, "images/delete.png", unique=SELECT_MULTI)
 @MenuManage.describ('invoice.delete_vat')
 class VatDel(XferDelete):
     icon = "invoice_conf.png"

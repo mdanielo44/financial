@@ -32,11 +32,12 @@ from django.utils import six, timezone
 
 from lucterios.framework.xferbasic import XferContainerAbstract
 from lucterios.framework.xferadvance import XferAddEditor, XferListEditor, \
-    XferSave
+    XferSave, TITLE_ADD, TITLE_MODIFY, TITLE_DELETE, TITLE_OK, TITLE_CANCEL,\
+    TITLE_CLOSE
 from lucterios.framework.xferadvance import XferDelete
 from lucterios.framework.tools import ActionsManage, MenuManage, \
     FORMTYPE_REFRESH, CLOSE_NO, FORMTYPE_MODAL, CLOSE_YES, SELECT_SINGLE, \
-    WrapAction
+    WrapAction, SELECT_MULTI
 from lucterios.framework.xfergraphic import XferContainerAcknowledge, \
     XferContainerCustom
 from lucterios.framework.xfercomponents import XferCompLabelForm, \
@@ -50,7 +51,8 @@ from lucterios.CORE.models import PrintModel
 from lucterios.CORE.parameters import Params
 
 
-@ActionsManage.affect('Payoff', 'edit', 'append')
+@ActionsManage.affect_grid(TITLE_ADD, "images/add.png", condition=lambda xfer, gridname='': xfer.item.get_max_payoff() > 0.001)
+@ActionsManage.affect_grid(TITLE_MODIFY, "images/edit.png", unique=SELECT_SINGLE)
 @MenuManage.describ('payoff.add_payoff')
 class PayoffAddModify(XferAddEditor):
     icon = "payoff.png"
@@ -81,7 +83,7 @@ class PayoffAddModify(XferAddEditor):
             return XferAddEditor.run_save(self, request, *args, **kwargs)
 
 
-@ActionsManage.affect('Payoff', 'delete')
+@ActionsManage.affect_grid(TITLE_DELETE, "images/delete.png", unique=SELECT_MULTI)
 @MenuManage.describ('payoff.delete_payoff')
 class PayoffDel(XferDelete):
     icon = "payoff.png"
@@ -90,7 +92,7 @@ class PayoffDel(XferDelete):
     caption = _("Delete payoff")
 
 
-@ActionsManage.affect('Supporting', 'third')
+@ActionsManage.affect_list(_('change'), 'images/edit.png')
 @MenuManage.describ('')
 class SupportingThird(XferListEditor):
     icon = "diacamma.accounting/images/thirds.png"
@@ -125,8 +127,8 @@ class SupportingThird(XferListEditor):
     def fillresponse(self):
         XferListEditor.fillresponse(self)
         grid = self.get_components(self.field_id)
-        grid.add_action(self.request, SupportingThirdValid.get_action(
-            _('select'), 'images/ok.png'), {'modal': FORMTYPE_MODAL, 'close': CLOSE_YES, 'unique': SELECT_SINGLE}, 0)
+        grid.add_action(self.request, SupportingThirdValid.get_action(_('select'), 'images/ok.png'),
+                        modal=FORMTYPE_MODAL, close=CLOSE_YES, unique=SELECT_SINGLE, pos_act=0)
 
 
 @MenuManage.describ('')
@@ -138,7 +140,17 @@ class SupportingThirdValid(XferSave):
     caption = _("Select third")
 
 
-@ActionsManage.affect('Supporting', 'email')
+def can_send_email(xfer):
+    from django.utils.module_loading import import_module
+    from django.apps.registry import apps
+    if apps.is_installed("lucterios.mailing"):
+        fct_mailing_mod = import_module('lucterios.mailing.functions')
+        return fct_mailing_mod.will_mail_send()
+    else:
+        return False
+
+
+@ActionsManage.affect_show(_("Send"), "lucterios.mailing/images/email.png", condition=can_send_email)
 @MenuManage.describ('invoice.change_bill')
 class PayableEmail(XferContainerAcknowledge):
     caption = _("Send by email")
@@ -196,9 +208,8 @@ class PayableEmail(XferContainerAcknowledge):
                 sel.set_location(2, 4)
                 dlg.add_component(sel)
 
-            dlg.add_action(
-                self.get_action(_('Ok'), 'images/ok.png'), {'params': {"OK": "YES"}})
-            dlg.add_action(WrapAction(_('Cancel'), 'images/cancel.png'), {})
+            dlg.add_action(self.get_action(TITLE_OK, 'images/ok.png'), params={"OK": "YES"})
+            dlg.add_action(WrapAction(TITLE_CANCEL, 'images/cancel.png'))
         else:
             html_message = "<html>"
             html_message += message.replace('{[newline]}', '<br/>\n')
@@ -209,7 +220,7 @@ class PayableEmail(XferContainerAcknowledge):
             self.item.send_email(subject, html_message, model)
 
 
-@ActionsManage.affect('Supporting', 'showpay')
+@ActionsManage.affect_show(_("Payment"), "diacamma.payoff/images/payments.png", condition=lambda xfer: xfer.item.payoff_have_payment() and (len(PaymentMethod.objects.all()) > 0))
 @MenuManage.describ('')
 class PayableShow(XferContainerCustom):
     caption = _("Payment")
@@ -255,7 +266,7 @@ class PayableShow(XferContainerCustom):
             lbl.set_value("{[br/]}")
             lbl.set_location(2, max_row + 1)
             self.add_component(lbl)
-        self.add_action(WrapAction(_('Close'), 'images/close.png'), {})
+        self.add_action(WrapAction(TITLE_CLOSE, 'images/close.png'))
 
 
 def get_html_payment(absolute_uri, lang, supporting):

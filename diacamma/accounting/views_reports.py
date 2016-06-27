@@ -32,7 +32,7 @@ from django.db.models.aggregates import Sum
 from django.utils import six, formats
 
 from lucterios.framework.tools import MenuManage, FORMTYPE_NOMODAL, CLOSE_NO, FORMTYPE_REFRESH, \
-    WrapAction, convert_date
+    WrapAction, convert_date, ActionsManage, SELECT_MULTI
 from lucterios.framework.xfergraphic import XferContainerCustom
 from lucterios.framework.xfercomponents import XferCompImage, XferCompSelect, XferCompLabelForm, XferCompGrid, \
     XferCompEdit
@@ -497,6 +497,7 @@ class CostAccountingReport(FiscalYearReport):
         self.define_gridheader()
 
 
+@ActionsManage.affect_grid(_("Report"), 'images/print.png', unique=SELECT_MULTI, modal=FORMTYPE_NOMODAL)
 @MenuManage.describ('accounting.change_entryaccount')
 class CostAccountingIncomeStatement(CostAccountingReport, FiscalYearIncomeStatement):
     caption = _("Income statement of cost accounting")
@@ -532,6 +533,7 @@ class CostAccountingIncomeStatement(CostAccountingReport, FiscalYearIncomeStatem
         FiscalYearIncomeStatement.calcul_table(self)
 
 
+@ActionsManage.affect_grid(_("Ledger"), 'images/print.png', unique=SELECT_MULTI, modal=FORMTYPE_NOMODAL)
 @MenuManage.describ('accounting.change_entryaccount')
 class CostAccountingLedger(CostAccountingReport, FiscalYearLedger):
     caption = _("Ledger of cost accounting")
@@ -547,6 +549,7 @@ class CostAccountingLedger(CostAccountingReport, FiscalYearLedger):
         FiscalYearLedger.calcul_table(self)
 
 
+@ActionsManage.affect_grid(_("Trial balance"), 'images/print.png', unique=SELECT_MULTI, modal=FORMTYPE_NOMODAL)
 @MenuManage.describ('accounting.change_entryaccount')
 class CostAccountingTrialBalance(CostAccountingReport, FiscalYearTrialBalance):
     caption = _("Trial balance of cost accounting")

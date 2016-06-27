@@ -25,31 +25,24 @@ from __future__ import unicode_literals
 
 from django.utils.translation import ugettext_lazy as _
 
-from lucterios.framework.xferadvance import XferListEditor, XferDelete
+from lucterios.framework.xferadvance import XferListEditor, XferDelete, TITLE_ADD, TITLE_MODIFY, TITLE_DELETE
 from lucterios.framework.xferadvance import XferAddEditor
-from lucterios.framework.tools import FORMTYPE_MODAL, ActionsManage, MenuManage, \
-    SELECT_SINGLE, CLOSE_NO
-from lucterios.framework.xfergraphic import XferContainerAcknowledge,\
-    XferContainerCustom
-from lucterios.framework.xfercomponents import XferCompButton, XferCompGrid, \
-    XferCompLabelForm, XferCompSelect, XferCompImage, XferCompDownLoad
+from lucterios.framework.tools import FORMTYPE_MODAL, ActionsManage, MenuManage, SELECT_SINGLE, CLOSE_NO, CLOSE_YES, SELECT_MULTI
+from lucterios.framework.xfergraphic import XferContainerAcknowledge, XferContainerCustom
+from lucterios.framework.xfercomponents import XferCompButton, XferCompLabelForm, XferCompSelect, XferCompImage, XferCompDownLoad
 from lucterios.framework.error import LucteriosException, IMPORTANT
+from lucterios.framework import signal_and_lock
 from lucterios.CORE.parameters import Params
 from lucterios.CORE.views import ParamEdit
 from lucterios.CORE.models import Parameter
 
 from diacamma.accounting.models import FiscalYear, Journal, AccountThird, ChartsAccount, ModelLineEntry
-from diacamma.accounting.system import accounting_system_list, \
-    accounting_system_name
-
+from diacamma.accounting.system import accounting_system_list, accounting_system_name
 from diacamma.accounting.tools import clear_system_account, correct_accounting_code
-from lucterios.framework import signal_and_lock
 
-MenuManage.add_sub(
-    "financial.conf", "core.extensions", "", _("Financial"), "", 2)
+MenuManage.add_sub("financial.conf", "core.extensions", "", _("Financial"), "", 2)
 
 
-@ActionsManage.affect('FiscalYear', 'list')
 @MenuManage.describ('accounting.change_fiscalyear', FORMTYPE_MODAL, 'financial.conf', _('Management of fiscal year and financial parameters'))
 class Configuration(XferListEditor):
     icon = "accountingYear.png"
@@ -69,8 +62,7 @@ class Configuration(XferListEditor):
             account_systems = list(accounting_system_list().items())
             account_systems.insert(0, ('', '---'))
             edt.set_select(account_systems)
-            edt.set_action(self.request, ConfigurationAccountingSystem.get_action(), {
-                           'modal': FORMTYPE_MODAL, 'close': CLOSE_NO})
+            edt.set_action(self.request, ConfigurationAccountingSystem.get_action(), modal=FORMTYPE_MODAL, close=CLOSE_NO)
         else:
             edt = XferCompLabelForm("account_system")
         edt.set_value(accounting_system_name(current_account_system))
@@ -79,27 +71,14 @@ class Configuration(XferListEditor):
 
     def fillresponse(self):
         XferListEditor.fillresponse(self)
-        grid = self.get_components(self.field_id)
-        grid.add_action(self.request, FiscalYearActive.get_action(), {
-                        'unique': SELECT_SINGLE, 'close': CLOSE_NO})
-        grid.add_action(self.request, FiscalYearExport.get_action(), {
-                        'unique': SELECT_SINGLE, 'close': CLOSE_NO})
         self.new_tab(_('Journals'))
-        journals = Journal.objects.all()
-        grid = XferCompGrid('journal')
-        grid.set_model(journals, None, self)
-        grid.add_actions(self, Journal)
-        grid.set_location(0, self.get_max_row() + 1, 2)
-        grid.set_size(200, 500)
-        self.add_component(grid)
+        self.fill_grid(self.get_max_row() + 1, Journal, 'journal', Journal.objects.all())
         self.new_tab(_('Parameters'))
-        self.params['params'] = [
-            'accounting-devise', 'accounting-devise-iso', 'accounting-devise-prec', 'accounting-sizecode']
+        self.params['params'] = ['accounting-devise', 'accounting-devise-iso', 'accounting-devise-prec', 'accounting-sizecode']
         Params.fill(self, self.params['params'], 1, 1)
         btn = XferCompButton('editparam')
         btn.set_location(1, self.get_max_row() + 1, 2, 1)
-        btn.set_action(self.request, ParamEdit.get_action(
-            _('Modify'), 'images/edit.png'), {'close': 0})
+        btn.set_action(self.request, ParamEdit.get_action(TITLE_MODIFY, 'images/edit.png'), close=CLOSE_NO)
         self.add_component(btn)
 
 
@@ -115,6 +94,7 @@ class ConfigurationAccountingSystem(XferContainerAcknowledge):
                 clear_system_account()
 
 
+@ActionsManage.affect_grid(_("Activate"), "images/ok.png")
 @MenuManage.describ('accounting.add_fiscalyear')
 class FiscalYearActive(XferContainerAcknowledge):
     icon = "images/ok.png"
@@ -126,52 +106,7 @@ class FiscalYearActive(XferContainerAcknowledge):
         self.item.set_has_actif()
 
 
-@ActionsManage.affect('FiscalYear', 'edit', 'modify', 'add')
-@MenuManage.describ('accounting.add_fiscalyear')
-class FiscalYearAddModify(XferAddEditor):
-    icon = "accountingYear.png"
-    model = FiscalYear
-    field_id = 'fiscalyear'
-    caption_add = _("Add fiscal year")
-    caption_modify = _("Modify fiscal year")
-
-    def fillresponse(self):
-        if self.item.id is None:
-            if Params.getvalue("accounting-system") == '':
-                raise LucteriosException(
-                    IMPORTANT, _('Account system not defined!'))
-            self.item.init_dates()
-        XferAddEditor.fillresponse(self)
-
-
-@ActionsManage.affect('FiscalYear', 'delete')
-@MenuManage.describ('accounting.delete_fiscalyear')
-class FiscalYearDel(XferDelete):
-    icon = "accountingYear.png"
-    model = FiscalYear
-    field_id = 'fiscalyear'
-    caption = _("Delete fiscal year")
-
-
-@ActionsManage.affect('Journal', 'edit', 'add')
-@MenuManage.describ('accounting.add_fiscalyear')
-class JournalAddModify(XferAddEditor):
-    icon = "entry.png"
-    model = Journal
-    field_id = 'journal'
-    caption_add = _("Add accounting journal")
-    caption_modify = _("Modify accounting journal")
-
-
-@ActionsManage.affect('Journal', 'delete')
-@MenuManage.describ('accounting.delete_fiscalyear')
-class JournalDel(XferDelete):
-    icon = "entry.png"
-    model = Journal
-    field_id = 'journal'
-    caption = _("Delete accounting journal")
-
-
+@ActionsManage.affect_grid(_("Export"), "diacamma.accounting/images/entry.png")
 @MenuManage.describ('accounting.change_fiscalyear')
 class FiscalYearExport(XferContainerCustom):
     icon = "entry.png"
@@ -198,6 +133,54 @@ class FiscalYearExport(XferContainerCustom):
         down.set_download(destination_file)
         down.set_location(1, 1)
         self.add_component(down)
+
+
+@ActionsManage.affect_grid(TITLE_ADD, "images/add.png")
+@ActionsManage.affect_grid(TITLE_MODIFY, "images/edit.png", unique=SELECT_SINGLE)
+@ActionsManage.affect_show(TITLE_MODIFY, "images/edit.png", close=CLOSE_YES)
+@MenuManage.describ('accounting.add_fiscalyear')
+class FiscalYearAddModify(XferAddEditor):
+    icon = "accountingYear.png"
+    model = FiscalYear
+    field_id = 'fiscalyear'
+    caption_add = _("Add fiscal year")
+    caption_modify = _("Modify fiscal year")
+
+    def fillresponse(self):
+        if self.item.id is None:
+            if Params.getvalue("accounting-system") == '':
+                raise LucteriosException(IMPORTANT, _('Account system not defined!'))
+            self.item.init_dates()
+        XferAddEditor.fillresponse(self)
+
+
+@ActionsManage.affect_grid(TITLE_DELETE, "images/delete.png", unique=SELECT_MULTI)
+@MenuManage.describ('accounting.delete_fiscalyear')
+class FiscalYearDel(XferDelete):
+    icon = "accountingYear.png"
+    model = FiscalYear
+    field_id = 'fiscalyear'
+    caption = _("Delete fiscal year")
+
+
+@ActionsManage.affect_grid(TITLE_ADD, "images/add.png")
+@ActionsManage.affect_grid(TITLE_MODIFY, "images/edit.png", unique=SELECT_SINGLE)
+@MenuManage.describ('accounting.add_fiscalyear')
+class JournalAddModify(XferAddEditor):
+    icon = "entry.png"
+    model = Journal
+    field_id = 'journal'
+    caption_add = _("Add accounting journal")
+    caption_modify = _("Modify accounting journal")
+
+
+@ActionsManage.affect_grid(TITLE_DELETE, "images/delete.png", unique=SELECT_MULTI)
+@MenuManage.describ('accounting.delete_fiscalyear')
+class JournalDel(XferDelete):
+    icon = "entry.png"
+    model = Journal
+    field_id = 'journal'
+    caption = _("Delete accounting journal")
 
 
 @signal_and_lock.Signal.decorate('param_change')

@@ -4,9 +4,11 @@ from __future__ import unicode_literals
 from django.utils.translation import ugettext_lazy as _
 
 
-from lucterios.framework.xferadvance import XferListEditor, XferDelete
+from lucterios.framework.xferadvance import XferListEditor, XferDelete,\
+    TITLE_MODIFY, TITLE_ADD, TITLE_DELETE
 from lucterios.framework.xferadvance import XferAddEditor
-from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage
+from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage,\
+    CLOSE_NO, SELECT_SINGLE, SELECT_MULTI
 from lucterios.CORE.parameters import Params
 from lucterios.framework.xfercomponents import XferCompButton
 from lucterios.CORE.views import ParamEdit
@@ -17,7 +19,6 @@ from diacamma.accounting.tools import correct_accounting_code
 from diacamma.payoff.models import BankAccount, PaymentMethod
 
 
-@ActionsManage.affect('BankAccount', 'list')
 @MenuManage.describ('payoff.change_bankaccount', FORMTYPE_NOMODAL, 'financial.conf', _('Management of parameters and configuration of payoff'))
 class PayoffConf(XferListEditor):
     icon = "bank.png"
@@ -31,19 +32,18 @@ class PayoffConf(XferListEditor):
     def fillresponse(self):
         XferListEditor.fillresponse(self)
         self.new_tab(_('Payment method'))
-        self.fill_grid(
-            0, PaymentMethod, "paymentmethod", PaymentMethod.objects.all())
+        self.fill_grid(0, PaymentMethod, "paymentmethod", PaymentMethod.objects.all())
         self.new_tab(_('Parameters'))
         param_lists = ['payoff-cash-account', 'payoff-bankcharges-account', 'payoff-email-message']
         Params.fill(self, param_lists, 1, 1)
         btn = XferCompButton('editparam')
         btn.set_location(1, self.get_max_row() + 1, 2, 1)
-        btn.set_action(self.request, ParamEdit.get_action(
-            _('Modify'), 'images/edit.png'), {'close': 0, 'params': {'params': param_lists}})
+        btn.set_action(self.request, ParamEdit.get_action(TITLE_MODIFY, 'images/edit.png'), close=CLOSE_NO, params={'params': param_lists})
         self.add_component(btn)
 
 
-@ActionsManage.affect('BankAccount', 'edit', 'add')
+@ActionsManage.affect_grid(TITLE_ADD, "images/add.png")
+@ActionsManage.affect_grid(TITLE_MODIFY, "images/edit.png", unique=SELECT_SINGLE)
 @MenuManage.describ('payoff.add_bankaccount')
 class BankAccountAddModify(XferAddEditor):
     icon = "bank.png"
@@ -53,7 +53,7 @@ class BankAccountAddModify(XferAddEditor):
     caption_modify = _("Modify bank account")
 
 
-@ActionsManage.affect('BankAccount', 'delete')
+@ActionsManage.affect_grid(TITLE_DELETE, "images/delete.png", unique=SELECT_MULTI)
 @MenuManage.describ('payoff.delete_bankaccount')
 class BankAccountDelete(XferDelete):
     icon = "bank.png"
@@ -62,7 +62,8 @@ class BankAccountDelete(XferDelete):
     caption = _("Delete bank account")
 
 
-@ActionsManage.affect('PaymentMethod', 'edit', 'add')
+@ActionsManage.affect_grid(TITLE_ADD, "images/add.png")
+@ActionsManage.affect_grid(TITLE_MODIFY, "images/edit.png", unique=SELECT_SINGLE)
 @MenuManage.describ('payoff.add_bankaccount')
 class PaymentMethodAddModify(XferAddEditor):
     icon = "bank.png"
@@ -72,7 +73,7 @@ class PaymentMethodAddModify(XferAddEditor):
     caption_modify = _("Modify payment method")
 
 
-@ActionsManage.affect('PaymentMethod', 'delete')
+@ActionsManage.affect_grid(TITLE_DELETE, "images/delete.png", unique=SELECT_MULTI)
 @MenuManage.describ('payoff.delete_bankaccount')
 class PaymentMethodDelete(XferDelete):
     icon = "bank.png"

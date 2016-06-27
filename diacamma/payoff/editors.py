@@ -31,8 +31,7 @@ from lucterios.framework.editors import LucteriosEditor
 from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompButton, \
     XferCompEdit, XferCompMemo
 from lucterios.CORE.parameters import Params
-from lucterios.framework.tools import ActionsManage, CLOSE_NO, SELECT_NONE, \
-    FORMTYPE_REFRESH, FORMTYPE_MODAL, WrapAction
+from lucterios.framework.tools import ActionsManage, CLOSE_NO, FORMTYPE_REFRESH, FORMTYPE_MODAL, WrapAction
 from lucterios.framework.error import LucteriosException, IMPORTANT
 from lucterios.contacts.models import LegalEntity
 
@@ -52,16 +51,16 @@ class SupportingEditor(LucteriosEditor):
         if WrapAction.is_permission(xfer.request, right):
             btn = XferCompButton('change_third')
             btn.set_location(third.col + third.colspan, third.row)
-            btn.set_action(xfer.request, ActionsManage.get_act_changed("Supporting", 'third', _('change'), 'images/edit.png'),
-                           {'modal': FORMTYPE_MODAL, 'close': CLOSE_NO})
+            btn.set_action(xfer.request, ActionsManage.get_action_url('Supporting', 'Third', xfer),
+                           modal=FORMTYPE_MODAL, close=CLOSE_NO)
             xfer.add_component(btn)
 
         if self.item.third is not None:
             btn = XferCompButton('show_third')
             btn.set_is_mini(True)
             btn.set_location(third.col + third.colspan + 1, third.row)
-            btn.set_action(xfer.request, ActionsManage.get_act_changed('Third', 'show', _('show'), 'images/show.png'),
-                           {'modal': FORMTYPE_MODAL, 'close': CLOSE_NO, 'params': {'third': self.item.third.id}})
+            btn.set_action(xfer.request, ActionsManage.get_action_url('Third', 'Show', xfer),
+                           modal=FORMTYPE_MODAL, close=CLOSE_NO, params={'third': self.item.third.id})
             xfer.add_component(btn)
         lbl = XferCompLabelForm('info')
         lbl.set_color('red')
@@ -77,20 +76,16 @@ class SupportingEditor(LucteriosEditor):
             btn = XferCompButton('show_third')
             btn.set_is_mini(True)
             btn.set_location(third.col + third.colspan, third.row)
-            btn.set_action(xfer.request, ActionsManage.get_act_changed('Third', 'show', _('show'), 'images/show.png'),
-                           {'modal': FORMTYPE_MODAL, 'close': CLOSE_NO, 'params': {'third': self.item.third.id}})
+            btn.set_action(xfer.request, ActionsManage.get_action_url('Third', 'Show', xfer),
+                           modal=FORMTYPE_MODAL, close=CLOSE_NO, params={'third': self.item.third.id})
             xfer.add_component(btn)
 
     def show(self, xfer):
         xfer.params['supporting'] = self.item.id
-        xfer.filltab_from_model(
-            1, xfer.get_max_row() + 1, True, self.item.get_payoff_fields())
+        xfer.filltab_from_model(1, xfer.get_max_row() + 1, True, self.item.get_payoff_fields())
         payoff = xfer.get_components("payoff")
         if not self.item.is_revenu:
             payoff.delete_header('payer')
-        if self.item.get_max_payoff() > 0.001:
-            payoff.add_action(xfer.request, ActionsManage.get_act_changed(
-                'Payoff', 'append', _("Add"), "images/add.png",), {'close': CLOSE_NO, 'unique': SELECT_NONE})
 
 
 class PayoffEditor(LucteriosEditor):
@@ -154,8 +149,7 @@ class PayoffEditor(LucteriosEditor):
             levy = mode.select_list[5]
             mode.select_list.insert(3, levy)
             del mode.select_list[6]
-            xfer.get_components("mode").set_action(
-                xfer.request, xfer.get_action(), {'close': CLOSE_NO, 'modal': FORMTYPE_REFRESH})
+            xfer.get_components("mode").set_action(xfer.request, xfer.get_action(), close=CLOSE_NO, modal=FORMTYPE_REFRESH)
         if self.item.mode == 0:
             xfer.remove_component("bank_account")
             xfer.remove_component("lbl_bank_account")
@@ -184,8 +178,7 @@ class DepositSlipEditor(LucteriosEditor):
     def show(self, xfer):
         xfer.move(0, 0, 5)
         xfer.item = LegalEntity.objects.get(id=1)
-        xfer.fill_from_model(
-            1, 0, True, ["name", 'address', ('postal_code', 'city'), ('tel1', 'email')])
+        xfer.fill_from_model(1, 0, True, ["name", 'address', ('postal_code', 'city'), ('tel1', 'email')])
         xfer.item = self.item
         lbl = XferCompLabelForm('sep')
         lbl.set_value_center("{[hr/]}")
@@ -195,8 +188,6 @@ class DepositSlipEditor(LucteriosEditor):
         depositdetail = xfer.get_components("depositdetail")
         depositdetail.col = 1
         depositdetail.colspan = 4
-        if self.item.status != 0:
-            depositdetail.actions = []
 
 
 class PaymentMethodEditor(LucteriosEditor):
@@ -209,8 +200,7 @@ class PaymentMethodEditor(LucteriosEditor):
 
     def edit(self, xfer):
         if xfer.item.id is None:
-            xfer.get_components("paytype").set_action(
-                xfer.request, xfer.get_action(), {'close': CLOSE_NO, 'modal': FORMTYPE_REFRESH})
+            xfer.get_components("paytype").set_action(xfer.request, xfer.get_action(), close=CLOSE_NO, modal=FORMTYPE_REFRESH)
         else:
             xfer.change_to_readonly('paytype')
         items = self.item.get_items()

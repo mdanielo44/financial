@@ -28,21 +28,14 @@ from copy import deepcopy
 
 from django.utils.translation import ugettext_lazy as _
 from django.utils import formats, six
-from django.utils.module_loading import import_module
-from django.apps.registry import apps
 from django.db.models import Q
 
-from lucterios.framework.xferadvance import XferListEditor, XferShowEditor
+from lucterios.framework.xferadvance import XferListEditor, XferShowEditor, TITLE_PRINT, TITLE_CLOSE, TITLE_DELETE, TITLE_MODIFY, TITLE_ADD, TITLE_CANCEL, TITLE_OK, TITLE_EDIT
 from lucterios.framework.xferadvance import XferAddEditor
 from lucterios.framework.xferadvance import XferDelete
-from lucterios.framework.xfercomponents import XferCompLabelForm, \
-    XferCompSelect, XferCompHeader, XferCompImage, XferCompGrid, \
-    DEFAULT_ACTION_LIST, XferCompCheck
-from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage, \
-    FORMTYPE_MODAL, CLOSE_YES, SELECT_SINGLE, FORMTYPE_REFRESH, CLOSE_NO, \
-    SELECT_MULTI, WrapAction
-from lucterios.framework.xfergraphic import XferContainerAcknowledge, \
-    XferContainerCustom
+from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompSelect, XferCompHeader, XferCompImage, XferCompGrid, XferCompCheck
+from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage, FORMTYPE_MODAL, CLOSE_YES, SELECT_SINGLE, FORMTYPE_REFRESH, CLOSE_NO, SELECT_MULTI, WrapAction
+from lucterios.framework.xfergraphic import XferContainerAcknowledge, XferContainerCustom
 from lucterios.framework.error import LucteriosException, IMPORTANT
 from lucterios.framework import signal_and_lock
 
@@ -55,10 +48,9 @@ from lucterios.contacts.models import Individual, LegalEntity
 from diacamma.invoice.models import Article, Bill, Detail
 from diacamma.accounting.models import FiscalYear, Third
 from diacamma.payoff.views import PayoffAddModify
-from diacamma.payoff.models import Payoff, PaymentMethod
+from diacamma.payoff.models import Payoff
 
-MenuManage.add_sub("invoice", "financial", "diacamma.invoice/images/invoice.png",
-                   _("invoice"), _("Manage of billing"), 20)
+MenuManage.add_sub("invoice", "financial", "diacamma.invoice/images/invoice.png", _("invoice"), _("Manage of billing"), 20)
 
 
 def _add_bill_filter(xfer, row):
@@ -74,8 +66,7 @@ def _add_bill_filter(xfer, row):
     edt.set_select(sel_list)
     edt.set_value(status_filter)
     edt.set_location(1, row)
-    edt.set_action(xfer.request, xfer.get_action(), {
-                   'modal': FORMTYPE_REFRESH, 'close': CLOSE_NO})
+    edt.set_action(xfer.request, xfer.get_action(), modal=FORMTYPE_REFRESH, close=CLOSE_NO)
     xfer.add_component(edt)
     current_filter = Q()
     if status_filter >= 0:
@@ -85,7 +76,6 @@ def _add_bill_filter(xfer, row):
     return current_filter, status_filter
 
 
-@ActionsManage.affect('Bill', 'list')
 @MenuManage.describ('invoice.change_bill', FORMTYPE_NOMODAL, 'invoice', _('Management of bill list'))
 class BillList(XferListEditor):
     icon = "bill.png"
@@ -96,36 +86,19 @@ class BillList(XferListEditor):
     def fillresponse_header(self):
         self.filter, status_filter = _add_bill_filter(self, 3)
         self.fieldnames = Bill.get_default_fields(status_filter)
-        if status_filter >= 1:
-            self.action_grid = [
-                ('show', _("Edit"), "images/show.png", SELECT_SINGLE)]
-        else:
-            self.action_grid = deepcopy(DEFAULT_ACTION_LIST)
-        if status_filter == 0:
-            self.action_grid.append(
-                ('valid', _("Valid"), "images/ok.png", SELECT_SINGLE))
-        if status_filter == 1:
-            self.action_grid.append(
-                ('archive', _("Archive"), "images/ok.png", SELECT_MULTI))
-            self.action_grid.append(
-                ('multipay', _('payoff'), '', SELECT_MULTI))
-        if status_filter in (1, 3):
-            self.action_grid.append(
-                ('printbill', _("Print"), "images/print.png", SELECT_MULTI))
 
     def fillresponse(self):
         XferListEditor.fillresponse(self)
         grid = self.get_components(self.field_id)
         grid.colspan = 3
         if Params.getvalue("invoice-vat-mode") == 1:
-            grid.headers[5] = XferCompHeader(grid.headers[5].name, _(
-                'total excl. taxes'), grid.headers[5].type, grid.headers[5].orderable)
+            grid.headers[5] = XferCompHeader(grid.headers[5].name, _('total excl. taxes'),
+                                             grid.headers[5].type, grid.headers[5].orderable)
         elif Params.getvalue("invoice-vat-mode") == 2:
-            grid.headers[5] = XferCompHeader(grid.headers[5].name, _(
-                'total incl. taxes'), grid.headers[5].type, grid.headers[5].orderable)
+            grid.headers[5] = XferCompHeader(grid.headers[5].name, _('total incl. taxes'),
+                                             grid.headers[5].type, grid.headers[5].orderable)
 
 
-@ActionsManage.affect('Bill', 'search')
 @MenuManage.describ('invoice.change_bill', FORMTYPE_NOMODAL, 'invoice', _('To find a bill following a set of criteria.'))
 class BillSearch(XferSavedCriteriaSearchEditor):
     icon = "bill.png"
@@ -134,7 +107,8 @@ class BillSearch(XferSavedCriteriaSearchEditor):
     caption = _("Search bill")
 
 
-@ActionsManage.affect('Bill', 'modify', 'add')
+@ActionsManage.affect_grid(TITLE_ADD, "images/add.png", condition=lambda xfer, gridname='': xfer.getparam('status_filter', -1) < 1)
+@ActionsManage.affect_show(TITLE_MODIFY, "images/edit.png", close=CLOSE_YES, condition=lambda xfer: xfer.item.status == 0)
 @MenuManage.describ('invoice.add_bill')
 class BillAddModify(XferAddEditor):
     icon = "bill.png"
@@ -144,7 +118,7 @@ class BillAddModify(XferAddEditor):
     caption_modify = _("Modify bill")
 
 
-@ActionsManage.affect('Bill', 'show')
+@ActionsManage.affect_grid(TITLE_EDIT, "images/show.png", unique=SELECT_SINGLE)
 @MenuManage.describ('invoice.change_bill')
 class BillShow(XferShowEditor):
     caption = _("Show bill")
@@ -153,36 +127,14 @@ class BillShow(XferShowEditor):
     field_id = 'bill'
 
     def fillresponse(self):
-        if (self.item.status == 0) and (self.item.get_info_state() == ''):
-            self.action_list.insert(
-                0, ('valid', _("Valid"), "images/ok.png", CLOSE_NO))
-        elif self.item.status != 0:
-            self.action_list = []
-        if self.item.status == 1:
-            self.action_list.insert(
-                0, ('archive', _("Archive"), "images/ok.png", CLOSE_NO))
-            if self.item.bill_type == 0:
-                self.action_list.insert(
-                    0, ('convertbill', _("=> Bill"), "images/ok.png", CLOSE_YES))
-            if self.item.bill_type != 2:
-                self.action_list.insert(
-                    1, ('cancel', _("Cancel"), "images/cancel.png", CLOSE_NO))
-        if self.item.status in (1, 3):
-            self.action_list.insert(0,
-                                    ('printbill', _("Print"), "images/print.png", CLOSE_NO))
         XferShowEditor.fillresponse(self)
-        if self.item.payoff_have_payment() and (len(PaymentMethod.objects.all()) > 0):
-            self.add_action(ActionsManage.get_act_changed('Supporting', 'showpay', _(
-                "Payment"), "diacamma.payoff/images/payments.png"), {'close': CLOSE_NO, 'params': {'item_name': self.field_id}}, 0)
+        self.add_action(ActionsManage.get_action_url('Supporting', 'Show', self), close=CLOSE_NO, params={'item_name': self.field_id}, pos_act=0)
         if self.item.status in (1, 3):
-            if apps.is_installed("lucterios.mailing"):
-                fct_mailing_mod = import_module('lucterios.mailing.functions')
-                if fct_mailing_mod.will_mail_send():
-                    self.add_action(ActionsManage.get_act_changed('Supporting', 'email', _(
-                        "Send"), "lucterios.mailing/images/email.png"), {'close': CLOSE_NO, 'params': {'item_name': self.field_id}}, 0)
+            self.add_action(ActionsManage.get_action_url('Supporting', 'Email', self), close=CLOSE_NO, params={'item_name': self.field_id}, pos_act=0)
 
 
-@ActionsManage.affect('Bill', 'valid')
+@ActionsManage.affect_show(_("Valid"), "images/ok.png", close=CLOSE_NO, condition=lambda xfer: (xfer.item.status == 0) and (xfer.item.get_info_state() == ''))
+@ActionsManage.affect_grid(_("Valid"), "images/ok.png", close=CLOSE_NO, condition=lambda xfer, gridname='': xfer.getparam('status_filter', -1) == 0)
 @MenuManage.describ('invoice.change_bill')
 class BillValid(XferContainerAcknowledge):
     caption = _("Valid bill")
@@ -203,8 +155,7 @@ class BillValid(XferContainerAcknowledge):
                 icon.set_value(self.icon_path())
                 dlg.add_component(icon)
                 lbl = XferCompLabelForm('lb_title')
-                lbl.set_value_as_infocenter(
-                    _("Do you want validate '%s'?") % self.item)
+                lbl.set_value_as_infocenter(_("Do you want validate '%s'?") % self.item)
                 lbl.set_location(1, 1, 4)
                 dlg.add_component(lbl)
                 check_payoff = XferCompCheck('withpayoff')
@@ -231,65 +182,18 @@ if (parent.get('bank_account')) {
                 if dlg.get_components("bank_fee") is not None:
                     check_payoff.java_script += "parent.get('bank_fee').setEnabled(type);\n"
                 dlg.get_components("date").name = "date_payoff"
-                dlg.get_components("mode").set_action(
-                    self.request, self.get_action(), {'close': CLOSE_NO, 'modal': FORMTYPE_REFRESH})
-                dlg.add_action(
-                    self.get_action(_('Ok'), 'images/ok.png'), {'params': {"CONFIRME": "YES"}})
-                dlg.add_action(
-                    WrapAction(_('Cancel'), 'images/cancel.png'), {})
+                dlg.get_components("mode").set_action(self.request, self.get_action(), close=CLOSE_NO, modal=FORMTYPE_REFRESH)
+                dlg.add_action(self.get_action(TITLE_OK, 'images/ok.png'), params={"CONFIRME": "YES"})
+                dlg.add_action(WrapAction(TITLE_CANCEL, 'images/cancel.png'))
             else:
                 self.item.valid()
                 if (self.item.bill_type != 0) and withpayoff:
-                    Payoff.multi_save((self.item.id,), self.getparam('amount', 0.0), self.getparam('mode', 0), self.getparam(
-                        'payer'), self.getparam('reference'), self.getparam('bank_account', 0), self.getparam('date_payoff'))
+                    Payoff.multi_save((self.item.id,), self.getparam('amount', 0.0), self.getparam('mode', 0), self.getparam('payer'),
+                                      self.getparam('reference'), self.getparam('bank_account', 0), self.getparam('date_payoff'))
 
 
-@ActionsManage.affect('Bill', 'multipay')
-@MenuManage.describ('payoff.add_payoff')
-class BillMultiPay(XferContainerAcknowledge):
-    caption = _("Multi-pay bill")
-    icon = "bill.png"
-    model = Bill
-    field_id = 'bill'
-
-    def fillresponse(self, bill):
-        self.redirect_action(
-            PayoffAddModify.get_action("", ""), {'params': {"supportings": bill}})
-
-
-@ActionsManage.affect('Bill', 'convertbill')
-@MenuManage.describ('invoice.change_bill')
-class BillFromQuotation(XferContainerAcknowledge):
-    caption = _("Convert to bill")
-    icon = "bill.png"
-    model = Bill
-    field_id = 'bill'
-
-    def fillresponse(self):
-        if (self.item.bill_type == 0) and (self.item.status == 1) and self.confirme(_("Do you want convert '%s' to bill?") % self.item):
-            new_bill = self.item.convert_to_bill()
-            if new_bill is not None:
-                self.redirect_action(ActionsManage.get_act_changed(
-                    self.model.__name__, 'show', '', ''), {'params': {self.field_id: new_bill.id}})
-
-
-@ActionsManage.affect('Bill', 'cancel')
-@MenuManage.describ('invoice.change_bill')
-class BillCancel(XferContainerAcknowledge):
-    caption = _("Valid bill")
-    icon = "bill.png"
-    model = Bill
-    field_id = 'bill'
-
-    def fillresponse(self):
-        if (self.item.status == 1) and (self.item.bill_type in (0, 1, 3)) and self.confirme(_("Do you want cancel '%s'?") % self.item):
-            asset_id = self.item.cancel()
-            if asset_id is not None:
-                self.redirect_action(ActionsManage.get_act_changed(
-                    'Bill', 'show', '', ''), {'params': {self.field_id: asset_id}})
-
-
-@ActionsManage.affect('Bill', 'archive')
+@ActionsManage.affect_show(_("Archive"), "images/ok.png", close=CLOSE_NO, condition=lambda xfer: xfer.item.status == 1)
+@ActionsManage.affect_grid(_("Archive"), "images/ok.png", close=CLOSE_NO, unique=SELECT_MULTI, condition=lambda xfer, gridname='': xfer.getparam('status_filter', -1) == 1)
 @MenuManage.describ('invoice.change_bill')
 class BillArchive(XferContainerAcknowledge):
     caption = _("Valid bill")
@@ -303,7 +207,50 @@ class BillArchive(XferContainerAcknowledge):
                 item.archive()
 
 
-@ActionsManage.affect('Bill', 'delete')
+@ActionsManage.affect_grid(_('payoff'), '', close=CLOSE_NO, unique=SELECT_MULTI, condition=lambda xfer, gridname='': xfer.getparam('status_filter', -1) == 1)
+@MenuManage.describ('payoff.add_payoff')
+class BillMultiPay(XferContainerAcknowledge):
+    caption = _("Multi-pay bill")
+    icon = "bill.png"
+    model = Bill
+    field_id = 'bill'
+
+    def fillresponse(self, bill):
+        self.redirect_action(
+            PayoffAddModify.get_action("", ""), params={"supportings": bill})
+
+
+@ActionsManage.affect_show(_("=> Bill"), "images/ok.png", close=CLOSE_YES, condition=lambda xfer: (xfer.item.status == 1) and (xfer.item.bill_type == 0))
+@MenuManage.describ('invoice.change_bill')
+class BillFromQuotation(XferContainerAcknowledge):
+    caption = _("Convert to bill")
+    icon = "bill.png"
+    model = Bill
+    field_id = 'bill'
+
+    def fillresponse(self):
+        if (self.item.bill_type == 0) and (self.item.status == 1) and self.confirme(_("Do you want convert '%s' to bill?") % self.item):
+            new_bill = self.item.convert_to_bill()
+            if new_bill is not None:
+                self.redirect_action(ActionsManage.get_action_url('Bill', 'Show', self), params={self.field_id: new_bill.id})
+
+
+@ActionsManage.affect_show(_("Cancel"), "images/cancel.png", close=CLOSE_NO, condition=lambda xfer: (xfer.item.status == 1) and (xfer.item.bill_type != 2))
+@MenuManage.describ('invoice.change_bill')
+class BillCancel(XferContainerAcknowledge):
+    caption = _("Valid bill")
+    icon = "bill.png"
+    model = Bill
+    field_id = 'bill'
+
+    def fillresponse(self):
+        if (self.item.status == 1) and (self.item.bill_type in (0, 1, 3)) and self.confirme(_("Do you want cancel '%s'?") % self.item):
+            asset_id = self.item.cancel()
+            if asset_id is not None:
+                self.redirect_action(ActionsManage.get_action_url('Bill', 'Show', self), params={self.field_id: asset_id})
+
+
+@ActionsManage.affect_grid(TITLE_DELETE, "images/delete.png", unique=SELECT_MULTI, condition=lambda xfer, gridname='': xfer.getparam('status_filter', -1) < 1)
 @MenuManage.describ('invoice.delete_bill')
 class BillDel(XferDelete):
     icon = "bill.png"
@@ -312,7 +259,8 @@ class BillDel(XferDelete):
     caption = _("Delete bill")
 
 
-@ActionsManage.affect('Bill', 'printbill')
+@ActionsManage.affect_grid(_("Print"), "images/print.png", close=CLOSE_NO, unique=SELECT_MULTI, condition=lambda xfer, gridname='': xfer.getparam('status_filter', -1) in (1, 3))
+@ActionsManage.affect_show(_("Print"), "images/print.png", close=CLOSE_NO, condition=lambda xfer: xfer.item.status in (1, 3))
 @MenuManage.describ('invoice.change_bill')
 class BillPrint(XferPrintReporting):
     icon = "bill.png"
@@ -337,7 +285,8 @@ class BillPrint(XferPrintReporting):
             raise LucteriosException(IMPORTANT, _("No invoice to print!"))
 
 
-@ActionsManage.affect('Detail', 'edit', 'add')
+@ActionsManage.affect_grid(TITLE_ADD, "images/add.png")
+@ActionsManage.affect_grid(TITLE_MODIFY, "images/edit.png", unique=SELECT_SINGLE)
 @MenuManage.describ('invoice.add_bill')
 class DetailAddModify(XferAddEditor):
     icon = "article.png"
@@ -353,11 +302,10 @@ class DetailAddModify(XferAddEditor):
                 self.item.price = self.item.article.price
                 self.item.unit = self.item.article.unit
         XferAddEditor.fillresponse(self)
-        self.get_components('article').set_select_query(
-            Article.objects.filter(isdisabled=False))
+        self.get_components('article').set_select_query(Article.objects.filter(isdisabled=False))
 
 
-@ActionsManage.affect('Detail', 'delete')
+@ActionsManage.affect_grid(TITLE_DELETE, "images/delete.png", unique=SELECT_MULTI)
 @MenuManage.describ('invoice.add_bill')
 class DetailDel(XferDelete):
     icon = "article.png"
@@ -366,7 +314,6 @@ class DetailDel(XferDelete):
     caption = _("Delete detail")
 
 
-@ActionsManage.affect('Article', 'list')
 @MenuManage.describ('invoice.change_article', FORMTYPE_NOMODAL, 'invoice', _('Management of article list'))
 class ArticleList(XferListEditor):
     icon = "article.png"
@@ -384,15 +331,15 @@ class ArticleList(XferListEditor):
         edt.set_select([(0, _('Only activate')), (1, _('All'))])
         edt.set_value(show_filter)
         edt.set_location(1, 3)
-        edt.set_action(self.request, self.get_action(),
-                       {'modal': FORMTYPE_REFRESH, 'close': CLOSE_NO})
+        edt.set_action(self.request, self.get_action(), modal=FORMTYPE_REFRESH, close=CLOSE_NO)
         self.add_component(edt)
         self.filter = Q()
         if show_filter == 0:
             self.filter = Q(isdisabled=False)
 
 
-@ActionsManage.affect('Article', 'edit', 'add')
+@ActionsManage.affect_grid(TITLE_ADD, "images/add.png")
+@ActionsManage.affect_grid(TITLE_MODIFY, "images/edit.png", unique=SELECT_SINGLE)
 @MenuManage.describ('invoice.add_article')
 class ArticleAddModify(XferAddEditor):
     icon = "article.png"
@@ -402,7 +349,7 @@ class ArticleAddModify(XferAddEditor):
     caption_modify = _("Modify article")
 
 
-@ActionsManage.affect('Article', 'delete')
+@ActionsManage.affect_grid(TITLE_DELETE, "images/delete.png", unique=SELECT_MULTI)
 @MenuManage.describ('invoice.delete_article')
 class ArticleDel(XferDelete):
     icon = "article.png"
@@ -411,7 +358,6 @@ class ArticleDel(XferDelete):
     caption = _("Delete article")
 
 
-@ActionsManage.affect('Article', 'statistic')
 @MenuManage.describ('invoice.change_bill', FORMTYPE_MODAL, 'invoice', _('Statistic of selling'))
 class BillStatistic(XferContainerCustom):
     icon = "report.png"
@@ -426,16 +372,14 @@ class BillStatistic(XferContainerCustom):
         self.add_component(img)
         select_year = self.getparam('fiscal_year')
         lbl = XferCompLabelForm('lbl_title')
-        lbl.set_value_as_headername(
-            _('Statistics in date of %s') % formats.date_format(date.today(), "DATE_FORMAT"))
+        lbl.set_value_as_headername(_('Statistics in date of %s') % formats.date_format(date.today(), "DATE_FORMAT"))
         lbl.set_location(1, 0, 2)
         self.add_component(lbl)
         self.item.fiscal_year = FiscalYear.get_current(select_year)
         self.fill_from_model(1, 1, False, ['fiscal_year'])
         fiscal_year = self.get_components('fiscal_year')
         fiscal_year.set_needed(True)
-        fiscal_year.set_action(
-            self.request, self.get_action(), {'close': CLOSE_NO, 'modal': FORMTYPE_REFRESH})
+        fiscal_year.set_action(self.request, self.get_action(), close=CLOSE_NO, modal=FORMTYPE_REFRESH)
 
     def fill_customers(self):
         costumer_result = self.item.get_statistics_customer()
@@ -479,9 +423,8 @@ class BillStatistic(XferContainerCustom):
         self.fill_customers()
         self.new_tab(_('Articles'))
         self.fill_articles()
-        self.add_action(BillStatisticPrint.get_action(
-            _("Print"), "images/print.png"), {'close': CLOSE_NO, 'params': {'classname': self.__class__.__name__}})
-        self.add_action(WrapAction(_('Close'), 'images/close.png'), {})
+        self.add_action(BillStatisticPrint.get_action(TITLE_PRINT, "images/print.png"), close=CLOSE_NO, params={'classname': self.__class__.__name__})
+        self.add_action(WrapAction(TITLE_CLOSE, 'images/close.png'))
 
 
 @MenuManage.describ('invoice.change_bill')
@@ -504,8 +447,7 @@ def show_contact_invoice(contact, xfer):
             nb_build = len(Bill.objects.filter(third=third, status=0))
             nb_valid = len(Bill.objects.filter(third=third, status=1))
             lab = XferCompLabelForm('invoiceinfo')
-            lab.set_value_as_header(
-                _("There are %(build)d bills in building and %(valid)d validated") % {'build': nb_build, 'valid': nb_valid})
+            lab.set_value_as_header(_("There are %(build)d bills in building and %(valid)d validated") % {'build': nb_build, 'valid': nb_valid})
             lab.set_location(0, 5, 2)
             xfer.add_component(lab)
 
@@ -537,8 +479,7 @@ def summary_invoice(xfer):
         nb_build = len(Bill.objects.filter(status=0))
         nb_valid = len(Bill.objects.filter(status=1))
         lab = XferCompLabelForm('invoiceinfo')
-        lab.set_value_as_header(
-            _("There are %(build)d bills in building and %(valid)d validated") % {'build': nb_build, 'valid': nb_valid})
+        lab.set_value_as_header(_("There are %(build)d bills in building and %(valid)d validated") % {'build': nb_build, 'valid': nb_valid})
         lab.set_location(0, row + 1, 4)
         xfer.add_component(lab)
     if is_right or (len(contacts) > 0):
@@ -561,11 +502,9 @@ def thirdaddon_invoice(item, xfer):
             current_filter &= Q(third=item)
             bills = Bill.objects.filter(current_filter)
             bill_grid = XferCompGrid('bill')
-            bill_grid.set_model(
-                bills, Bill.get_default_fields(status_filter), xfer)
+            bill_grid.set_model(bills, Bill.get_default_fields(status_filter), xfer)
             bill_grid.set_location(0, 2, 2)
-            bill_grid.add_action(xfer.request, ActionsManage.get_act_changed('Bill', 'show', _('Edit'), 'images/edit.png'),
-                                 {'modal': FORMTYPE_MODAL, 'unique': SELECT_SINGLE, 'close': CLOSE_NO})
+            bill_grid.add_action(xfer.request, ActionsManage.get_action_url('Bill', 'Show', xfer), modal=FORMTYPE_MODAL, unique=SELECT_SINGLE, close=CLOSE_NO)
             xfer.add_component(bill_grid)
         except LucteriosException:
             pass

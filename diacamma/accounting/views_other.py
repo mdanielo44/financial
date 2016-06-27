@@ -1,28 +1,23 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+from datetime import date
+
 from django.utils.translation import ugettext_lazy as _
 from django.db.models import Q
 
-from lucterios.framework.xferadvance import XferDelete, XferShowEditor
-from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage, \
-    SELECT_SINGLE, CLOSE_NO, FORMTYPE_REFRESH, WrapAction, SELECT_MULTI
+from lucterios.framework.xferadvance import XferDelete, XferShowEditor, TITLE_ADD, TITLE_MODIFY, TITLE_DELETE, TITLE_EDIT
+from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage, SELECT_SINGLE, FORMTYPE_REFRESH, WrapAction, SELECT_MULTI, SELECT_NONE
 from lucterios.framework.xferadvance import XferListEditor
 from lucterios.framework.xferadvance import XferAddEditor
 from lucterios.framework.xfergraphic import XferContainerAcknowledge
 from lucterios.framework.error import LucteriosException, IMPORTANT
-from lucterios.framework.xfercomponents import XferCompCheck, XferCompLabelForm, \
-    XferCompImage, XferCompSelect, XferCompFloat
+from lucterios.framework.xfercomponents import XferCompCheck, XferCompLabelForm, XferCompImage, XferCompSelect, XferCompFloat
 
-from diacamma.accounting.models import CostAccounting, ModelLineEntry, \
-    ModelEntry, EntryAccount, FiscalYear
-from diacamma.accounting.views_reports import CostAccountingIncomeStatement,\
-    CostAccountingLedger, CostAccountingTrialBalance
+from diacamma.accounting.models import CostAccounting, ModelLineEntry, ModelEntry, EntryAccount, FiscalYear
 from diacamma.accounting.views_entries import EntryAccountEdit
-from datetime import date
 
 
-@ActionsManage.affect('CostAccounting', 'list')
 @MenuManage.describ('accounting.change_entryaccount', FORMTYPE_NOMODAL, 'bookkeeping', _('Edition of costs accounting'))
 class CostAccountingList(XferListEditor):
     icon = "costAccounting.png"
@@ -35,8 +30,7 @@ class CostAccountingList(XferListEditor):
         sel = XferCompCheck("all_cost")
         sel.set_value(all_cost)
         sel.set_location(1, 3)
-        sel.set_action(self.request, self.get_action(),
-                       {'close': CLOSE_NO, 'modal': FORMTYPE_REFRESH})
+        sel.set_action(self.request, self.get_action(), modal=FORMTYPE_REFRESH)
         self.add_component(sel)
         lbl = XferCompLabelForm("all_costLbl")
         lbl.set_location(2, 3)
@@ -49,20 +43,9 @@ class CostAccountingList(XferListEditor):
         XferListEditor.fillresponse(self)
         self.get_components('title').colspan += 1
         self.get_components('nb_costaccounting').colspan += 1
-        grid = self.get_components(self.field_id)
-        grid.colspan += 1
-        grid.add_action(self.request, CostAccountingDefault.get_action(), {
-                        'unique': SELECT_SINGLE, 'close': CLOSE_NO})
-        grid.add_action(self.request, CostAccountingClose.get_action(), {
-                        'unique': SELECT_SINGLE, 'close': CLOSE_NO})
-        grid.add_action(self.request, CostAccountingIncomeStatement.get_action(
-            _("Report"), 'images/print.png'), {'unique': SELECT_MULTI, 'close': CLOSE_NO, 'modal': FORMTYPE_NOMODAL})
-        grid.add_action(self.request, CostAccountingLedger.get_action(
-            _("Ledger"), 'images/print.png'), {'unique': SELECT_MULTI, 'close': CLOSE_NO, 'modal': FORMTYPE_NOMODAL})
-        grid.add_action(self.request, CostAccountingTrialBalance.get_action(
-            _("Trial balance"), 'images/print.png'), {'unique': SELECT_MULTI, 'close': CLOSE_NO, 'modal': FORMTYPE_NOMODAL})
 
 
+@ActionsManage.affect_grid(_("Default"), "", unique=SELECT_SINGLE)
 @MenuManage.describ('accounting.add_fiscalyear')
 class CostAccountingDefault(XferContainerAcknowledge):
     icon = ""
@@ -74,6 +57,7 @@ class CostAccountingDefault(XferContainerAcknowledge):
         self.item.change_has_default()
 
 
+@ActionsManage.affect_grid(_("Close"), "images/ok.png", unique=SELECT_SINGLE)
 @MenuManage.describ('accounting.add_fiscalyear')
 class CostAccountingClose(XferContainerAcknowledge):
     icon = "images/ok.png"
@@ -85,15 +69,15 @@ class CostAccountingClose(XferContainerAcknowledge):
         if self.item.status == 0:
             EntryAccount.clear_ghost()
             if self.item.entryaccount_set.filter(close=False).count() > 0:
-                raise LucteriosException(
-                    IMPORTANT, _('This costa accounting has some not validated entry!'))
+                raise LucteriosException(IMPORTANT, _('This costa accounting has some not validated entry!'))
             if self.confirme(_("Do you want to close this cost accounting?")):
                 self.item.is_default = False
                 self.item.status = 1
                 self.item.save()
 
 
-@ActionsManage.affect('CostAccounting', 'edit', 'add')
+@ActionsManage.affect_grid(TITLE_ADD, "images/add.png", unique=SELECT_NONE)
+@ActionsManage.affect_grid(TITLE_MODIFY, "images/modify.png", unique=SELECT_SINGLE)
 @MenuManage.describ('accounting.add_entryaccount')
 class CostAccountingAddModify(XferAddEditor):
     icon = "costAccounting.png"
@@ -103,7 +87,7 @@ class CostAccountingAddModify(XferAddEditor):
     caption_modify = _("Modify cost accounting")
 
 
-@ActionsManage.affect('CostAccounting', 'delete')
+@ActionsManage.affect_grid(TITLE_DELETE, "images/delete.png", unique=SELECT_MULTI)
 @MenuManage.describ('accounting.delete_entryaccount')
 class CostAccountingDel(XferDelete):
     icon = "costAccounting.png"
@@ -112,17 +96,16 @@ class CostAccountingDel(XferDelete):
     caption = _("Delete cost accounting")
 
 
-@ActionsManage.affect('ModelEntry', 'list')
 @MenuManage.describ('accounting.change_entryaccount', FORMTYPE_NOMODAL, 'bookkeeping', _('Edition of entry model'),)
 class ModelEntryList(XferListEditor):
     icon = "entryModel.png"
     model = ModelEntry
     field_id = 'modelentry'
-
     caption = _("Models of entry")
 
 
-@ActionsManage.affect('ModelEntry', 'modify', 'add')
+@ActionsManage.affect_grid(TITLE_ADD, "images/add.png", unique=SELECT_NONE)
+@ActionsManage.affect_grid(TITLE_MODIFY, "images/modify.png", unique=SELECT_SINGLE)
 @MenuManage.describ('accounting.add_entryaccount')
 class ModelEntryAddModify(XferAddEditor):
     icon = "entryModel.png"
@@ -132,7 +115,7 @@ class ModelEntryAddModify(XferAddEditor):
     caption_modify = _("Modify model of entry")
 
 
-@ActionsManage.affect('ModelEntry', 'show')
+@ActionsManage.affect_grid(TITLE_EDIT, "images/show.png", unique=SELECT_SINGLE)
 @MenuManage.describ('accounting.change_entryaccount')
 class ModelEntryShow(XferShowEditor):
     icon = "entryModel.png"
@@ -141,7 +124,7 @@ class ModelEntryShow(XferShowEditor):
     caption = _("Show Model of entry")
 
 
-@ActionsManage.affect('ModelEntry', 'delete')
+@ActionsManage.affect_grid(TITLE_DELETE, "images/delete.png", unique=SELECT_MULTI)
 @MenuManage.describ('accounting.delete_entryaccount')
 class ModelEntryDel(XferDelete):
     icon = "entryModel.png"
@@ -150,7 +133,8 @@ class ModelEntryDel(XferDelete):
     caption = _("Delete Model of entry")
 
 
-@ActionsManage.affect('ModelLineEntry', 'edit', 'modify', 'add')
+@ActionsManage.affect_grid(TITLE_ADD, "images/add.png", unique=SELECT_NONE)
+@ActionsManage.affect_grid(TITLE_MODIFY, "images/modify.png", unique=SELECT_SINGLE)
 @MenuManage.describ('accounting.add_entryaccount')
 class ModelLineEntryAddModify(XferAddEditor):
     icon = "entryModel.png"
@@ -160,7 +144,7 @@ class ModelLineEntryAddModify(XferAddEditor):
     caption_modify = _("Modify model line  of entry")
 
 
-@ActionsManage.affect('ModelLineEntry', 'delete')
+@ActionsManage.affect_grid(TITLE_DELETE, "images/delete.png", unique=SELECT_MULTI)
 @MenuManage.describ('accounting.delete_entryaccount')
 class ModelLineEntryDel(XferDelete):
     icon = "entryModel.png"
@@ -169,7 +153,6 @@ class ModelLineEntryDel(XferDelete):
     caption = _("Delete Model line  of entry")
 
 
-@ActionsManage.affect('EntryLineAccount', 'model')
 @MenuManage.describ('accounting.add_entryaccount')
 class ModelEntrySelector(XferContainerAcknowledge):
     icon = "entryModel.png"

@@ -31,11 +31,12 @@ from django.db.models import Q
 from django.utils import six
 
 from lucterios.framework import signal_and_lock
-from lucterios.framework.xferadvance import XferListEditor, XferAddEditor, XferShowEditor, XferDelete
+from lucterios.framework.xferadvance import XferListEditor, XferAddEditor, XferShowEditor, XferDelete,\
+    TITLE_MODIFY, TITLE_ADD, TITLE_EDIT, TITLE_DELETE
 from lucterios.framework.xfergraphic import XferContainerAcknowledge
 from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompEdit, XferCompButton, XferCompSelect, XferCompImage, XferCompDate, XferCompGrid
 from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage, FORMTYPE_REFRESH, CLOSE_NO, WrapAction, FORMTYPE_MODAL, SELECT_SINGLE,\
-    SELECT_MULTI
+    SELECT_MULTI, SELECT_NONE
 from lucterios.framework.error import LucteriosException
 from lucterios.CORE.xferprint import XferPrintListing
 from lucterios.CORE.editors import XferSavedCriteriaSearchEditor
@@ -46,11 +47,9 @@ from diacamma.accounting.models import Third, AccountThird, FiscalYear, \
     EntryLineAccount, ModelLineEntry
 from diacamma.accounting.views_admin import Configuration
 
-MenuManage.add_sub("financial", None, "diacamma.accounting/images/financial.png",
-                   _("Financial"), _("Financial tools"), 50)
+MenuManage.add_sub("financial", None, "diacamma.accounting/images/financial.png", _("Financial"), _("Financial tools"), 50)
 
 
-@ActionsManage.affect('Third', 'list')
 @MenuManage.describ('accounting.change_third', FORMTYPE_NOMODAL, 'financial', _('Management of third account'))
 class ThirdList(XferListEditor):
     icon = "thirds.png"
@@ -60,8 +59,7 @@ class ThirdList(XferListEditor):
 
     def get_items_from_filter(self):
         items = XferListEditor.get_items_from_filter(self)
-        items = sorted(items, key=lambda t: six.text_type(
-            t))
+        items = sorted(items, key=lambda t: six.text_type(t))
         if self.getparam('show_filter', 0) == 2:
             items = [item for item in items if abs(item.get_total()) > 0.0001]
         res = QuerySet(model=Third)
@@ -69,10 +67,6 @@ class ThirdList(XferListEditor):
         return res
 
     def fillresponse_header(self):
-        self.action_list = [('disable', _('Disabled'), ''),
-                            ('search', _("Search"),
-                             "diacamma.accounting/images/thirds.png"),
-                            ('listing', _("Listing"), "images/print.png")]
         contact_filter = self.getparam('filter', '')
         show_filter = self.getparam('show_filter', 0)
         lbl = XferCompLabelForm('lbl_filtre')
@@ -81,8 +75,7 @@ class ThirdList(XferListEditor):
         self.add_component(lbl)
         comp = XferCompEdit('filter')
         comp.set_value(contact_filter)
-        comp.set_action(self.request, self.get_action(),
-                        {'modal': FORMTYPE_REFRESH, 'close': CLOSE_NO})
+        comp.set_action(self.request, self.get_action(), modal=FORMTYPE_REFRESH)
         comp.set_location(1, 2)
         self.add_component(comp)
 
@@ -95,22 +88,19 @@ class ThirdList(XferListEditor):
                         (2, _('Filter any thirds unbalanced'))])
         edt.set_value(show_filter)
         edt.set_location(1, 3)
-        edt.set_action(self.request, self.get_action(),
-                       {'modal': FORMTYPE_REFRESH, 'close': CLOSE_NO})
+        edt.set_action(self.request, self.get_action(), modal=FORMTYPE_REFRESH)
         self.add_component(edt)
         if show_filter != 0:
             self.fieldnames = Third.get_other_fields()
 
         self.filter = Q(status=0)
         if contact_filter != "":
-            q_legalentity = Q(
-                contact__legalentity__name__contains=contact_filter)
-            q_individual = (Q(contact__individual__firstname__contains=contact_filter) | Q(
-                contact__individual__lastname__contains=contact_filter))
+            q_legalentity = Q(contact__legalentity__name__contains=contact_filter)
+            q_individual = (Q(contact__individual__firstname__contains=contact_filter) | Q(contact__individual__lastname__contains=contact_filter))
             self.filter &= (q_legalentity | q_individual)
 
 
-@ActionsManage.affect('Third', 'search')
+@ActionsManage.affect_list(_("Search"), "diacamma.accounting/images/thirds.png")
 @MenuManage.describ('accounting.change_third')
 class ThirdSearch(XferSavedCriteriaSearchEditor):
     icon = "thirds.png"
@@ -132,15 +122,13 @@ class ThirdSave(XferContainerAcknowledge):
         if len(last_thirds) > 0:
             self.item = last_thirds[0]
         else:
-            self.item.contact = AbstractContact.objects.get(
-                id=contact_id)
+            self.item.contact = AbstractContact.objects.get(id=contact_id)
             self.item.status = 0
             self.item.save()
-        self.redirect_action(
-            ThirdShow.get_action(), {'params': {'third': self.item.id}})
+        self.redirect_action(ThirdShow.get_action(), params={'third': self.item.id})
 
 
-@ActionsManage.affect('Third', 'disable')
+@ActionsManage.affect_list(_('Disabled'), '')
 @MenuManage.describ('accounting.add_third')
 class ThirdDisable(XferContainerAcknowledge):
     model = Third
@@ -163,8 +151,7 @@ class ThirdDisable(XferContainerAcknowledge):
             limite_date.set_value((date.today() - timedelta(weeks=25)))
             limite_date.set_location(1, 2, 1)
             dlg.add_component(limite_date)
-            dlg.add_action(
-                self.get_action(_('Ok'), 'images/ok.png'), {'params': {"SAVE": "YES"}})
+            dlg.add_action(self.get_action(_('Ok'), 'images/ok.png'), params={"SAVE": "YES"})
             dlg.add_action(WrapAction(_('Cancel'), 'images/cancel.png'), {})
         else:
             third_ids = [val_third['third'] for val_third in EntryLineAccount.objects.filter(
@@ -175,7 +162,7 @@ class ThirdDisable(XferContainerAcknowledge):
                     third.save()
 
 
-@ActionsManage.affect('Third', 'add')
+@ActionsManage.affect_grid(TITLE_ADD, "images/add.png", unique=SELECT_NONE)
 @MenuManage.describ('accounting.add_third')
 class ThirdAdd(ContactSelection):
     icon = "thirds.png"
@@ -183,7 +170,7 @@ class ThirdAdd(ContactSelection):
     select_class = ThirdSave
 
 
-@ActionsManage.affect('Third', 'modify')
+@ActionsManage.affect_grid(TITLE_MODIFY, "images/edit.png", unique=SELECT_SINGLE)
 @MenuManage.describ('accounting.add_third')
 class ThirdModify(XferAddEditor):
     icon = "thirds.png"
@@ -192,7 +179,7 @@ class ThirdModify(XferAddEditor):
     caption_modify = _("Modify third")
 
 
-@ActionsManage.affect('Third', 'show')
+@ActionsManage.affect_grid(TITLE_EDIT, "images/show.png", unique=SELECT_SINGLE)
 @MenuManage.describ('accounting.change_third')
 class ThirdShow(XferShowEditor):
     icon = "thirds.png"
@@ -201,7 +188,7 @@ class ThirdShow(XferShowEditor):
     caption = _("Show third")
 
 
-@ActionsManage.affect('Third', 'delete')
+@ActionsManage.affect_grid(TITLE_DELETE, "images/delete.png", unique=SELECT_MULTI)
 @MenuManage.describ('accounting.delete_third')
 class ThirdDel(XferDelete):
     icon = "thirds.png"
@@ -210,7 +197,7 @@ class ThirdDel(XferDelete):
     caption = _("Delete third")
 
 
-@ActionsManage.affect('Third', 'listing')
+@ActionsManage.affect_list(_("Listing"), "images/print.png")
 @MenuManage.describ('accounting.change_third')
 class ThirdListing(XferPrintListing):
     icon = "thirds.png"
@@ -232,17 +219,15 @@ class ThirdListing(XferPrintListing):
             contact_filter = self.getparam('filter', '')
             new_filter = Q(status=0)
             if contact_filter != "":
-                q_legalentity = Q(
-                    contact__legalentity__name__contains=contact_filter)
-                q_individual = (Q(contact__individual__firstname__contains=contact_filter) | Q(
-                    contact__individual__lastname__contains=contact_filter))
+                q_legalentity = Q(contact__legalentity__name__contains=contact_filter)
+                q_individual = (Q(contact__individual__firstname__contains=contact_filter) | Q(contact__individual__lastname__contains=contact_filter))
                 new_filter &= (q_legalentity | q_individual)
         else:
             new_filter = XferPrintListing.get_filter(self)
         return new_filter
 
 
-@ActionsManage.affect('AccountThird', 'add')
+@ActionsManage.affect_grid(TITLE_ADD, "images/add.png", unique=SELECT_NONE)
 @MenuManage.describ('accounting.add_third')
 class AccountThirdAddModify(XferAddEditor):
     icon = "account.png"
@@ -252,7 +237,7 @@ class AccountThirdAddModify(XferAddEditor):
     caption_modify = _("Modify account")
 
 
-@ActionsManage.affect('AccountThird', 'delete')
+@ActionsManage.affect_grid(TITLE_DELETE, "images/delete.png", unique=SELECT_MULTI)
 @MenuManage.describ('accounting.add_third')
 class AccountThirdDel(XferDelete):
     icon = "account.png"
@@ -285,8 +270,7 @@ def summary_accounting(xfer):
             lbl.set_location(0, row + 1, 4)
             xfer.add_component(lbl)
             btn = XferCompButton("accounting_conf")
-            btn.set_action(xfer.request, Configuration.get_action(
-                _("conf."), ""), {'close': CLOSE_NO})
+            btn.set_action(xfer.request, Configuration.get_action(_("conf."), ""), close=CLOSE_NO)
             btn.set_location(0, row + 2, 4)
             xfer.add_component(btn)
         lab = XferCompLabelForm('accountingend')

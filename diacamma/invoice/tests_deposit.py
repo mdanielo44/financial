@@ -518,8 +518,7 @@ class MethodTest(InvoiceTest, PaymentTest):
         self.assert_xml_equal(
             'COMPONENTS/LABELFORM[@name="total_rest_topay"]', "100.00€")
         self.assert_count_equal('ACTIONS/ACTION', 5)
-        self.assert_action_equal('ACTIONS/ACTION[1]', (six.text_type(
-            'Règlement'), 'diacamma.payoff/images/payments.png', 'diacamma.payoff', 'payableShow', 0, 1, 1))
+        self.assert_action_equal('ACTIONS/ACTION[1]', (six.text_type('Règlement'), 'diacamma.payoff/images/payments.png', 'diacamma.payoff', 'payableShow', 0, 1, 1))
 
         self.factory.xfer = PayableShow()
         self.call('/diacamma.payoff/supportingPaymentMethod',
