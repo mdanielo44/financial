@@ -24,19 +24,8 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
 from __future__ import unicode_literals
-from django.utils.translation import ugettext_lazy as _
 
 from django.db import migrations
-from lucterios.CORE.models import Parameter
-
-
-def add_values(*args):
-    param = Parameter.objects.create(
-        name='accounting-sizecode', typeparam=1)
-    param.title = _("accounting-sizecode")
-    param.args = "{'Min':3, 'Max':50}"
-    param.value = '3'
-    param.save()
 
 
 class Migration(migrations.Migration):
@@ -46,5 +35,4 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(add_values),
     ]

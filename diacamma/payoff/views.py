@@ -92,7 +92,7 @@ class PayoffDel(XferDelete):
     caption = _("Delete payoff")
 
 
-@ActionsManage.affect_list(_('change'), 'images/edit.png')
+@ActionsManage.affect_other(_('change'), 'images/edit.png')
 @MenuManage.describ('')
 class SupportingThird(XferListEditor):
     icon = "diacamma.accounting/images/thirds.png"

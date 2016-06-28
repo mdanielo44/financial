@@ -32,7 +32,7 @@ from django.utils import six
 
 from lucterios.framework import signal_and_lock
 from lucterios.framework.xferadvance import XferListEditor, XferAddEditor, XferShowEditor, XferDelete,\
-    TITLE_MODIFY, TITLE_ADD, TITLE_EDIT, TITLE_DELETE
+    TITLE_MODIFY, TITLE_ADD, TITLE_EDIT, TITLE_DELETE, TITLE_OK, TITLE_CANCEL
 from lucterios.framework.xfergraphic import XferContainerAcknowledge
 from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompEdit, XferCompButton, XferCompSelect, XferCompImage, XferCompDate, XferCompGrid
 from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage, FORMTYPE_REFRESH, CLOSE_NO, WrapAction, FORMTYPE_MODAL, SELECT_SINGLE,\
@@ -151,8 +151,8 @@ class ThirdDisable(XferContainerAcknowledge):
             limite_date.set_value((date.today() - timedelta(weeks=25)))
             limite_date.set_location(1, 2, 1)
             dlg.add_component(limite_date)
-            dlg.add_action(self.get_action(_('Ok'), 'images/ok.png'), params={"SAVE": "YES"})
-            dlg.add_action(WrapAction(_('Cancel'), 'images/cancel.png'), {})
+            dlg.add_action(self.get_action(TITLE_OK, 'images/ok.png'), params={"SAVE": "YES"})
+            dlg.add_action(WrapAction(TITLE_CANCEL, 'images/cancel.png'))
         else:
             third_ids = [val_third['third'] for val_third in EntryLineAccount.objects.filter(
                 entry__date_value__gt=limit_date, third__gt=0).values('third')]

@@ -60,24 +60,16 @@ class CurrentBill(XferListEditor):
         for contact in LegalEntity.objects.filter(responsability__individual__user=self.request.user):
             contacts.append(contact.id)
         self.filter = Q(third__contact_id__in=contacts) & Q(status__gt=0)
-        add_act = -1
-        for idx in range(len(self.action_grid)):
-            if self.action_grid[idx][0] == 'add':
-                add_act = idx
-        if add_act != -1:
-            del self.action_grid[add_act]
-        self.action_grid.append(
-            ('currentprintbill', _("Print"), "images/print.png", SELECT_SINGLE))
 
     def fillresponse(self):
         XferListEditor.fillresponse(self)
         if (len(PaymentMethod.objects.all()) > 0):
             bill_grid = self.get_components('bill')
-            bill_grid.add_action(self.request, ActionsManage.get_act_changed('Supporting', 'showpay', _(
-                "Payment"), "diacamma.payoff/images/payments.png"), {'unique': SELECT_SINGLE, 'close': CLOSE_NO, 'params': {'item_name': self.field_id}})
+            bill_grid.add_action(self.request, CurrentBillPrint.get_action(_("Print"), "images/print.png"), unique=SELECT_SINGLE)
+            bill_grid.add_action(self.request, ActionsManage.get_action_url('payoff.Supporting', 'Show', self),
+                                 unique=SELECT_SINGLE, close=CLOSE_NO, params={'item_name': self.field_id})
 
 
-@ActionsManage.affect('Bill', 'currentprintbill')
 @MenuManage.describ(current_bill_right)
 class CurrentBillPrint(BillPrint):
     pass

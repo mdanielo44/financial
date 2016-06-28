@@ -25,44 +25,14 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
 from django.utils.translation import ugettext_lazy as _
-
-from django.db import models, migrations
-from lucterios.CORE.models import Parameter, PrintModel
-from diacamma.accounting.models import Journal, Third, ChartsAccount, \
-    EntryLineAccount
 from django.db.models.deletion import PROTECT, SET_NULL
+from django.db import models, migrations
+
+from lucterios.CORE.models import PrintModel
+from diacamma.accounting.models import Journal, Third, ChartsAccount, EntryLineAccount
 
 
 def initial_values(*args):
-    # pylint: disable=unused-argument, no-member, expression-not-assigned
-    param = Parameter.objects.create(
-        name='accounting-devise', typeparam=0)  # pylint: disable=no-member
-    param.title = _("accounting-devise")
-    param.args = "{'Multi':False}"
-    param.value = '€'
-    param.save()
-
-    param = Parameter.objects.create(
-        name='accounting-devise-iso', typeparam=0)  # pylint: disable=no-member
-    param.title = _("accounting-devise-iso")
-    param.args = "{'Multi':False}"
-    param.value = 'EUR'
-    param.save()
-
-    param = Parameter.objects.create(
-        name='accounting-devise-prec', typeparam=1)  # pylint: disable=no-member
-    param.title = _("accounting-devise-prec")
-    param.args = "{'Min':0, 'Max':4}"
-    param.value = '2'
-    param.save()
-
-    param = Parameter.objects.create(
-        name='accounting-system', typeparam=0)  # pylint: disable=no-member
-    param.title = _("accounting-system")
-    param.args = "{'Multi':False}"
-    param.value = ''
-    param.save()
-
     Journal.objects.create(name=_("Last year report"), id=1)
     Journal.objects.create(name=_("Buying"), id=2)
     Journal.objects.create(name=_("Selling"), id=3)

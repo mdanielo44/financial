@@ -51,7 +51,7 @@ class SupportingEditor(LucteriosEditor):
         if WrapAction.is_permission(xfer.request, right):
             btn = XferCompButton('change_third')
             btn.set_location(third.col + third.colspan, third.row)
-            btn.set_action(xfer.request, ActionsManage.get_action_url('Supporting', 'Third', xfer),
+            btn.set_action(xfer.request, ActionsManage.get_action_url('payoff.Supporting', 'Third', xfer),
                            modal=FORMTYPE_MODAL, close=CLOSE_NO)
             xfer.add_component(btn)
 
@@ -59,7 +59,7 @@ class SupportingEditor(LucteriosEditor):
             btn = XferCompButton('show_third')
             btn.set_is_mini(True)
             btn.set_location(third.col + third.colspan + 1, third.row)
-            btn.set_action(xfer.request, ActionsManage.get_action_url('Third', 'Show', xfer),
+            btn.set_action(xfer.request, ActionsManage.get_action_url('accounting.Third', 'Show', xfer),
                            modal=FORMTYPE_MODAL, close=CLOSE_NO, params={'third': self.item.third.id})
             xfer.add_component(btn)
         lbl = XferCompLabelForm('info')

@@ -45,6 +45,7 @@ from diacamma.accounting.tools import current_system_account, format_devise, \
     currency_round, correct_accounting_code
 from diacamma.payoff.models import Supporting
 from lucterios.framework.signal_and_lock import Signal
+from lucterios.CORE.models import Parameter
 
 
 class Vat(LucteriosModel):
@@ -658,3 +659,17 @@ def get_or_create_customer(contact_id):
         AccountThird.objects.create(
             third=third, code=Params.getvalue("invoice-account-third"))
     return third
+
+
+@Signal.decorate('checkparam')
+def invoice_checkparam():
+    Parameter.check_and_create(name='invoice-default-sell-account', typeparam=0,
+                               title=_("invoice-default-sell-account"), args="{'Multi':False}", value='706')
+    Parameter.check_and_create(name='invoice-reduce-account', typeparam=0, title=_("invoice-reduce-account"),
+                               args="{'Multi':False}", value='709')
+    Parameter.check_and_create(name='invoice-vatsell-account', typeparam=0, title=_("invoice-vatsell-account"),
+                               args="{'Multi':False}", value='4455')
+    Parameter.check_and_create(name='invoice-vat-mode', typeparam=4, title=_("invoice-vat-mode"),
+                               args="{'Enum':3}", value='0', param_titles=(_("invoice-vat-mode.0"), _("invoice-vat-mode.1"), _("invoice-vat-mode.2")))
+    Parameter.check_and_create(name="invoice-account-third", typeparam=0, title=_("invoice-account-third"),
+                               args="{'Multi':False}", value='411')

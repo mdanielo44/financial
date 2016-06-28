@@ -42,6 +42,7 @@ from lucterios.CORE.xferprint import XferPrintAction
 from diacamma.accounting.models import FiscalYear, format_devise, EntryLineAccount, \
     ChartsAccount, CostAccounting
 from diacamma.accounting.tools import correct_accounting_code
+from lucterios.framework.xferadvance import TITLE_PRINT, TITLE_CLOSE
 
 
 def get_spaces(size):
@@ -123,8 +124,7 @@ class FiscalYearReport(XferContainerCustom):
             edt = XferCompEdit('filtercode')
             edt.set_value(filtercode)
             edt.set_location(3, 3, 2)
-            edt.set_action(self.request, self.__class__.get_action(), {
-                           'close': CLOSE_NO, 'modal': FORMTYPE_REFRESH})
+            edt.set_action(self.request, self.__class__.get_action(), close=CLOSE_NO, modal=FORMTYPE_REFRESH)
             self.add_component(edt)
             if filtercode != '':
                 self.filter &= Q(account__code__startswith=filtercode)
@@ -143,19 +143,16 @@ class FiscalYearReport(XferContainerCustom):
         select_year.set_select_query(FiscalYear.objects.all())
         select_year.set_value(self.item.id)
         select_year.set_needed(True)
-        select_year.set_action(self.request, self.__class__.get_action(), {
-                               'close': CLOSE_NO, 'modal': FORMTYPE_REFRESH})
+        select_year.set_action(self.request, self.__class__.get_action(), close=CLOSE_NO, modal=FORMTYPE_REFRESH)
         self.add_component(select_year)
         self.filter = Q(entry__year=self.item)
         if self.item.status != 2:
             self.fill_from_model(1, 1, False, ['begin'])
             self.fill_from_model(3, 1, False, ['end'])
             begin_filter = self.get_components('begin')
-            begin_filter.set_action(self.request, self.__class__.get_action(), {
-                                    'close': CLOSE_NO, 'modal': FORMTYPE_REFRESH})
+            begin_filter.set_action(self.request, self.__class__.get_action(), close=CLOSE_NO, modal=FORMTYPE_REFRESH)
             end_filter = self.get_components('end')
-            end_filter.set_action(self.request, self.__class__.get_action(), {
-                                  'close': CLOSE_NO, 'modal': FORMTYPE_REFRESH})
+            end_filter.set_action(self.request, self.__class__.get_action(), close=CLOSE_NO, modal=FORMTYPE_REFRESH)
             self.filter &= Q(entry__date_value__gte=self.item.begin)
             self.filter &= Q(entry__date_value__lte=self.item.end)
         self.fill_filterCode()
@@ -240,9 +237,9 @@ class FiscalYearReport(XferContainerCustom):
         self.add_component(self.grid)
 
     def fill_buttons(self):
-        self.add_action(FiscalYearReportPrint.get_action(
-            _("Print"), "images/print.png"), {'close': CLOSE_NO, 'params': {'classname': self.__class__.__name__}})
-        self.add_action(WrapAction(_('Close'), 'images/close.png'), {})
+        self.add_action(FiscalYearReportPrint.get_action(TITLE_PRINT, "images/print.png"),
+                        close=CLOSE_NO, params={'classname': self.__class__.__name__})
+        self.add_action(WrapAction(TITLE_CLOSE, 'images/close.png'))
 
 
 @MenuManage.describ('accounting.change_fiscalyear', FORMTYPE_NOMODAL, 'bookkeeping', _('Show balance sheet for current fiscal year'))

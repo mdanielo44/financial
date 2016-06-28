@@ -127,9 +127,9 @@ class BillShow(XferShowEditor):
 
     def fillresponse(self):
         XferShowEditor.fillresponse(self)
-        self.add_action(ActionsManage.get_action_url('Supporting', 'Show', self), close=CLOSE_NO, params={'item_name': self.field_id}, pos_act=0)
+        self.add_action(ActionsManage.get_action_url('payoff.Supporting', 'Show', self), close=CLOSE_NO, params={'item_name': self.field_id}, pos_act=0)
         if self.item.status in (1, 3):
-            self.add_action(ActionsManage.get_action_url('Supporting', 'Email', self), close=CLOSE_NO, params={'item_name': self.field_id}, pos_act=0)
+            self.add_action(ActionsManage.get_action_url('payoff.Supporting', 'Email', self), close=CLOSE_NO, params={'item_name': self.field_id}, pos_act=0)
 
 
 @ActionsManage.affect_show(_("Valid"), "images/ok.png", close=CLOSE_NO, condition=lambda xfer: (xfer.item.status == 0) and (xfer.item.get_info_state() == ''))
@@ -231,7 +231,7 @@ class BillFromQuotation(XferContainerAcknowledge):
         if (self.item.bill_type == 0) and (self.item.status == 1) and self.confirme(_("Do you want convert '%s' to bill?") % self.item):
             new_bill = self.item.convert_to_bill()
             if new_bill is not None:
-                self.redirect_action(ActionsManage.get_action_url('Bill', 'Show', self), params={self.field_id: new_bill.id})
+                self.redirect_action(ActionsManage.get_action_url('invoice.Bill', 'Show', self), params={self.field_id: new_bill.id})
 
 
 @ActionsManage.affect_show(_("Cancel"), "images/cancel.png", close=CLOSE_NO, condition=lambda xfer: (xfer.item.status == 1) and (xfer.item.bill_type != 2))
@@ -246,7 +246,7 @@ class BillCancel(XferContainerAcknowledge):
         if (self.item.status == 1) and (self.item.bill_type in (0, 1, 3)) and self.confirme(_("Do you want cancel '%s'?") % self.item):
             asset_id = self.item.cancel()
             if asset_id is not None:
-                self.redirect_action(ActionsManage.get_action_url('Bill', 'Show', self), params={self.field_id: asset_id})
+                self.redirect_action(ActionsManage.get_action_url('invoice.Bill', 'Show', self), params={self.field_id: asset_id})
 
 
 @ActionsManage.affect_grid(TITLE_DELETE, "images/delete.png", unique=SELECT_MULTI, condition=lambda xfer, gridname='': xfer.getparam('status_filter', -1) < 1)
@@ -503,7 +503,7 @@ def thirdaddon_invoice(item, xfer):
             bill_grid = XferCompGrid('bill')
             bill_grid.set_model(bills, Bill.get_default_fields(status_filter), xfer)
             bill_grid.set_location(0, 2, 2)
-            bill_grid.add_action(xfer.request, ActionsManage.get_action_url('Bill', 'Show', xfer), modal=FORMTYPE_MODAL, unique=SELECT_SINGLE, close=CLOSE_NO)
+            bill_grid.add_action(xfer.request, ActionsManage.get_action_url('invoice.Bill', 'Show', xfer), modal=FORMTYPE_MODAL, unique=SELECT_SINGLE, close=CLOSE_NO)
             xfer.add_component(bill_grid)
         except LucteriosException:
             pass

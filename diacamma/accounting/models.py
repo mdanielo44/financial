@@ -46,7 +46,8 @@ from diacamma.accounting.tools import get_amount_sum, format_devise, \
     current_system_account, currency_round, correct_accounting_code
 from csv import DictReader
 from _csv import QUOTE_NONE
-from lucterios.framework.signal_and_lock import RecordLocker
+from lucterios.framework.signal_and_lock import RecordLocker, Signal
+from lucterios.CORE.models import Parameter
 
 
 class Third(LucteriosModel):
@@ -1148,3 +1149,12 @@ class ModelLineEntry(LucteriosModel):
         verbose_name = _('Model line')
         verbose_name_plural = _('Model lines')
         default_permissions = []
+
+
+@Signal.decorate('checkparam')
+def accounting_checkparam():
+    Parameter.check_and_create(name='accounting-devise', typeparam=0, title=_("accounting-devise"), args="{'Multi':False}", value='€')
+    Parameter.check_and_create(name='accounting-devise-iso', typeparam=0, title=_("accounting-devise-iso"), args="{'Multi':False}", value='EUR')
+    Parameter.check_and_create(name='accounting-devise-prec', typeparam=1, title=_("accounting-devise-prec"), args="{'Min':0, 'Max':4}", value='2')
+    Parameter.check_and_create(name='accounting-system', typeparam=0, title=_("accounting-system"), args="{'Multi':False}", value='')
+    Parameter.check_and_create(name='accounting-sizecode', typeparam=1, title=_("accounting-sizecode"), args="{'Min':3, 'Max':50}", value='3')

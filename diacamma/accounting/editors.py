@@ -40,6 +40,7 @@ from lucterios.framework.tools import FORMTYPE_REFRESH, CLOSE_NO, ActionsManage,
 from lucterios.CORE.parameters import Params
 
 from diacamma.accounting.models import current_system_account, FiscalYear, EntryLineAccount, EntryAccount, get_amount_sum, Third, CostAccounting
+from lucterios.framework.xferadvance import TITLE_MODIFY
 
 
 class ThirdEditor(LucteriosEditor):
@@ -51,8 +52,8 @@ class ThirdEditor(LucteriosEditor):
         xfer.filltab_from_model(1, 1, True, ['address', ('postal_code', 'city'), 'country', ('tel1', 'tel2')])
         btn = XferCompButton('show')
         btn.set_location(2, 5, 3, 1)
-        modal_name = xfer.item.__class__.__name__
-        field_id = modal_name.lower()
+        modal_name = xfer.item.__class__.get_long_name()
+        field_id = xfer.item.__class__.__name__.lower()
         if field_id == 'legalentity':
             field_id = 'legal_entity'
         btn.set_action(xfer.request, ActionsManage.get_action_url(modal_name, 'Show', xfer),
@@ -192,11 +193,14 @@ class ChartsAccountEditor(LucteriosEditor):
         comp = XferCompGrid('entrylineaccount')
         comp.set_model(self.item.entrylineaccount_set.all(),
                        fieldnames, xfer)
-        comp.add_action(xfer.request, ActionsManage.get_action_url('EntryLineAccount', 'OpenFromLine', xfer), unique=SELECT_SINGLE, close=CLOSE_NO)
+        comp.add_action(xfer.request, ActionsManage.get_action_url(
+            'accounting.EntryLineAccount', 'OpenFromLine', xfer), unique=SELECT_SINGLE, close=CLOSE_NO)
         if self.item.year.status < 2:
-            comp.add_action(xfer.request, ActionsManage.get_action_url('EntryLineAccount', 'Close', xfer), unique=SELECT_MULTI, close=CLOSE_NO)
+            comp.add_action(xfer.request, ActionsManage.get_action_url(
+                'accounting.EntryLineAccount', 'Close', xfer), unique=SELECT_MULTI, close=CLOSE_NO)
             if self.item.is_third:
-                comp.add_action(xfer.request, ActionsManage.get_action_url('EntryLineAccount', 'Link', xfer), unique=SELECT_MULTI, close=CLOSE_NO)
+                comp.add_action(xfer.request, ActionsManage.get_action_url(
+                    'accounting.EntryLineAccount', 'Link', xfer), unique=SELECT_MULTI, close=CLOSE_NO)
         comp.set_location(2, row)
         xfer.add_component(comp)
 
@@ -265,7 +269,7 @@ class EntryAccountEditor(LucteriosEditor):
                 link_grid_lines.add_action(xfer.request, ActionsManage.get_action_url('EntryLineAccount', 'OpenFromLine', xfer), unique=SELECT_SINGLE)
                 xfer.add_component(link_grid_lines)
         if self.added:
-            xfer.add_action(xfer.get_action(_("Modify"), "images/ok.png"), {'params': {"SAVE": "YES"}})
+            xfer.add_action(xfer.get_action(TITLE_MODIFY, "images/ok.png"), params={"SAVE": "YES"})
 
     def _entryline_editor(self, xfer, serial_vals, debit_rest, credit_rest):
         last_row = xfer.get_max_row() + 5

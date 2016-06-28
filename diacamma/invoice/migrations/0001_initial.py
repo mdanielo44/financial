@@ -8,50 +8,12 @@ from django.utils.translation import ugettext_lazy as _
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.conf import settings
 
-from lucterios.CORE.models import Parameter, PrintModel
+from lucterios.CORE.models import PrintModel
 from diacamma.invoice.models import Bill
 
 
 def initial_values(*args):
     translation.activate(settings.LANGUAGE_CODE)
-
-    param = Parameter.objects.create(
-        name='invoice-default-sell-account', typeparam=0)
-    param.title = _("invoice-default-sell-account")
-    param.args = "{'Multi':False}"
-    param.value = '706'
-    param.save()
-
-    param = Parameter.objects.create(
-        name='invoice-reduce-account', typeparam=0)
-    param.title = _("invoice-reduce-account")
-    param.args = "{'Multi':False}"
-    param.value = '709'
-    param.save()
-
-    param = Parameter.objects.create(
-        name='invoice-vatsell-account', typeparam=0)
-    param.title = _("invoice-vatsell-account")
-    param.args = "{'Multi':False}"
-    param.value = '4455'
-    param.save()
-
-    param = Parameter.objects.create(
-        name='invoice-vat-mode', typeparam=4)
-    param.title = _("invoice-vat-mode")
-    param.param_titles = (_("invoice-vat-mode.0"),
-                          _("invoice-vat-mode.1"), _("invoice-vat-mode.2"))
-    param.args = "{'Enum':3}"
-    param.value = '0'
-    param.save()
-
-    param = Parameter.objects.create(
-        name="invoice-account-third", typeparam=0)
-    param.title = _("invoice-account-third")
-    param.args = "{'Multi':False}"
-    param.value = '411'
-    param.save()
-
     prtmdl = PrintModel.objects.create(
         name=_("bill"), kind=2, modelname=Bill.get_long_name())
     prtmdl.value = """
