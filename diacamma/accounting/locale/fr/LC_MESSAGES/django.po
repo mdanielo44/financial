@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-06-27 22:02+0000\n"
+"POT-Creation-Date: 2016-06-28 12:59+0000\n"
 "PO-Revision-Date: 2016-01-11 23:01+0000\n"
 "Last-Translator: b'Paul ARULATEDA <paul531@orange.fr>'\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -141,7 +141,7 @@ msgid "contact"
 msgstr "contact"
 
 #: migrations/0001_initial.py:77 models.py:67 models.py:75 models.py:141
-#: models.py:1032 models.py:1040 views.py:320 views_reports.py:221
+#: models.py:1032 models.py:1040 views.py:321 views_reports.py:221
 #: views_reports.py:228 views_reports.py:330
 msgid "total"
 msgstr "total"
@@ -208,7 +208,7 @@ msgstr "Inactif"
 msgid "001@AccountThird information"
 msgstr "001@Infomation comptable tiers"
 
-#: models.py:120 views.py:293
+#: models.py:120 views.py:294
 msgid "thirds"
 msgstr "tiers"
 
@@ -409,7 +409,7 @@ msgstr "Ce type d'écriture n'est pas permis dans ce journal"
 msgid "payment of %s"
 msgstr "règlement de %s"
 
-#: models.py:838 views.py:341
+#: models.py:838 views.py:342
 msgid "entry of account"
 msgstr "écriture comptable"
 
@@ -466,7 +466,7 @@ msgstr "Crédit"
 msgid "Debit"
 msgstr "Débit"
 
-#: views.py:50 views.py:317 views_admin.py:43
+#: views.py:50 views.py:318 views_admin.py:43
 msgid "Financial"
 msgstr "Financier"
 
@@ -554,63 +554,63 @@ msgstr "Listing"
 msgid "Listing third"
 msgstr "Liste de tiers"
 
-#: views.py:236
+#: views.py:237
 msgid "Add account"
 msgstr "Ajouter un compte"
 
-#: views.py:237
+#: views.py:238
 msgid "Modify account"
 msgstr "Modifier un compte"
 
-#: views.py:246
+#: views.py:247
 msgid "Delete account"
 msgstr "Supprimer un compte"
 
-#: views.py:254 views_accounts.py:44
+#: views.py:255 views_accounts.py:44
 msgid "Bookkeeping"
 msgstr "Comptabilité"
 
-#: views.py:273
+#: views.py:274
 msgid "conf."
 msgstr "conf."
 
-#: views.py:295
+#: views.py:296
 msgid "models"
 msgstr "modèles"
 
-#: views.py:298
+#: views.py:299
 msgid "Accounting"
 msgstr "Comptabilité"
 
-#: views.py:323
+#: views.py:324
 msgid "Show"
 msgstr "Voir"
 
-#: views.py:343
+#: views.py:344
 msgid "Accounts filter"
 msgstr "Filtre sur les comptes"
 
-#: views.py:347
+#: views.py:348
 msgid "All entries of current fiscal year"
 msgstr "Toutes les ecritures de l'exercice courant"
 
-#: views.py:348
+#: views.py:349
 msgid "Only no-closed entries of current fiscal year"
 msgstr "Seulement les écritures non-validées de l'exercice courant"
 
-#: views.py:348
+#: views.py:349
 msgid "All entries for all fiscal year"
 msgstr "Toutes les écritures de tous les exercices"
 
-#: views.py:359 views_entries.py:105 views_entries.py:135
+#: views.py:360 views_entries.py:105 views_entries.py:135
 msgid "Edit"
 msgstr "Editer"
 
-#: views.py:361 views_entries.py:78 views_entries.py:185
+#: views.py:362 views_entries.py:78 views_entries.py:185
 msgid "Closed"
 msgstr "Valider"
 
-#: views.py:363 views_entries.py:113 views_entries.py:209
+#: views.py:364 views_entries.py:113 views_entries.py:209
 msgid "Link/Unlink"
 msgstr "(dé)lettrage"
 

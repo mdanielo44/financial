@@ -220,7 +220,8 @@ class ThirdListing(XferPrintListing):
             new_filter = Q(status=0)
             if contact_filter != "":
                 q_legalentity = Q(contact__legalentity__name__contains=contact_filter)
-                q_individual = (Q(contact__individual__firstname__contains=contact_filter) | Q(contact__individual__lastname__contains=contact_filter))
+                q_individual = (Q(contact__individual__firstname__contains=contact_filter) | Q(
+                    contact__individual__lastname__contains=contact_filter))
                 new_filter &= (q_legalentity | q_individual)
         else:
             new_filter = XferPrintListing.get_filter(self)
@@ -349,7 +350,7 @@ def thirdaddon_accounting(item, xfer):
             edt.set_value(lines_filter)
             edt.set_location(1, 1)
             edt.set_action(xfer.request, xfer.get_action(),
-                           {'modal': FORMTYPE_REFRESH, 'close': CLOSE_NO})
+                           modal=FORMTYPE_REFRESH, close=CLOSE_NO)
             xfer.add_component(edt)
             entry_lines = item.entrylineaccount_set.filter(entry_lines_filter)
             link_grid_lines = XferCompGrid('entrylineaccount')
@@ -357,11 +358,11 @@ def thirdaddon_accounting(item, xfer):
                 entry_lines, EntryLineAccount.get_other_fields(), xfer)
             link_grid_lines.set_location(0, 2, 2)
             link_grid_lines.add_action(xfer.request, ActionsManage.get_act_changed('EntryLineAccount', 'open', _('Edit'), 'images/edit.png'),
-                                       {'modal': FORMTYPE_MODAL, 'unique': SELECT_SINGLE, 'close': CLOSE_NO})
+                                       modal=FORMTYPE_MODAL, unique=SELECT_SINGLE, close=CLOSE_NO)
             link_grid_lines.add_action(xfer.request, ActionsManage.get_act_changed('EntryLineAccount', 'closeentry', _("Closed"), "images/ok.png"),
-                                       {'modal': FORMTYPE_MODAL, 'unique': SELECT_MULTI, 'close': CLOSE_NO})
+                                       modal=FORMTYPE_MODAL, unique=SELECT_MULTI, close=CLOSE_NO)
             link_grid_lines.add_action(xfer.request, ActionsManage.get_act_changed('EntryLineAccount', 'link', _("Link/Unlink"), "images/left.png"),
-                                       {'modal': FORMTYPE_MODAL, 'unique': SELECT_MULTI, 'close': CLOSE_NO})
+                                       modal=FORMTYPE_MODAL, unique=SELECT_MULTI, close=CLOSE_NO)
             xfer.add_component(link_grid_lines)
         except LucteriosException:
             pass

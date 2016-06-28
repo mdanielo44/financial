@@ -24,7 +24,6 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
 from datetime import date
-from copy import deepcopy
 
 from django.utils.translation import ugettext_lazy as _
 from django.utils import formats, six

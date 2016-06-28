@@ -88,7 +88,7 @@ class EntryLineAccountList(XferListEditor):
         sel.set_value(select_filter)
         sel.set_location(1, 3)
         sel.set_size(20, 200)
-        sel.set_action(self.request, EntryLineAccountList.get_action(), {'close': CLOSE_NO, 'modal': FORMTYPE_REFRESH})
+        sel.set_action(self.request, EntryLineAccountList.get_action(), close=CLOSE_NO, modal=FORMTYPE_REFRESH)
         self.add_component(sel)
         if select_filter == 1:
             self.filter &= Q(entry__close=False)

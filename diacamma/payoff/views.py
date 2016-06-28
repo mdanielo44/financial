@@ -112,8 +112,7 @@ class SupportingThird(XferListEditor):
         self.add_component(lbl)
         comp = XferCompEdit('filter')
         comp.set_value(contact_filter)
-        comp.set_action(self.request, self.get_action(),
-                        {'modal': FORMTYPE_REFRESH, 'close': CLOSE_NO})
+        comp.set_action(self.request, self.get_action(), modal=FORMTYPE_REFRESH, close=CLOSE_NO)
         comp.set_location(1, 2)
         self.add_component(comp)
         self.filter = Q(status=0)

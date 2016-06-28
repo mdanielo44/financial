@@ -54,8 +54,7 @@ class BillEditor(SupportingEditor):
         xfer.get_components('comment').with_hypertext = True
         xfer.get_components('comment').set_size(100, 375)
         com_type = xfer.get_components('bill_type')
-        com_type.set_action(
-            xfer.request, xfer.get_action(), {'close': CLOSE_NO, 'modal': FORMTYPE_REFRESH})
+        com_type.set_action(xfer.request, xfer.get_action(), close=CLOSE_NO, modal=FORMTYPE_REFRESH)
         if xfer.item.bill_type == 0:
             xfer.remove_component("cost_accounting")
             xfer.remove_component("lbl_cost_accounting")
@@ -120,7 +119,7 @@ class DetailEditor(LucteriosEditor):
 
     def edit(self, xfer):
         currency_decimal = Params.getvalue("accounting-devise-prec")
-        xfer.get_components("article").set_action(xfer.request, xfer.get_action('', ''), {
-            'modal': FORMTYPE_REFRESH, 'close': CLOSE_NO, 'params': {'CHANGE_ART': 'YES'}})
+        xfer.get_components("article").set_action(
+            xfer.request, xfer.get_action('', ''), modal=FORMTYPE_REFRESH, close=CLOSE_NO, params={'CHANGE_ART': 'YES'})
         xfer.get_components('price').prec = currency_decimal
         xfer.get_components('reduce').prec = currency_decimal

@@ -3,7 +3,8 @@ from __future__ import unicode_literals
 
 from django.utils.translation import ugettext_lazy as _
 
-from lucterios.framework.xferadvance import XferListEditor, TITLE_DELETE, TITLE_ADD, TITLE_MODIFY, TITLE_EDIT, TITLE_PRINT
+from lucterios.framework.xferadvance import XferListEditor, TITLE_DELETE, TITLE_ADD, TITLE_MODIFY, TITLE_EDIT, TITLE_PRINT,\
+    TITLE_CANCEL
 from lucterios.framework.xferadvance import XferAddEditor
 from lucterios.framework.xferadvance import XferShowEditor
 from lucterios.framework.xferadvance import XferDelete
@@ -149,7 +150,7 @@ class DepositDetailAddModify(XferContainerCustom):
         grid.add_action(self.request, DepositDetailSave.get_action(_("select"), "images/ok.png"), close=CLOSE_YES, unique=SELECT_MULTI)
         self.add_component(grid)
 
-        self.add_action(WrapAction(_('Cancel'), 'images/cancel.png'), {})
+        self.add_action(WrapAction(TITLE_CANCEL, 'images/cancel.png'))
 
 
 @MenuManage.describ('payoff.add_depositslip')
