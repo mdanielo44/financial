@@ -32,7 +32,7 @@ from lucterios.framework.xfergraphic import XferContainerAcknowledge
 from lucterios.framework.filetools import get_user_dir
 
 from diacamma.accounting.test_tools import initial_thirds, default_compta
-from diacamma.accounting.views_entries import EntryLineAccountList
+from diacamma.accounting.views_entries import EntryAccountList
 from diacamma.invoice.test_tools import default_articles, InvoiceTest
 from diacamma.payoff.views_deposit import DepositSlipList, DepositSlipAddModify,\
     DepositSlipShow, DepositDetailAddModify, DepositDetailSave, DepositSlipClose,\
@@ -364,25 +364,21 @@ class DepositTest(InvoiceTest):
             'core.custom', 'diacamma.payoff', 'depositSlipShow')
         self.assert_count_equal('ACTIONS/ACTION', 3)
 
-        self.factory.xfer = EntryLineAccountList()
-        self.call('/diacamma.accounting/entryLineAccountList',
+        self.factory.xfer = EntryAccountList()
+        self.call('/diacamma.accounting/entryAccountList',
                   {'year': '1', 'journal': '-1', 'filter': '0'}, False)
-        self.assert_observer(
-            'core.custom', 'diacamma.accounting', 'entryLineAccountList')
-        self.assert_count_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD', 12)
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[10]/VALUE[@name="entry.num"]', '---')
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[10]/VALUE[@name="entry_account"]', '[512] 512')
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[10]/VALUE[@name="debit"]', '75.00€')
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[12]/VALUE[@name="entry.num"]', '---')
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[12]/VALUE[@name="entry_account"]', '[512] 512')
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[12]/VALUE[@name="debit"]', '50.00€')
+        self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
+        self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', 6)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[5]/VALUE[@name="num"]', '---')
+        description = self.get_first_xpath('COMPONENTS/GRID[@name="entryaccount"]/RECORD[5]/VALUE[@name="description"]').text
+        self.assertTrue('[512] 512' in description, description)
+        self.assertTrue('[411 Dalton Jack]' in description, description)
+        self.assertTrue('75.00€' in description, description)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[6]/VALUE[@name="num"]', '---')
+        description = self.get_first_xpath('COMPONENTS/GRID[@name="entryaccount"]/RECORD[6]/VALUE[@name="description"]').text
+        self.assertTrue('[512] 512' in description, description)
+        self.assertTrue('[411 Minimum]' in description, description)
+        self.assertTrue('50.00€' in description, description)
 
         self.factory.xfer = DepositSlipValidate()
         self.call(
@@ -397,25 +393,23 @@ class DepositTest(InvoiceTest):
             'core.custom', 'diacamma.payoff', 'depositSlipShow')
         self.assert_count_equal('ACTIONS/ACTION', 2)
 
-        self.factory.xfer = EntryLineAccountList()
-        self.call('/diacamma.accounting/entryLineAccountList',
+        self.factory.xfer = EntryAccountList()
+        self.call('/diacamma.accounting/entryAccountList',
                   {'year': '1', 'journal': '-1', 'filter': '0'}, False)
         self.assert_observer(
-            'core.custom', 'diacamma.accounting', 'entryLineAccountList')
+            'core.custom', 'diacamma.accounting', 'entryAccountList')
         self.assert_count_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD', 12)
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[10]/VALUE[@name="entry.num"]', '1')
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[10]/VALUE[@name="entry_account"]', '[512] 512')
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[10]/VALUE[@name="debit"]', '75.00€')
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[12]/VALUE[@name="entry.num"]', '2')
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[12]/VALUE[@name="entry_account"]', '[512] 512')
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[12]/VALUE[@name="debit"]', '50.00€')
+            'COMPONENTS/GRID[@name="entryaccount"]/RECORD', 6)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[5]/VALUE[@name="num"]', '1')
+        description = self.get_first_xpath('COMPONENTS/GRID[@name="entryaccount"]/RECORD[5]/VALUE[@name="description"]').text
+        self.assertTrue('[512] 512' in description, description)
+        self.assertTrue('[411 Dalton Jack]' in description, description)
+        self.assertTrue('75.00€' in description, description)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[6]/VALUE[@name="num"]', '2')
+        description = self.get_first_xpath('COMPONENTS/GRID[@name="entryaccount"]/RECORD[6]/VALUE[@name="description"]').text
+        self.assertTrue('[512] 512' in description, description)
+        self.assertTrue('[411 Minimum]' in description, description)
+        self.assertTrue('50.00€' in description, description)
 
 
 class MethodTest(InvoiceTest, PaymentTest):
@@ -518,7 +512,8 @@ class MethodTest(InvoiceTest, PaymentTest):
         self.assert_xml_equal(
             'COMPONENTS/LABELFORM[@name="total_rest_topay"]', "100.00€")
         self.assert_count_equal('ACTIONS/ACTION', 5)
-        self.assert_action_equal('ACTIONS/ACTION[1]', (six.text_type('Règlement'), 'diacamma.payoff/images/payments.png', 'diacamma.payoff', 'payableShow', 0, 1, 1))
+        self.assert_action_equal(
+            'ACTIONS/ACTION[1]', (six.text_type('Règlement'), 'diacamma.payoff/images/payments.png', 'diacamma.payoff', 'payableShow', 0, 1, 1))
 
         self.factory.xfer = PayableShow()
         self.call('/diacamma.payoff/supportingPaymentMethod',

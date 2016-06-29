@@ -56,7 +56,7 @@ class ThirdEditor(LucteriosEditor):
         field_id = xfer.item.__class__.__name__.lower()
         if field_id == 'legalentity':
             field_id = 'legal_entity'
-        btn.set_action(xfer.request, ActionsManage.get_action_url(modal_name, 'Show', xfer),
+        btn.set_action(xfer.request, ActionsManage.get_action_url(modal_name, 'Show', xfer), close=CLOSE_NO,
                        params={field_id: six.text_type(xfer.item.id)})
         xfer.add_component(btn)
         xfer.item = old_item
@@ -175,32 +175,19 @@ class ChartsAccountEditor(LucteriosEditor):
         return
 
     def show(self, xfer):
-        if self.item.is_third:
-            fieldnames = ['entry.num', 'entry.date_entry', 'entry.date_value', 'third', 'entry.designation',
-                          (_('debit'), 'debit'), (_('credit'), 'credit'), 'entry.link']
-        elif self.item.is_cash:
-            fieldnames = ['entry.num', 'entry.date_entry', 'entry.date_value', 'reference',
-                          'entry.designation', (_('debit'), 'debit'), (_('credit'), 'credit'), 'entry.link']
-        else:
-            fieldnames = ['entry.num', 'entry.date_entry', 'entry.date_value', 'entry.designation',
-                          (_('debit'), 'debit'), (_('credit'), 'credit'), 'entry.link']
         row = xfer.get_max_row() + 1
         lbl = XferCompLabelForm('lbl_entrylineaccount')
         lbl.set_location(1, row)
-        lbl.set_value_as_name(
-            EntryLineAccount._meta.verbose_name)
+        lbl.set_value_as_name(EntryLineAccount._meta.verbose_name)
         xfer.add_component(lbl)
-        comp = XferCompGrid('entrylineaccount')
-        comp.set_model(self.item.entrylineaccount_set.all(),
-                       fieldnames, xfer)
+        comp = XferCompGrid('entryaccount')
+        comp.set_model(EntryAccount.objects.filter(entrylineaccount__account=self.item), None, xfer)
         comp.add_action(xfer.request, ActionsManage.get_action_url(
-            'accounting.EntryLineAccount', 'OpenFromLine', xfer), unique=SELECT_SINGLE, close=CLOSE_NO)
-        if self.item.year.status < 2:
+            'accounting.EntryAccount', 'OpenFromLine', xfer), unique=SELECT_SINGLE, close=CLOSE_NO)
+        comp.add_action(xfer.request, ActionsManage.get_action_url('accounting.EntryAccount', 'Close', xfer), unique=SELECT_MULTI, close=CLOSE_NO)
+        if self.item.is_third:
             comp.add_action(xfer.request, ActionsManage.get_action_url(
-                'accounting.EntryLineAccount', 'Close', xfer), unique=SELECT_MULTI, close=CLOSE_NO)
-            if self.item.is_third:
-                comp.add_action(xfer.request, ActionsManage.get_action_url(
-                    'accounting.EntryLineAccount', 'Link', xfer), unique=SELECT_MULTI, close=CLOSE_NO)
+                'accounting.EntryAccount', 'Link', xfer), unique=SELECT_MULTI, close=CLOSE_NO)
         comp.set_location(2, row)
         xfer.add_component(comp)
 
@@ -236,8 +223,7 @@ class EntryAccountEditor(LucteriosEditor):
         lbl.set_location(0, last_row + 1, 6)
         lbl.set_value_center("{[hr/]}")
         xfer.add_component(lbl)
-        xfer.filltab_from_model(
-            1, last_row + 2, True, ['entrylineaccount_set'])
+        xfer.filltab_from_model(1, last_row + 2, True, ['entrylineaccount_set'])
         grid_lines = xfer.get_components('entrylineaccount')
         grid_lines.actions = []
         if self.item.has_third:
@@ -249,9 +235,8 @@ class EntryAccountEditor(LucteriosEditor):
                 lbl.set_value_as_header(_("entry of accounting for an asset"))
                 xfer.add_component(lbl)
         if self.item.link is not None:
-            entrylines = EntryLineAccount.objects.filter(entry__link=self.item.link).exclude(
-                entry__id=self.item.id)
-            if len(entrylines) == 0:
+            linkentries = EntryAccount.objects.filter(link=self.item.link).exclude(id=self.item.id)
+            if len(linkentries) == 0:
                 self.item.unlink()
             else:
                 lbl = XferCompLabelForm('sep4')
@@ -262,11 +247,11 @@ class EntryAccountEditor(LucteriosEditor):
                 lbl.set_location(1, last_row + 5, 5)
                 lbl.set_value_center(_("Linked entries"))
                 xfer.add_component(lbl)
-                link_grid_lines = XferCompGrid('entrylineaccount_link')
-                link_grid_lines.set_model(
-                    entrylines, EntryLineAccount.get_other_fields(), xfer)
+                link_grid_lines = XferCompGrid('entryaccount_link')
+                link_grid_lines.set_model(linkentries, fieldnames=None, xfer_custom=xfer)
                 link_grid_lines.set_location(1, last_row + 6, 5)
-                link_grid_lines.add_action(xfer.request, ActionsManage.get_action_url('EntryLineAccount', 'OpenFromLine', xfer), unique=SELECT_SINGLE)
+                link_grid_lines.add_action(xfer.request, ActionsManage.get_action_url(
+                    'accounting.EntryAccount', 'OpenFromLine', xfer), unique=SELECT_SINGLE, close=CLOSE_YES, params={'field_id':'entryaccount_link'})
                 xfer.add_component(link_grid_lines)
         if self.added:
             xfer.add_action(xfer.get_action(TITLE_MODIFY, "images/ok.png"), params={"SAVE": "YES"})
@@ -282,12 +267,11 @@ class EntryAccountEditor(LucteriosEditor):
         lbl.set_value_center(_("Add a entry line"))
         xfer.add_component(lbl)
         entry_line = EntryLineAccount()
-        entry_line.editor.edit_line(
-            xfer, 0, last_row + 2, debit_rest, credit_rest)
+        entry_line.editor.edit_line(xfer, 0, last_row + 2, debit_rest, credit_rest)
         if entry_line.has_account:
             btn = XferCompButton('entrybtn')
             btn.set_location(3, last_row + 5)
-            btn.set_action(xfer.request, ActionsManage.get_action_url('EntryAccount', 'AddModify', xfer), close=CLOSE_YES)
+            btn.set_action(xfer.request, ActionsManage.get_action_url('accounting.EntryAccount', 'AddModify', xfer), close=CLOSE_NO)
             xfer.add_component(btn)
         self.item.editor.show(xfer)
         grid_lines = xfer.get_components('entrylineaccount')
@@ -295,10 +279,7 @@ class EntryAccountEditor(LucteriosEditor):
         new_grid_lines = XferCompGrid('entrylineaccount_serial')
         new_grid_lines.set_model(self.item.get_entrylineaccounts(serial_vals), None, xfer)
         new_grid_lines.set_location(grid_lines.col, grid_lines.row, grid_lines.colspan + 2, grid_lines.rowspan)
-        new_grid_lines.add_action(xfer.request, ActionsManage.get_action_url('EntryLineAccount', 'Edit', xfer),
-                                  close=CLOSE_YES, unique=SELECT_SINGLE)
-        new_grid_lines.add_action(xfer.request, ActionsManage.get_action_url('EntryAccount', 'remove', xfer),
-                                  close=CLOSE_YES, unique=SELECT_SINGLE)
+        new_grid_lines.add_action_notified(xfer, EntryLineAccount)
         xfer.add_component(new_grid_lines)
         nb_lines = len(new_grid_lines.record_ids)
         return nb_lines
@@ -357,7 +338,6 @@ def edit_third_for_line(xfer, column, row, account_code, current_third, vertical
 class EntryLineAccountEditor(LucteriosEditor):
 
     def edit_account_for_line(self, xfer, column, row, debit_rest, credit_rest):
-
         num_cpt_txt = xfer.getparam('num_cpt_txt', '')
         num_cpt = xfer.getparam('num_cpt', 0)
 
@@ -436,8 +416,7 @@ class EntryLineAccountEditor(LucteriosEditor):
         xfer.add_component(edt)
 
     def edit_line(self, xfer, init_col, init_row, debit_rest, credit_rest):
-        self.edit_account_for_line(
-            xfer, init_col, init_row, debit_rest, credit_rest)
+        self.edit_account_for_line(xfer, init_col, init_row, debit_rest, credit_rest)
         self.edit_creditdebit_for_line(xfer, init_col, init_row + 2)
         self.edit_extra_for_line(xfer, init_col + 3, init_row)
 

@@ -137,7 +137,6 @@ class FiscalYearExport(XferContainerCustom):
 
 @ActionsManage.affect_grid(TITLE_ADD, "images/add.png")
 @ActionsManage.affect_grid(TITLE_MODIFY, "images/edit.png", unique=SELECT_SINGLE)
-@ActionsManage.affect_show(TITLE_MODIFY, "images/edit.png", close=CLOSE_YES)
 @MenuManage.describ('accounting.add_fiscalyear')
 class FiscalYearAddModify(XferAddEditor):
     icon = "accountingYear.png"

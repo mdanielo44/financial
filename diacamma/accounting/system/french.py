@@ -26,6 +26,7 @@ from django.utils import six
 from diacamma.accounting.system.default import DefaultSystemAccounting
 from os.path import dirname, join
 from lucterios.framework.tools import get_icon_path
+from lucterios.framework.xferadvance import TITLE_OK, TITLE_CANCEL
 
 GENERAL_MASK = r'^[0-8][0-9]{2}[0-9a-zA-Z]*$'
 
@@ -353,9 +354,8 @@ class FrenchSystemAcounting(DefaultSystemAccounting):
             from lucterios.framework.tools import WrapAction, CLOSE_YES, FORMTYPE_MODAL
             custom = xfer.create_custom()
             self._create_custom_for_profit(year, custom, val_profit)
-            custom.add_action(xfer.get_action(
-                _("Ok"), "images/ok.png"), {'modal': FORMTYPE_MODAL, 'close': CLOSE_YES})
-            custom.add_action(WrapAction(_("Cancel"), "images/cancel.png"), {})
+            custom.add_action(xfer.get_action(TITLE_OK, "images/ok.png"), modal=FORMTYPE_MODAL, close=CLOSE_YES)
+            custom.add_action(WrapAction(TITLE_CANCEL, "images/cancel.png"))
             return False
         else:
             text = "Voulez-vous commencer '%s'? {[br/]}{[br/]}{[i]}{[u]}Attention:{[/u]} Votre report à nouveau doit être totalement fait.{[/i]}" % six.text_type(

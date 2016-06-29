@@ -22,128 +22,107 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
 from __future__ import unicode_literals
+from datetime import date
 
 from django.utils.translation import ugettext_lazy as _
 from django.db.models import Q
 
 from lucterios.framework.xferadvance import XferShowEditor, XferDelete, XferSave, TITLE_LISTING, TITLE_DELETE, TITLE_OK, TITLE_CANCEL, TITLE_CLOSE, TITLE_MODIFY,\
-    TITLE_EDIT
+    TITLE_EDIT, TITLE_ADD
 from lucterios.framework.tools import FORMTYPE_NOMODAL, CLOSE_NO, FORMTYPE_REFRESH, SELECT_SINGLE, SELECT_MULTI, SELECT_NONE, CLOSE_YES
 from lucterios.framework.tools import ActionsManage, MenuManage, WrapAction
 from lucterios.framework.xferadvance import XferListEditor, XferAddEditor
 from lucterios.framework.xfergraphic import XferContainerAcknowledge, XferContainerCustom
-from lucterios.framework.xfercomponents import XferCompSelect, XferCompLabelForm, XferCompImage
+from lucterios.framework.xfercomponents import XferCompSelect, XferCompLabelForm, XferCompImage,\
+    XferCompFloat
 from lucterios.framework.error import LucteriosException, GRAVE
 from lucterios.CORE.xferprint import XferPrintListing
 from lucterios.CORE.editors import XferSavedCriteriaSearchEditor
 
-from diacamma.accounting.models import EntryLineAccount, EntryAccount, FiscalYear, Journal, AccountLink, current_system_account, CostAccounting
+from diacamma.accounting.models import EntryLineAccount, EntryAccount, FiscalYear, Journal, AccountLink, current_system_account, CostAccounting,\
+    ModelEntry
 
 
 @MenuManage.describ('accounting.change_entryaccount', FORMTYPE_NOMODAL, 'bookkeeping', _('Edition of accounting entry for current fiscal year'),)
-class EntryLineAccountList(XferListEditor):
+class EntryAccountList(XferListEditor):
     icon = "entry.png"
-    model = EntryLineAccount
-    field_id = 'entrylineaccount'
+    model = EntryAccount
+    field_id = 'entryaccount'
     caption = _("accounting entries")
 
     def _filter_by_year(self):
         select_year = self.getparam('year')
         self.item.year = FiscalYear.get_current(select_year)
-        self.item.journal = Journal.objects.get(
-            id=1)
+        self.item.journal = Journal.objects.get(id=1)
         self.fill_from_model(0, 1, False, ['year', 'journal'])
-        self.get_components('year').set_action(self.request, EntryLineAccountList.get_action(), modal=FORMTYPE_REFRESH)
-        self.filter = Q(entry__year=self.item.year)
+        self.get_components('year').set_action(self.request, self.get_action(), modal=FORMTYPE_REFRESH, close=CLOSE_NO)
+        self.filter = Q(year=self.item.year)
 
     def _filter_by_journal(self):
         select_journal = self.getparam('journal', 4)
         journal = self.get_components('journal')
         journal.select_list.append((-1, '---'))
         journal.set_value(select_journal)
-        journal.set_action(self.request, EntryLineAccountList.get_action(), modal=FORMTYPE_REFRESH)
+        journal.set_action(self.request, self.get_action(), modal=FORMTYPE_REFRESH, close=CLOSE_NO)
         if select_journal != -1:
-            self.filter &= Q(entry__journal__id=select_journal)
+            self.filter &= Q(journal__id=select_journal)
 
     def _filter_by_nature(self):
         select_filter = self.getparam('filter', 1)
-        if (self.item.year.status in [0, 1]) and (select_filter != 2):
-            self.action_grid.append(
-                ('remove', _("Delete"), "images/delete.png", SELECT_MULTI))
-            self.action_grid.append(
-                ('insertentry', _("Add"), "images/add.png", SELECT_NONE))
-            self.action_grid.append(
-                ('model', _("Model"), "images/add.png", SELECT_NONE))
-            self.action_grid.append(
-                ('closeentry', _("Closed"), "images/ok.png", SELECT_MULTI))
-        self.action_grid.append(
-            ('costaccounting', _("Cost"), "images/edit.png", SELECT_MULTI))
         lbl = XferCompLabelForm("filterLbl")
         lbl.set_location(0, 3)
         lbl.set_value_as_name(_("Filter"))
         self.add_component(lbl)
         sel = XferCompSelect("filter")
-        sel.set_select({0: _('All'), 1: _('In progress'), 2: _(
-            'Valid'), 3: _('Lettered'), 4: _('Not lettered')})
+        sel.set_select({0: _('All'), 1: _('In progress'), 2: _('Valid'), 3: _('Lettered'), 4: _('Not lettered')})
         sel.set_value(select_filter)
         sel.set_location(1, 3)
         sel.set_size(20, 200)
-        sel.set_action(self.request, EntryLineAccountList.get_action(), close=CLOSE_NO, modal=FORMTYPE_REFRESH)
+        sel.set_action(self.request, self.get_action(), close=CLOSE_NO, modal=FORMTYPE_REFRESH)
         self.add_component(sel)
         if select_filter == 1:
-            self.filter &= Q(entry__close=False)
+            self.filter &= Q(close=False)
         elif select_filter == 2:
-            self.filter &= Q(entry__close=True)
+            self.filter &= Q(close=True)
         elif select_filter == 3:
-            self.filter &= Q(entry__link__id__gt=0)
+            self.filter &= Q(link__id__gt=0)
         elif select_filter == 4:
-            self.filter &= Q(entry__link=None)
+            self.filter &= Q(link=None)
 
     def fillresponse_header(self):
-        self.action_grid = []
-        self.action_grid.append(
-            ('open', _("Edit"), "images/edit.png", SELECT_SINGLE))
-        self.fieldnames = EntryLineAccount.get_other_fields()
-        self.item = EntryAccount()
         self._filter_by_year()
         self._filter_by_journal()
         self._filter_by_nature()
-        if self.item.year.status in [0, 1]:
-            self.action_grid.append(
-                ('link', _("Link/Unlink"), "images/left.png", SELECT_MULTI))
 
     def fillresponse(self):
         XferListEditor.fillresponse(self)
         lbl = XferCompLabelForm("result")
-        lbl.set_value_center(
-            self.item.year.total_result_text)
+        lbl.set_value_center(self.item.year.total_result_text)
         lbl.set_location(0, 10, 2)
         self.add_component(lbl)
 
 
 @ActionsManage.affect_list(_("Search"), "diacamma.accounting/images/entry.png")
 @MenuManage.describ('accounting.change_entryaccount')
-class EntryLineAccountSearch(XferSavedCriteriaSearchEditor):
+class EntryAccountSearch(XferSavedCriteriaSearchEditor):
     icon = "entry.png"
-    model = EntryLineAccount
-    field_id = 'entrylineaccount'
+    model = EntryAccount
+    field_id = 'entryaccount'
     caption = _("Search accounting entry")
-
-    def fillresponse(self):
-        self.action_grid = []
-        self.action_grid.append(
-            ('open', _("Edit"), "images/edit.png", SELECT_SINGLE))
-        self.fieldnames = EntryLineAccount.get_other_fields()
-        XferSavedCriteriaSearchEditor.fillresponse(self)
 
 
 @ActionsManage.affect_list(TITLE_LISTING, "images/print.png")
 @MenuManage.describ('accounting.change_entryaccount')
-class EntryLineAccountListing(XferPrintListing):
+class EntryAccountListing(XferPrintListing):
     icon = "entry.png"
-    model = EntryLineAccount
-    field_id = 'entrylineaccount'
+    model = EntryAccount
+    field_id = 'entryaccount'
     caption = _("Listing accounting entry")
+
+    def __init__(self):
+        self.model = EntryLineAccount
+        self.field_id = 'entrylineaccount'
+        XferPrintListing.__init__(self)
 
     def get_filter(self):
         if self.getparam('CRITERIA') is None:
@@ -166,7 +145,7 @@ class EntryLineAccountListing(XferPrintListing):
         return new_filter
 
 
-@ActionsManage.affect_grid(TITLE_DELETE, 'images/delete.png', unique=SELECT_MULTI, condition=lambda xfer, gridname='': (xfer.item.year.status in [0, 1]) and (xfer.getparams('select_filter', 0) != 2))
+@ActionsManage.affect_grid(TITLE_DELETE, 'images/delete.png', unique=SELECT_MULTI, condition=lambda xfer, gridname='': (xfer.item.year.status in [0, 1]) and (xfer.getparam('filter', 0) != 2))
 @MenuManage.describ('accounting.delete_entryaccount')
 class EntryAccountDel(XferDelete):
     icon = "entry.png"
@@ -174,15 +153,8 @@ class EntryAccountDel(XferDelete):
     field_id = 'entryaccount'
     caption = _("Delete accounting entry")
 
-    def _search_model(self):
-        entrylineaccount = self.getparam('entrylineaccount', [])
-        if len(entrylineaccount) == 0:
-            raise LucteriosException(GRAVE, _("No selection"))
-        self.items = self.model.objects.filter(
-            entrylineaccount__in=entrylineaccount)
 
-
-@ActionsManage.affect_grid(_("Closed"), "images/ok.png", unique=SELECT_MULTI, condition=lambda xfer, gridname='': (xfer.item.year.status in [0, 1]) and (xfer.getparams('select_filter', 0) != 2))
+@ActionsManage.affect_grid(_("Closed"), "images/ok.png", unique=SELECT_MULTI, condition=lambda xfer, gridname='': (xfer.item.year.status in [0, 1]) and (xfer.getparam('filter', 0) != 2))
 @MenuManage.describ('accounting.add_entryaccount')
 class EntryAccountClose(XferContainerAcknowledge):
     icon = "entry.png"
@@ -190,23 +162,13 @@ class EntryAccountClose(XferContainerAcknowledge):
     field_id = 'entryaccount'
     caption = _("Close accounting entry")
 
-    def fillresponse(self, entrylineaccount=[]):
-
-        if self.item.id is None:
-            if len(entrylineaccount) == 0:
-                raise LucteriosException(GRAVE, _("No selection"))
-            self.items = []
-            for item in self.model.objects.filter(entrylineaccount__in=entrylineaccount):
-                if not item.close:
-                    self.items.append(item)
-        else:
-            self.items = [self.item]
+    def fillresponse(self):
         if (len(self.items) > 0) and self.confirme(_("Do you want to close this entry?")):
             for item in self.items:
                 item.closed()
 
 
-@ActionsManage.affect_grid(_('Link/Unlink'), '', unique=SELECT_MULTI)
+@ActionsManage.affect_grid(_("Link/Unlink"), "images/left.png", unique=SELECT_MULTI, condition=lambda xfer, gridname='': xfer.item.year.status in [0, 1])
 @MenuManage.describ('accounting.add_entryaccount')
 class EntryAccountLink(XferContainerAcknowledge):
     icon = "entry.png"
@@ -214,12 +176,9 @@ class EntryAccountLink(XferContainerAcknowledge):
     field_id = 'entryaccount'
     caption = _("Delete accounting entry")
 
-    def fillresponse(self, entrylineaccount=[]):
-
-        if len(entrylineaccount) == 0:
-            raise LucteriosException(GRAVE, _("No selection"))
-        self.items = self.model.objects.filter(
-            entrylineaccount__in=entrylineaccount)
+    def fillresponse(self):
+        if self.items is None:
+            raise Exception('no link')
         if len(self.items) == 1:
             if self.confirme(_('Do you want unlink this entry?')):
                 self.items[0].unlink()
@@ -227,7 +186,7 @@ class EntryAccountLink(XferContainerAcknowledge):
             AccountLink.create_link(self.items)
 
 
-@ActionsManage.affect_grid('', '', unique=SELECT_MULTI)
+@ActionsManage.affect_grid(_("Cost"), "images/edit.png", unique=SELECT_MULTI)
 @MenuManage.describ('accounting.add_entryaccount')
 class EntryAccountCostAccounting(XferContainerAcknowledge):
     icon = "entry.png"
@@ -271,23 +230,21 @@ class EntryAccountCostAccounting(XferContainerAcknowledge):
 @MenuManage.describ('accounting.add_entryaccount')
 class EntryAccountOpenFromLine(XferContainerAcknowledge):
     icon = "entry.png"
-    model = EntryLineAccount
-    field_id = 'entrylineaccount'
+    model = EntryAccount
+    field_id = 'entryaccount'
     caption = _("accounting entries")
 
-    def fillresponse(self, entrylineaccount_link=0):
+    def fillresponse(self, field_id=''):
+        if field_id != '':
+            self.item = EntryAccount.objects.get(id=self.getparam(field_id, 0))
+            self.params['entryaccount'] = self.item.id
         for old_key in ["SAVE", 'entrylineaccount', 'entrylineaccount_link', 'third', 'reference', 'serial_entry']:
             if old_key in self.params.keys():
                 del self.params[old_key]
-        if (self.item.id is None) and (entrylineaccount_link != 0):
-            self.item = EntryLineAccount.objects.get(
-                id=entrylineaccount_link)
-        entry_account = self.item.entry
-        params = {'entryaccount': entry_account.id}
-        if entry_account.close:
-            self.redirect_action(EntryAccountShow.get_action(), params=params)
+        if self.item.close:
+            self.redirect_action(EntryAccountShow.get_action())
         else:
-            self.redirect_action(EntryAccountEdit.get_action(), params=params)
+            self.redirect_action(EntryAccountEdit.get_action())
 
 
 @MenuManage.describ('accounting.add_entryaccount')
@@ -298,6 +255,7 @@ class EntryAccountShow(XferShowEditor):
     caption = _("Show accounting entry")
 
 
+@ActionsManage.affect_grid(TITLE_ADD, 'images/add.png', unique=SELECT_NONE, condition=lambda xfer, gridname='': (xfer.item.year.status in [0, 1]) and (xfer.getparam('filter', 0) != 2))
 @MenuManage.describ('accounting.add_entryaccount')
 class EntryAccountEdit(XferAddEditor):
     icon = "entry.png"
@@ -338,7 +296,7 @@ class EntryAccountUnlock(XferContainerAcknowledge):
         self.item.delete_if_ghost_entry()
 
 
-@ActionsManage.affect_list('', '')
+@ActionsManage.affect_other('', '')
 @MenuManage.describ('accounting.add_entryaccount')
 class EntryAccountAfterSave(XferContainerAcknowledge):
     icon = "entry.png"
@@ -353,9 +311,9 @@ class EntryAccountAfterSave(XferContainerAcknowledge):
         self.redirect_action(EntryAccountEdit.get_action())
 
 
-@ActionsManage.affect_list('', '')
+@ActionsManage.affect_other(TITLE_ADD, "images/add.png")
 @MenuManage.describ('accounting.add_entryaccount')
-class EntryLineAccountAddModify(XferContainerAcknowledge):
+class EntryAccountAddModify(XferContainerAcknowledge):
     icon = "entry.png"
     model = EntryAccount
     field_id = 'entryaccount'
@@ -366,52 +324,7 @@ class EntryLineAccountAddModify(XferContainerAcknowledge):
             for old_key in ['num_cpt_txt', 'num_cpt', 'credit_val', 'debit_val', 'third', 'reference', 'entrylineaccount_serial', 'serial_entry']:
                 if old_key in self.params.keys():
                     del self.params[old_key]
-            serial_entry = self.item.add_new_entryline(
-                serial_entry, entrylineaccount_serial, num_cpt, credit_val, debit_val, third, reference)
-        self.redirect_action(
-            EntryAccountEdit.get_action(), params={"serial_entry": serial_entry})
-
-
-@ActionsManage.affect_show(TITLE_MODIFY, "images/edit.png")
-@MenuManage.describ('accounting.add_entryaccount')
-class EntryLineAccountEdit(XferContainerCustom):
-    icon = "entry.png"
-    model = EntryLineAccount
-    caption = _("Modify entry line of account")
-
-    def fillresponse(self, entryaccount, entrylineaccount_serial=0, serial_entry=''):
-        entry = EntryAccount.objects.get(
-            id=entryaccount)
-        for line in entry.get_entrylineaccounts(serial_entry):
-            if line.id == entrylineaccount_serial:
-                self.item = line
-        img = XferCompImage('img')
-        img.set_value(self.icon_path())
-        img.set_location(0, 0, 1, 6)
-        self.add_component(img)
-        self.fill_from_model(1, 1, True, ['account'])
-        cmp_account = self.get_components('account')
-        cmp_account.colspan = 2
-        self.item.editor.edit_creditdebit_for_line(self, 1, 2)
-        self.item.editor.edit_extra_for_line(self, 1, 4, False)
-        self.add_action(EntryLineAccountAddModify.get_action(TITLE_OK, 'images/ok.png'), params={"num_cpt": self.item.account.id})
-        self.add_action(EntryAccountEdit.get_action(TITLE_CANCEL, 'images/cancel.png'))
-
-
-@ActionsManage.affect_list(TITLE_DELETE, "images/delete.png")
-@MenuManage.describ('accounting.add_entryaccount')
-class EntryLineAccountDel(XferContainerAcknowledge):
-    icon = "entry.png"
-    model = EntryAccount
-    field_id = 'entryaccount'
-    caption = _("Delete entry line of account")
-
-    def fillresponse(self, entrylineaccount_serial=0, serial_entry=''):
-        for old_key in ['serial_entry', 'entrylineaccount_serial']:
-            if old_key in self.params.keys():
-                del self.params[old_key]
-        serial_entry = self.item.remove_entrylineaccounts(
-            serial_entry, entrylineaccount_serial)
+            serial_entry = self.item.add_new_entryline(serial_entry, entrylineaccount_serial, num_cpt, credit_val, debit_val, third, reference)
         self.redirect_action(EntryAccountEdit.get_action(), params={"serial_entry": serial_entry})
 
 
@@ -463,3 +376,99 @@ class EntryAccountCreateLinked(XferContainerAcknowledge):
         self.redirect_action(EntryAccountEdit.get_action(), params={"serial_entry": serial_entry,
                                                                     'journal': '4', 'entryaccount': new_entry.id,
                                                                     'num_cpt_txt': current_system_account().get_cash_begin()})
+
+
+@ActionsManage.affect_grid(_("Model"), "images/add.png", unique=SELECT_NONE, condition=lambda xfer, gridname='': (xfer.item.year.status in [0, 1]) and (xfer.getparam('filter', 0) != 2))
+@MenuManage.describ('accounting.add_entryaccount')
+class ModelEntrySelector(XferContainerAcknowledge):
+    icon = "entryModel.png"
+    model = EntryAccount
+    field_id = 'entryaccount'
+    caption = _("Select model of entry")
+
+    def fillresponse(self, journal=0):
+        if self.getparam('SAVE') is None:
+            dlg = self.create_custom()
+            image = XferCompImage('image')
+            image.set_value(self.icon_path())
+            image.set_location(0, 0, 1, 6)
+            dlg.add_component(image)
+            lbl = XferCompLabelForm('lblmodel')
+            lbl.set_value(_('model name'))
+            lbl.set_location(1, 0)
+            dlg.add_component(lbl)
+            if journal > 0:
+                mod_query = ModelEntry.objects.filter(journal=journal)
+            else:
+                mod_query = ModelEntry.objects.all()
+            sel = XferCompSelect('model')
+            sel.set_location(2, 0)
+            sel.set_needed(True)
+            sel.set_select_query(mod_query)
+            dlg.add_component(sel)
+            lbl = XferCompLabelForm('lblfactor')
+            lbl.set_value(_('factor'))
+            lbl.set_location(1, 1)
+            dlg.add_component(lbl)
+            fact = XferCompFloat('factor', 0.00, 1000000.0, 2)
+            fact.set_value(1.0)
+            fact.set_location(2, 1)
+            dlg.add_component(fact)
+            dlg.add_action(self.get_action(TITLE_OK, 'images/ok.png'), params={"SAVE": "YES"})
+            dlg.add_action(WrapAction(TITLE_CANCEL, 'images/cancel.png'))
+        else:
+            factor = self.getparam('factor', 1.0)
+            model = ModelEntry.objects.get(id=self.getparam('model', 0))
+            for old_key in ['SAVE', 'model', 'factor']:
+                if old_key in self.params.keys():
+                    del self.params[old_key]
+            year = FiscalYear.get_current(self.getparam('year'))
+            serial_entry = model.get_serial_entry(factor, year)
+            date_value = date.today().isoformat()
+            entry = EntryAccount.objects.create(year=year, date_value=date_value, designation=self.item.designation, journal=self.item.journal)
+            entry.editor.before_save(self)
+            self.params["entryaccount"] = entry.id
+            self.redirect_action(EntryAccountEdit.get_action(), params={"serial_entry": serial_entry})
+
+
+@ActionsManage.affect_grid(TITLE_MODIFY, "images/edit.png", unique=SELECT_SINGLE)
+@MenuManage.describ('accounting.add_entryaccount')
+class EntryLineAccountEdit(XferContainerCustom):
+    icon = "entry.png"
+    model = EntryLineAccount
+    field_id = 'entrylineaccount'
+    caption = _("Modify entry line of account")
+
+    def fillresponse(self, entryaccount, entrylineaccount_serial=0, serial_entry=''):
+        entry = EntryAccount.objects.get(id=entryaccount)
+        for line in entry.get_entrylineaccounts(serial_entry):
+            if line.id == entrylineaccount_serial:
+                self.item = line
+        img = XferCompImage('img')
+        img.set_value(self.icon_path())
+        img.set_location(0, 0, 1, 6)
+        self.add_component(img)
+        self.fill_from_model(1, 1, True, ['account'])
+        cmp_account = self.get_components('account')
+        cmp_account.colspan = 2
+        self.item.editor.edit_creditdebit_for_line(self, 1, 2)
+        self.item.editor.edit_extra_for_line(self, 1, 4, False)
+        self.add_action(EntryAccountAddModify.get_action(TITLE_OK, 'images/ok.png'), params={"num_cpt": self.item.account.id})
+        self.add_action(EntryAccountEdit.get_action(TITLE_CANCEL, 'images/cancel.png'))
+
+
+@ActionsManage.affect_grid(TITLE_DELETE, "images/delete.png", unique=SELECT_SINGLE)
+@MenuManage.describ('accounting.add_entryaccount')
+class EntryLineAccountDel(XferContainerAcknowledge):
+    icon = "entry.png"
+    model = EntryLineAccount
+    field_id = 'entrylineaccount'
+    caption = _("Delete entry line of account")
+
+    def fillresponse(self, entryaccount=0, entrylineaccount_serial=0, serial_entry=''):
+        for old_key in ['serial_entry', 'entrylineaccount_serial']:
+            if old_key in self.params.keys():
+                del self.params[old_key]
+        entry = EntryAccount.objects.get(id=entryaccount)
+        serial_entry = entry.remove_entrylineaccounts(serial_entry, entrylineaccount_serial)
+        self.redirect_action(EntryAccountEdit.get_action(), params={"serial_entry": serial_entry})

@@ -83,13 +83,6 @@ class ChartsAccountList(XferListEditor):
         lbl.set_location(0, 11, 2)
         self.add_component(lbl)
 
-        self.actions = []
-        self.model = FiscalYear
-        self.item = self.item.year
-        for act, opt in ActionsManage.get_actions(ActionsManage.ACTION_IDENT_SHOW, self, key=action_list_sorted):
-            self.add_action(act, **opt)
-        self.add_action(WrapAction(_('Close'), 'images/close.png'))
-
 
 @ActionsManage.affect_grid(TITLE_ADD, "images/add.png", condition=lambda xfer, gridname='': xfer.item.year.status != 2)
 @ActionsManage.affect_show(TITLE_MODIFY, "images/edit.png", condition=lambda xfer: xfer.item.year.status != 2)
@@ -116,11 +109,6 @@ class ChartsAccountShow(XferShowEditor):
     model = ChartsAccount
     field_id = 'chartsaccount'
     caption = _("Show an account")
-
-    def fillresponse(self):
-        if self.item.year.status > 1:
-            self.action_list = []
-        XferShowEditor.fillresponse(self)
 
 
 @ActionsManage.affect_grid(TITLE_DELETE, "images/delete.png", unique=SELECT_MULTI, condition=lambda xfer, gridname='': xfer.item.year.status != 2)
@@ -193,39 +181,42 @@ class ChartsAccountListing(XferPrintListing):
         return new_filter
 
 
-@ActionsManage.affect_show(_('Last fiscal year'), 'images/edit.png',
-                           condition=lambda xfer: (xfer.item.status == 0) and (xfer.item.last_fiscalyear is not None) and xfer.item.has_no_lastyear_entry and (xfer.item.last_fiscalyear.status == 2))
+@ActionsManage.affect_list(_('Last fiscal year'), 'images/edit.png',
+                           condition=lambda xfer: (xfer.item.year.status == 0) and (xfer.item.year.last_fiscalyear is not None) and xfer.item.year.has_no_lastyear_entry and (xfer.item.year.last_fiscalyear.status == 2))
 @MenuManage.describ('accounting.add_fiscalyear')
 class FiscalYearReportLastYear(XferContainerAcknowledge):
     icon = "accountingYear.png"
-    model = FiscalYear
-    field_id = 'year'
+    model = ChartsAccount
+    field_id = 'chartsaccount'
     caption = _("Last fiscal year import")
 
-    def fillresponse(self):
+    def fillresponse(self, year=0):
+        current_year = FiscalYear.objects.get(id=year)
         if self.confirme(_('Do you want to import last year result?')):
-            self.item.run_report_lastyear()
+            current_year.run_report_lastyear()
 
 
-@ActionsManage.affect_show(_('Begin'), 'images/ok.png', condition=lambda xfer: xfer.item.status == 0, intop=True)
+@ActionsManage.affect_list(_('Begin'), 'images/ok.png', condition=lambda xfer: xfer.item.year.status == 0, intop=True)
 @MenuManage.describ('accounting.add_fiscalyear')
 class FiscalYearBegin(XferContainerAcknowledge):
     icon = "accountingYear.png"
-    model = FiscalYear
-    field_id = 'year'
+    model = ChartsAccount
+    field_id = 'chartsaccount'
     caption_add = _("Begin fiscal year")
 
-    def fillresponse(self):
-        self.item.editor.run_begin(self)
+    def fillresponse(self, year=0):
+        current_year = FiscalYear.objects.get(id=year)
+        current_year.editor.run_begin(self)
 
 
-@ActionsManage.affect_show(_('Closing'), 'images/ok.png', condition=lambda xfer: xfer.item.status == 1, intop=True)
+@ActionsManage.affect_list(_('Closing'), 'images/ok.png', condition=lambda xfer: xfer.item.year.status == 1, intop=True)
 @MenuManage.describ('accounting.add_fiscalyear')
 class FiscalYearClose(XferContainerAcknowledge):
     icon = "accountingYear.png"
-    model = FiscalYear
-    field_id = 'year'
+    model = ChartsAccount
+    field_id = 'chartsaccount'
     caption_add = _("Close fiscal year")
 
-    def fillresponse(self):
-        self.item.editor.run_close(self)
+    def fillresponse(self, year=0):
+        current_year = FiscalYear.objects.get(id=year)
+        current_year.editor.run_close(self)

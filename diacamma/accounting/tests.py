@@ -35,11 +35,12 @@ from lucterios.CORE.views import StatusMenu
 
 from diacamma.accounting.views import ThirdList, ThirdAdd, ThirdSave, ThirdShow, AccountThirdAddModify, AccountThirdDel, ThirdListing, ThirdDisable
 from diacamma.accounting.views_admin import Configuration, JournalAddModify, JournalDel, FiscalYearAddModify, FiscalYearActive, FiscalYearDel
-from diacamma.accounting.views_other import ModelEntryList, ModelEntryAddModify, ModelLineEntryAddModify, ModelEntrySelector
+from diacamma.accounting.views_other import ModelEntryList, ModelEntryAddModify, ModelLineEntryAddModify
 from diacamma.accounting.test_tools import initial_contacts, fill_entries, initial_thirds, create_third, fill_accounts, fill_thirds, default_compta, set_accounting_system, add_models
 from diacamma.accounting.models import FiscalYear
 from diacamma.accounting.system import get_accounting_system
 from diacamma.accounting.tools import current_system_account, clear_system_account
+from diacamma.accounting.views_entries import ModelEntrySelector
 
 
 class ThirdTest(LucteriosTest):

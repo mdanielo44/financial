@@ -654,7 +654,7 @@ class EntryAccount(LucteriosModel):
 
     @classmethod
     def get_default_fields(cls):
-        return ['year', 'close', 'num', 'journal', 'date_entry', 'date_value', 'designation', 'costaccounting']
+        return ['num', 'date_entry', 'date_value', (_('description'), 'description'), 'link', 'costaccounting']
 
     @classmethod
     def get_edit_fields(cls):
@@ -670,6 +670,21 @@ class EntryAccount(LucteriosModel):
             for entry in cls.objects.filter(close=False):
                 if len(entry.entrylineaccount_set.all()) == 0:
                     entry.delete()
+
+    @property
+    def description(self):
+        res = self.designation
+        res += "{[br/]}"
+        res += "{[table]}"
+        for line in self.entrylineaccount_set.all():
+            res += "{[tr]}"
+            res += "{[td]}%s{[/td]}" % line.entry_account
+            res += "{[td]}%s{[/td]}" % format_devise(line.account.credit_debit_way() * line.amount, 2)
+            if (line.reference is not None) and (line.reference != ''):
+                res += "{[td]}%s{[/td]}" % line.reference
+            res += "{[/tr]}"
+        res += "{[/table]}"
+        return res
 
     def can_delete(self):
         if self.close:
@@ -850,6 +865,16 @@ class EntryLineAccount(LucteriosModel):
     reference = models.CharField(_('reference'), max_length=100, null=True)
     third = models.ForeignKey('Third', verbose_name=_(
         'third'), null=True, on_delete=models.PROTECT, db_index=True)
+
+    def __str__(self):
+        res = ""
+        try:
+            res = "%s %s" % (self.entry_account, format_devise(self.account.credit_debit_way() * self.amount, 2))
+            if (self.reference is not None) and (self.reference != ''):
+                res += " (%s)" % self.reference
+        except:
+            res = "???"
+        return res
 
     @classmethod
     def get_default_fields(cls):
