@@ -96,11 +96,13 @@ class PayoffDel(XferDelete):
 @MenuManage.describ('')
 class SupportingThird(XferListEditor):
     icon = "diacamma.accounting/images/thirds.png"
-    model = Third
-    field_id = 'third'
+    model = Supporting
+    field_id = 'supporting'
     caption = _("Select third")
 
     def __init__(self, **kwargs):
+        self.model = Third
+        self.field_id = 'third'
         XferListEditor.__init__(self, **kwargs)
         self.action_list = []
 
