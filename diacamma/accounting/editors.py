@@ -251,7 +251,7 @@ class EntryAccountEditor(LucteriosEditor):
                 link_grid_lines.set_model(linkentries, fieldnames=None, xfer_custom=xfer)
                 link_grid_lines.set_location(1, last_row + 6, 5)
                 link_grid_lines.add_action(xfer.request, ActionsManage.get_action_url(
-                    'accounting.EntryAccount', 'OpenFromLine', xfer), unique=SELECT_SINGLE, close=CLOSE_YES, params={'field_id':'entryaccount_link'})
+                    'accounting.EntryAccount', 'OpenFromLine', xfer), unique=SELECT_SINGLE, close=CLOSE_YES, params={'field_id': 'entryaccount_link'})
                 xfer.add_component(link_grid_lines)
         if self.added:
             xfer.add_action(xfer.get_action(TITLE_MODIFY, "images/ok.png"), params={"SAVE": "YES"})
@@ -271,7 +271,8 @@ class EntryAccountEditor(LucteriosEditor):
         if entry_line.has_account:
             btn = XferCompButton('entrybtn')
             btn.set_location(3, last_row + 5)
-            btn.set_action(xfer.request, ActionsManage.get_action_url('accounting.EntryAccount', 'AddModify', xfer), close=CLOSE_NO)
+            btn.set_action(xfer.request, ActionsManage.get_action_url(
+                'accounting.EntryLineAccount', 'Add', xfer), close=CLOSE_YES)
             xfer.add_component(btn)
         self.item.editor.show(xfer)
         grid_lines = xfer.get_components('entrylineaccount')

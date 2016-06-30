@@ -94,7 +94,7 @@ class ConfigurationAccountingSystem(XferContainerAcknowledge):
                 clear_system_account()
 
 
-@ActionsManage.affect_grid(_("Activate"), "images/ok.png")
+@ActionsManage.affect_grid(_("Activate"), "images/ok.png", unique=SELECT_SINGLE)
 @MenuManage.describ('accounting.add_fiscalyear')
 class FiscalYearActive(XferContainerAcknowledge):
     icon = "images/ok.png"
@@ -106,7 +106,7 @@ class FiscalYearActive(XferContainerAcknowledge):
         self.item.set_has_actif()
 
 
-@ActionsManage.affect_grid(_("Export"), "diacamma.accounting/images/entry.png")
+@ActionsManage.affect_grid(_("Export"), "diacamma.accounting/images/entry.png", unique=SELECT_SINGLE)
 @MenuManage.describ('accounting.change_fiscalyear')
 class FiscalYearExport(XferContainerCustom):
     icon = "entry.png"

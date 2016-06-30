@@ -313,19 +313,35 @@ class EntryAccountAfterSave(XferContainerAcknowledge):
 
 @ActionsManage.affect_other(TITLE_ADD, "images/add.png")
 @MenuManage.describ('accounting.add_entryaccount')
-class EntryAccountAddModify(XferContainerAcknowledge):
+class EntryLineAccountAdd(XferContainerAcknowledge):
     icon = "entry.png"
-    model = EntryAccount
-    field_id = 'entryaccount'
+    model = EntryLineAccount
+    field_id = 'entrylineaccount'
     caption = _("Save entry line of account")
 
-    def fillresponse(self, entrylineaccount_serial=0, serial_entry='', num_cpt=0, credit_val=0.0, debit_val=0.0, third=0, reference='None'):
+    def fillresponse(self, entryaccount=0, entrylineaccount_serial=0, serial_entry='', num_cpt=0, credit_val=0.0, debit_val=0.0, third=0, reference='None'):
         if (credit_val > 0.0001) or (debit_val > 0.0001):
             for old_key in ['num_cpt_txt', 'num_cpt', 'credit_val', 'debit_val', 'third', 'reference', 'entrylineaccount_serial', 'serial_entry']:
                 if old_key in self.params.keys():
                     del self.params[old_key]
-            serial_entry = self.item.add_new_entryline(serial_entry, entrylineaccount_serial, num_cpt, credit_val, debit_val, third, reference)
-        self.redirect_action(EntryAccountEdit.get_action(), params={"serial_entry": serial_entry})
+            entry = EntryAccount.objects.get(id=entryaccount)
+            serial_entry = entry.add_new_entryline(serial_entry, entrylineaccount_serial, num_cpt, credit_val, debit_val, third, reference)
+            self.redirect_action(EntryAccountEdit.get_action(), params={"serial_entry": serial_entry})
+#             self.params["serial_entry"] = serial_entry
+#             entry.editor.edit(self)
+#             del self.params["serial_entry"]
+
+
+# @MenuManage.describ('accounting.add_entryaccount')
+# class EntryAccountModify(EntryLineAccountAdd):
+#     icon = "entry.png"
+#     model = EntryAccount
+#     field_id = 'entryaccount'
+#     caption = _("Save entry line of account")
+# 
+#     def fillresponse(self, entryaccount=0, entrylineaccount_serial=0, serial_entry='', num_cpt=0, credit_val=0.0, debit_val=0.0, third=0, reference='None'):
+#         EntryLineAccountAdd.fillresponse(self, entryaccount=entryaccount, entrylineaccount_serial=entrylineaccount_serial, serial_entry=serial_entry,
+#                                          num_cpt=num_cpt, credit_val=credit_val, debit_val=debit_val, third=third, reference=reference)
 
 
 @MenuManage.describ('accounting.add_entryaccount')
@@ -453,7 +469,7 @@ class EntryLineAccountEdit(XferContainerCustom):
         cmp_account.colspan = 2
         self.item.editor.edit_creditdebit_for_line(self, 1, 2)
         self.item.editor.edit_extra_for_line(self, 1, 4, False)
-        self.add_action(EntryAccountAddModify.get_action(TITLE_OK, 'images/ok.png'), params={"num_cpt": self.item.account.id})
+        self.add_action(EntryLineAccountAdd.get_action(TITLE_OK, 'images/ok.png'), params={"num_cpt": self.item.account.id})
         self.add_action(EntryAccountEdit.get_action(TITLE_CANCEL, 'images/cancel.png'))
 
 
