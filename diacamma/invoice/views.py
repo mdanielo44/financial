@@ -142,6 +142,7 @@ class BillTransition(XferTransition):
 
     def fill_dlg_payoff(self, withpayoff):
         dlg = self.create_custom(Payoff)
+        dlg.caption = _("Valid bill")
         icon = XferCompImage('img')
         icon.set_location(0, 0, 1, 6)
         icon.set_value(self.icon_path())
