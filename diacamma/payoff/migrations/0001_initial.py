@@ -2,27 +2,8 @@
 from __future__ import unicode_literals
 
 from django.db import migrations, models
-from django.utils.translation import ugettext_lazy as _
 import django.core.validators
 import django.db.models.deletion
-
-from lucterios.CORE.models import Parameter
-
-
-def initial_values(*args):
-    param = Parameter.objects.create(
-        name='payoff-bankcharges-account', typeparam=0)
-    param.title = _("payoff-bankcharges-account")
-    param.args = "{'Multi':False}"
-    param.value = ''
-    param.save()
-
-    param = Parameter.objects.create(
-        name='payoff-cash-account', typeparam=0)
-    param.title = _("payoff-cash-account")
-    param.args = "{'Multi':False}"
-    param.value = '531'
-    param.save()
 
 
 class Migration(migrations.Migration):
@@ -124,5 +105,4 @@ class Migration(migrations.Migration):
                 'default_permissions': []
             },
         ),
-        migrations.RunPython(initial_values),
     ]

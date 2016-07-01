@@ -24,53 +24,27 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
 from __future__ import unicode_literals
+from django.utils import translation
 from django.utils.translation import ugettext_lazy as _
 from django.db.models.deletion import PROTECT, SET_NULL
 from django.db import models, migrations
+from django.conf import settings
 
 from lucterios.CORE.models import PrintModel
-from diacamma.accounting.models import Journal, Third, ChartsAccount, EntryLineAccount
+from diacamma.accounting.models import Journal
 
 
 def initial_values(*args):
+    translation.activate(settings.LANGUAGE_CODE)
     Journal.objects.create(name=_("Last year report"), id=1)
     Journal.objects.create(name=_("Buying"), id=2)
     Journal.objects.create(name=_("Selling"), id=3)
     Journal.objects.create(name=_("Payment"), id=4)
     Journal.objects.create(name=_("Other"), id=5)
 
-    prtmdl = PrintModel.objects.create(
-        name=_("listing"), kind=0, modelname=Third.get_long_name())
-    prtmdl.change_listing(210, 297, [(12, _("contact"), "#contact.str"),
-                                     (18, _('account'),
-                                      "#accountthird_set.code"),
-                                     (13, _("total"), "#total")])
-    prtmdl.save()
-
-    prtmdl = PrintModel.objects.create(
-        name=_("listing"), kind=0, modelname=ChartsAccount.get_long_name())
-    prtmdl.change_listing(210, 297, [(10, _('code'), '#code'),
-                                     (25, _('name'), '#name'),
-                                     (15, _('total of last year'),
-                                      '#last_year_total'),
-                                     (15, _('total current'),
-                                      '#current_total'),
-                                     (15, _('total validated'), '#current_validated')])
-    prtmdl.save()
-
-    prtmdl = PrintModel.objects.create(
-        name=_("listing"), kind=0, modelname=EntryLineAccount.get_long_name())
-    prtmdl.change_listing(297, 210, [(5, _('numeros'), '#entry.num'),
-                                     (12, _('date entry'),
-                                      '#entry.date_entry'),
-                                     (12, _('date value'),
-                                      '#entry.date_value'),
-                                     (20, _('account'), '#entry_account'),
-                                     (25, _('name'), '#entry.designation'),
-                                     (15, _('debit'), '#debit'),
-                                     (15, _('credit'), '#credit'),
-                                     (5, _('link'), '#entry.link')])
-    prtmdl.save()
+    PrintModel().load_model('diacamma.accounting', "Third_0001")
+    PrintModel().load_model('diacamma.accounting', "ChartsAccount_0001")
+    PrintModel().load_model('diacamma.accounting', "EntryLineAccount_0001")
 
 
 class Migration(migrations.Migration):

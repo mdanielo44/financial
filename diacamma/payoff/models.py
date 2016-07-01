@@ -38,13 +38,14 @@ from django.utils import six
 from lucterios.framework.models import LucteriosModel, get_value_converted
 from lucterios.framework.error import LucteriosException, IMPORTANT
 from lucterios.framework.printgenerators import ReportingGenerator
-from lucterios.CORE.models import PrintModel
+from lucterios.CORE.models import PrintModel, Parameter
 from lucterios.CORE.parameters import Params
 from lucterios.contacts.models import LegalEntity
 
 from diacamma.accounting.models import EntryAccount, FiscalYear, Third, Journal, \
     ChartsAccount, EntryLineAccount, AccountLink
 from diacamma.accounting.tools import format_devise, currency_round, correct_accounting_code
+from lucterios.framework.signal_and_lock import Signal
 
 
 def remove_accent(text, replace_space=False):
@@ -655,3 +656,10 @@ class BankTransaction(LucteriosModel):
         verbose_name_plural = _('bank transactions')
         default_permissions = ['change']
         ordering = ['-date']
+
+
+@Signal.decorate('checkparam')
+def payoff_checkparam():
+    Parameter.check_and_create(name='payoff-bankcharges-account', typeparam=0, title=_("payoff-bankcharges-account"), args="{'Multi':False}", value='')
+    Parameter.check_and_create(name='payoff-cash-account', typeparam=0, title=_("payoff-cash-account"), args="{'Multi':False}", value='531')
+    Parameter.check_and_create(name='payoff-email-message', typeparam=0, title=_("payoff-email-message"), args="{'Multi':True}", value=_('%(name)s\n\nJoint in this email %(doc)s.\n\nRegards'))
