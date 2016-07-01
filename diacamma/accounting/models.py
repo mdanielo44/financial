@@ -617,11 +617,12 @@ class AccountLink(LucteriosModel):
     def create_link(cls, entries):
         year = None
         for entry in entries:
+            if entry.year.status == 2:
+                raise LucteriosException(IMPORTANT, _("Fiscal year finished!"))
             if year is None:
                 year = entry.year
             elif year != entry.year:
-                raise LucteriosException(
-                    IMPORTANT, _("This entries are not in same fiscal year!"))
+                raise LucteriosException(IMPORTANT, _("This entries are not in same fiscal year!"))
             entry.unlink()
         new_link = AccountLink.objects.create()
         for entry in entries:
@@ -663,6 +664,15 @@ class EntryAccount(LucteriosModel):
     @classmethod
     def get_show_fields(cls):
         return ['num', 'journal', 'date_entry', 'date_value', 'designation']
+
+    @classmethod
+    def get_search_fields(cls):
+        result = ['year', 'date_value', 'num', 'designation', 'date_entry', 'costaccounting']
+        result.append(('entrylineaccount_set.amount', models.DecimalField(_('amount')), 'entrylineaccount__amount__abs', Q()))
+        result.extend(['entrylineaccount_set.account.code', 'entrylineaccount_set.account.name', 'entrylineaccount_set.account.type_of_account', 'entrylineaccount_set.reference'])
+        for fieldname in Third.get_search_fields():
+            result.append("entrylineaccount_set.third." + fieldname)
+        return result
 
     @classmethod
     def clear_ghost(cls):

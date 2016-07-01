@@ -105,6 +105,7 @@ class SupportingThird(XferListEditor):
         self.field_id = 'third'
         XferListEditor.__init__(self, **kwargs)
         self.action_list = []
+        self.code_mask = ''
 
     def fillresponse_header(self):
         contact_filter = self.getparam('filter', '')
@@ -118,6 +119,8 @@ class SupportingThird(XferListEditor):
         comp.set_location(1, 2)
         self.add_component(comp)
         self.filter = Q(status=0)
+        if self.code_mask != '':
+            self.filter &= Q(accountthird__code__regex=self.code_mask)
         if contact_filter != "":
             q_legalentity = Q(
                 contact__legalentity__name__contains=contact_filter)
@@ -125,11 +128,14 @@ class SupportingThird(XferListEditor):
                 contact__individual__lastname__contains=contact_filter))
             self.filter &= (q_legalentity | q_individual)
 
-    def fillresponse(self):
+    def fillresponse(self, code_mask=''):
+        self.code_mask = code_mask
         XferListEditor.fillresponse(self)
         grid = self.get_components(self.field_id)
         grid.add_action(self.request, SupportingThirdValid.get_action(_('select'), 'images/ok.png'),
                         modal=FORMTYPE_MODAL, close=CLOSE_YES, unique=SELECT_SINGLE, pos_act=0)
+        self.actions = []
+        self.add_action(WrapAction(TITLE_CLOSE, 'images/close.png'))
 
 
 @MenuManage.describ('')

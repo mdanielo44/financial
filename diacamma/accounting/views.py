@@ -44,7 +44,7 @@ from lucterios.contacts.tools import ContactSelection
 from lucterios.contacts.models import AbstractContact
 
 from diacamma.accounting.models import Third, AccountThird, FiscalYear, \
-    EntryLineAccount, ModelLineEntry
+    EntryLineAccount, ModelLineEntry, EntryAccount
 from diacamma.accounting.views_admin import Configuration
 
 MenuManage.add_sub("financial", None, "diacamma.accounting/images/financial.png", _("Financial"), _("Financial tools"), 50)
@@ -75,7 +75,7 @@ class ThirdList(XferListEditor):
         self.add_component(lbl)
         comp = XferCompEdit('filter')
         comp.set_value(contact_filter)
-        comp.set_action(self.request, self.get_action(), modal=FORMTYPE_REFRESH)
+        comp.set_action(self.request, self.get_action(), modal=FORMTYPE_REFRESH, close=CLOSE_NO)
         comp.set_location(1, 2)
         self.add_component(comp)
 
@@ -88,7 +88,7 @@ class ThirdList(XferListEditor):
                         (2, _('Filter any thirds unbalanced'))])
         edt.set_value(show_filter)
         edt.set_location(1, 3)
-        edt.set_action(self.request, self.get_action(), modal=FORMTYPE_REFRESH)
+        edt.set_action(self.request, self.get_action(), modal=FORMTYPE_REFRESH, close=CLOSE_NO)
         self.add_component(edt)
         if show_filter != 0:
             self.fieldnames = Third.get_other_fields()
@@ -317,12 +317,11 @@ def show_contact_accounting(contact, xfer):
         if main_third is not None:
             xfer.new_tab(_("Financial"))
             xfer.item = main_third
-            xfer.filltab_from_model(
-                0, 0, True, ["status", ((_('total'), 'total'),)])
+            xfer.filltab_from_model(0, 0, True, ["status", ((_('total'), 'total'),)])
             btn = XferCompButton('show_third')
             btn.set_location(0, 50, 2)
-            btn.set_action(xfer.request, ActionsManage.get_act_changed("Third", 'show', _('Show'), 'images/edit.png'),
-                           {'modal': FORMTYPE_MODAL, 'close': CLOSE_NO, 'params': {"third": six.text_type(main_third.id)}})
+            btn.set_action(xfer.request, ActionsManage.get_action_url('accounting.Third', 'Show', xfer),
+                           modal=FORMTYPE_MODAL, close=CLOSE_NO, params={"third": six.text_type(main_third.id)})
             xfer.add_component(btn)
             xfer.item = contact
 
@@ -331,14 +330,12 @@ def show_contact_accounting(contact, xfer):
 def thirdaddon_accounting(item, xfer):
     if WrapAction.is_permission(xfer.request, 'accounting.change_entryaccount'):
         try:
+            entry_lines_filter = Q(entrylineaccount__third=item)
             lines_filter = xfer.getparam('lines_filter', 0)
             if lines_filter == 0:
-                entry_lines_filter = Q(entry__year=FiscalYear.get_current())
+                entry_lines_filter &= Q(year=FiscalYear.get_current())
             elif lines_filter == 1:
-                entry_lines_filter = Q(
-                    entry__year=FiscalYear.get_current()) & Q(entry__close=False)
-            else:
-                entry_lines_filter = Q()
+                entry_lines_filter &= Q(year=FiscalYear.get_current()) & Q(close=False)
             xfer.new_tab(_('entry of account'))
             lbl = XferCompLabelForm('lbl_lines_filter')
             lbl.set_value_as_name(_('Accounts filter'))
@@ -352,16 +349,15 @@ def thirdaddon_accounting(item, xfer):
             edt.set_action(xfer.request, xfer.get_action(),
                            modal=FORMTYPE_REFRESH, close=CLOSE_NO)
             xfer.add_component(edt)
-            entry_lines = item.entrylineaccount_set.filter(entry_lines_filter)
-            link_grid_lines = XferCompGrid('entrylineaccount')
-            link_grid_lines.set_model(
-                entry_lines, EntryLineAccount.get_other_fields(), xfer)
+            entries = EntryAccount.objects.filter(entry_lines_filter)
+            link_grid_lines = XferCompGrid('entryaccount')
+            link_grid_lines.set_model(entries, EntryAccount.get_default_fields(), xfer)
             link_grid_lines.set_location(0, 2, 2)
-            link_grid_lines.add_action(xfer.request, ActionsManage.get_act_changed('EntryLineAccount', 'open', _('Edit'), 'images/edit.png'),
+            link_grid_lines.add_action(xfer.request, ActionsManage.get_action_url('accounting.EntryAccount', 'OpenFromLine', xfer),
                                        modal=FORMTYPE_MODAL, unique=SELECT_SINGLE, close=CLOSE_NO)
-            link_grid_lines.add_action(xfer.request, ActionsManage.get_act_changed('EntryLineAccount', 'closeentry', _("Closed"), "images/ok.png"),
+            link_grid_lines.add_action(xfer.request, ActionsManage.get_action_url('accounting.EntryAccount', 'Close', xfer),
                                        modal=FORMTYPE_MODAL, unique=SELECT_MULTI, close=CLOSE_NO)
-            link_grid_lines.add_action(xfer.request, ActionsManage.get_act_changed('EntryLineAccount', 'link', _("Link/Unlink"), "images/left.png"),
+            link_grid_lines.add_action(xfer.request, ActionsManage.get_action_url('accounting.EntryAccount', 'Link', xfer),
                                        modal=FORMTYPE_MODAL, unique=SELECT_MULTI, close=CLOSE_NO)
             xfer.add_component(link_grid_lines)
         except LucteriosException:

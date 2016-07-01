@@ -40,7 +40,7 @@ from diacamma.accounting.test_tools import initial_contacts, fill_entries, initi
 from diacamma.accounting.models import FiscalYear
 from diacamma.accounting.system import get_accounting_system
 from diacamma.accounting.tools import current_system_account, clear_system_account
-from diacamma.accounting.views_entries import ModelEntrySelector
+from diacamma.accounting.views_entries import EntryAccountModelSelector
 
 
 class ThirdTest(LucteriosTest):
@@ -300,17 +300,20 @@ class ThirdTest(LucteriosTest):
 
         self.assert_xml_equal('COMPONENTS/SELECT[@name="lines_filter"]', '0')
         self.assert_count_equal('COMPONENTS/SELECT[@name="lines_filter"]/CASE', 3)
-        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount"]/HEADER', 9)
-        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD', 3)
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="entry.num"]', '2')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="credit"]', '63.94€')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[1]/VALUE[@name="entry.link"]', 'A')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="entry.num"]', '3')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="debit"]', '63.94€')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[2]/VALUE[@name="entry.link"]', 'A')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[3]/VALUE[@name="entry.num"]', '---')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[3]/VALUE[@name="debit"]', '34.01€')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD[3]/VALUE[@name="entry.link"]', '---')
+        self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/HEADER', 6)
+        self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', 3)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[1]/VALUE[@name="num"]', '2')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[1]/VALUE[@name="link"]', 'A')
+        description = self.get_first_xpath('COMPONENTS/GRID[@name="entryaccount"]/RECORD[1]/VALUE[@name="description"]').text
+        self.assertTrue('63.94€' in description, description)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[2]/VALUE[@name="num"]', '3')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[2]/VALUE[@name="link"]', 'A')
+        description = self.get_first_xpath('COMPONENTS/GRID[@name="entryaccount"]/RECORD[2]/VALUE[@name="description"]').text
+        self.assertTrue('63.94€' in description, description)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[3]/VALUE[@name="num"]', '---')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[3]/VALUE[@name="link"]', '---')
+        description = self.get_first_xpath('COMPONENTS/GRID[@name="entryaccount"]/RECORD[3]/VALUE[@name="description"]').text
+        self.assertTrue('34.01€' in description, description)
 
         self.factory.xfer = AccountThirdDel()
         self.call('/diacamma.accounting/accountThirdDel', {"accountthird": 6}, False)
@@ -329,12 +332,9 @@ class ThirdTest(LucteriosTest):
         self.assert_count_equal('COMPONENTS/TAB', 3)
         self.assert_count_equal('COMPONENTS/*', 16 + 7 + 4 + 4)
         self.assert_xml_equal('COMPONENTS/SELECT[@name="lines_filter"]', '0')
-        self.assert_count_equal(
-            'COMPONENTS/SELECT[@name="lines_filter"]/CASE', 3)
-        self.assert_count_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount"]/HEADER', 9)
-        self.assert_count_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount"]/RECORD', 3)
+        self.assert_count_equal('COMPONENTS/SELECT[@name="lines_filter"]/CASE', 3)
+        self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/HEADER', 6)
+        self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', 3)
 
         self.factory.xfer = ThirdShow()
         self.call('/diacamma.accounting/thirdShow',
@@ -344,8 +344,8 @@ class ThirdTest(LucteriosTest):
         self.assert_count_equal('COMPONENTS/*', 16 + 7 + 4 + 4)
         self.assert_xml_equal('COMPONENTS/SELECT[@name="lines_filter"]', '1')
         self.assert_count_equal('COMPONENTS/SELECT[@name="lines_filter"]/CASE', 3)
-        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount"]/HEADER', 9)
-        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD', 1)
+        self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/HEADER', 6)
+        self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', 1)
 
         default_compta()
 
@@ -357,8 +357,8 @@ class ThirdTest(LucteriosTest):
         self.assert_count_equal('COMPONENTS/*', 16 + 7 + 4 + 4)
         self.assert_xml_equal('COMPONENTS/SELECT[@name="lines_filter"]', '0')
         self.assert_count_equal('COMPONENTS/SELECT[@name="lines_filter"]/CASE', 3)
-        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount"]/HEADER', 9)
-        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD', 0)
+        self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/HEADER', 6)
+        self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', 0)
 
         self.factory.xfer = ThirdShow()
         self.call('/diacamma.accounting/thirdShow', {"third": 4, 'lines_filter': 2}, False)
@@ -367,8 +367,8 @@ class ThirdTest(LucteriosTest):
         self.assert_count_equal('COMPONENTS/*', 16 + 7 + 4 + 4)
         self.assert_xml_equal('COMPONENTS/SELECT[@name="lines_filter"]', '2')
         self.assert_count_equal('COMPONENTS/SELECT[@name="lines_filter"]/CASE', 3)
-        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount"]/HEADER', 9)
-        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD', 3)
+        self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/HEADER', 6)
+        self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', 3)
 
     def test_list(self):
         fill_thirds()
@@ -835,25 +835,25 @@ class ModelTest(LucteriosTest):
 
     def test_selector(self):
         add_models()
-        self.factory.xfer = ModelEntrySelector()
-        self.call('/diacamma.accounting/modelEntrySelector', {}, False)
-        self.assert_observer('core.custom', 'diacamma.accounting', 'modelEntrySelector')
+        self.factory.xfer = EntryAccountModelSelector()
+        self.call('/diacamma.accounting/entryAccountModelSelector', {}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountModelSelector')
         self.assert_count_equal('COMPONENTS/*', 5)
         self.assert_count_equal('COMPONENTS/SELECT[@name="model"]/CASE', 2)
         self.assert_xml_equal('COMPONENTS/FLOAT[@name="factor"]', '1.00')
 
-        self.factory.xfer = ModelEntrySelector()
-        self.call('/diacamma.accounting/modelEntrySelector', {'journal': 2}, False)
-        self.assert_observer('core.custom', 'diacamma.accounting', 'modelEntrySelector')
+        self.factory.xfer = EntryAccountModelSelector()
+        self.call('/diacamma.accounting/entryAccountModelSelector', {'journal': 2}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountModelSelector')
         self.assert_count_equal('COMPONENTS/*', 5)
         self.assert_count_equal('COMPONENTS/SELECT[@name="model"]/CASE', 1)
         self.assert_xml_equal('COMPONENTS/FLOAT[@name="factor"]', '1.00')
 
     def test_insert(self):
         add_models()
-        self.factory.xfer = ModelEntrySelector()
-        self.call('/diacamma.accounting/modelEntrySelector', {'SAVE': 'YES', 'journal': '2', 'model': 1, 'factor': 2.50}, False)
-        self.assert_observer('core.acknowledge', 'diacamma.accounting', 'modelEntrySelector')
+        self.factory.xfer = EntryAccountModelSelector()
+        self.call('/diacamma.accounting/entryAccountModelSelector', {'SAVE': 'YES', 'journal': '2', 'model': 1, 'factor': 2.50}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountModelSelector')
         self.assert_count_equal("CONTEXT/*", 2)
         self.assert_xml_equal("CONTEXT/PARAM[@name='entryaccount']", "1")
         self.assert_xml_equal("CONTEXT/PARAM[@name='journal']", "2")

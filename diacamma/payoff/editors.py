@@ -52,7 +52,7 @@ class SupportingEditor(LucteriosEditor):
             btn = XferCompButton('change_third')
             btn.set_location(third.col + third.colspan, third.row)
             btn.set_action(xfer.request, ActionsManage.get_action_url('payoff.Supporting', 'Third', xfer),
-                           modal=FORMTYPE_MODAL, close=CLOSE_NO)
+                           modal=FORMTYPE_MODAL, close=CLOSE_NO, params={'code_mask': self.item.get_third_mask()})
             xfer.add_component(btn)
 
         if self.item.third is not None:
