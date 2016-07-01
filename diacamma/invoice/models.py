@@ -33,10 +33,13 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.utils.translation import ugettext_lazy as _
 from django.utils import six
+from django_fsm import FSMIntegerField, transition
 
 from lucterios.framework.models import LucteriosModel, get_value_if_choices, \
     get_value_converted
 from lucterios.framework.error import LucteriosException, IMPORTANT, GRAVE
+from lucterios.framework.signal_and_lock import Signal
+from lucterios.CORE.models import Parameter
 from lucterios.CORE.parameters import Params
 
 from diacamma.accounting.models import FiscalYear, Third, EntryAccount, \
@@ -44,8 +47,6 @@ from diacamma.accounting.models import FiscalYear, Third, EntryAccount, \
 from diacamma.accounting.tools import current_system_account, format_devise, \
     currency_round, correct_accounting_code
 from diacamma.payoff.models import Supporting
-from lucterios.framework.signal_and_lock import Signal
-from lucterios.CORE.models import Parameter
 
 
 class Vat(LucteriosModel):
@@ -122,8 +123,8 @@ class Bill(Supporting):
     num = models.IntegerField(verbose_name=_('numeros'), null=True)
     date = models.DateField(verbose_name=_('date'), null=False)
     comment = models.TextField(_('comment'), null=False, default="")
-    status = models.IntegerField(verbose_name=_('status'),
-                                 choices=((0, _('building')), (1, _('valid')), (2, _('cancel')), (3, _('archive'))), null=False, default=0, db_index=True)
+    status = FSMIntegerField(verbose_name=_('status'),
+                             choices=((0, _('building')), (1, _('valid')), (2, _('cancel')), (3, _('archive'))), null=False, default=0, db_index=True)
     entry = models.ForeignKey(
         EntryAccount, verbose_name=_('entry'), null=True, default=None, db_index=True, on_delete=models.PROTECT)
     cost_accounting = models.ForeignKey(
@@ -362,36 +363,46 @@ class Bill(Supporting):
             raise LucteriosException(
                 GRAVE, _("Error in accounting generator!") + "{[br/]} no_change=%s debit_rest=%.3f credit_rest=%.3f" % (no_change, debit_rest, credit_rest))
 
-    def valid(self):
-        if (self.status == 0) and (self.get_info_state() == ''):
-            self.fiscal_year = FiscalYear.get_current()
-            bill_list = Bill.objects.filter(
-                Q(bill_type=self.bill_type) & Q(fiscal_year=self.fiscal_year)).exclude(status=0)
-            val = bill_list.aggregate(Max('num'))
-            if val['num__max'] is None:
-                self.num = 1
-            else:
-                self.num = val['num__max'] + 1
-            self.status = 1
-            if self.bill_type != 0:
-                self.generate_entry()
-            self.save()
-            Signal.call_signal("change_bill", 'valid', self, None)
+    transitionname__valid = _("Validate")
 
+    @transition(field=status, source=0, target=1, conditions=[lambda item:item.get_info_state() == ''])
+    def valid(self):
+        self.fiscal_year = FiscalYear.get_current()
+        bill_list = Bill.objects.filter(Q(bill_type=self.bill_type) & Q(fiscal_year=self.fiscal_year)).exclude(status=0)
+        val = bill_list.aggregate(Max('num'))
+        if val['num__max'] is None:
+            self.num = 1
+        else:
+            self.num = val['num__max'] + 1
+        self.status = 1
+        if self.bill_type != 0:
+            self.generate_entry()
+        self.save()
+        Signal.call_signal("change_bill", 'valid', self, None)
+
+    transitionname__archive = _("Cancel")
+
+    @transition(field=status, source=1, target=3)
+    def archive(self):
+        self.status = 3
+        self.save()
+        Signal.call_signal("change_bill", 'archive', self, None)
+
+    transitionname__cancel = _("Archive")
+
+    @transition(field=status, source=1, target=2, conditions=[lambda item:item.bill_type != 2])
     def cancel(self):
         new_asset = None
-        if (self.status == 1):
-            if (self.bill_type in (1, 3)):
-                new_asset = Bill.objects.create(
-                    bill_type=2, date=date.today(), third=self.third, status=0, cost_accounting=self.cost_accounting)
-                for detail in self.detail_set.all():
-                    detail.id = None
-                    detail.bill = new_asset
-                    detail.save()
-            if (self.bill_type != 2):
-                self.status = 2
-                self.save()
-                Signal.call_signal("change_bill", 'cancel', self, new_asset)
+        if (self.bill_type in (1, 3)):
+            new_asset = Bill.objects.create(
+                bill_type=2, date=date.today(), third=self.third, status=0, cost_accounting=self.cost_accounting)
+            for detail in self.detail_set.all():
+                detail.id = None
+                detail.bill = new_asset
+                detail.save()
+            self.status = 2
+            self.save()
+            Signal.call_signal("change_bill", 'cancel', self, new_asset)
         if new_asset is not None:
             return new_asset.id
         else:
@@ -416,12 +427,6 @@ class Bill(Supporting):
             return new_bill
         else:
             return None
-
-    def archive(self):
-        if self.status == 1:
-            self.status = 3
-            self.save()
-            Signal.call_signal("change_bill", 'archive', self, None)
 
     def get_statistics_customer(self):
         cust_list = []

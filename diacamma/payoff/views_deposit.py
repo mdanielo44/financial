@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 from django.utils.translation import ugettext_lazy as _
 
 from lucterios.framework.xferadvance import XferListEditor, TITLE_DELETE, TITLE_ADD, TITLE_MODIFY, TITLE_EDIT, TITLE_PRINT,\
-    TITLE_CANCEL
+    TITLE_CANCEL, XferTransition
 from lucterios.framework.xferadvance import XferAddEditor
 from lucterios.framework.xferadvance import XferShowEditor
 from lucterios.framework.xferadvance import XferDelete
@@ -55,30 +55,12 @@ class DepositSlipDel(XferDelete):
     caption = _("Delete deposit slip")
 
 
-@ActionsManage.affect_show(_("Closed"), "images/ok.png", condition=lambda xfer: xfer.item.status == 0)
+@ActionsManage.affect_transition("status")
 @MenuManage.describ('payoff.add_depositslip')
-class DepositSlipClose(XferContainerAcknowledge):
+class DepositSlipTransition(XferTransition):
     icon = "bank.png"
     model = DepositSlip
     field_id = 'depositslip'
-    caption = _("Close deposit slip")
-
-    def fillresponse(self):
-        if (self.item.status == 0) and self.confirme(_("Do you want to close this deposit?")):
-            self.item.close_deposit()
-
-
-@ActionsManage.affect_show(_("Validate"), "images/ok.png", condition=lambda xfer: xfer.item.status == 1)
-@MenuManage.describ('payoff.add_depositslip')
-class DepositSlipValidate(XferContainerAcknowledge):
-    icon = "bank.png"
-    model = DepositSlip
-    field_id = 'depositslip'
-    caption = _("Close deposit slip")
-
-    def fillresponse(self):
-        if (self.item.status == 1) and self.confirme(_("Do you want to validate this deposit?")):
-            self.item.validate_deposit()
 
 
 @ActionsManage.affect_show(TITLE_PRINT, "images/print.png", condition=lambda xfer: xfer.item.status != 0)

@@ -32,7 +32,8 @@ from django.utils import six
 
 from lucterios.framework import signal_and_lock
 from lucterios.framework.xferadvance import XferListEditor, XferAddEditor, XferShowEditor, XferDelete,\
-    TITLE_MODIFY, TITLE_ADD, TITLE_EDIT, TITLE_DELETE, TITLE_OK, TITLE_CANCEL
+    TITLE_MODIFY, TITLE_ADD, TITLE_EDIT, TITLE_DELETE, TITLE_OK, TITLE_CANCEL,\
+    XferTransition
 from lucterios.framework.xfergraphic import XferContainerAcknowledge
 from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompEdit, XferCompButton, XferCompSelect, XferCompImage, XferCompDate, XferCompGrid
 from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage, FORMTYPE_REFRESH, CLOSE_NO, WrapAction, FORMTYPE_MODAL, SELECT_SINGLE,\
@@ -170,15 +171,6 @@ class ThirdAdd(ContactSelection):
     select_class = ThirdSave
 
 
-@ActionsManage.affect_grid(TITLE_MODIFY, "images/edit.png", unique=SELECT_SINGLE)
-@MenuManage.describ('accounting.add_third')
-class ThirdModify(XferAddEditor):
-    icon = "thirds.png"
-    model = Third
-    field_id = 'third'
-    caption_modify = _("Modify third")
-
-
 @ActionsManage.affect_grid(TITLE_EDIT, "images/show.png", unique=SELECT_SINGLE)
 @MenuManage.describ('accounting.change_third')
 class ThirdShow(XferShowEditor):
@@ -186,6 +178,14 @@ class ThirdShow(XferShowEditor):
     model = Third
     field_id = 'third'
     caption = _("Show third")
+
+
+@ActionsManage.affect_transition("status")
+@MenuManage.describ('accounting.add_third')
+class ThirdTransition(XferTransition):
+    icon = "thirds.png"
+    model = Third
+    field_id = 'third'
 
 
 @ActionsManage.affect_grid(TITLE_DELETE, "images/delete.png", unique=SELECT_MULTI)

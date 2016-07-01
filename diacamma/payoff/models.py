@@ -34,10 +34,12 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.utils.translation import ugettext_lazy as _
 from django.utils.module_loading import import_module
 from django.utils import six
+from django_fsm import FSMIntegerField, transition
 
 from lucterios.framework.models import LucteriosModel, get_value_converted
 from lucterios.framework.error import LucteriosException, IMPORTANT
 from lucterios.framework.printgenerators import ReportingGenerator
+from lucterios.framework.signal_and_lock import Signal
 from lucterios.CORE.models import PrintModel, Parameter
 from lucterios.CORE.parameters import Params
 from lucterios.contacts.models import LegalEntity
@@ -45,7 +47,6 @@ from lucterios.contacts.models import LegalEntity
 from diacamma.accounting.models import EntryAccount, FiscalYear, Third, Journal, \
     ChartsAccount, EntryLineAccount, AccountLink
 from diacamma.accounting.tools import format_devise, currency_round, correct_accounting_code
-from lucterios.framework.signal_and_lock import Signal
 
 
 def remove_accent(text, replace_space=False):
@@ -374,8 +375,7 @@ class Payoff(LucteriosModel):
 
 class DepositSlip(LucteriosModel):
 
-    status = models.IntegerField(verbose_name=_('status'),
-                                 choices=((0, _('building')), (1, _('closed')), (2, _('valid'))), null=False, default=0, db_index=True)
+    status = FSMIntegerField(verbose_name=_('status'), choices=((0, _('building')), (1, _('closed')), (2, _('valid'))), null=False, default=0, db_index=True)
     bank_account = models.ForeignKey(BankAccount, verbose_name=_(
         'bank account'), null=False, db_index=True, on_delete=models.PROTECT)
     date = models.DateField(verbose_name=_('date'), null=False)
@@ -416,17 +416,18 @@ class DepositSlip(LucteriosModel):
             return _('Remove of %s impossible!') % six.text_type(self)
         return ''
 
-    def close_deposit(self):
-        if self.status == 0:
-            self.status = 1
-            self.save()
+    transitionname__close_deposit = _("Closed")
 
+    @transition(field=status, source=0, target=1, conditions=[lambda item:len(item.depositdetail_set.all()) > 0])
+    def close_deposit(self):
+        pass
+
+    transitionname__validate_deposit = _("Validate")
+
+    @transition(field=status, source=1, target=2)
     def validate_deposit(self):
-        if self.status == 1:
-            self.status = 2
-            for detail in self.depositdetail_set.all():
-                detail.payoff.entry.closed()
-            self.save()
+        for detail in self.depositdetail_set.all():
+            detail.payoff.entry.closed()
 
     def add_payoff(self, entries):
         if self.status == 0:

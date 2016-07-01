@@ -30,7 +30,7 @@ from diacamma.accounting.models import FiscalYear
 from diacamma.accounting.test_tools import create_account, default_costaccounting
 
 from diacamma.invoice.models import Article, Vat
-from diacamma.invoice.views import BillValid, DetailAddModify, BillAddModify
+from diacamma.invoice.views import BillTransition, DetailAddModify, BillAddModify
 from diacamma.payoff.views import SupportingThirdValid
 
 
@@ -77,9 +77,9 @@ class InvoiceTest(LucteriosTest):
             self.assert_observer(
                 'core.acknowledge', 'diacamma.invoice', 'detailAddModify')
         if valid:
-            self.factory.xfer = BillValid()
-            self.call('/diacamma.invoice/billValid',
-                      {'CONFIRME': 'YES', 'bill': bill_id, 'withpayoff': False}, False)
+            self.factory.xfer = BillTransition()
+            self.call('/diacamma.invoice/billTransition',
+                      {'CONFIRME': 'YES', 'bill': bill_id, 'withpayoff': False, 'TRANSITION': 'valid'}, False)
             self.assert_observer(
-                'core.acknowledge', 'diacamma.invoice', 'billValid')
+                'core.acknowledge', 'diacamma.invoice', 'billTransition')
         return bill_id

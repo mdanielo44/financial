@@ -35,8 +35,7 @@ from diacamma.accounting.test_tools import initial_thirds, default_compta
 from diacamma.accounting.views_entries import EntryAccountList
 from diacamma.invoice.test_tools import default_articles, InvoiceTest
 from diacamma.payoff.views_deposit import DepositSlipList, DepositSlipAddModify,\
-    DepositSlipShow, DepositDetailAddModify, DepositDetailSave, DepositSlipClose,\
-    DepositSlipValidate
+    DepositSlipShow, DepositDetailAddModify, DepositDetailSave, DepositSlipTransition
 from diacamma.payoff.views import PayoffAddModify, PayableShow, PayableEmail
 from diacamma.payoff.test_tools import default_bankaccount,\
     default_paymentmethod, PaymentTest
@@ -132,7 +131,7 @@ class DepositTest(InvoiceTest):
         self.assert_observer(
             'core.custom', 'diacamma.payoff', 'depositSlipShow')
         self.assert_count_equal('COMPONENTS/*', 27)
-        self.assert_count_equal('ACTIONS/ACTION', 3)
+        self.assert_count_equal('ACTIONS/ACTION', 2)
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="depositdetail"]/RECORD', 0)
         self.assert_count_equal(
@@ -212,6 +211,7 @@ class DepositTest(InvoiceTest):
             '/diacamma.payoff/depositSlipShow', {'depositslip': 1}, False)
         self.assert_observer(
             'core.custom', 'diacamma.payoff', 'depositSlipShow')
+        self.assert_count_equal('ACTIONS/ACTION', 3)
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="depositdetail"]/RECORD', 2)
         self.assert_xml_equal(
@@ -351,11 +351,11 @@ class DepositTest(InvoiceTest):
         self.assert_observer(
             'core.acknowledge', 'diacamma.payoff', 'depositDetailSave')
 
-        self.factory.xfer = DepositSlipClose()
+        self.factory.xfer = DepositSlipTransition()
         self.call(
-            '/diacamma.payoff/depositSlipClose', {'depositslip': 1, 'CONFIRME': 'YES'}, False)
+            '/diacamma.payoff/depositSlipTransition', {'depositslip': 1, 'CONFIRME': 'YES', 'TRANSITION': 'close_deposit'}, False)
         self.assert_observer(
-            'core.acknowledge', 'diacamma.payoff', 'depositSlipClose')
+            'core.acknowledge', 'diacamma.payoff', 'depositSlipTransition')
 
         self.factory.xfer = DepositSlipShow()
         self.call(
@@ -380,11 +380,11 @@ class DepositTest(InvoiceTest):
         self.assertTrue('[411 Minimum]' in description, description)
         self.assertTrue('50.00€' in description, description)
 
-        self.factory.xfer = DepositSlipValidate()
+        self.factory.xfer = DepositSlipTransition()
         self.call(
-            '/diacamma.payoff/depositSlipValidate', {'depositslip': 1, 'CONFIRME': 'YES'}, False)
+            '/diacamma.payoff/depositSlipTransition', {'depositslip': 1, 'CONFIRME': 'YES', 'TRANSITION': 'validate_deposit'}, False)
         self.assert_observer(
-            'core.acknowledge', 'diacamma.payoff', 'depositSlipValidate')
+            'core.acknowledge', 'diacamma.payoff', 'depositSlipTransition')
 
         self.factory.xfer = DepositSlipShow()
         self.call(

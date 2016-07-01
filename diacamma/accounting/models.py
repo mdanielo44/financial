@@ -26,6 +26,8 @@ from __future__ import unicode_literals
 from datetime import date, timedelta
 from os.path import join, isfile
 from re import match
+from csv import DictReader
+from _csv import QUOTE_NONE
 
 from django.db import models
 from django.db.models import Q
@@ -35,26 +37,24 @@ from django.template import engines
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils.translation import ugettext_lazy as _
 from django.utils import six
+from django_fsm import FSMIntegerField, transition
 
 from lucterios.framework.models import LucteriosModel, get_value_converted, get_value_if_choices
-from lucterios.framework.error import LucteriosException, IMPORTANT, GRAVE
+from lucterios.framework.error import LucteriosException, IMPORTANT, GRAVE,\
+    MINOR
 from lucterios.contacts.models import AbstractContact
 from lucterios.framework.filetools import read_file, xml_validator, save_file,\
     get_user_path
 
 from diacamma.accounting.tools import get_amount_sum, format_devise, \
     current_system_account, currency_round, correct_accounting_code
-from csv import DictReader
-from _csv import QUOTE_NONE
 from lucterios.framework.signal_and_lock import RecordLocker, Signal
 from lucterios.CORE.models import Parameter
 
 
 class Third(LucteriosModel):
-    contact = models.ForeignKey(
-        'contacts.AbstractContact', verbose_name=_('contact'), null=False, on_delete=models.CASCADE)
-    status = models.IntegerField(
-        verbose_name=_('status'), choices=((0, _('Enable')), (1, _('Disable'))))
+    contact = models.ForeignKey('contacts.AbstractContact', verbose_name=_('contact'), null=False, on_delete=models.CASCADE)
+    status = FSMIntegerField(verbose_name=_('status'), choices=((0, _('Enable')), (1, _('Disable'))))
 
     def __str__(self):
         return six.text_type(self.contact.get_final_child())
@@ -69,7 +69,7 @@ class Third(LucteriosModel):
 
     @classmethod
     def get_edit_fields(cls):
-        return ["status"]
+        return []
 
     @classmethod
     def get_show_fields(cls):
@@ -115,6 +115,18 @@ class Third(LucteriosModel):
                 sub_account.delete()
             else:
                 last_code.append(sub_account.code)
+
+    transitionname__disabled = _('Disabled')
+
+    @transition(field=status, source=0, target=1)
+    def disabled(self):
+        pass
+
+    transitionname__enabled = _("Enabled")
+
+    @transition(field=status, source=1, target=0)
+    def enabled(self):
+        pass
 
     class Meta(object):
         verbose_name = _('third')
@@ -178,12 +190,9 @@ class FiscalYear(LucteriosModel):
 
     begin = models.DateField(verbose_name=_('begin'))
     end = models.DateField(verbose_name=_('end'))
-    status = models.IntegerField(verbose_name=_('status'), choices=(
-        (0, _('building')), (1, _('running')), (2, _('finished'))), default=0)
-    is_actif = models.BooleanField(
-        verbose_name=_('actif'), default=False, db_index=True)
-    last_fiscalyear = models.ForeignKey('FiscalYear', verbose_name=_(
-        'last fiscal year'), related_name='next_fiscalyear', null=True, on_delete=models.SET_NULL)
+    status = models.IntegerField(verbose_name=_('status'), choices=((0, _('building')), (1, _('running')), (2, _('finished'))), default=0)
+    is_actif = models.BooleanField(verbose_name=_('actif'), default=False, db_index=True)
+    last_fiscalyear = models.ForeignKey('FiscalYear', verbose_name=_('last fiscal year'), related_name='next_fiscalyear', null=True, on_delete=models.SET_NULL)
 
     def init_dates(self):
         fiscal_years = FiscalYear.objects.order_by('end')
@@ -398,7 +407,6 @@ class FiscalYear(LucteriosModel):
         return letters[nb_year] + res
 
     class Meta(object):
-
         verbose_name = _('fiscal year')
         verbose_name_plural = _('fiscal years')
 

@@ -29,7 +29,8 @@ from django.utils.translation import ugettext_lazy as _
 from django.utils import formats, six
 from django.db.models import Q
 
-from lucterios.framework.xferadvance import XferListEditor, XferShowEditor, TITLE_PRINT, TITLE_CLOSE, TITLE_DELETE, TITLE_MODIFY, TITLE_ADD, TITLE_CANCEL, TITLE_OK, TITLE_EDIT
+from lucterios.framework.xferadvance import XferListEditor, XferShowEditor, TITLE_PRINT, TITLE_CLOSE, TITLE_DELETE, TITLE_MODIFY, TITLE_ADD, TITLE_CANCEL, TITLE_OK, TITLE_EDIT,\
+    XferTransition
 from lucterios.framework.xferadvance import XferAddEditor
 from lucterios.framework.xferadvance import XferDelete
 from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompSelect, XferCompHeader, XferCompImage, XferCompGrid, XferCompCheck
@@ -132,78 +133,65 @@ class BillShow(XferShowEditor):
             self.add_action(ActionsManage.get_action_url('payoff.Supporting', 'Email', self), close=CLOSE_NO, params={'item_name': self.field_id}, pos_act=0)
 
 
-@ActionsManage.affect_show(_("Valid"), "images/ok.png", close=CLOSE_NO, condition=lambda xfer: (xfer.item.status == 0) and (xfer.item.get_info_state() == ''))
-@ActionsManage.affect_grid(_("Valid"), "images/ok.png", close=CLOSE_NO, condition=lambda xfer, gridname='': xfer.getparam('status_filter', -1) == 0)
-@MenuManage.describ('invoice.change_bill')
-class BillValid(XferContainerAcknowledge):
-    caption = _("Valid bill")
-    icon = "bill.png"
-    model = Bill
-    field_id = 'bill'
-    readonly = True
-
-    def fillresponse(self, withpayoff=True):
-        if (self.item.status == 0) and (self.item.get_info_state() == ''):
-            if self.item.bill_type == 0:
-                if self.confirme(_("Do you want validate '%s'?") % self.item):
-                    self.item.valid()
-            elif self.getparam("CONFIRME") is None:
-                dlg = self.create_custom(Payoff)
-                icon = XferCompImage('img')
-                icon.set_location(0, 0, 1, 6)
-                icon.set_value(self.icon_path())
-                dlg.add_component(icon)
-                lbl = XferCompLabelForm('lb_title')
-                lbl.set_value_as_infocenter(_("Do you want validate '%s'?") % self.item)
-                lbl.set_location(1, 1, 4)
-                dlg.add_component(lbl)
-                check_payoff = XferCompCheck('withpayoff')
-                check_payoff.set_value(withpayoff)
-                check_payoff.set_location(1, 2)
-                check_payoff.java_script = """
-var type=current.getValue();
-parent.get('date_payoff').setEnabled(type);
-parent.get('amount').setEnabled(type);
-parent.get('payer').setEnabled(type);
-parent.get('mode').setEnabled(type);
-parent.get('reference').setEnabled(type);
-if (parent.get('bank_account')) {
-    parent.get('bank_account').setEnabled(type);
-}
-"""
-                dlg.add_component(check_payoff)
-                lbl = XferCompLabelForm('lb_withpayoff')
-                lbl.set_value_as_name(_("Payment of deposit or cash"))
-                lbl.set_location(2, 2)
-                dlg.add_component(lbl)
-                dlg.item.supporting = self.item
-                dlg.fill_from_model(2, 3, False)
-                if dlg.get_components("bank_fee") is not None:
-                    check_payoff.java_script += "parent.get('bank_fee').setEnabled(type);\n"
-                dlg.get_components("date").name = "date_payoff"
-                dlg.get_components("mode").set_action(self.request, self.get_action(), close=CLOSE_NO, modal=FORMTYPE_REFRESH)
-                dlg.add_action(self.get_action(TITLE_OK, 'images/ok.png'), params={"CONFIRME": "YES"})
-                dlg.add_action(WrapAction(TITLE_CANCEL, 'images/cancel.png'))
-            else:
-                self.item.valid()
-                if (self.item.bill_type != 0) and withpayoff:
-                    Payoff.multi_save((self.item.id,), self.getparam('amount', 0.0), self.getparam('mode', 0), self.getparam('payer'),
-                                      self.getparam('reference'), self.getparam('bank_account', 0), self.getparam('date_payoff'))
-
-
-@ActionsManage.affect_show(_("Archive"), "images/ok.png", close=CLOSE_NO, condition=lambda xfer: xfer.item.status == 1)
-@ActionsManage.affect_grid(_("Archive"), "images/ok.png", close=CLOSE_NO, unique=SELECT_MULTI, condition=lambda xfer, gridname='': xfer.getparam('status_filter', -1) == 1)
-@MenuManage.describ('invoice.change_bill')
-class BillArchive(XferContainerAcknowledge):
-    caption = _("Valid bill")
+@ActionsManage.affect_transition("status")
+@MenuManage.describ('payoff.add_depositslip')
+class BillTransition(XferTransition):
     icon = "bill.png"
     model = Bill
     field_id = 'bill'
 
-    def fillresponse(self):
-        if self.confirme(_("Do you want archive this %d items?") % len(self.items)):
-            for item in self.items:
-                item.archive()
+    def fill_dlg_payoff(self, withpayoff):
+        dlg = self.create_custom(Payoff)
+        icon = XferCompImage('img')
+        icon.set_location(0, 0, 1, 6)
+        icon.set_value(self.icon_path())
+        dlg.add_component(icon)
+        lbl = XferCompLabelForm('lb_title')
+        lbl.set_value_as_infocenter(_("Do you want validate '%s'?") % self.item)
+        lbl.set_location(1, 1, 4)
+        dlg.add_component(lbl)
+        check_payoff = XferCompCheck('withpayoff')
+        check_payoff.set_value(withpayoff)
+        check_payoff.set_location(1, 2)
+        check_payoff.java_script = """
+    var type=current.getValue();
+    parent.get('date_payoff').setEnabled(type);
+    parent.get('amount').setEnabled(type);
+    parent.get('payer').setEnabled(type);
+    parent.get('mode').setEnabled(type);
+    parent.get('reference').setEnabled(type);
+    if (parent.get('bank_account')) {
+        parent.get('bank_account').setEnabled(type);
+    }
+    """
+        dlg.add_component(check_payoff)
+        lbl = XferCompLabelForm('lb_withpayoff')
+        lbl.set_value_as_name(_("Payment of deposit or cash"))
+        lbl.set_location(2, 2)
+        dlg.add_component(lbl)
+        dlg.item.supporting = self.item
+        dlg.fill_from_model(2, 3, False)
+        if dlg.get_components("bank_fee") is not None:
+            check_payoff.java_script += "parent.get('bank_fee').setEnabled(type);\n"
+        dlg.get_components("date").name = "date_payoff"
+        dlg.get_components("mode").set_action(self.request, self.get_action(), close=CLOSE_NO, modal=FORMTYPE_REFRESH)
+        dlg.add_action(self.get_action(TITLE_OK, 'images/ok.png'), params={"CONFIRME": "YES"})
+        dlg.add_action(WrapAction(TITLE_CANCEL, 'images/cancel.png'))
+
+    def fill_confirm(self, transition, trans):
+        withpayoff = self.getparam('withpayoff', True)
+        if (transition != 'valid') or (self.item.bill_type == 0):
+            XferTransition.fill_confirm(self, transition, trans)
+            if transition == 'cancel':
+                if self.trans_result is not None:
+                    self.redirect_action(ActionsManage.get_action_url('invoice.Bill', 'Show', self), params={self.field_id: self.trans_result})
+        elif self.getparam("CONFIRME") is None:
+            self.fill_dlg_payoff(withpayoff)
+        else:
+            XferTransition.fill_confirm(self, transition, trans)
+            if (self.item.bill_type != 0) and withpayoff:
+                Payoff.multi_save((self.item.id,), self.getparam('amount', 0.0), self.getparam('mode', 0), self.getparam('payer'),
+                                  self.getparam('reference'), self.getparam('bank_account', 0), self.getparam('date_payoff'))
 
 
 @ActionsManage.affect_grid(_('payoff'), '', close=CLOSE_NO, unique=SELECT_MULTI, condition=lambda xfer, gridname='': xfer.getparam('status_filter', -1) == 1)
@@ -232,21 +220,6 @@ class BillFromQuotation(XferContainerAcknowledge):
             new_bill = self.item.convert_to_bill()
             if new_bill is not None:
                 self.redirect_action(ActionsManage.get_action_url('invoice.Bill', 'Show', self), params={self.field_id: new_bill.id})
-
-
-@ActionsManage.affect_show(_("Cancel"), "images/cancel.png", close=CLOSE_NO, condition=lambda xfer: (xfer.item.status == 1) and (xfer.item.bill_type != 2))
-@MenuManage.describ('invoice.change_bill')
-class BillCancel(XferContainerAcknowledge):
-    caption = _("Valid bill")
-    icon = "bill.png"
-    model = Bill
-    field_id = 'bill'
-
-    def fillresponse(self):
-        if (self.item.status == 1) and (self.item.bill_type in (0, 1, 3)) and self.confirme(_("Do you want cancel '%s'?") % self.item):
-            asset_id = self.item.cancel()
-            if asset_id is not None:
-                self.redirect_action(ActionsManage.get_action_url('invoice.Bill', 'Show', self), params={self.field_id: asset_id})
 
 
 @ActionsManage.affect_grid(TITLE_DELETE, "images/delete.png", unique=SELECT_MULTI, condition=lambda xfer, gridname='': xfer.getparam('status_filter', -1) < 1)
