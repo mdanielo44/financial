@@ -169,6 +169,7 @@ class ThirdAdd(ContactSelection):
     icon = "thirds.png"
     caption = _("Add third")
     select_class = ThirdSave
+    model = Third
 
 
 @ActionsManage.affect_grid(TITLE_EDIT, "images/show.png", unique=SELECT_SINGLE)

@@ -108,6 +108,8 @@ class SupportingThird(XferListEditor):
         self.code_mask = ''
 
     def fillresponse_header(self):
+        if 'status_filter' in self.params:
+            del self.params['status_filter']
         contact_filter = self.getparam('filter', '')
         lbl = XferCompLabelForm('lbl_filtre')
         lbl.set_value_as_name(_('Filtrer by contact'))

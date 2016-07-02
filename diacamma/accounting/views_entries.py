@@ -33,9 +33,7 @@ from lucterios.framework.tools import FORMTYPE_NOMODAL, CLOSE_NO, FORMTYPE_REFRE
 from lucterios.framework.tools import ActionsManage, MenuManage, WrapAction
 from lucterios.framework.xferadvance import XferListEditor, XferAddEditor
 from lucterios.framework.xfergraphic import XferContainerAcknowledge, XferContainerCustom
-from lucterios.framework.xfercomponents import XferCompSelect, XferCompLabelForm, XferCompImage,\
-    XferCompFloat
-from lucterios.framework.error import LucteriosException, GRAVE
+from lucterios.framework.xfercomponents import XferCompSelect, XferCompLabelForm, XferCompImage, XferCompFloat
 from lucterios.CORE.xferprint import XferPrintListing
 from lucterios.CORE.editors import XferSavedCriteriaSearchEditor
 
@@ -194,10 +192,7 @@ class EntryAccountCostAccounting(XferContainerAcknowledge):
     field_id = 'entryaccount'
     caption = _("cost accounting for entry")
 
-    def fillresponse(self, entrylineaccount=[], costaccounting=0):
-
-        if len(entrylineaccount) == 0:
-            raise LucteriosException(GRAVE, _("No selection"))
+    def fillresponse(self, costaccounting=0):
         if self.getparam("SAVE") is None:
             dlg = self.create_custom()
             icon = XferCompImage('img')
@@ -210,6 +205,8 @@ class EntryAccountCostAccounting(XferContainerAcknowledge):
             dlg.add_component(lbl)
             sel = XferCompSelect('costaccounting')
             sel.set_select_query(CostAccounting.objects.filter(status=0))
+            if self.item is not None:
+                sel.set_value(self.item.costaccounting_id)
             sel.set_location(1, 2)
             dlg.add_component(sel)
             dlg.add_action(self.get_action(_('Ok'), 'images/ok.png'), params={"SAVE": "YES"})
@@ -218,9 +215,8 @@ class EntryAccountCostAccounting(XferContainerAcknowledge):
             if costaccounting == 0:
                 new_cost = None
             else:
-                new_cost = CostAccounting.objects.get(
-                    id=costaccounting)
-            for item in self.model.objects.filter(entrylineaccount__in=entrylineaccount):
+                new_cost = CostAccounting.objects.get(id=costaccounting)
+            for item in self.items:
                 if (item.costaccounting is None) or (item.costaccounting.status == 0):
                     item.costaccounting = new_cost
                     item.save()
@@ -253,6 +249,12 @@ class EntryAccountShow(XferShowEditor):
     model = EntryAccount
     field_id = 'entryaccount'
     caption = _("Show accounting entry")
+
+    def clear_fields_in_params(self):
+        if (self.getparam('SAVE', '') == 'YES') and (self.getparam('costaccounting') is not None):
+            self.item.costaccounting_id = self.getparam('costaccounting', 0)
+            self.item.save()
+        XferShowEditor.clear_fields_in_params(self)
 
 
 @ActionsManage.affect_grid(TITLE_ADD, 'images/add.png', unique=SELECT_NONE, condition=lambda xfer, gridname='': (xfer.item.year.status in [0, 1]) and (xfer.getparam('filter', 0) != 2))

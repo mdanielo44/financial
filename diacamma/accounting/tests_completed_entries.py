@@ -337,7 +337,7 @@ class CompletedEntryTest(LucteriosTest):
 
         self.factory.xfer = EntryAccountCostAccounting()
         self.call('/diacamma.accounting/entryAccountCostAccounting',
-                  {'entrylineaccount': '9;13;19'}, False)
+                  {'entryaccount': '4;6;9'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountCostAccounting')
 
         self.assert_count_equal('COMPONENTS/*', 3)
@@ -346,7 +346,7 @@ class CompletedEntryTest(LucteriosTest):
 
         self.factory.xfer = EntryAccountCostAccounting()
         self.call('/diacamma.accounting/entryAccountCostAccounting',
-                  {"SAVE": "YES", 'entrylineaccount': '9;13;19', 'costaccounting': '2'}, False)  # -78.24 / +125.97
+                  {"SAVE": "YES", 'entryaccount': '4;6;9', 'costaccounting': '2'}, False)  # -78.24 / +125.97
 
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountCostAccounting')
 
@@ -360,7 +360,7 @@ class CompletedEntryTest(LucteriosTest):
 
         self.factory.xfer = EntryAccountCostAccounting()
         self.call('/diacamma.accounting/entryAccountCostAccounting',
-                  {"SAVE": "YES", 'entrylineaccount': '9;13;19', 'costaccounting': '0'}, False)  # - -194.08 / 0
+                  {"SAVE": "YES", 'entryaccount': '4;6;9', 'costaccounting': '0'}, False)  # - -194.08 / 0
 
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountCostAccounting')
 
