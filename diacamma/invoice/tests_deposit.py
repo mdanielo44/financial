@@ -42,6 +42,7 @@ from diacamma.payoff.test_tools import default_bankaccount,\
 from diacamma.invoice.views import BillShow
 from django.utils import six
 from lucterios.mailing.tests import configSMTP, TestReceiver
+from lucterios.contacts.views_contacts import ResponsabilityModify
 
 
 class DepositTest(InvoiceTest):
@@ -529,6 +530,10 @@ class MethodTest(InvoiceTest, PaymentTest):
         server = TestReceiver()
         server.start(1025)
         try:
+            self.factory.xfer = ResponsabilityModify()
+            self.call('/lucterios.contacts/responsabilityModify', {'legal_entity': '7', 'individual': '3', "SAVE": "YES"}, False)
+            self.assert_observer('core.acknowledge', 'lucterios.contacts', 'responsabilityModify')
+
             self.assertEqual(0, server.count())
             self.factory.xfer = PayableEmail()
             self.call('/diacamma.payoff/payableEmail',
@@ -536,6 +541,8 @@ class MethodTest(InvoiceTest, PaymentTest):
             self.assert_observer(
                 'core.custom', 'diacamma.payoff', 'payableEmail')
             self.assert_count_equal('COMPONENTS/*', 9)
+            self.assert_xml_equal('COMPONENTS/EDIT[@name="subject"]', 'facture A-1 - 1 avril 2015')
+            self.assert_xml_equal('COMPONENTS/MEMO[@name="message"]', 'William Dalton (Minimum)\n\nVeuillez trouver ci-Joint à ce courriel facture A-1 - 1 avril 2015.\n\nSincères salutations')
 
             self.factory.xfer = PayableEmail()
             self.call('/diacamma.payoff/payableEmail',
@@ -546,8 +553,8 @@ class MethodTest(InvoiceTest, PaymentTest):
             self.assertEqual(
                 'mr-sylvestre@worldcompany.com', server.get(0)[1])
             self.assertEqual(
-                ['Minimum@worldcompany.com'], server.get(0)[2])
-            msg, msg_file = server.check_first_message('my bill', 2)
+                ['Minimum@worldcompany.com', 'William.Dalton@worldcompany.com', 'mr-sylvestre@worldcompany.com'], server.get(0)[2])
+            msg, msg_file = server.check_first_message('my bill', 2, {'To': 'Minimum@worldcompany.com', 'Cc': 'William.Dalton@worldcompany.com'})
             self.assertEqual('text/html', msg.get_content_type())
             self.assertEqual('base64', msg.get('Content-Transfer-Encoding', ''))
             self.check_email_msg(msg, '2', 'facture A-1 - 1 avril 2015')

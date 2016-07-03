@@ -189,9 +189,10 @@ class PayableEmail(XferContainerAcknowledge):
             lbl.set_value_as_name(_('message'))
             lbl.set_location(1, 2)
             dlg.add_component(lbl)
+            contact = self.item.third.contact.get_final_child()
             lbl = XferCompMemo('message')
             lbl.set_value(Params.getvalue('payoff-email-message') % {
-                          'name': six.text_type(self.item.third), 'doc': self.item.get_docname()})
+                          'name': contact.get_presentation(), 'doc': self.item.get_docname()})
             lbl.with_hypertext = True
             lbl.set_size(130, 450)
             lbl.set_location(2, 2)

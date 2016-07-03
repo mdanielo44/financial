@@ -1433,6 +1433,8 @@ class BillTest(InvoiceTest):
             self.assert_observer(
                 'core.custom', 'diacamma.payoff', 'payableEmail')
             self.assert_count_equal('COMPONENTS/*', 7)
+            self.assert_xml_equal('COMPONENTS/EDIT[@name="subject"]', 'facture A-1 - 1 avril 2015')
+            self.assert_xml_equal('COMPONENTS/MEMO[@name="message"]', 'Jack Dalton\n\nVeuillez trouver ci-Joint à ce courriel facture A-1 - 1 avril 2015.\n\nSincères salutations')
 
             self.factory.xfer = PayableEmail()
             self.call('/diacamma.payoff/payableEmail',
@@ -1443,8 +1445,8 @@ class BillTest(InvoiceTest):
             self.assertEqual(
                 'mr-sylvestre@worldcompany.com', server.get(0)[1])
             self.assertEqual(
-                ['Jack.Dalton@worldcompany.com'], server.get(0)[2])
-            msg, msg_file = server.check_first_message('my bill', 2)
+                ['Jack.Dalton@worldcompany.com', 'mr-sylvestre@worldcompany.com'], server.get(0)[2])
+            msg, msg_file = server.check_first_message('my bill', 2, {'To': 'Jack.Dalton@worldcompany.com'})
             self.assertEqual('text/html', msg.get_content_type())
             self.assertEqual(
                 'base64', msg.get('Content-Transfer-Encoding', ''))

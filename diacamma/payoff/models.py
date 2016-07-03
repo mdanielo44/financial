@@ -42,7 +42,7 @@ from lucterios.framework.printgenerators import ReportingGenerator
 from lucterios.framework.signal_and_lock import Signal
 from lucterios.CORE.models import PrintModel, Parameter
 from lucterios.CORE.parameters import Params
-from lucterios.contacts.models import LegalEntity
+from lucterios.contacts.models import LegalEntity, Individual
 
 from diacamma.accounting.models import EntryAccount, FiscalYear, Third, Journal, \
     ChartsAccount, EntryLineAccount, AccountLink
@@ -167,8 +167,15 @@ class Supporting(LucteriosModel):
         gen.items = [self]
         gen.model_text = PrintModel.objects.get(id=model).value
         pdf_file = BytesIO(gen.generate_report(None, False))
-        fct_mailing_mod.send_email(
-            self.third.contact.email, subject, message, [(pdf_name, pdf_file)])
+        cclist = []
+        contact = self.third.contact.get_final_child()
+        if isinstance(contact, LegalEntity):
+            for indiv in Individual.objects.filter(responsability__legal_entity=self.third.contact):
+                if indiv.email != '':
+                    cclist.append(indiv.email)
+        if len(cclist) == 0:
+            cclist = None
+        fct_mailing_mod.send_email(self.third.contact.email, subject, message, [(pdf_name, pdf_file)], cclist=cclist, withcopy=True)
 
     def get_document_filename(self):
         return remove_accent(self.get_payment_name(), True)
