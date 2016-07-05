@@ -134,7 +134,7 @@ class BillShow(XferShowEditor):
 
 
 @ActionsManage.affect_transition("status")
-@MenuManage.describ('payoff.add_depositslip')
+@MenuManage.describ('invoice.add_bill')
 class BillTransition(XferTransition):
     icon = "bill.png"
     model = Bill
