@@ -42,9 +42,9 @@ def initial_values(*args):
     Journal.objects.create(name=_("Payment"), id=4)
     Journal.objects.create(name=_("Other"), id=5)
 
-    PrintModel().load_model('diacamma.accounting', "Third_0001")
-    PrintModel().load_model('diacamma.accounting', "ChartsAccount_0001")
-    PrintModel().load_model('diacamma.accounting', "EntryLineAccount_0001")
+    PrintModel().load_model('diacamma.accounting', "Third_0001", is_default=True)
+    PrintModel().load_model('diacamma.accounting', "ChartsAccount_0001", is_default=True)
+    PrintModel().load_model('diacamma.accounting', "EntryLineAccount_0001", is_default=True)
 
 
 class Migration(migrations.Migration):

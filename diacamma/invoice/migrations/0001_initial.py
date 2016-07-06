@@ -12,8 +12,8 @@ from lucterios.CORE.models import PrintModel
 
 def initial_values(*args):
     translation.activate(settings.LANGUAGE_CODE)
-    PrintModel().load_model('diacamma.invoice', "Bill_0001")
-    PrintModel().load_model('diacamma.invoice', "Bill_0002")
+    PrintModel().load_model('diacamma.invoice', "Bill_0001", is_default=True)
+    PrintModel().load_model('diacamma.invoice', "Bill_0002", is_default=False)
 
 
 class Migration(migrations.Migration):
