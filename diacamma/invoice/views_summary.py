@@ -27,8 +27,7 @@ from __future__ import unicode_literals
 from django.utils.translation import ugettext_lazy as _
 from django.db.models import Q
 
-from lucterios.framework.tools import MenuManage, FORMTYPE_MODAL, ActionsManage, SELECT_SINGLE,\
-    CLOSE_NO
+from lucterios.framework.tools import MenuManage, FORMTYPE_MODAL, SELECT_SINGLE, CLOSE_NO
 from lucterios.framework.xferadvance import XferListEditor
 
 from lucterios.contacts.models import Individual, LegalEntity
@@ -36,6 +35,7 @@ from lucterios.contacts.models import Individual, LegalEntity
 from diacamma.invoice.models import Bill
 from diacamma.invoice.views import BillPrint
 from diacamma.payoff.models import PaymentMethod
+from diacamma.payoff.views import PayableShow
 
 
 def current_bill_right(request):
@@ -63,13 +63,18 @@ class CurrentBill(XferListEditor):
 
     def fillresponse(self):
         XferListEditor.fillresponse(self)
+        bill_grid = self.get_components('bill')
+        bill_grid.add_action(self.request, CurrentBillPrint.get_action(_("Print"), "images/print.png"), unique=SELECT_SINGLE, close=CLOSE_NO)
         if (len(PaymentMethod.objects.all()) > 0):
-            bill_grid = self.get_components('bill')
-            bill_grid.add_action(self.request, CurrentBillPrint.get_action(_("Print"), "images/print.png"), unique=SELECT_SINGLE)
-            bill_grid.add_action(self.request, ActionsManage.get_action_url('payoff.Supporting', 'Show', self),
+            bill_grid.add_action(self.request, CurrentPayableShow.get_action(_("Payment"), "diacamma.payoff/images/payments.png"),
                                  unique=SELECT_SINGLE, close=CLOSE_NO, params={'item_name': self.field_id})
 
 
 @MenuManage.describ(current_bill_right)
 class CurrentBillPrint(BillPrint):
+    pass
+
+
+@MenuManage.describ(current_bill_right)
+class CurrentPayableShow(PayableShow):
     pass
