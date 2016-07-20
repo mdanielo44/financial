@@ -380,7 +380,7 @@ class Bill(Supporting):
         self.save()
         Signal.call_signal("change_bill", 'valid', self, None)
 
-    transitionname__archive = _("Cancel")
+    transitionname__archive = _("Archive")
 
     @transition(field=status, source=1, target=3)
     def archive(self):
@@ -388,7 +388,7 @@ class Bill(Supporting):
         self.save()
         Signal.call_signal("change_bill", 'archive', self, None)
 
-    transitionname__cancel = _("Archive")
+    transitionname__cancel = _("Cancel")
 
     @transition(field=status, source=1, target=2, conditions=[lambda item:item.bill_type != 2])
     def cancel(self):
