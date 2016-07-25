@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-07-01 14:22+0000\n"
+"POT-Creation-Date: 2016-07-25 15:02+0000\n"
 "PO-Revision-Date: 2016-01-14 22:21+0000\n"
 "Last-Translator: b'Paul ARULATEDA <paul531@orange.fr>'\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,7 +19,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Translated-Using: django-rosetta 0.7.8\n"
 
-#: __init__.py:41
+#: __init__.py:41 views_conf.py:132 views_conf.py:135 views_conf.py:138
 msgid "Diacamma payoff"
 msgstr "Règlement Diacamma"
 
@@ -27,7 +27,7 @@ msgstr "Règlement Diacamma"
 msgid "payoff null!"
 msgstr "réglement vide!"
 
-#: editors.py:109 models.py:336
+#: editors.py:109 models.py:343
 msgid "No-valid selection!"
 msgstr "Sélection non valide!"
 
@@ -47,7 +47,7 @@ msgstr "total payé"
 msgid "rest to pay"
 msgstr "rest dû"
 
-#: models.py:76 models.py:77 models.py:223
+#: models.py:76 models.py:77 models.py:230
 msgid "supporting"
 msgstr "support"
 
@@ -55,7 +55,7 @@ msgstr "support"
 msgid "no third selected"
 msgstr "aucun tiers sélectionné"
 
-#: models.py:122 models.py:141 models.py:146 models.py:287 models.py:292
+#: models.py:122 models.py:141 models.py:146 models.py:294 models.py:299
 msgid "third has not correct account"
 msgstr "le tiers n'a pas de compte correcte"
 
@@ -63,233 +63,233 @@ msgstr "le tiers n'a pas de compte correcte"
 msgid "date not include in current fiscal year"
 msgstr "la date n'est pas incluse dans l'exercice"
 
-#: models.py:200
+#: models.py:207
 msgid "designation"
 msgstr "désignation"
 
-#: models.py:201 models.py:231 models.py:383 views_deposit.py:121
+#: models.py:208 models.py:238 models.py:390 views_deposit.py:121
 msgid "reference"
 msgstr "référence"
 
-#: models.py:203
+#: models.py:210
 msgid "account code"
 msgstr "code comptable"
 
-#: models.py:217 models.py:235 models.py:380 models.py:522 views_conf.py:93
+#: models.py:224 models.py:242 models.py:387 models.py:529 views_conf.py:98
 msgid "bank account"
 msgstr "compte bancaire"
 
-#: models.py:218
+#: models.py:225
 msgid "bank accounts"
 msgstr "comptes bancaire"
 
-#: models.py:224 models.py:381 models.py:639 views_deposit.py:120
+#: models.py:231 models.py:388 models.py:646 views_deposit.py:120
 msgid "date"
 msgstr "date"
 
-#: models.py:225 models.py:454 models.py:643 views_deposit.py:119
+#: models.py:232 models.py:461 models.py:650 views_deposit.py:119
 msgid "amount"
 msgstr "montant"
 
-#: models.py:227
+#: models.py:234
 msgid "mode"
 msgstr "mode"
 
-#: models.py:228
+#: models.py:235
 msgid "cash"
 msgstr "espèce"
 
-#: models.py:228 models.py:520
+#: models.py:235 models.py:527
 msgid "cheque"
 msgstr "chèque"
 
-#: models.py:228 models.py:520
+#: models.py:235 models.py:527
 msgid "transfer"
 msgstr "virement"
 
-#: models.py:228
+#: models.py:235
 msgid "crédit card"
 msgstr "carte de crédit"
 
-#: models.py:228
+#: models.py:235
 msgid "other"
 msgstr "autre"
 
-#: models.py:228
+#: models.py:235
 msgid "levy"
 msgstr "prélèvement"
 
-#: models.py:229 models.py:642 views_deposit.py:118
+#: models.py:236 models.py:649 views_deposit.py:118
 msgid "payer"
 msgstr "payeur"
 
-#: models.py:233
+#: models.py:240
 msgid "entry"
 msgstr "écriture"
 
-#: models.py:236
+#: models.py:243
 msgid "bank fee"
 msgstr "frais bancaire"
 
-#: models.py:241
+#: models.py:248
 msgid "value"
 msgstr "valeur"
 
-#: models.py:256
+#: models.py:263
 msgid "an entry associated to this payoff is closed!"
 msgstr "une écriture associée à ce réglement est clôturée!"
 
-#: models.py:280
+#: models.py:287
 #, python-format
 msgid "payoff for %s"
 msgstr "réglement de %s"
 
-#: models.py:306
+#: models.py:313
 msgid "account is not defined!"
 msgstr "le compte n'est pas défini!"
 
-#: models.py:372 models.py:450
+#: models.py:379 models.py:457
 msgid "payoff"
 msgstr "réglement"
 
-#: models.py:373
+#: models.py:380
 msgid "payoffs"
 msgstr "réglements"
 
-#: models.py:378 models.py:640
+#: models.py:385 models.py:647
 msgid "status"
 msgstr "status"
 
-#: models.py:378
+#: models.py:385
 msgid "building"
 msgstr "en cours"
 
-#: models.py:378
+#: models.py:385
 msgid "closed"
 msgstr "clôturé"
 
-#: models.py:378
+#: models.py:385
 msgid "valid"
 msgstr "validé"
 
-#: models.py:390 models.py:398
+#: models.py:397 models.py:405
 msgid "total"
 msgstr "total"
 
-#: models.py:398
+#: models.py:405
 msgid "number"
 msgstr "nombre"
 
-#: models.py:416
+#: models.py:423
 #, python-format
 msgid "Remove of %s impossible!"
 msgstr "Supression de %s impossible!"
 
-#: models.py:419
+#: models.py:426
 msgid "Closed"
 msgstr "Clôturer"
 
-#: models.py:425
+#: models.py:432
 msgid "Validate"
 msgstr "Valider"
 
-#: models.py:441
+#: models.py:448
 msgid "deposit slip"
 msgstr "dépôt de chèques"
 
-#: models.py:442 views_deposit.py:26
+#: models.py:449 views_deposit.py:26
 msgid "deposit slips"
 msgstr "dépôts de chèques"
 
-#: models.py:448
+#: models.py:455
 msgid "deposit"
 msgstr "dépôt"
 
-#: models.py:513
+#: models.py:520
 msgid "deposit detail"
 msgstr "détail"
 
-#: models.py:514
+#: models.py:521
 msgid "deposit details"
 msgstr "détails"
 
-#: models.py:519
+#: models.py:526
 msgid "type"
 msgstr "type"
 
-#: models.py:520
+#: models.py:527
 msgid "PayPal"
 msgstr "PayPal"
 
-#: models.py:523
+#: models.py:530
 msgid "data"
 msgstr "data"
 
-#: models.py:527 views_conf.py:95
+#: models.py:534 views_conf.py:100
 msgid "parameters"
 msgstr "paramètres"
 
-#: models.py:536 models.py:578
+#: models.py:543 models.py:585
 msgid "IBAN"
 msgstr "IBAN"
 
-#: models.py:536 models.py:581
+#: models.py:543 models.py:588
 msgid "BIC"
 msgstr "BIC"
 
-#: models.py:538 models.py:589
+#: models.py:545 models.py:596
 msgid "payable to"
 msgstr "libellé à"
 
-#: models.py:538 models.py:593
+#: models.py:545 models.py:600
 msgid "address"
 msgstr "adresse"
 
-#: models.py:540
+#: models.py:547
 msgid "Paypal account"
 msgstr "compte Paypal"
 
-#: models.py:632
+#: models.py:639
 msgid "payment method"
 msgstr "moyen de paiement"
 
-#: models.py:633
+#: models.py:640
 msgid "payment methods"
 msgstr "moyens de paiement"
 
-#: models.py:641
+#: models.py:648
 msgid "failure"
 msgstr "échec"
 
-#: models.py:641
+#: models.py:648
 msgid "success"
 msgstr "succès"
 
-#: models.py:645
+#: models.py:652
 msgid "contains"
 msgstr "contenu"
 
-#: models.py:656
+#: models.py:663
 msgid "bank transaction"
 msgstr "transaction bancaire"
 
-#: models.py:657
+#: models.py:664
 msgid "bank transactions"
 msgstr "transactions bancaires"
 
-#: models.py:664
+#: models.py:671
 msgid "payoff-bankcharges-account"
 msgstr "compte de frais bancaire"
 
-#: models.py:665
+#: models.py:672
 msgid "payoff-cash-account"
 msgstr "compte de caisse"
 
-#: models.py:666
+#: models.py:673
 msgid "payoff-email-message"
 msgstr "message de courriel par défaut"
 
-#: models.py:666
+#: models.py:673
 #, python-format
 msgid ""
 "%(name)s\n"
@@ -320,97 +320,109 @@ msgstr "Supprimer un réglement"
 msgid "change"
 msgstr "changer"
 
-#: views.py:101 views.py:147
+#: views.py:101 views.py:149
 msgid "Select third"
 msgstr "Sélection d'un tiers"
 
-#: views.py:113
+#: views.py:115
 msgid "Filtrer by contact"
 msgstr "Filtre par contact"
 
-#: views.py:135 views_deposit.py:133
+#: views.py:137 views_deposit.py:133
 msgid "select"
 msgstr "sélectionner"
 
-#: views.py:160
+#: views.py:162
 msgid "Send"
 msgstr "Envoyer"
 
-#: views.py:163
+#: views.py:165
 msgid "Send by email"
 msgstr "Envoyer par courriel"
 
-#: views.py:179
+#: views.py:181
 msgid "subject"
 msgstr "sujet"
 
-#: views.py:187
+#: views.py:189
 msgid "message"
 msgstr "message"
 
-#: views.py:210
+#: views.py:213
 msgid "add payment methods in email"
 msgstr "Ajouter les moyens de paiement dans le courriel"
 
-#: views.py:230 views.py:233
+#: views.py:233 views.py:236
 msgid "Payment"
 msgstr "Paiement"
 
-#: views.py:244
+#: views.py:247
 msgid "No payment for this document."
 msgstr "Pas de paiement pour ce document"
 
-#: views.py:257 views.py:281
+#: views.py:260 views.py:284
 msgid "Payement methods"
 msgstr "Moyens de paiement"
 
-#: views_conf.py:22
+#: views_conf.py:32
 msgid "Management of parameters and configuration of payoff"
 msgstr "Gestion des paramètres et des configuration du règlement"
 
-#: views_conf.py:27
+#: views_conf.py:37
 msgid "Payoff configuration"
 msgstr "Configuration du règlement"
 
-#: views_conf.py:30
+#: views_conf.py:40 views_conf.py:135
 msgid "Bank account"
 msgstr "Compte bancaire"
 
-#: views_conf.py:34
+#: views_conf.py:44 views_conf.py:138
 msgid "Payment method"
 msgstr "Moyen de paiement"
 
-#: views_conf.py:36
+#: views_conf.py:46 views_conf.py:132
 msgid "Parameters"
 msgstr "Paramètres"
 
-#: views_conf.py:52
+#: views_conf.py:57
 msgid "Add bank account"
 msgstr "Ajouter un compte bancaire"
 
-#: views_conf.py:53
+#: views_conf.py:58
 msgid "Modify bank account"
 msgstr "Modifier un compte bancaire"
 
-#: views_conf.py:62
+#: views_conf.py:67
 msgid "Delete bank account"
 msgstr "Supprimer un compte bancaire"
 
-#: views_conf.py:72
+#: views_conf.py:77
 msgid "Add payment method"
 msgstr "Ajouter un moyen de paiement"
 
-#: views_conf.py:73
+#: views_conf.py:78
 msgid "Modify payment method"
 msgstr "Modifier un moyen de paiement"
 
-#: views_conf.py:82
+#: views_conf.py:87
 msgid "Delete payment method"
 msgstr "Supprimer un moyen de paiement"
 
-#: views_conf.py:98
+#: views_conf.py:103
 msgid "Payoff"
 msgstr "Réglement"
+
+#: views_conf.py:132
+msgid "Configuration of parameters"
+msgstr "Definissez vos paramètrages de règlement"
+
+#: views_conf.py:135
+msgid "Configuration of bank account"
+msgstr "Ajoutez vos comptes bancaires"
+
+#: views_conf.py:138
+msgid "Configuration of payment method"
+msgstr "Ajoutez vos moyens de paiements"
 
 #: views_deposit.py:21
 msgid "manage deposit of cheque"
@@ -475,15 +487,3 @@ msgstr "Transactions bancaires"
 #: views_deposit.py:173
 msgid "Show bank transaction"
 msgstr "Voir une transaction bancaire"
-
-#~ msgid "Close deposit slip"
-#~ msgstr "Cloturé un dépôt de chèque"
-
-#~ msgid "Do you want to close this deposit?"
-#~ msgstr "Voulez vous clôre ce dépot?"
-
-#~ msgid "Do you want to validate this deposit?"
-#~ msgstr "Voulez vous valider ce dépot?"
-
-#~ msgid "Cancel"
-#~ msgstr "Annuler"

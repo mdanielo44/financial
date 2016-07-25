@@ -39,6 +39,18 @@ from diacamma.accounting.tools import correct_accounting_code
 from diacamma.invoice.models import Vat, Article
 
 
+def fill_params(xfer, param_lists=None, is_mini=False):
+    if param_lists is None:
+        param_lists = ['invoice-vat-mode', 'invoice-default-sell-account',
+                       'invoice-vatsell-account', 'invoice-reduce-account', 'invoice-account-third']
+    Params.fill(xfer, param_lists, 1, xfer.get_max_row() + 1)
+    btn = XferCompButton('editparam')
+    btn.set_is_mini(is_mini)
+    btn.set_location(1, xfer.get_max_row() + 1, 2, 1)
+    btn.set_action(xfer.request, ParamEdit.get_action(TITLE_MODIFY, 'images/edit.png'), close=CLOSE_NO, params={'params': param_lists})
+    xfer.add_component(btn)
+
+
 @MenuManage.describ('invoice.change_vat', FORMTYPE_NOMODAL, 'financial.conf', _('Management of parameters and configuration of invoice'))
 class InvoiceConf(XferListEditor):
     icon = "invoice_conf.png"
@@ -48,13 +60,7 @@ class InvoiceConf(XferListEditor):
 
     def fillresponse_header(self):
         self.new_tab(_('Parameters'))
-        param_lists = ['invoice-vat-mode', 'invoice-default-sell-account', 'invoice-vatsell-account',
-                       'invoice-reduce-account', 'invoice-account-third']
-        Params.fill(self, param_lists, 1, 1)
-        btn = XferCompButton('editparam')
-        btn.set_location(1, self.get_max_row() + 1, 2, 1)
-        btn.set_action(self.request, ParamEdit.get_action(TITLE_MODIFY, 'images/edit.png'), close=CLOSE_NO, params={'params': param_lists})
-        self.add_component(btn)
+        fill_params(self)
         self.new_tab(_('VAT'))
 
 
@@ -112,3 +118,18 @@ def paramchange_invoice(params):
         if invoice_param in params:
             Parameter.change_value(
                 invoice_param, correct_accounting_code(Params.getvalue(invoice_param)))
+
+
+@signal_and_lock.Signal.decorate('conf_wizard')
+def conf_wizard_invoice(wizard_ident, xfer):
+    if isinstance(wizard_ident, list) and (xfer is None):
+        wizard_ident.append(("invoice_params", 25))
+        wizard_ident.append(("invoice_vat", 26))
+    elif (xfer is not None) and (wizard_ident == "invoice_params"):
+        xfer.add_title(_("Diacamma invoice"), _('Parameters'), _('Configuration of parameters'))
+        fill_params(xfer, ['invoice-default-sell-account', 'invoice-reduce-account', 'invoice-account-third'], True)
+    elif (xfer is not None) and (wizard_ident == "invoice_vat"):
+        xfer.add_title(_("Diacamma invoice"), _('VAT'), _('Configuration of vat'))
+        fill_params(xfer, ['invoice-vat-mode', 'invoice-vatsell-account'], True)
+        xfer.fill_grid(10, Vat, 'vat', Vat.objects.all())
+        xfer.get_components("vat").colspan = 4

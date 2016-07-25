@@ -27,7 +27,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from lucterios.framework.xferadvance import XferListEditor, XferDelete, TITLE_ADD, TITLE_MODIFY, TITLE_DELETE
 from lucterios.framework.xferadvance import XferAddEditor
-from lucterios.framework.tools import FORMTYPE_MODAL, ActionsManage, MenuManage, SELECT_SINGLE, CLOSE_NO, CLOSE_YES, SELECT_MULTI
+from lucterios.framework.tools import FORMTYPE_MODAL, ActionsManage, MenuManage, SELECT_SINGLE, CLOSE_NO, SELECT_MULTI
 from lucterios.framework.xfergraphic import XferContainerAcknowledge, XferContainerCustom
 from lucterios.framework.xfercomponents import XferCompButton, XferCompLabelForm, XferCompSelect, XferCompImage, XferCompDownLoad
 from lucterios.framework.error import LucteriosException, IMPORTANT
@@ -39,8 +39,34 @@ from lucterios.CORE.models import Parameter
 from diacamma.accounting.models import FiscalYear, Journal, AccountThird, ChartsAccount, ModelLineEntry
 from diacamma.accounting.system import accounting_system_list, accounting_system_name
 from diacamma.accounting.tools import clear_system_account, correct_accounting_code
+from django.utils import six
 
 MenuManage.add_sub("financial.conf", "core.extensions", "", _("Financial"), "", 2)
+
+
+def select_account_system(xfer):
+    current_account_system = Params.getvalue("accounting-system")
+    if current_account_system == '':
+        edt = XferCompSelect("account_system")
+        account_systems = list(accounting_system_list().items())
+        account_systems.insert(0, ('', '---'))
+        edt.set_select(account_systems)
+        edt.set_action(xfer.request, ConfigurationAccountingSystem.get_action(), modal=FORMTYPE_MODAL, close=CLOSE_NO)
+    else:
+        edt = XferCompLabelForm("account_system")
+    edt.set_value(accounting_system_name(current_account_system))
+    edt.set_location(1, xfer.get_max_row() + 1)
+    xfer.add_component(edt)
+
+
+def fill_params(xfer, is_mini=False):
+    xfer.params['params'] = ['accounting-devise', 'accounting-devise-iso', 'accounting-devise-prec', 'accounting-sizecode']
+    Params.fill(xfer, xfer.params['params'], 1, xfer.get_max_row() + 1)
+    btn = XferCompButton('editparam')
+    btn.set_is_mini(is_mini)
+    btn.set_location(1, xfer.get_max_row() + 1, 2, 1)
+    btn.set_action(xfer.request, ParamEdit.get_action(TITLE_MODIFY, 'images/edit.png'), close=CLOSE_NO)
+    xfer.add_component(btn)
 
 
 @MenuManage.describ('accounting.change_fiscalyear', FORMTYPE_MODAL, 'financial.conf', _('Management of fiscal year and financial parameters'))
@@ -52,34 +78,18 @@ class Configuration(XferListEditor):
 
     def fillresponse_header(self):
         self.new_tab(_('Fiscal year list'))
-        current_account_system = Params.getvalue("accounting-system")
         lbl = XferCompLabelForm('lbl_account_system')
         lbl.set_value_as_name(_('accounting system'))
         lbl.set_location(0, 1)
         self.add_component(lbl)
-        if current_account_system == '':
-            edt = XferCompSelect("account_system")
-            account_systems = list(accounting_system_list().items())
-            account_systems.insert(0, ('', '---'))
-            edt.set_select(account_systems)
-            edt.set_action(self.request, ConfigurationAccountingSystem.get_action(), modal=FORMTYPE_MODAL, close=CLOSE_NO)
-        else:
-            edt = XferCompLabelForm("account_system")
-        edt.set_value(accounting_system_name(current_account_system))
-        edt.set_location(1, 1)
-        self.add_component(edt)
+        select_account_system(self)
 
     def fillresponse(self):
         XferListEditor.fillresponse(self)
         self.new_tab(_('Journals'))
         self.fill_grid(self.get_max_row() + 1, Journal, 'journal', Journal.objects.all())
         self.new_tab(_('Parameters'))
-        self.params['params'] = ['accounting-devise', 'accounting-devise-iso', 'accounting-devise-prec', 'accounting-sizecode']
-        Params.fill(self, self.params['params'], 1, 1)
-        btn = XferCompButton('editparam')
-        btn.set_location(1, self.get_max_row() + 1, 2, 1)
-        btn.set_action(self.request, ParamEdit.get_action(TITLE_MODIFY, 'images/edit.png'), close=CLOSE_NO)
-        self.add_component(btn)
+        fill_params(self)
 
 
 @MenuManage.describ('accounting.add_fiscalyear')
@@ -198,3 +208,40 @@ def paramchange_accounting(params):
             if model_line.code != correct_accounting_code(model_line.code):
                 model_line.code = correct_accounting_code(model_line.code)
                 model_line.save()
+
+
+@signal_and_lock.Signal.decorate('conf_wizard')
+def conf_wizard_accounting(wizard_ident, xfer):
+    if isinstance(wizard_ident, list) and (xfer is None):
+        wizard_ident.append(("accounting_params", 21))
+        wizard_ident.append(("accounting_fiscalyear", 22))
+        wizard_ident.append(("accounting_journal", 23))
+    elif (xfer is not None) and (wizard_ident == "accounting_params"):
+        xfer.add_title(_("Diacamma accounting"), _('Parameters'), _('Configuration of accounting parameters'))
+        select_account_system(xfer)
+        fill_params(xfer, True)
+    elif (xfer is not None) and (wizard_ident == "accounting_fiscalyear"):
+        xfer.add_title(_("Diacamma accounting"), _('Fiscal year list'), _('Configuration of fiscal years'))
+        xfer.fill_grid(5, FiscalYear, 'fiscalyear', FiscalYear.objects.all())
+        try:
+            current_year = FiscalYear.get_current()
+            nb_account = len(ChartsAccount.objects.filter(year=current_year))
+            lbl = XferCompLabelForm('nb_account')
+            lbl.set_value(_("Total of charts of accounts in current fiscal year: %d") % nb_account)
+            lbl.set_location(0, 10)
+            xfer.add_component(lbl)
+            if nb_account == 0:
+                xfer.item = ChartsAccount()
+                xfer.item.year = current_year
+                btn = XferCompButton('initialfiscalyear')
+                btn.set_location(1, 10)
+                btn.set_action(xfer.request, ActionsManage.get_action_url(ChartsAccount.get_long_name(), 'AccountInitial', xfer), close=CLOSE_NO)
+                xfer.add_component(btn)
+        except LucteriosException as lerr:
+            lbl = XferCompLabelForm('nb_account')
+            lbl.set_value(six.text_type(lerr))
+            lbl.set_location(0, 10, 2)
+            xfer.add_component(lbl)
+    elif (xfer is not None) and (wizard_ident == "accounting_journal"):
+        xfer.add_title(_("Diacamma accounting"), _('Journals'), _('Configuration of journals'))
+        xfer.fill_grid(5, Journal, 'journal', Journal.objects.all())

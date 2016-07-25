@@ -38,7 +38,7 @@ __version__ = "2.1.1." + get_build()
 
 def __title__():
     from django.utils.translation import ugettext_lazy as _
-    return _("Diacamma invoce")
+    return _("Diacamma invoice")
 
 
 def link():

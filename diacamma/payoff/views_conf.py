@@ -19,6 +19,16 @@ from diacamma.accounting.tools import correct_accounting_code
 from diacamma.payoff.models import BankAccount, PaymentMethod
 
 
+def fill_params(xfer, is_mini=False):
+    param_lists = ['payoff-cash-account', 'payoff-bankcharges-account', 'payoff-email-message']
+    Params.fill(xfer, param_lists, 1, xfer.get_max_row() + 1)
+    btn = XferCompButton('editparam')
+    btn.set_is_mini(is_mini)
+    btn.set_location(1, xfer.get_max_row() + 1, 2, 1)
+    btn.set_action(xfer.request, ParamEdit.get_action(TITLE_MODIFY, 'images/edit.png'), close=CLOSE_NO, params={'params': param_lists})
+    xfer.add_component(btn)
+
+
 @MenuManage.describ('payoff.change_bankaccount', FORMTYPE_NOMODAL, 'financial.conf', _('Management of parameters and configuration of payoff'))
 class PayoffConf(XferListEditor):
     icon = "bank.png"
@@ -34,12 +44,7 @@ class PayoffConf(XferListEditor):
         self.new_tab(_('Payment method'))
         self.fill_grid(0, PaymentMethod, "paymentmethod", PaymentMethod.objects.all())
         self.new_tab(_('Parameters'))
-        param_lists = ['payoff-cash-account', 'payoff-bankcharges-account', 'payoff-email-message']
-        Params.fill(self, param_lists, 1, 1)
-        btn = XferCompButton('editparam')
-        btn.set_location(1, self.get_max_row() + 1, 2, 1)
-        btn.set_action(self.request, ParamEdit.get_action(TITLE_MODIFY, 'images/edit.png'), close=CLOSE_NO, params={'params': param_lists})
-        self.add_component(btn)
+        fill_params(self)
 
 
 @ActionsManage.affect_grid(TITLE_ADD, "images/add.png")
@@ -115,3 +120,20 @@ def paramchange_payoff(params):
             Parameter.change_value(
                 'payoff-bankcharges-account', correct_accounting_code(pvalue))
     Params.clear()
+
+
+@signal_and_lock.Signal.decorate('conf_wizard')
+def conf_wizard_payoff(wizard_ident, xfer):
+    if isinstance(wizard_ident, list) and (xfer is None):
+        wizard_ident.append(("payoff_params", 31))
+        wizard_ident.append(("payoff_bank", 32))
+        wizard_ident.append(("payoff_payment", 33))
+    elif (xfer is not None) and (wizard_ident == "payoff_params"):
+        xfer.add_title(_("Diacamma payoff"), _('Parameters'), _('Configuration of parameters'))
+        fill_params(xfer, True)
+    elif (xfer is not None) and (wizard_ident == "payoff_bank"):
+        xfer.add_title(_("Diacamma payoff"), _('Bank account'), _('Configuration of bank account'))
+        xfer.fill_grid(5, BankAccount, 'bankaccount', BankAccount.objects.all())
+    elif (xfer is not None) and (wizard_ident == "payoff_payment"):
+        xfer.add_title(_("Diacamma payoff"), _('Payment method'), _('Configuration of payment method'))
+        xfer.fill_grid(5, PaymentMethod, 'paymentmethod', PaymentMethod.objects.all())
