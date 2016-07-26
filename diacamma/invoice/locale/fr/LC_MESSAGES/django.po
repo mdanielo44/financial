@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-07-25 15:02+0000\n"
+"POT-Creation-Date: 2016-07-26 12:17+0000\n"
 "PO-Revision-Date: 2016-01-14 21:59+0000\n"
 "Last-Translator: b'Paul ARULATEDA <paul531@orange.fr>'\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -529,11 +529,11 @@ msgstr "paramètres"
 
 #: views_conf.py:129
 msgid "Configuration of parameters"
-msgstr "Définissez les paramètres du facturier"
+msgstr "Définissez les paramètres du facturier."
 
 #: views_conf.py:132
 msgid "Configuration of vat"
-msgstr "Configurer votre gestion de TVA"
+msgstr "Configurez votre gestion de TVA."
 
 #: views_summary.py:49
 msgid "View your invoices."

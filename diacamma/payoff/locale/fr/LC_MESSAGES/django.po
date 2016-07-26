@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-07-25 15:02+0000\n"
+"POT-Creation-Date: 2016-07-26 12:17+0000\n"
 "PO-Revision-Date: 2016-01-14 22:21+0000\n"
 "Last-Translator: b'Paul ARULATEDA <paul531@orange.fr>'\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -413,16 +413,16 @@ msgid "Payoff"
 msgstr "Réglement"
 
 #: views_conf.py:132
-msgid "Configuration of parameters"
+msgid "Configuration of payoff parameters"
 msgstr "Definissez vos paramètrages de règlement"
 
 #: views_conf.py:135
 msgid "Configuration of bank account"
-msgstr "Ajoutez vos comptes bancaires"
+msgstr "Ajoutez vos comptes bancaires."
 
 #: views_conf.py:138
 msgid "Configuration of payment method"
-msgstr "Ajoutez vos moyens de paiements"
+msgstr "Ajoutez vos moyens de paiements."
 
 #: views_deposit.py:21
 msgid "manage deposit of cheque"

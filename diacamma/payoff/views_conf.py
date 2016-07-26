@@ -129,7 +129,7 @@ def conf_wizard_payoff(wizard_ident, xfer):
         wizard_ident.append(("payoff_bank", 32))
         wizard_ident.append(("payoff_payment", 33))
     elif (xfer is not None) and (wizard_ident == "payoff_params"):
-        xfer.add_title(_("Diacamma payoff"), _('Parameters'), _('Configuration of parameters'))
+        xfer.add_title(_("Diacamma payoff"), _('Parameters'), _('Configuration of payoff parameters'))
         fill_params(xfer, True)
     elif (xfer is not None) and (wizard_ident == "payoff_bank"):
         xfer.add_title(_("Diacamma payoff"), _('Bank account'), _('Configuration of bank account'))

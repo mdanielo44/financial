@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-07-25 15:02+0000\n"
+"POT-Creation-Date: 2016-07-26 12:17+0000\n"
 "PO-Revision-Date: 2016-01-11 23:01+0000\n"
 "Last-Translator: b'Paul ARULATEDA <paul531@orange.fr>'\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -749,11 +749,11 @@ msgstr "Supprimer journal"
 
 #: views_admin.py:220
 msgid "Configuration of accounting parameters"
-msgstr "Configuration du système comptable et la devise"
+msgstr "Configurez votre système comptable et la devise que vous utilisez."
 
 #: views_admin.py:224
 msgid "Configuration of fiscal years"
-msgstr "Définissez votre exercice fiscal"
+msgstr "Définissez vos exercices fiscaux et activez le courant."
 
 #: views_admin.py:230
 #, python-format
@@ -762,7 +762,7 @@ msgstr "Total de codes comptables de l'exercice en cours:% d"
 
 #: views_admin.py:246
 msgid "Configuration of journals"
-msgstr "Gérez vos journaux comptables"
+msgstr "Gérez vos journaux comptables."
 
 #: views_entries.py:44
 msgid "Edition of accounting entry for current fiscal year"
