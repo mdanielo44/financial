@@ -432,6 +432,8 @@ class ModelEntryEditor(EntryLineAccountEditor):
                 del select_jrn[item_idx]
                 break
         comp_journal.select_list = select_jrn
+        sel = xfer.get_components('costaccounting')
+        sel.set_select_query(CostAccounting.objects.filter(status=0))
 
 
 class ModelLineEntryEditor(EntryLineAccountEditor):
