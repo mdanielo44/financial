@@ -291,11 +291,13 @@ class ThirdTest(LucteriosTest):
         self.assert_attrib_equal('COMPONENTS/GRID[@name="accountthird"]/RECORD[1]', 'id', '5')
 
         self.assert_xml_equal('COMPONENTS/GRID[@name="accountthird"]/RECORD[1]/VALUE[@name="code"]', '411')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="accountthird"]/RECORD[1]/VALUE[@name="total_txt"]', '{[font color="blue"]}Débit: 34.01€{[/font]}')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="accountthird"]/RECORD[1]/VALUE[@name="total_txt"]',
+                              '{[font color="blue"]}Débit: 34.01€{[/font]}')
         self.assert_attrib_equal('COMPONENTS/GRID[@name="accountthird"]/RECORD[2]', 'id', '6')
 
         self.assert_xml_equal('COMPONENTS/GRID[@name="accountthird"]/RECORD[2]/VALUE[@name="code"]', '401')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="accountthird"]/RECORD[2]/VALUE[@name="total_txt"]', '{[font color="green"]}Crédit: 0.00€{[/font]}')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="accountthird"]/RECORD[2]/VALUE[@name="total_txt"]',
+                              '{[font color="green"]}Crédit: 0.00€{[/font]}')
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="total"]', '-34.01€')
 
         self.assert_xml_equal('COMPONENTS/SELECT[@name="lines_filter"]', '0')
@@ -541,7 +543,8 @@ class AdminTest(LucteriosTest):
         self.assert_observer('core.custom', 'CORE', 'statusMenu')
         self.assert_xml_equal("COMPONENTS/LABELFORM[@name='accountingtitle']", "{[center]}{[u]}{[b]}Comptabilité{[/b]}{[/u]}{[/center]}")
         self.assert_xml_equal("COMPONENTS/LABELFORM[@name='accounting_error']", "{[center]}Pas d'exercice défini!{[/center]}")
-        self.assert_action_equal("COMPONENTS/BUTTON[@name='accounting_conf']/ACTIONS/ACTION", ("conf.", None, 'diacamma.accounting', 'configuration', 0, 1, 1))
+        self.assert_action_equal("COMPONENTS/BUTTON[@name='accounting_conf']/ACTIONS/ACTION",
+                                 ("conf.", None, 'diacamma.accounting', 'configuration', 0, 1, 1))
 
     def test_default_configuration(self):
         self.factory.xfer = Configuration()
@@ -745,7 +748,8 @@ class AdminTest(LucteriosTest):
     def test_system_accounting(self):
         self.assertEqual(get_accounting_system('').__class__.__name__, "DefaultSystemAccounting")
         self.assertEqual(get_accounting_system('accountingsystem.foo.DummySystemAcounting').__class__.__name__, "DefaultSystemAccounting")
-        self.assertEqual(get_accounting_system('diacamma.accounting.system.french.DummySystemAcounting').__class__.__name__, "DefaultSystemAccounting")
+        self.assertEqual(get_accounting_system(
+            'diacamma.accounting.system.french.DummySystemAcounting').__class__.__name__, "DefaultSystemAccounting")
         self.assertEqual(get_accounting_system('diacamma.accounting.system.french.FrenchSystemAcounting').__class__.__name__, "FrenchSystemAcounting")
 
         self.assertEqual(current_system_account().__class__.__name__, "DefaultSystemAccounting")
@@ -777,8 +781,9 @@ class ModelTest(LucteriosTest):
         self.factory.xfer = ModelEntryAddModify()
         self.call('/diacamma.accounting/modelEntryAddModify', {}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'modelEntryAddModify')
-        self.assert_count_equal('COMPONENTS/*', 5)
+        self.assert_count_equal('COMPONENTS/*', 7)
         self.assert_count_equal('COMPONENTS/SELECT[@name="journal"]/CASE', 4)
+        self.assert_count_equal('COMPONENTS/SELECT[@name="costaccounting"]/CASE', 1)
 
         self.factory.xfer = ModelEntryAddModify()
         self.call('/diacamma.accounting/modelEntryAddModify', {'SAVE': 'YES', 'journal': '2', 'designation': 'foo'}, False)
@@ -819,7 +824,8 @@ class ModelTest(LucteriosTest):
         self.assert_xml_equal('COMPONENTS/FLOAT[@name="debit_val"]', '0.00')
 
         self.factory.xfer = ModelLineEntryAddModify()
-        self.call('/diacamma.accounting/modelLineEntryAddModify', {'SAVE': 'YES', 'model': '1', 'modelentry': '1', 'code': '411', 'third': '3', 'credit_val': '19.37', 'debit_val': '0.0'}, False)
+        self.call('/diacamma.accounting/modelLineEntryAddModify',
+                  {'SAVE': 'YES', 'model': '1', 'modelentry': '1', 'code': '411', 'third': '3', 'credit_val': '19.37', 'debit_val': '0.0'}, False)
 
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'modelLineEntryAddModify')
 

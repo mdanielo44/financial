@@ -192,7 +192,8 @@ class FiscalYear(LucteriosModel):
     end = models.DateField(verbose_name=_('end'))
     status = models.IntegerField(verbose_name=_('status'), choices=((0, _('building')), (1, _('running')), (2, _('finished'))), default=0)
     is_actif = models.BooleanField(verbose_name=_('actif'), default=False, db_index=True)
-    last_fiscalyear = models.ForeignKey('FiscalYear', verbose_name=_('last fiscal year'), related_name='next_fiscalyear', null=True, on_delete=models.SET_NULL)
+    last_fiscalyear = models.ForeignKey('FiscalYear', verbose_name=_(
+        'last fiscal year'), related_name='next_fiscalyear', null=True, on_delete=models.SET_NULL)
 
     def init_dates(self):
         fiscal_years = FiscalYear.objects.order_by('end')
@@ -447,7 +448,6 @@ class CostAccounting(LucteriosModel):
         return format_devise(self.get_total_expense(), 5)
 
     def get_total_expense(self):
-
         return get_amount_sum(EntryLineAccount.objects.filter(account__type_of_account=4, entry__costaccounting=self).aggregate(Sum('amount')))
 
     def change_has_default(self):
@@ -463,6 +463,13 @@ class CostAccounting(LucteriosModel):
                     cost_item.save()
                 self.is_default = True
                 self.save()
+
+    def check_before_close(self):
+        EntryAccount.clear_ghost()
+        if self.entryaccount_set.filter(close=False).count() > 0:
+            raise LucteriosException(IMPORTANT, _('This cost accounting has some not validated entry!'))
+        if self.modelentry_set.all().count() > 0:
+            raise LucteriosException(IMPORTANT, _('This cost accounting is include in a model of entry!'))
 
     class Meta(object):
         verbose_name = _('cost accounting')
@@ -677,7 +684,8 @@ class EntryAccount(LucteriosModel):
     def get_search_fields(cls):
         result = ['year', 'date_value', 'num', 'designation', 'date_entry', 'costaccounting']
         result.append(('entrylineaccount_set.amount', models.DecimalField(_('amount')), 'entrylineaccount__amount__abs', Q()))
-        result.extend(['entrylineaccount_set.account.code', 'entrylineaccount_set.account.name', 'entrylineaccount_set.account.type_of_account', 'entrylineaccount_set.reference'])
+        result.extend(['entrylineaccount_set.account.code', 'entrylineaccount_set.account.name',
+                       'entrylineaccount_set.account.type_of_account', 'entrylineaccount_set.reference'])
         for fieldname in Third.get_search_fields():
             result.append("entrylineaccount_set.third." + fieldname)
         return result
@@ -1064,9 +1072,10 @@ class EntryLineAccount(LucteriosModel):
 
 class ModelEntry(LucteriosModel):
 
-    journal = models.ForeignKey('Journal', verbose_name=_(
-        'journal'), null=False, default=0, on_delete=models.PROTECT)
+    journal = models.ForeignKey('Journal', verbose_name=_('journal'), null=False, default=0, on_delete=models.PROTECT)
     designation = models.CharField(_('name'), max_length=200)
+    costaccounting = models.ForeignKey('CostAccounting', verbose_name=_('cost accounting'), null=True,
+                                       default=None, on_delete=models.SET_NULL)
 
     def __str__(self):
         return "[%s] %s (%s)" % (self.journal, self.designation, self.total)
@@ -1077,11 +1086,11 @@ class ModelEntry(LucteriosModel):
 
     @classmethod
     def get_edit_fields(cls):
-        return ['journal', 'designation']
+        return ['journal', 'designation', 'costaccounting']
 
     @classmethod
     def get_show_fields(cls):
-        return ['journal', 'designation', ((_('total'), 'total'),), 'modellineentry_set']
+        return ['journal', 'designation', 'costaccounting', ((_('total'), 'total'),), 'modellineentry_set']
 
     def get_total(self):
         try:
