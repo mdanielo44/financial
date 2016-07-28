@@ -194,8 +194,9 @@ class EntryTest(LucteriosTest):
 
         self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD', 1)
         self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="entry_account"]', '[401] 401')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="debit"]', None)
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="credit"]', '152.34€')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="debit"]', '{[font color="green"]}{[/font]}')
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="credit"]', '{[font color="green"]}152.34€{[/font]}')
         self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="reference"]', '---')
         self.assert_count_equal('ACTIONS/ACTION', 2)
 
@@ -236,13 +237,15 @@ class EntryTest(LucteriosTest):
 
         self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD', 2)
         self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="entry_account"]', '[401] 401')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="debit"]', None)
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="credit"]', '152.34€')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="debit"]', '{[font color="green"]}{[/font]}')
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="credit"]', '{[font color="green"]}152.34€{[/font]}')
         self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="reference"]', '---')
         self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[2]/VALUE[@name="entry_account"]', '[602] 602')
 
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[2]/VALUE[@name="debit"]', '152.34€')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[2]/VALUE[@name="credit"]', None)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[2]/VALUE[@name="debit"]',
+                              '{[font color="blue"]}152.34€{[/font]}')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[2]/VALUE[@name="credit"]', '{[font color="green"]}{[/font]}')
         self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[2]/VALUE[@name="reference"]', '---')
         self.assert_count_equal('ACTIONS/ACTION', 2)
         self.assert_attrib_equal("ACTIONS/ACTION[1]", "id", "diacamma.accounting/entryAccountValidate")
@@ -286,12 +289,14 @@ class EntryTest(LucteriosTest):
 
         self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD', 2)
         self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="entry_account"]', '[602] 602')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="debit"]', '152.34€')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="credit"]', None)
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="debit"]', '{[font color="blue"]}152.34€{[/font]}')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="credit"]', '{[font color="green"]}{[/font]}')
         self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="reference"]', '---')
         self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[2]/VALUE[@name="entry_account"]', '[401 Luke Lucky]')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[2]/VALUE[@name="debit"]', None)
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[2]/VALUE[@name="credit"]', '152.34€')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[2]/VALUE[@name="debit"]', '{[font color="green"]}{[/font]}')
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[2]/VALUE[@name="credit"]', '{[font color="green"]}152.34€{[/font]}')
         self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[2]/VALUE[@name="reference"]', '---')
         self.assert_count_equal('ACTIONS/ACTION', 2)
         self.assert_attrib_equal("ACTIONS/ACTION[1]", "id", "diacamma.accounting/entryAccountValidate")
@@ -481,8 +486,9 @@ class EntryTest(LucteriosTest):
 
         self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD', 1)
         self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="entry_account"]', '[401 Luke Lucky]')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="debit"]', '152.34€')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="credit"]', None)
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="debit"]', '{[font color="blue"]}152.34€{[/font]}')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="credit"]', '{[font color="green"]}{[/font]}')
         self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="reference"]', '---')
         self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount_link"]/HEADER', 6)
         self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount_link"]/RECORD', 1)
@@ -504,12 +510,14 @@ class EntryTest(LucteriosTest):
         self.assert_count_equal('COMPONENTS/*', 26)
         self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD', 2)
         self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="entry_account"]', '[401 Luke Lucky]')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="debit"]', '152.34€')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="credit"]', None)
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="debit"]', '{[font color="blue"]}152.34€{[/font]}')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="credit"]', '{[font color="green"]}{[/font]}')
         self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="reference"]', '---')
         self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[2]/VALUE[@name="entry_account"]', '[512] 512')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[2]/VALUE[@name="debit"]', None)
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[2]/VALUE[@name="credit"]', '152.34€')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[2]/VALUE[@name="debit"]', '{[font color="green"]}{[/font]}')
+        self.assert_xml_equal(
+            'COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[2]/VALUE[@name="credit"]', '{[font color="green"]}152.34€{[/font]}')
         self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[2]/VALUE[@name="reference"]', 'Ch N°12345')
         self.assert_count_equal('ACTIONS/ACTION', 2)
 

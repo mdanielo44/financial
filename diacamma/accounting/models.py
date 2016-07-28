@@ -40,11 +40,9 @@ from django.utils import six
 from django_fsm import FSMIntegerField, transition
 
 from lucterios.framework.models import LucteriosModel, get_value_converted, get_value_if_choices
-from lucterios.framework.error import LucteriosException, IMPORTANT, GRAVE,\
-    MINOR
+from lucterios.framework.error import LucteriosException, IMPORTANT, GRAVE
 from lucterios.contacts.models import AbstractContact
-from lucterios.framework.filetools import read_file, xml_validator, save_file,\
-    get_user_path
+from lucterios.framework.filetools import read_file, xml_validator, save_file, get_user_path
 
 from diacamma.accounting.tools import get_amount_sum, format_devise, \
     current_system_account, currency_round, correct_accounting_code
@@ -705,7 +703,8 @@ class EntryAccount(LucteriosModel):
         for line in self.entrylineaccount_set.all():
             res += "{[tr]}"
             res += "{[td]}%s{[/td]}" % line.entry_account
-            res += "{[td]}%s{[/td]}" % format_devise(line.account.credit_debit_way() * line.amount, 2)
+            res += "{[td]}%s{[/td]}" % line.debit
+            res += "{[td]}%s{[/td]}" % line.credit
             if (line.reference is not None) and (line.reference != ''):
                 res += "{[td]}%s{[/td]}" % line.reference
             res += "{[/tr]}"
@@ -958,7 +957,7 @@ class EntryLineAccount(LucteriosModel):
 
     @property
     def debit(self):
-        return format_devise(self.get_debit(), 0)
+        return format_devise(min(0, self.account.credit_debit_way() * self.amount), 6)
 
     def get_credit(self):
         try:
@@ -968,7 +967,7 @@ class EntryLineAccount(LucteriosModel):
 
     @property
     def credit(self):
-        return format_devise(self.get_credit(), 0)
+        return format_devise(self.get_credit(), 6)
 
     def set_montant(self, debit_val, credit_val):
         if debit_val > 0:

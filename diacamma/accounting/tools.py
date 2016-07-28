@@ -82,7 +82,9 @@ def format_devise(amount, mode):
 
     # mode 3 25.45 => 25,45 / -25.45 => -25.45
     # mode 4 25.45 => 25,45€ / -25.45 => 25.45€
-    # mode 5+ 25.45 => 25,45€ / -25.45 => -25.45€
+    # mode 5 25.45 => 25,45€ / -25.45 => -25.45€
+    # mode 6 25.45 => {[font color="green"]}25,45€{[/font]}     /
+    # -25.45 => {[font color="blue"]}25,45€{[/font]}
     from decimal import InvalidOperation
     result = ''
     currency_short = Params.getvalue("accounting-devise")
@@ -94,14 +96,14 @@ def format_devise(amount, mode):
             amount = 0
     except InvalidOperation:
         return "???"
-    if (abs(amount) >= currency_epsilon) or (mode in (1, 2)):
+    if (abs(amount) >= currency_epsilon) or (mode in (1, 2, 6)):
         if amount >= 0:
-            if mode == 2:
+            if mode in (2, 6):
                 result = '{[font color="green"]}'
             if (mode == 1) or (mode == 2):
                 result = '%s%s: ' % (result, _('Credit'))
         else:
-            if mode == 2:
+            if mode in (2, 6):
                 result = result + '{[font color="blue"]}'
             if (mode == 1) or (mode == 2):
                 result = '%s%s: ' % (result, _('Debit'))
@@ -110,12 +112,15 @@ def format_devise(amount, mode):
     elif mode == 0:
         if amount >= currency_epsilon:
             result = currency_format % abs(amount) + currency_short
+    elif mode == 6:
+        if abs(amount) >= currency_epsilon:
+            result = result + currency_format % abs(amount) + currency_short
     else:
         if mode < 5:
             amount_text = currency_format % abs(amount)
         else:
             amount_text = currency_format % amount
         result = result + amount_text + currency_short
-    if mode == 2:
+    if mode in (2, 6):
         result = result + '{[/font]}'
     return result
