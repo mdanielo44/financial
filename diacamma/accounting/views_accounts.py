@@ -141,8 +141,11 @@ class ChartsAccountMerge(ObjectMerge):
     model = ChartsAccount
     field_id = 'chartsaccount'
 
-    def fillresponse(self):
+    def __init__(self, **kwargs):
+        ObjectMerge.__init__(self, **kwargs)
         self.params['modelname'] = ChartsAccount.get_long_name()
+
+    def fillresponse(self):
         ObjectMerge.fillresponse(self, 'chartsaccount')
 
 

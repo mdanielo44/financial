@@ -36,7 +36,7 @@ from lucterios.framework.models import get_value_if_choices
 from lucterios.framework.error import LucteriosException, IMPORTANT
 from lucterios.framework.editors import LucteriosEditor
 from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompSelect, XferCompButton, XferCompGrid, XferCompEdit, XferCompFloat
-from lucterios.framework.tools import FORMTYPE_REFRESH, CLOSE_NO, ActionsManage, FORMTYPE_MODAL, SELECT_SINGLE, SELECT_MULTI, CLOSE_YES
+from lucterios.framework.tools import FORMTYPE_REFRESH, CLOSE_NO, ActionsManage, SELECT_SINGLE, SELECT_MULTI, CLOSE_YES
 from lucterios.CORE.parameters import Params
 
 from diacamma.accounting.models import current_system_account, FiscalYear, EntryLineAccount, EntryAccount, get_amount_sum, Third, CostAccounting

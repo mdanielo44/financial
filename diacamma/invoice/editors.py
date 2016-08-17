@@ -75,6 +75,7 @@ class BillEditor(SupportingEditor):
         if xfer.item.cost_accounting is None:
             xfer.remove_component("cost_accounting")
             xfer.remove_component("lbl_cost_accounting")
+        xfer.params['new_account'] = Params.getvalue('invoice-account-third')
         xfer.move(0, 0, 1)
         lbl = XferCompLabelForm('title')
         lbl.set_location(1, 0, 4)

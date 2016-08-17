@@ -47,6 +47,7 @@ from lucterios.contacts.models import AbstractContact
 from diacamma.accounting.models import Third, AccountThird, FiscalYear, \
     EntryLineAccount, ModelLineEntry, EntryAccount
 from diacamma.accounting.views_admin import Configuration
+from diacamma.accounting.tools import correct_accounting_code
 
 MenuManage.add_sub("financial", None, "diacamma.accounting/images/financial.png", _("Financial"), _("Financial tools"), 50)
 
@@ -116,7 +117,7 @@ class ThirdSave(XferContainerAcknowledge):
     model = Third
     field_id = ''
 
-    def fillresponse(self, pkname=''):
+    def fillresponse(self, pkname='', new_account=''):
         contact_id = self.getparam(pkname)
         last_thirds = Third.objects.filter(
             contact__pk=contact_id)
@@ -126,6 +127,10 @@ class ThirdSave(XferContainerAcknowledge):
             self.item.contact = AbstractContact.objects.get(id=contact_id)
             self.item.status = 0
             self.item.save()
+        if new_account != '':
+            old_account = self.item.accountthird_set.filter(code=correct_accounting_code(new_account))
+            if len(old_account) == 0:
+                AccountThird.objects.create(third=self.item, code=correct_accounting_code(new_account))
         self.redirect_action(ThirdShow.get_action(), params={'third': self.item.id})
 
 
