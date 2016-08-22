@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-08-17 09:27+0000\n"
+"POT-Creation-Date: 2016-08-22 15:27+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,24 +21,24 @@ msgstr ""
 msgid "Diacamma invoice"
 msgstr "Diacamma invoice"
 
-#: editors.py:88
+#: editors.py:89
 msgid "price excl. taxes"
 msgstr "price excl. taxes"
 
-#: editors.py:90 editors.py:97 printmodel/Bill_0001.py:134 views.py:95
+#: editors.py:91 editors.py:98 printmodel/Bill_0001.py:134 views.py:95
 msgid "total excl. taxes"
 msgstr "total excl. taxes"
 
-#: editors.py:93
+#: editors.py:94
 msgid "price incl. taxes"
 msgstr "price incl. taxes"
 
-#: editors.py:95 editors.py:99 models.py:182 printmodel/Bill_0001.py:135
+#: editors.py:96 editors.py:100 models.py:182 printmodel/Bill_0001.py:135
 #: views.py:98
 msgid "total incl. taxes"
 msgstr "total incl. taxes"
 
-#: editors.py:99 models.py:182
+#: editors.py:100 models.py:182
 msgid "VTA sum"
 msgstr "VTA sum"
 

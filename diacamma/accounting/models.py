@@ -140,10 +140,8 @@ class AccountThird(LucteriosModel):
         return self.code
 
     def can_delete(self):
-        nb_lines = EntryLineAccount.objects.filter(
-            third=self.third, account__code=self.code).count()
-        if nb_lines != 0:
-            return _('This account has some entries!')
+        if self.total > 0.0001:
+            return _('This account is not nul!')
         else:
             return ''
 

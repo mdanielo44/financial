@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-08-17 09:27+0000\n"
+"POT-Creation-Date: 2016-08-22 15:27+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -350,15 +350,15 @@ msgstr "message"
 msgid "add payment methods in email"
 msgstr "add payment methods in email"
 
-#: views.py:233 views.py:236
+#: views.py:232 views.py:235
 msgid "Payment"
 msgstr "Payment"
 
-#: views.py:247
+#: views.py:246
 msgid "No payment for this document."
 msgstr "No payment for this document."
 
-#: views.py:260 views.py:284
+#: views.py:259 views.py:283
 msgid "Payement methods"
 msgstr "Payement methods"
 
