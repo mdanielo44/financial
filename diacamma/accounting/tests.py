@@ -318,9 +318,13 @@ class ThirdTest(LucteriosTest):
         self.assertTrue('34.01€' in description, description)
 
         self.factory.xfer = AccountThirdDel()
-        self.call('/diacamma.accounting/accountThirdDel', {"accountthird": 6}, False)
+        self.call('/diacamma.accounting/accountThirdDel', {"accountthird": 5}, False)
         self.assert_observer('core.exception', 'diacamma.accounting', 'accountThirdDel')
-        self.assert_xml_equal('EXCEPTION/MESSAGE', "Ce compte comporte des écritures!")
+        self.assert_xml_equal('EXCEPTION/MESSAGE', "Ce compte n'est pas soldé!")
+
+        self.factory.xfer = AccountThirdDel()
+        self.call('/diacamma.accounting/accountThirdDel', {"accountthird": 6}, False)
+        self.assert_observer('core.dialogbox', 'diacamma.accounting', 'accountThirdDel')
 
     def test_show_withdata_linesfilter(self):
         fill_thirds()
