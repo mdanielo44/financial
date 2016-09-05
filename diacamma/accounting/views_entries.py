@@ -139,7 +139,10 @@ class EntryAccountListing(XferPrintListing):
             if select_journal != -1:
                 new_filter &= Q(entry__journal__id=select_journal)
         else:
-            new_filter = XferPrintListing.get_filter(self)
+            self.item = EntryAccount()
+            entry_filter = XferPrintListing.get_filter(self)
+            self.item = EntryLineAccount()
+            new_filter = Q(entry_id__in=[entry.id for entry in EntryAccount.objects.filter(entry_filter[0])])
         return new_filter
 
 

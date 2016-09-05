@@ -337,13 +337,12 @@ class Payoff(LucteriosModel):
 
     @classmethod
     def multi_save(cls, supportings, amount, mode, payer, reference, bank_account, date):
-        supporting_list = Supporting.objects.filter(
-            id__in=supportings, is_revenu=True)
-        if len(supporting_list) == 0:
-            raise LucteriosException(IMPORTANT, _('No-valid selection!'))
+        supporting_list = Supporting.objects.filter(id__in=supportings, is_revenu=True)
         amount_sum = 0
         for supporting in supporting_list:
             amount_sum += supporting.get_final_child().get_total_rest_topay()
+        if abs(amount_sum) < 0.0001:
+            raise LucteriosException(IMPORTANT, _('No-valid selection!'))
         amount_rest = amount
         paypoff_list = []
         for supporting in supporting_list:
@@ -382,7 +381,8 @@ class Payoff(LucteriosModel):
 
 class DepositSlip(LucteriosModel):
 
-    status = FSMIntegerField(verbose_name=_('status'), choices=((0, _('building')), (1, _('closed')), (2, _('valid'))), null=False, default=0, db_index=True)
+    status = FSMIntegerField(verbose_name=_('status'), choices=(
+        (0, _('building')), (1, _('closed')), (2, _('valid'))), null=False, default=0, db_index=True)
     bank_account = models.ForeignKey(BankAccount, verbose_name=_(
         'bank account'), null=False, db_index=True, on_delete=models.PROTECT)
     date = models.DateField(verbose_name=_('date'), null=False)
@@ -668,6 +668,8 @@ class BankTransaction(LucteriosModel):
 
 @Signal.decorate('checkparam')
 def payoff_checkparam():
-    Parameter.check_and_create(name='payoff-bankcharges-account', typeparam=0, title=_("payoff-bankcharges-account"), args="{'Multi':False}", value='')
+    Parameter.check_and_create(name='payoff-bankcharges-account', typeparam=0,
+                               title=_("payoff-bankcharges-account"), args="{'Multi':False}", value='')
     Parameter.check_and_create(name='payoff-cash-account', typeparam=0, title=_("payoff-cash-account"), args="{'Multi':False}", value='531')
-    Parameter.check_and_create(name='payoff-email-message', typeparam=0, title=_("payoff-email-message"), args="{'Multi':True}", value=_('%(name)s\n\nJoint in this email %(doc)s.\n\nRegards'))
+    Parameter.check_and_create(name='payoff-email-message', typeparam=0, title=_("payoff-email-message"),
+                               args="{'Multi':True}", value=_('%(name)s\n\nJoint in this email %(doc)s.\n\nRegards'))
