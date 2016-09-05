@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-08-22 15:27+0000\n"
+"POT-Creation-Date: 2016-09-05 15:03+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -25,7 +25,7 @@ msgstr "Diacamma payoff"
 msgid "payoff null!"
 msgstr "payoff null!"
 
-#: editors.py:109 models.py:343
+#: editors.py:109 models.py:345
 msgid "No-valid selection!"
 msgstr "No-valid selection!"
 
@@ -146,15 +146,15 @@ msgstr "payoff for %s"
 msgid "account is not defined!"
 msgstr "account is not defined!"
 
-#: models.py:379 models.py:457
+#: models.py:378 models.py:457
 msgid "payoff"
 msgstr "payoff"
 
-#: models.py:380
+#: models.py:379
 msgid "payoffs"
 msgstr "payoffs"
 
-#: models.py:385 models.py:647
+#: models.py:384 models.py:647
 msgid "status"
 msgstr "status"
 
@@ -275,19 +275,19 @@ msgstr "bank transaction"
 msgid "bank transactions"
 msgstr "bank transactions"
 
-#: models.py:671
+#: models.py:672
 msgid "payoff-bankcharges-account"
 msgstr "bank charges account"
 
-#: models.py:672
+#: models.py:673
 msgid "payoff-cash-account"
 msgstr "cash account"
 
-#: models.py:673
+#: models.py:674
 msgid "payoff-email-message"
 msgstr "default email message"
 
-#: models.py:673
+#: models.py:675
 #, python-format
 msgid ""
 "%(name)s\n"

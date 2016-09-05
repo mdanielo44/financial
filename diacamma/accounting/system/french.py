@@ -409,30 +409,9 @@ class FrenchSystemAcounting(DefaultSystemAccounting):
             new_entry.add_entry_line(sum45, '455')
             new_entry.closed()
 
-    def check_end(self, year, xfer, nb_entry_noclose):
-        text_confirm = """{[center]}{[b]}Voulez-vous cloturer cet exercice?{[/b]}{[/center]}{[br/]}
-{[u]}Attention:{[/u]}Ceci est une opération définitif, vérifiez bien d'avoir saisi:{[br/]}
- - L'ensemble de vos factures clients et fournisseurs sur l'exercice.{[br/]}
- - L'ensemble de vos réglements.{[br/]}
- - Le prorata de frais (assurance, téléphone, loyer,...) à cheval sur plusieurs exercices.{[br/]}
- - L'état de vos immobilisation.{[br/]}
- - Le calcul de vos ammortissements.{[br/]}
- - L'état de vos stocks.{[br/]}
-{[br/]}
-{[u]}L'outil va créer une éventuelle écriture de cloture.{[/u]}{[br/]}"""
-        if nb_entry_noclose > 0:
-            if nb_entry_noclose == 1:
-                text_confirm += "{[br/]}{[u]}Attention:{[/u]}une écriture n'est pas validée{[br/]}"
-            else:
-                text_confirm += "{[br/]}{[u]}Attention:{[/u]}%d écritures ne sont pas validées{[br/]}" % nb_entry_noclose
-
-            text_confirm += "elles seront déplacées sur l'exercice suivant"
-        if xfer.confirme(text_confirm):
-            year.move_entry_noclose()
-            self._create_result_entry(year)
-            self._create_thirds_ending_entry(year)
-            return True
-        return False
+    def finalize_year(self, year):
+        self._create_result_entry(year)
+        self._create_thirds_ending_entry(year)
 
     def _create_report_lastyearresult(self, year):
         from diacamma.accounting.models import Journal, EntryAccount

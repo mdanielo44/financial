@@ -41,6 +41,7 @@ from lucterios.CORE.parameters import Params
 
 from diacamma.accounting.models import current_system_account, FiscalYear, EntryLineAccount, EntryAccount, get_amount_sum, Third, CostAccounting
 from lucterios.framework.xferadvance import TITLE_MODIFY
+from lucterios.framework import signal_and_lock
 
 
 class ThirdEditor(LucteriosEditor):
@@ -121,7 +122,17 @@ class FiscalYearEditor(LucteriosEditor):
         nb_entry_noclose = EntryAccount.objects.filter(close=False, entrylineaccount__account__year=self.item).distinct().count()
         if (nb_entry_noclose > 0) and (FiscalYear.objects.filter(last_fiscalyear=self.item).count() == 0):
             raise LucteriosException(IMPORTANT, _("This fiscal year has entries not closed and not next fiscal year!"))
-        if current_system_account().check_end(self.item, xfer, nb_entry_noclose):
+
+        text_confirm = six.text_type(_('close-fiscal-year-confirme'))
+        if nb_entry_noclose > 0:
+            if nb_entry_noclose == 1:
+                text_confirm += six.text_type(_('warning, entry no validated'))
+            else:
+                text_confirm += six.text_type(_('warning, %d entries no validated') % nb_entry_noclose)
+        if xfer.confirme(text_confirm):
+            signal_and_lock.Signal.call_signal("finalize_year", self.item)
+            self.item.move_entry_noclose()
+            current_system_account().finalize_year(self.item)
             self.item.status = 2
             self.item.save()
 

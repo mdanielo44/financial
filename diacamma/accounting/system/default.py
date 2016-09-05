@@ -63,8 +63,8 @@ class DefaultSystemAccounting(object):
     def check_begin(self, year, xfer):
         return False
 
-    def check_end(self, year, xfer, nb_entry_noclose):
-        return False
+    def finalize_year(self, year):
+        return
 
     def import_lastyear(self, year):
         return
