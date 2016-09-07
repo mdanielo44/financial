@@ -98,18 +98,7 @@ class FiscalYearReport(XferContainerCustom):
         self.fill_buttons()
 
     def define_gridheader(self):
-        self.grid = XferCompGrid('report_%d' % self.item.id)
-        self.grid.add_header('left', _('Assets'))
-        self.grid.add_header('left_n', self.item.get_identify())
-        if self.lastfilter is not None:
-            self.grid.add_header(
-                'left_n_1', self.item.last_fiscalyear.get_identify())
-        self.grid.add_header('space', '')
-        self.grid.add_header('right', _('Liabilities'))
-        self.grid.add_header('right_n', self.item.get_identify())
-        if self.lastfilter is not None:
-            self.grid.add_header(
-                'right_n_1', self.item.last_fiscalyear.get_identify())
+        pass
 
     def fill_filterheader(self):
         pass
@@ -266,6 +255,20 @@ class FiscalYearBalanceSheet(FiscalYearReport):
             lbl.set_location(2, 13, 4)
             self.add_component(lbl)
 
+    def define_gridheader(self):
+        self.grid = XferCompGrid('report_%d' % self.item.id)
+        self.grid.add_header('left', _('Assets'))
+        self.grid.add_header('left_n', self.item.get_identify())
+        if self.lastfilter is not None:
+            self.grid.add_header(
+                'left_n_1', self.item.last_fiscalyear.get_identify())
+        self.grid.add_header('space', '')
+        self.grid.add_header('right', _('Liabilities'))
+        self.grid.add_header('right_n', self.item.get_identify())
+        if self.lastfilter is not None:
+            self.grid.add_header(
+                'right_n_1', self.item.last_fiscalyear.get_identify())
+
     def calcul_table(self):
         self._add_left_right_accounting(
             Q(account__type_of_account=0), Q(account__type_of_account__in=(1, 2)), False)
@@ -274,6 +277,20 @@ class FiscalYearBalanceSheet(FiscalYearReport):
 @MenuManage.describ('accounting.change_fiscalyear', FORMTYPE_NOMODAL, 'bookkeeping', _('Show income statement for current fiscal year'))
 class FiscalYearIncomeStatement(FiscalYearReport):
     caption = _("Income statement")
+
+    def define_gridheader(self):
+        self.grid = XferCompGrid('report_%d' % self.item.id)
+        self.grid.add_header('left', _('Expense'))
+        self.grid.add_header('left_n', self.item.get_identify())
+        if self.lastfilter is not None:
+            self.grid.add_header(
+                'left_n_1', self.item.last_fiscalyear.get_identify())
+        self.grid.add_header('space', '')
+        self.grid.add_header('right', _('Revenue'))
+        self.grid.add_header('right_n', self.item.get_identify())
+        if self.lastfilter is not None:
+            self.grid.add_header(
+                'right_n_1', self.item.last_fiscalyear.get_identify())
 
     def fill_filterheader(self):
         if self.item.last_fiscalyear is not None:
