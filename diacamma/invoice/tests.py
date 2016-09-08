@@ -395,7 +395,7 @@ class BillTest(InvoiceTest):
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="detail"]/RECORD', 1)
         self.assert_xml_equal(
-            'COMPONENTS/LABELFORM[@name="info"]', "{[font color=\"red\"]}le tiers n'a pas de compte correcte{[/font]}")
+            'COMPONENTS/LABELFORM[@name="info"]', "{[font color=\"red\"]}Ce tiers n'a pas de compte correct!{[/font]}")
 
     def check_list_del_archive(self):
         self.factory.xfer = BillList()
