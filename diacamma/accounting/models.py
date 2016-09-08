@@ -126,6 +126,15 @@ class Third(LucteriosModel):
     def enabled(self):
         pass
 
+    def get_account(self, fiscal_year, mask):
+        accounts = self.accountthird_set.filter(code__regex=mask)
+        if len(accounts) == 0:
+            raise LucteriosException(IMPORTANT, _("third has not correct account"))
+        third_account = ChartsAccount.get_account(accounts[0].code, fiscal_year)
+        if third_account is None:
+            raise LucteriosException(IMPORTANT, _("third has not correct account"))
+        return third_account
+
     class Meta(object):
         verbose_name = _('third')
         verbose_name_plural = _('thirds')

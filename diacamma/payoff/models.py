@@ -287,16 +287,7 @@ class Payoff(LucteriosModel):
                 "payoff for %s") % six.text_type(supporting),
             journal=Journal.objects.get(id=4))
         for third, amount in third_amounts:
-            accounts = third.accountthird_set.filter(
-                code__regex=supporting.get_third_mask())
-            if len(accounts) == 0:
-                raise LucteriosException(
-                    IMPORTANT, _("third has not correct account"))
-            third_account = ChartsAccount.get_account(
-                accounts[0].code, fiscal_year)
-            if third_account is None:
-                raise LucteriosException(
-                    IMPORTANT, _("third has not correct account"))
+            third_account = third.get_account(fiscal_year, supporting.get_third_mask())
             if third_account.type_of_account == 0:
                 is_liability = 1
             else:
