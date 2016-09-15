@@ -32,6 +32,7 @@ from django.utils import six
 from lucterios.install.lucterios_migration import MigrateAbstract
 from lucterios.CORE.models import Parameter
 from diacamma.accounting.from_v1 import convert_code
+from lucterios.CORE.parameters import Params
 
 
 class InvoiceMigrate(MigrateAbstract):
@@ -220,6 +221,7 @@ class InvoiceMigrate(MigrateAbstract):
                 self.print_debug(
                     "=> parameter of invoice %s - %s", (pname, param_value))
                 Parameter.change_value(pname, param_value)
+        Params.clear()
 
     def run(self):
         try:

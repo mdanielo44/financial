@@ -31,6 +31,7 @@ from django.utils import six
 from lucterios.install.lucterios_migration import MigrateAbstract
 import sys
 import datetime
+from lucterios.CORE.parameters import Params
 
 
 def decode_html(data):
@@ -285,6 +286,7 @@ class AccountingMigrate(MigrateAbstract):
                 self.print_debug(
                     "=> parameter of account %s - %s", (pname, param_value))
                 Parameter.change_value(pname, param_value)
+        Params.clear()
 
     def run(self):
         try:
