@@ -92,6 +92,9 @@ class Supporting(LucteriosModel):
     def default_date(self):
         return date.today()
 
+    def default_costaccounting(self):
+        return None
+
     def entry_links(self):
         return None
 
@@ -285,7 +288,7 @@ class Payoff(LucteriosModel):
         new_entry = EntryAccount.objects.create(
             year=fiscal_year, date_value=self.date, designation=_(
                 "payoff for %s") % six.text_type(supporting),
-            journal=Journal.objects.get(id=4))
+            journal=Journal.objects.get(id=4), costaccounting=supporting.default_costaccounting())
         for third, amount in third_amounts:
             third_account = third.get_account(fiscal_year, supporting.get_third_mask())
             if third_account.type_of_account == 0:

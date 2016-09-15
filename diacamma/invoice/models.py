@@ -270,6 +270,9 @@ class Bill(Supporting):
     def entry_links(self):
         return [self.entry]
 
+    def default_costaccounting(self):
+        return self.cost_accounting
+
     def get_info_state(self):
         info = []
         if self.status == 0:
