@@ -167,6 +167,8 @@ class EntryAccountClose(XferContainerAcknowledge):
         if (len(self.items) > 0) and self.confirme(_("Do you want to close this entry?")):
             for item in self.items:
                 item.closed()
+        if (len(self.items) == 1) and (self.getparam('REOPEN') == 'YES'):
+            self.redirect_action(EntryAccountOpenFromLine.get_action())
 
 
 @ActionsManage.affect_grid(_("Link/Unlink"), "images/left.png", unique=SELECT_MULTI, condition=lambda xfer, gridname='': not hasattr(xfer.item, 'year') or (xfer.item.year.status in [0, 1]))
@@ -237,7 +239,7 @@ class EntryAccountOpenFromLine(XferContainerAcknowledge):
         if field_id != '':
             self.item = EntryAccount.objects.get(id=self.getparam(field_id, 0))
             self.params['entryaccount'] = self.item.id
-        for old_key in ["SAVE", 'entrylineaccount', 'entrylineaccount_link', 'third', 'reference', 'serial_entry']:
+        for old_key in ["SAVE", 'entrylineaccount', 'entrylineaccount_link', 'third', 'reference', 'serial_entry', 'costaccounting']:
             if old_key in self.params.keys():
                 del self.params[old_key]
         if self.item.close:
@@ -277,8 +279,9 @@ class EntryAccountEdit(XferAddEditor):
         if self.no_change:
             if self.added:
                 self.add_action(self.get_action(TITLE_MODIFY, "images/ok.png"), params={"SAVE": "YES"})
+                self.add_action(EntryAccountClose.get_action(_("Closed"), "images/up.png"), close=CLOSE_YES, params={"REOPEN": "YES"})
             if (self.item.link is None) and self.item.has_third and not self.item.has_cash:
-                self.add_action(EntryAccountCreateLinked.get_action(_('Payment'), ''), close=CLOSE_YES)
+                self.add_action(EntryAccountCreateLinked.get_action(_('Payment'), "images/right.png"), close=CLOSE_YES)
             self.add_action(EntryAccountReverse.get_action(_('Reverse'), 'images/edit.png'), close=CLOSE_YES)
             self.add_action(WrapAction(TITLE_CLOSE, 'images/close.png'))
         else:
@@ -332,6 +335,10 @@ class EntryAccountValidate(XferContainerAcknowledge):
         save.params["SAVE"] = "YES"
         save.fillresponse()
         self.item.save_entrylineaccounts(serial_entry)
+        for old_key in ['date_value', 'designation', 'SAVE', 'serial_entry']:
+            if old_key in self.params.keys():
+                del self.params[old_key]
+        self.redirect_action(EntryAccountEdit.get_action())
 
 
 @MenuManage.describ('accounting.add_entryaccount')

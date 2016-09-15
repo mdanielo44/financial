@@ -425,9 +425,10 @@ class EntryTest(LucteriosTest):
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountEdit')
         self.assert_count_equal('COMPONENTS/*', 23)
 
-        self.assert_count_equal('ACTIONS/ACTION', 4)
-        self.assert_attrib_equal("ACTIONS/ACTION[2]", "id", "diacamma.accounting/entryAccountCreateLinked")
-        self.assert_attrib_equal("ACTIONS/ACTION[3]", "id", "diacamma.accounting/entryAccountReverse")
+        self.assert_count_equal('ACTIONS/ACTION', 5)
+        self.assert_attrib_equal("ACTIONS/ACTION[2]", "id", "diacamma.accounting/entryAccountClose")
+        self.assert_attrib_equal("ACTIONS/ACTION[3]", "id", "diacamma.accounting/entryAccountCreateLinked")
+        self.assert_attrib_equal("ACTIONS/ACTION[4]", "id", "diacamma.accounting/entryAccountReverse")
 
         self.factory.xfer = EntryAccountReverse()
         self.call('/diacamma.accounting/entryAccountReverse',
@@ -702,7 +703,7 @@ class EntryTest(LucteriosTest):
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountEdit')
         self.assert_count_equal('COMPONENTS/*', 23)
         self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD', 2)
-        self.assert_count_equal('ACTIONS/ACTION', 4)
+        self.assert_count_equal('ACTIONS/ACTION', 5)
 
         self.factory.xfer = EntryLineAccountDel()
         self.call('/diacamma.accounting/entryLineAccountDel', {'year': '1', 'journal': '2', 'entryaccount': '1',

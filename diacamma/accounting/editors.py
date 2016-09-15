@@ -262,7 +262,7 @@ class EntryAccountEditor(LucteriosEditor):
                 link_grid_lines.set_model(linkentries, fieldnames=None, xfer_custom=xfer)
                 link_grid_lines.set_location(1, last_row + 6, 5)
                 link_grid_lines.add_action(xfer.request, ActionsManage.get_action_url(
-                    'accounting.EntryAccount', 'OpenFromLine', xfer), unique=SELECT_SINGLE, close=CLOSE_YES, params={'field_id': 'entryaccount_link'})
+                    'accounting.EntryAccount', 'OpenFromLine', xfer), unique=SELECT_SINGLE, close=CLOSE_YES, params={'field_id': 'entryaccount_link', 'journal': ''})
                 xfer.add_component(link_grid_lines)
         if self.added:
             xfer.add_action(xfer.get_action(TITLE_MODIFY, "images/ok.png"), params={"SAVE": "YES"})
