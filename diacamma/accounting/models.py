@@ -743,8 +743,7 @@ class EntryAccount(LucteriosModel):
 
     def get_serial(self, entrylines=None):
         if entrylines is None:
-            entrylines = self.entrylineaccount_set.all(
-            )
+            entrylines = self.entrylineaccount_set.all()
         serial_val = ''
         for line in entrylines:
             if serial_val != '':
@@ -1112,14 +1111,12 @@ class ModelEntry(LucteriosModel):
         return format_devise(self.get_total(), 5)
 
     def get_serial_entry(self, factor, year):
-        serial_val = ''
+        entry_lines = []
         num = 0
         for line in self.modellineentry_set.all():
-            if serial_val != '':
-                serial_val += '\n'
-            serial_val += line.get_serial(factor, num, year)
+            entry_lines.append(line.get_entry_line(factor, num, year))
             num += 1
-        return serial_val
+        return EntryAccount().get_serial(entry_lines)
 
     class Meta(object):
 
@@ -1182,22 +1179,18 @@ class ModelLineEntry(LucteriosModel):
         else:
             self.amount = 0
 
-    def get_serial(self, factor, num, year):
+    def get_entry_line(self, factor, num, year):
         import time
         try:
             new_entry_line = EntryLineAccount()
-            new_entry_line.id = -1 * \
-                int(time.time() * 60) + \
-                num
-            new_entry_line.account = ChartsAccount.objects.get(
-                year=year, code=self.code)
+            new_entry_line.id = -1 * int(time.time() * 60) + (num * 15)
+            new_entry_line.account = ChartsAccount.objects.get(year=year, code=correct_accounting_code(self.code))
             new_entry_line.third = self.third
             new_entry_line.amount = currency_round(self.amount * factor)
             new_entry_line.reference = None
-            return new_entry_line.get_serial()
+            return new_entry_line
         except ObjectDoesNotExist:
-            raise LucteriosException(
-                IMPORTANT, _('Account code "%s" unknown for this fiscal year!') % self.code)
+            raise LucteriosException(IMPORTANT, _('Account code "%s" unknown for this fiscal year!') % self.code)
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         self.code = correct_accounting_code(self.code)

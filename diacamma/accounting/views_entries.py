@@ -427,7 +427,7 @@ class EntryAccountModelSelector(XferContainerAcknowledge):
             self.redirect_action(EntryAccountEdit.get_action(), params={"serial_entry": serial_entry})
 
 
-@ActionsManage.affect_other(TITLE_ADD, "images/add.png")
+@ActionsManage.affect_other(TITLE_ADD, "images/add.png", close=CLOSE_YES)
 @MenuManage.describ('accounting.add_entryaccount')
 class EntryLineAccountAdd(XferContainerAcknowledge):
     icon = "entry.png"
@@ -445,7 +445,7 @@ class EntryLineAccountAdd(XferContainerAcknowledge):
             self.redirect_action(EntryAccountEdit.get_action(), params={"serial_entry": serial_entry})
 
 
-@ActionsManage.affect_grid(TITLE_MODIFY, "images/edit.png", unique=SELECT_SINGLE)
+@ActionsManage.affect_grid(TITLE_MODIFY, "images/edit.png", unique=SELECT_SINGLE, close=CLOSE_YES)
 @MenuManage.describ('accounting.add_entryaccount')
 class EntryLineAccountEdit(XferContainerCustom):
     icon = "entry.png"
@@ -471,7 +471,7 @@ class EntryLineAccountEdit(XferContainerCustom):
         self.add_action(EntryAccountEdit.get_action(TITLE_CANCEL, 'images/cancel.png'))
 
 
-@ActionsManage.affect_grid(TITLE_DELETE, "images/delete.png", unique=SELECT_SINGLE)
+@ActionsManage.affect_grid(TITLE_DELETE, "images/delete.png", unique=SELECT_SINGLE, close=CLOSE_YES)
 @MenuManage.describ('accounting.add_entryaccount')
 class EntryLineAccountDel(XferContainerAcknowledge):
     icon = "entry.png"

@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 from django.utils.translation import ugettext_lazy as _
+from django.db.models import Q
 
 from lucterios.framework.xferadvance import XferListEditor, TITLE_DELETE, TITLE_ADD, TITLE_MODIFY, TITLE_EDIT, TITLE_PRINT,\
     TITLE_CANCEL, XferTransition
@@ -9,13 +10,14 @@ from lucterios.framework.xferadvance import XferAddEditor
 from lucterios.framework.xferadvance import XferShowEditor
 from lucterios.framework.xferadvance import XferDelete
 from lucterios.framework.xfergraphic import XferContainerCustom, XferContainerAcknowledge
-from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompImage
+from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompImage, XferCompSelect
 from lucterios.framework.xfercomponents import XferCompEdit, XferCompGrid
-from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage, CLOSE_YES, CLOSE_NO, FORMTYPE_REFRESH, SELECT_MULTI, WrapAction,\
-    SELECT_SINGLE
+from lucterios.framework.tools import FORMTYPE_NOMODAL, CLOSE_YES, CLOSE_NO, FORMTYPE_REFRESH, SELECT_MULTI, SELECT_SINGLE
+from lucterios.framework.tools import ActionsManage, MenuManage, WrapAction
 from lucterios.CORE.xferprint import XferPrintAction
 
 from diacamma.payoff.models import DepositSlip, DepositDetail, BankTransaction
+from diacamma.accounting.models import FiscalYear
 
 
 @MenuManage.describ('payoff.change_depositslip', FORMTYPE_NOMODAL, 'financial', _('manage deposit of cheque'))
@@ -25,9 +27,47 @@ class DepositSlipList(XferListEditor):
     field_id = 'depositslip'
     caption = _("deposit slips")
 
+    def fillresponse_header(self):
+        status_filter = self.getparam('status_filter', -1)
+        year_filter = self.getparam('year_filter', FiscalYear.get_current().id)
+        lbl = XferCompLabelForm('lbl_statusfilter')
+        lbl.set_value_as_name(_('Filter by status'))
+        lbl.set_location(0, 1)
+        self.add_component(lbl)
+        dep_field = DepositSlip.get_field_by_name('status')
+        sel_list = list(dep_field.choices)
+        sel_list.insert(0, (-1, '---'))
+        edt = XferCompSelect("status_filter")
+        edt.set_select(sel_list)
+        edt.set_value(status_filter)
+        edt.set_needed(False)
+        edt.set_location(1, 1)
+        edt.set_action(self.request, self.get_action(), modal=FORMTYPE_REFRESH, close=CLOSE_NO)
+        self.add_component(edt)
+
+        lbl = XferCompLabelForm('lbl_yearfilter')
+        lbl.set_value_as_name(_('Filter by year'))
+        lbl.set_location(0, 2)
+        self.add_component(lbl)
+        edt = XferCompSelect("year_filter")
+        edt.set_needed(False)
+        edt.set_select_query(FiscalYear.objects.all())
+        edt.set_value(year_filter)
+        edt.set_location(1, 2)
+        edt.set_action(self.request, self.get_action(), modal=FORMTYPE_REFRESH, close=CLOSE_NO)
+        self.add_component(edt)
+
+        self.filter = Q()
+        if status_filter >= 0:
+            self.filter &= Q(status=status_filter)
+        if year_filter > 0:
+            year = FiscalYear.objects.get(id=year_filter)
+            self.filter &= Q(date__gte=year.begin)
+            self.filter &= Q(date__lte=year.end)
+
 
 @ActionsManage.affect_grid(TITLE_ADD, "images/add.png")
-@ActionsManage.affect_show(TITLE_MODIFY, "images/edit.png", condition=lambda xfer: xfer.item.status == 0)
+@ActionsManage.affect_show(TITLE_MODIFY, "images/edit.png", condition=lambda xfer: xfer.item.status == 0, close=CLOSE_YES)
 @MenuManage.describ('payoff.add_depositslip')
 class DepositSlipAddModify(XferAddEditor):
     icon = "bank.png"

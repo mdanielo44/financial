@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-09-08 14:18+0000\n"
+"POT-Creation-Date: 2016-09-16 13:18+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -66,17 +66,17 @@ msgstr "VATs"
 msgid "reference"
 msgstr "reference"
 
-#: models.py:75 models.py:532 printmodel/Bill_0001.py:128
+#: models.py:75 models.py:535 printmodel/Bill_0001.py:128
 #: printmodel/Bill_0002.py:145
 msgid "designation"
 msgstr "designation"
 
-#: models.py:76 models.py:91 models.py:533 models.py:549 models.py:557
+#: models.py:76 models.py:91 models.py:536 models.py:552 models.py:560
 #: printmodel/Bill_0001.py:129 printmodel/Bill_0002.py:146
 msgid "price"
 msgstr "price"
 
-#: models.py:79 models.py:536
+#: models.py:79 models.py:539
 msgid "unit"
 msgstr "unit"
 
@@ -92,7 +92,7 @@ msgstr "sell account"
 msgid "vat"
 msgstr "VAT"
 
-#: models.py:114 models.py:531 printmodel/Bill_0001.py:127
+#: models.py:114 models.py:534 printmodel/Bill_0001.py:127
 #: printmodel/Bill_0002.py:144 views.py:376
 msgid "article"
 msgstr "article"
@@ -113,7 +113,7 @@ msgstr "bill type"
 msgid "quotation"
 msgstr "quotation"
 
-#: models.py:122 models.py:522 models.py:529 printmodel/Bill_0001.py:31
+#: models.py:122 models.py:525 models.py:532 printmodel/Bill_0001.py:31
 msgid "bill"
 msgstr "bill"
 
@@ -165,8 +165,8 @@ msgstr "entry"
 msgid "cost accounting"
 msgstr "cost accounting"
 
-#: models.py:144 models.py:153 models.py:174 models.py:182 models.py:452
-#: models.py:486 models.py:549
+#: models.py:144 models.py:153 models.py:174 models.py:182 models.py:455
+#: models.py:489 models.py:552
 msgid "total"
 msgstr "total"
 
@@ -175,100 +175,100 @@ msgstr "total"
 msgid "VAT %s %%"
 msgstr "VAT %s %%"
 
-#: models.py:280
+#: models.py:283
 msgid "no detail"
 msgstr "no detail"
 
-#: models.py:297 models.py:333
+#: models.py:300 models.py:336
 msgid "article has code account unknown!"
 msgstr "article has code account unknown!"
 
-#: models.py:307
+#: models.py:310
 #, python-format
 msgid "\"%s\" cannot be deleted!"
 msgstr "\"%s\" cannot be deleted!"
 
-#: models.py:345
+#: models.py:348
 msgid "reduce-account is not defined!"
 msgstr "reduce account is not defined!"
 
-#: models.py:357
+#: models.py:360
 msgid "vta-account is not defined!"
 msgstr "vta account is not defined!"
 
-#: models.py:364
+#: models.py:367
 msgid "Error in accounting generator!"
 msgstr "Error in accounting generator!"
 
-#: models.py:366
+#: models.py:369
 msgid "Validate"
 msgstr "Validate"
 
-#: models.py:383
+#: models.py:386
 msgid "Archive"
 msgstr "Archive"
 
-#: models.py:391
+#: models.py:394
 msgid "Cancel"
 msgstr "Cancel"
 
-#: models.py:494 models.py:501
+#: models.py:497 models.py:504
 msgid "This item can't be validated!"
 msgstr "This item can't be validated!"
 
-#: models.py:523
+#: models.py:526
 msgid "bills"
 msgstr "bills"
 
-#: models.py:537
+#: models.py:540
 msgid "quantity"
 msgstr "quantity"
 
-#: models.py:539 models.py:549 models.py:557
+#: models.py:542 models.py:552 models.py:560
 msgid "reduce"
 msgstr "reduce"
 
-#: models.py:541
+#: models.py:544
 msgid "vta rate"
 msgstr "vta rate"
 
-#: models.py:653
+#: models.py:656
 msgid "detail"
 msgstr "detail"
 
-#: models.py:654
+#: models.py:657
 msgid "details"
 msgstr "details"
 
-#: models.py:672
+#: models.py:675
 msgid "invoice-default-sell-account"
 msgstr "default sell account"
 
-#: models.py:673
+#: models.py:676
 msgid "invoice-reduce-account"
 msgstr "reduce account"
 
-#: models.py:675
+#: models.py:678
 msgid "invoice-vatsell-account"
 msgstr "VAT sell account"
 
-#: models.py:677
+#: models.py:680
 msgid "invoice-vat-mode"
 msgstr "VAT mode"
 
-#: models.py:678
+#: models.py:681
 msgid "invoice-vat-mode.0"
 msgstr "not applicable"
 
-#: models.py:678
+#: models.py:681
 msgid "invoice-vat-mode.1"
 msgstr "price without tax"
 
-#: models.py:678
+#: models.py:681
 msgid "invoice-vat-mode.2"
 msgstr "price including tax"
 
-#: models.py:679
+#: models.py:682
 msgid "invoice-account-third"
 msgstr "default third account"
 

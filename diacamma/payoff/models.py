@@ -417,7 +417,7 @@ class DepositSlip(LucteriosModel):
             return _('Remove of %s impossible!') % six.text_type(self)
         return ''
 
-    transitionname__close_deposit = _("Closed")
+    transitionname__close_deposit = _("To Close")
 
     @transition(field=status, source=0, target=1, conditions=[lambda item:len(item.depositdetail_set.all()) > 0])
     def close_deposit(self):
