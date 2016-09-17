@@ -418,7 +418,6 @@ class FiscalYear(LucteriosModel):
 
 
 class CostAccounting(LucteriosModel):
-
     name = models.CharField(_('name'), max_length=50, unique=True)
     description = models.CharField(
         _('description'), max_length=50)
@@ -427,9 +426,17 @@ class CostAccounting(LucteriosModel):
     last_costaccounting = models.ForeignKey('CostAccounting', verbose_name=_(
         'last cost accounting'), related_name='next_costaccounting', null=True, on_delete=models.SET_NULL)
     is_default = models.BooleanField(verbose_name=_('default'), default=False)
+    is_protected = models.BooleanField(verbose_name=_('default'), default=False)
 
     def __str__(self):
         return self.name
+
+    def can_delete(self):
+        if self.status == 2:
+            return _('This cost accounting is closed!')
+        if self.is_protected:
+            return _("This cost accounting is protected by other modules!")
+        return ""
 
     @classmethod
     def get_default_fields(cls):
@@ -445,7 +452,6 @@ class CostAccounting(LucteriosModel):
         return format_devise(self.get_total_revenue(), 5)
 
     def get_total_revenue(self):
-
         return get_amount_sum(EntryLineAccount.objects.filter(account__type_of_account=3, entry__costaccounting=self).aggregate(Sum('amount')))
 
     @property
@@ -455,14 +461,19 @@ class CostAccounting(LucteriosModel):
     def get_total_expense(self):
         return get_amount_sum(EntryLineAccount.objects.filter(account__type_of_account=4, entry__costaccounting=self).aggregate(Sum('amount')))
 
+    def close(self):
+        self.check_before_close()
+        self.is_default = False
+        self.status = 1
+        self.save()
+
     def change_has_default(self):
         if self.status == 0:
             if self.is_default:
                 self.is_default = False
                 self.save()
             else:
-                all_cost = CostAccounting.objects.all(
-                )
+                all_cost = CostAccounting.objects.all()
                 for cost_item in all_cost:
                     cost_item.is_default = False
                     cost_item.save()

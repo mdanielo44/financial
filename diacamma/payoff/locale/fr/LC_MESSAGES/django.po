@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-09-16 13:18+0000\n"
+"POT-Creation-Date: 2016-09-17 09:21+0000\n"
 "PO-Revision-Date: 2016-01-14 22:21+0000\n"
 "Last-Translator: b'Paul ARULATEDA <paul531@orange.fr>'\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -67,7 +67,7 @@ msgstr "la date n'est pas incluse dans l'exercice"
 msgid "designation"
 msgstr "désignation"
 
-#: models.py:211 models.py:241 models.py:384 views_deposit.py:142
+#: models.py:211 models.py:241 models.py:384 views_deposit.py:161
 msgid "reference"
 msgstr "référence"
 
@@ -83,11 +83,11 @@ msgstr "compte bancaire"
 msgid "bank accounts"
 msgstr "comptes bancaire"
 
-#: models.py:234 models.py:382 models.py:640 views_deposit.py:141
+#: models.py:234 models.py:382 models.py:640 views_deposit.py:160
 msgid "date"
 msgstr "date"
 
-#: models.py:235 models.py:455 models.py:644 views_deposit.py:140
+#: models.py:235 models.py:455 models.py:644 views_deposit.py:159
 msgid "amount"
 msgstr "montant"
 
@@ -119,7 +119,7 @@ msgstr "autre"
 msgid "levy"
 msgstr "prélèvement"
 
-#: models.py:239 models.py:643 views_deposit.py:139
+#: models.py:239 models.py:643 views_deposit.py:158
 msgid "payer"
 msgstr "payeur"
 
@@ -197,7 +197,7 @@ msgstr "Valider"
 msgid "deposit slip"
 msgstr "dépôt de chèques"
 
-#: models.py:443 views_deposit.py:27
+#: models.py:443 views_deposit.py:28
 msgid "deposit slips"
 msgstr "dépôts de chèques"
 
@@ -328,7 +328,7 @@ msgstr "Sélection d'un tiers"
 msgid "Filtrer by contact"
 msgstr "Filtre par contact"
 
-#: views.py:137 views_deposit.py:154
+#: views.py:137 views_deposit.py:173
 msgid "select"
 msgstr "sélectionner"
 
@@ -428,70 +428,76 @@ msgstr ""
 "Ajoutez vos moyens de paiements.{[br/]}Ces choix seront proposés à vos "
 "utilisateurs pour un réglement à distance."
 
-#: views_deposit.py:22
+#: views_deposit.py:23
 msgid "manage deposit of cheque"
 msgstr "gestion des dépôts de chèques"
 
-#: views_deposit.py:32
+#: views_deposit.py:34
 msgid "Filter by status"
 msgstr "Filtre par status"
 
-#: views_deposit.py:57
+#: views_deposit.py:49
+#, fuzzy
+#| msgid "Filter by status"
+msgid "Filter by year"
+msgstr "Filtre par status"
+
+#: views_deposit.py:76
 msgid "Add deposit slip"
 msgstr "Ajouter un dépôt de chèques"
 
-#: views_deposit.py:58
+#: views_deposit.py:77
 msgid "Modify deposit slip"
 msgstr "Modifier un dépôt de chèques"
 
-#: views_deposit.py:67
+#: views_deposit.py:86
 msgid "Show deposit slip"
 msgstr "Voir un dépôt de chèques"
 
-#: views_deposit.py:76
+#: views_deposit.py:95
 msgid "Delete deposit slip"
 msgstr "Supprimer un dépôt de chèques"
 
-#: views_deposit.py:93
+#: views_deposit.py:112
 msgid "Print deposit slip"
 msgstr "Imprimer un dépôt de chèques"
 
-#: views_deposit.py:103
+#: views_deposit.py:122
 msgid "Add deposit detail"
 msgstr "Ajouter un détail"
 
-#: views_deposit.py:111
+#: views_deposit.py:130
 msgid "select cheque to deposit"
 msgstr "sélectionnez les chèques à déposer"
 
-#: views_deposit.py:115
+#: views_deposit.py:134
 msgid "payer contains"
 msgstr "payeur contient"
 
-#: views_deposit.py:124
+#: views_deposit.py:143
 msgid "reference contains"
 msgstr "référence contient"
 
-#: views_deposit.py:138
+#: views_deposit.py:157
 msgid "bill"
 msgstr "facture"
 
-#: views_deposit.py:165
+#: views_deposit.py:184
 msgid "Save deposit detail"
 msgstr "Sauver le détail"
 
-#: views_deposit.py:177
+#: views_deposit.py:196
 msgid "Delete deposit detail"
 msgstr "Supprimer un détail"
 
-#: views_deposit.py:180
+#: views_deposit.py:199
 msgid "show bank transactions"
 msgstr "voir les transactions bancaires"
 
-#: views_deposit.py:185
+#: views_deposit.py:204
 msgid "Bank transactions"
 msgstr "Transactions bancaires"
 
-#: views_deposit.py:194
+#: views_deposit.py:213
 msgid "Show bank transaction"
 msgstr "Voir une transaction bancaire"

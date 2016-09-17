@@ -442,7 +442,7 @@ class EntryLineAccountAdd(XferContainerAcknowledge):
                     del self.params[old_key]
             entry = EntryAccount.objects.get(id=entryaccount)
             serial_entry = entry.add_new_entryline(serial_entry, entrylineaccount_serial, num_cpt, credit_val, debit_val, third, reference)
-            self.redirect_action(EntryAccountEdit.get_action(), params={"serial_entry": serial_entry})
+        self.redirect_action(EntryAccountEdit.get_action(), params={"serial_entry": serial_entry})
 
 
 @ActionsManage.affect_grid(TITLE_MODIFY, "images/edit.png", unique=SELECT_SINGLE, close=CLOSE_YES)

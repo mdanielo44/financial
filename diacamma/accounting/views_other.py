@@ -65,11 +65,11 @@ class CostAccountingClose(XferContainerAcknowledge):
 
     def fillresponse(self):
         if self.item.status == 0:
+            if self.item.is_protected:
+                raise LucteriosException(IMPORTANT, _("This cost accounting is protected by other modules!"))
             self.item.check_before_close()
             if self.confirme(_("Do you want to close this cost accounting?")):
-                self.item.is_default = False
-                self.item.status = 1
-                self.item.save()
+                self.item.close()
 
 
 @ActionsManage.affect_grid(TITLE_ADD, "images/add.png", unique=SELECT_NONE)
@@ -82,6 +82,10 @@ class CostAccountingAddModify(XferAddEditor):
     caption_add = _("Add cost accounting")
     caption_modify = _("Modify cost accounting")
 
+    def fillresponse(self):
+        if (self.item.id is not None) and self.item.is_protected:
+            raise LucteriosException(IMPORTANT, _("This cost accounting is protected by other modules!"))
+        XferAddEditor.fillresponse(self)
 
 @ActionsManage.affect_grid(TITLE_DELETE, "images/delete.png", unique=SELECT_MULTI)
 @MenuManage.describ('accounting.delete_entryaccount')
@@ -90,7 +94,6 @@ class CostAccountingDel(XferDelete):
     model = CostAccounting
     field_id = 'costaccounting'
     caption = _("Delete cost accounting")
-
 
 @MenuManage.describ('accounting.change_entryaccount', FORMTYPE_NOMODAL, 'bookkeeping', _('Edition of entry model'),)
 class ModelEntryList(XferListEditor):
