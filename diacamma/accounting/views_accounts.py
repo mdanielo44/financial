@@ -26,13 +26,15 @@ from __future__ import unicode_literals
 from django.utils.translation import ugettext_lazy as _
 from django.db.models import Q
 
-from lucterios.framework.xferadvance import XferListEditor, TITLE_ADD, TITLE_MODIFY, TITLE_EDIT, TITLE_DELETE, TITLE_LISTING, action_list_sorted
+from lucterios.framework.xferadvance import XferListEditor, TITLE_ADD, TITLE_MODIFY, TITLE_EDIT, TITLE_DELETE, TITLE_LISTING, action_list_sorted,\
+    TITLE_OK, TITLE_CANCEL
 from lucterios.framework.xferadvance import XferAddEditor
 from lucterios.framework.xferadvance import XferShowEditor
 from lucterios.framework.xferadvance import XferDelete
-from lucterios.framework.tools import FORMTYPE_NOMODAL, FORMTYPE_REFRESH, CLOSE_NO, SELECT_SINGLE, WrapAction, SELECT_MULTI, SELECT_NONE
+from lucterios.framework.tools import FORMTYPE_NOMODAL, FORMTYPE_REFRESH, CLOSE_NO, SELECT_SINGLE, WrapAction, SELECT_MULTI, SELECT_NONE,\
+    FORMTYPE_MODAL, CLOSE_YES
 from lucterios.framework.tools import ActionsManage, MenuManage
-from lucterios.framework.xfercomponents import XferCompLabelForm
+from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompImage
 from lucterios.framework.xfergraphic import XferContainerAcknowledge
 from lucterios.framework.signal_and_lock import Signal
 from lucterios.framework import signal_and_lock
@@ -40,6 +42,7 @@ from lucterios.CORE.xferprint import XferPrintListing
 from lucterios.CORE.views import ObjectMerge
 
 from diacamma.accounting.models import ChartsAccount, FiscalYear
+from django.utils import six
 
 MenuManage.add_sub("bookkeeping", "financial", "diacamma.accounting/images/accounting.png", _("Bookkeeping"), _("Manage of Bookkeeping"), 30)
 
@@ -218,8 +221,34 @@ class FiscalYearClose(XferContainerAcknowledge):
     icon = "accountingYear.png"
     model = ChartsAccount
     field_id = 'chartsaccount'
-    caption_add = _("Close fiscal year")
+    caption = _("Close fiscal year")
 
     def fillresponse(self, year=0):
         current_year = FiscalYear.objects.get(id=year)
-        current_year.editor.run_close(self)
+        if self.getparam("CONFIRME") is None:
+            nb_entry_noclose = current_year.check_to_close()
+            text_confirm = six.text_type(_('close-fiscal-year-confirme'))
+            if nb_entry_noclose > 0:
+                if nb_entry_noclose == 1:
+                    text_confirm += six.text_type(_('warning, entry no validated'))
+                else:
+                    text_confirm += six.text_type(_('warning, %d entries no validated') % nb_entry_noclose)
+            dlg = self.create_custom()
+            img = XferCompImage('img')
+            img.set_value(self.icon_path())
+            img.set_location(0, 0)
+            dlg.add_component(img)
+            lbl = XferCompLabelForm('title')
+            lbl.set_value_as_title(self.caption)
+            lbl.set_location(1, 0)
+            dlg.add_component(lbl)
+            lab = XferCompLabelForm('info')
+            lab.set_value(text_confirm)
+            lab.set_location(0, 1, 4)
+            dlg.add_component(lab)
+            signal_and_lock.Signal.call_signal("finalize_year", dlg)
+            dlg.add_action(self.get_action(TITLE_OK, 'images/ok.png'), modal=FORMTYPE_MODAL, close=CLOSE_YES, params={'CONFIRME': 'YES'})
+            dlg.add_action(WrapAction(TITLE_CANCEL, 'images/cancel.png'))
+        else:
+            signal_and_lock.Signal.call_signal("finalize_year", self)
+            current_year.closed()

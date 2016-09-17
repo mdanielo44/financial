@@ -412,6 +412,21 @@ class FiscalYear(LucteriosModel):
             nb_year = int(div) - 1
         return letters[nb_year] + res
 
+    def check_to_close(self):
+        if self.status == 0:
+            raise LucteriosException(IMPORTANT, _("This fiscal year is not 'in running'!"))
+        EntryAccount.clear_ghost()
+        nb_entry_noclose = EntryAccount.objects.filter(close=False, entrylineaccount__account__year=self).distinct().count()
+        if (nb_entry_noclose > 0) and (FiscalYear.objects.filter(last_fiscalyear=self).count() == 0):
+            raise LucteriosException(IMPORTANT, _("This fiscal year has entries not closed and not next fiscal year!"))
+        return nb_entry_noclose
+
+    def closed(self):
+        self.move_entry_noclose()
+        current_system_account().finalize_year(self)
+        self.status = 2
+        self.save()
+
     class Meta(object):
         verbose_name = _('fiscal year')
         verbose_name_plural = _('fiscal years')

@@ -639,8 +639,8 @@ class FiscalYearWorkflowTest(LucteriosTest):
         self.factory.xfer = FiscalYearClose()
         self.call('/diacamma.accounting/fiscalYearClose',
                   {'year': '1', 'type_of_account': '-1'}, False)
-        self.assert_observer('core.dialogbox', 'diacamma.accounting', 'fiscalYearClose')
-        text_value = self.get_first_xpath('TEXT').text
+        self.assert_observer('core.custom', 'diacamma.accounting', 'fiscalYearClose')
+        text_value = self.get_first_xpath("COMPONENTS/LABELFORM[@name='info']").text
 
         self.assertTrue('Voulez-vous cloturer cet exercice?' in text_value, text_value)
         self.assertTrue('4 écritures ne sont pas validées' in text_value, text_value)
