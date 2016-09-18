@@ -233,7 +233,7 @@ class FiscalYearClose(XferContainerAcknowledge):
                     text_confirm += six.text_type(_('warning, entry no validated'))
                 else:
                     text_confirm += six.text_type(_('warning, %d entries no validated') % nb_entry_noclose)
-            dlg = self.create_custom()
+            dlg = self.create_custom(self.model)
             img = XferCompImage('img')
             img.set_value(self.icon_path())
             img.set_location(0, 0)
