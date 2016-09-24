@@ -84,7 +84,7 @@ GENERAL_CHARTS_ACCOUNT = [
     ("260", "26999999",
      "Participations et créances rattachées à des participations", 0),
     ("270", "27999999",
-     "Immobilisations financiéres", "1"),
+     "Immobilisations financiéres", 0),
     ("280", "28999999",
      "Amortissements des immobilisations", 0),
     ("290", "29999999",

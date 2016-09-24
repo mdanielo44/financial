@@ -205,6 +205,10 @@ class Supporting(LucteriosModel):
     def get_docname(self):
         return six.text_type(self)
 
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+        self.is_revenu = self.get_final_child().payoff_is_revenu()
+        return LucteriosModel.save(self, force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields)
+
 
 class BankAccount(LucteriosModel):
     designation = models.TextField(_('designation'), null=False)
