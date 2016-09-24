@@ -191,7 +191,10 @@ class FiscalYearReport(XferContainerCustom):
             self.grid.set_value(line_idx, 'left_n', '')
             self.grid.set_value(line_idx, 'left_n_1', '')
             result_n = total1_right - total1_left
-            result_n_1 = total2_right - total2_left
+            if (total2_left is not None) and (total2_right is not None):
+                result_n_1 = total2_right - total2_left
+            else:
+                result_n_1 = 0.0
             if total_in_left:
                 if result_n > 0:
                     pos_n = 'left_n'
