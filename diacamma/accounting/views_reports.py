@@ -181,27 +181,46 @@ class FiscalYearReport(XferContainerCustom):
         line_idx += 1
         if (abs(total1_left - total1_right) > 0.0001) or ((total2_left is not None) and (total2_right is not None) and (abs(total2_left - total2_right) > 0.0001)):
             if total_in_left:
-                self.grid.set_value(
-                    line_idx, 'left', get_spaces(5) + "{[i]}%s{[/i]}" % _('result'))
-                self.grid.set_value(
-                    line_idx, 'left_n', format_devise(total1_right - total1_left, 5))
-                if (self.lastfilter is not None) and (abs(total2_left - total2_right) > 0.0001):
-                    self.grid.set_value(
-                        line_idx, 'left_n_1', format_devise(total2_right - total2_left, 5))
-                self.grid.set_value(line_idx, 'right', '')
-                self.grid.set_value(line_idx, 'right_n', '')
-                self.grid.set_value(line_idx, 'right_n_1', '')
+                self.grid.set_value(line_idx, 'left', get_spaces(5) + "{[i]}%s{[/i]}" % _('result (profit)'))
+                self.grid.set_value(line_idx, 'right', get_spaces(5) + "{[i]}%s{[/i]}" % _('result (deficit)'))
             else:
+                self.grid.set_value(line_idx, 'left', get_spaces(5) + "{[i]}%s{[/i]}" % _('result (deficit)'))
+                self.grid.set_value(line_idx, 'right', get_spaces(5) + "{[i]}%s{[/i]}" % _('result (profit)'))
+            self.grid.set_value(line_idx, 'right_n', '')
+            self.grid.set_value(line_idx, 'right_n_1', '')
+            self.grid.set_value(line_idx, 'left_n', '')
+            self.grid.set_value(line_idx, 'left_n_1', '')
+            result_n = total1_right - total1_left
+            result_n_1 = total2_right - total2_left
+            if total_in_left:
+                if result_n > 0:
+                    pos_n = 'left_n'
+                else:
+                    pos_n = 'right_n'
+                if result_n_1 > 0:
+                    pos_n_1 = 'left_n_1'
+                else:
+                    pos_n_1 = 'right_n_1'
+            else:
+                result_n = -1 * result_n
+                result_n_1 = -1 * result_n
+                if result_n > 0:
+                    pos_n = 'right_n'
+                else:
+                    pos_n = 'left_n'
+                if result_n_1 > 0:
+                    pos_n_1 = 'right_n_1'
+                else:
+                    pos_n_1 = 'left_n_1'
+            self.grid.set_value(line_idx, pos_n, format_devise(abs(result_n), 5))
+            if (self.lastfilter is not None) and (abs(result_n_1) > 0.0001):
+                self.grid.set_value(line_idx, pos_n_1, format_devise(abs(result_n_1), 5))
+            else:
+                pos_n_1 = ""
+            if (pos_n != 'left_n') and (pos_n_1 != 'left_n_1'):
                 self.grid.set_value(line_idx, 'left', '')
-                self.grid.set_value(line_idx, 'left_n', '')
-                self.grid.set_value(line_idx, 'left_n_1', '')
-                self.grid.set_value(
-                    line_idx, 'right', get_spaces(5) + "{[i]}%s{[/i]}" % _('result'))
-                self.grid.set_value(
-                    line_idx, 'right_n', "{[i]}%s{[/i]}" % format_devise(total1_left - total1_right, 5))
-                if (self.lastfilter is not None) and (abs(total2_left - total2_right) > 0.0001):
-                    self.grid.set_value(
-                        line_idx, 'right_n_1', format_devise(total2_left - total2_right, 5))
+            if (pos_n != 'right_n') and (pos_n_1 != 'right_n_1'):
+                self.grid.set_value(line_idx, 'right', '')
             line_idx += 1
         self.grid.set_value(
             line_idx, 'left', get_spaces(10) + "{[u]}{[b]}%s{[/b]}{[/u]}" % _('total'))
