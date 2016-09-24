@@ -363,18 +363,19 @@ class FrenchSystemAcounting(DefaultSystemAccounting):
             return xfer.confirme(text)
 
     def _create_result_entry(self, year):
-        from diacamma.accounting.models import Journal, EntryAccount
-        end_journ = Journal.objects.get(id=5)
-        end_desig = "Cloture d'exercice - Résultat"
-        new_entry = EntryAccount.objects.create(
-            year=year, journal=end_journ, designation=end_desig, date_value=year.end)
         revenue = year.total_revenue
         expense = year.total_expense
-        if expense > revenue:
-            new_entry.add_entry_line(revenue - expense, '129')
-        else:
-            new_entry.add_entry_line(revenue - expense, '120')
-        new_entry.closed()
+        if abs(expense - revenue) > 0.0001:
+            from diacamma.accounting.models import Journal, EntryAccount
+            end_journ = Journal.objects.get(id=5)
+            end_desig = "Cloture d'exercice - Résultat"
+            new_entry = EntryAccount.objects.create(
+                year=year, journal=end_journ, designation=end_desig, date_value=year.end)
+            if expense > revenue:
+                new_entry.add_entry_line(revenue - expense, '129')
+            else:
+                new_entry.add_entry_line(revenue - expense, '120')
+            new_entry.closed(check_balance=False)
 
     def _create_thirds_ending_entry(self, year):
         from diacamma.accounting.models import get_amount_sum, Journal, EntryAccount, EntryLineAccount, ChartsAccount, Third
@@ -386,7 +387,7 @@ class FrenchSystemAcounting(DefaultSystemAccounting):
         sum42 = get_amount_sum(EntryLineAccount.objects.filter(
             account__code__startswith='421', account__year=year).aggregate(Sum('amount')))
         sum45 = get_amount_sum(EntryLineAccount.objects.filter(
-            account__code__startswith='455', account__year=year).aggregate(Sum('amount')))
+            account__code__startswith='450', account__year=year).aggregate(Sum('amount')))
         if (abs(sum40) > 0.001) or (abs(sum41) > 0.001) or (abs(sum42) > 0.001) or (abs(sum45) > 0.001):
             end_journ = Journal.objects.get(id=5)
             end_desig = "Cloture d'exercice - Résultat"
@@ -403,34 +404,33 @@ class FrenchSystemAcounting(DefaultSystemAccounting):
                         new_line.third = Third.objects.get(
                             id=data_line['third'])
                     new_line.save()
-            new_entry.add_entry_line(sum40, '408')
-            new_entry.add_entry_line(sum41, '418')
-            new_entry.add_entry_line(sum42, '428')
-            new_entry.add_entry_line(sum45, '455')
+            new_entry.add_entry_line(sum40, '401')
+            new_entry.add_entry_line(sum41, '411')
+            new_entry.add_entry_line(sum42, '421')
+            new_entry.add_entry_line(sum45, '450')
             new_entry.closed()
 
     def finalize_year(self, year):
         self._create_result_entry(year)
         self._create_thirds_ending_entry(year)
 
-    def _create_report_lastyearresult(self, year):
+    def _create_report_lastyearresult(self, year, import_result):
         from diacamma.accounting.models import Journal, EntryAccount
         end_journ = Journal.objects.get(id=1)
         end_desig = "Report à nouveau - Bilan"
         new_entry = EntryAccount.objects.create(
             year=year, journal=end_journ, designation=end_desig, date_value=year.begin)
         for charts_account in year.last_fiscalyear.chartsaccount_set.filter(type_of_account__in=(0, 1, 2)):
-            if charts_account.code[:3] == '120':
+            if import_result and charts_account.code[:3] == '120':
                 code = "110"
                 name = None
-            elif charts_account.code[:3] == '129':
+            elif import_result and charts_account.code[:3] == '129':
                 code = "119"
                 name = None
             else:
                 code = charts_account.code
                 name = charts_account.name
-            new_entry.add_entry_line(
-                charts_account.get_current_validated(), code, name)
+            new_entry.add_entry_line(charts_account.get_current_validated(), code, name)
         new_entry.closed()
 
     def _create_report_third(self, year):
@@ -447,8 +447,8 @@ class FrenchSystemAcounting(DefaultSystemAccounting):
                                          entry_line.account.code, entry_line.account.name, entry_line.third)
         new_entry.closed()
 
-    def import_lastyear(self, year):
-        self._create_report_lastyearresult(year)
+    def import_lastyear(self, year, import_result):
+        self._create_report_lastyearresult(year, import_result)
         self._create_report_third(year)
         return
 

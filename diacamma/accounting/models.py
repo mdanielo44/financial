@@ -298,14 +298,12 @@ class FiscalYear(LucteriosModel):
                 ChartsAccount.objects.create(year=self, code=last_charts_account.code, name=last_charts_account.name,
                                              type_of_account=last_charts_account.type_of_account)
 
-    def run_report_lastyear(self):
+    def run_report_lastyear(self, import_result):
         if self.last_fiscalyear is None:
-            raise LucteriosException(
-                IMPORTANT, _("This fiscal year has not a last fiscal year!"))
+            raise LucteriosException(IMPORTANT, _("This fiscal year has not a last fiscal year!"))
         if self.status != 0:
-            raise LucteriosException(
-                IMPORTANT, _("This fiscal year is not 'in building'!"))
-        current_system_account().import_lastyear(self)
+            raise LucteriosException(IMPORTANT, _("This fiscal year is not 'in building'!"))
+        current_system_account().import_lastyear(self, import_result)
 
     def getorcreate_chartaccount(self, code, name=None):
         code = correct_accounting_code(code)
@@ -841,8 +839,12 @@ class EntryAccount(LucteriosModel):
                 total_debit += serial[idx].get_debit()
         return no_change, max(0, total_credit - total_debit), max(0, total_debit - total_credit)
 
-    def closed(self):
+    def closed(self, check_balance=True):
         if (self.year.status != 2) and not self.close:
+            if check_balance:
+                _no_change, debit_rest, credit_rest = self.serial_control(self.get_serial())
+                if abs(debit_rest - credit_rest) > 0.0001:
+                    raise LucteriosException(GRAVE, "Account entry not balanced: sum credit=%.3f / sum debit=%.3f" % (debit_rest, credit_rest))
             self.close = True
             val = self.year.entryaccount_set.all().aggregate(
                 Max('num'))
@@ -888,8 +890,7 @@ class EntryAccount(LucteriosModel):
         if abs(amount) > 0.0001:
             new_entry_line = EntryLineAccount()
             new_entry_line.entry = self
-            new_entry_line.account = self.year.getorcreate_chartaccount(
-                code, name)
+            new_entry_line.account = self.year.getorcreate_chartaccount(code, name)
             new_entry_line.amount = amount
             new_entry_line.third = third
             new_entry_line.save()

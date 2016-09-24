@@ -66,7 +66,7 @@ class DefaultSystemAccounting(object):
     def finalize_year(self, year):
         return
 
-    def import_lastyear(self, year):
+    def import_lastyear(self, year, import_result):
         return
 
     def get_export_xmlfiles(self):

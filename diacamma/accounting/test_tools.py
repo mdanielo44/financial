@@ -173,7 +173,7 @@ def fill_entries(yearid):
 
     # cost2: dep=258.02 / rec=70.64 => res=-187.38
     _ = add_entry(yearid, 1, '2015-02-01', 'Report à nouveau',
-                  '-1|5|0|1250.470000|None|\n-2|2|0|1135.930000|None|\n-3|3|0|114.450000|None|', True)  # 1 2 3
+                  '-1|5|0|1250.380000|None|\n-2|2|0|1135.930000|None|\n-3|3|0|114.450000|None|', True)  # 1 2 3
     entry2 = add_entry(yearid, 2, '2015-02-14', 'depense 1',
                        '-1|12|0|63.940000|None|\n-2|4|4|63.940000|None|', True, costaccounting=cost2)  # 4 5
     entry3 = add_entry(yearid, 4, '2015-02-15', 'regement depense 1',

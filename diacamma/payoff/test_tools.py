@@ -24,6 +24,7 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
 from re import match
+from django.core.exceptions import ObjectDoesNotExist
 try:
     from urllib.parse import urlsplit, parse_qsl
 except:
@@ -40,7 +41,7 @@ from django.conf import settings
 from lucterios.framework.test import LucteriosTest
 
 from diacamma.accounting.test_tools import create_account
-from diacamma.accounting.models import FiscalYear
+from diacamma.accounting.models import FiscalYear, ChartsAccount
 from diacamma.payoff.models import BankAccount, PaymentMethod
 from diacamma.payoff.views_deposit import BankTransactionList,\
     BankTransactionShow
@@ -65,6 +66,16 @@ def default_paymentmethod():
 
 
 class PaymentTest(LucteriosTest):
+
+    def check_account(self, year_id, code, value, name=""):
+        try:
+            chart = ChartsAccount.objects.get(year_id=year_id, code=code)
+            self.assertAlmostEqual(value, chart.get_current_total(), msg=chart.name, delta=0.0001)
+            if name != '':
+                self.assertEqual(name, chart.name)
+        except ObjectDoesNotExist:
+            if value is not None:
+                raise
 
     def check_email_msg(self, msg, itemid, title, amount='100.0', tax='0.0'):
         from lucterios.mailing.tests import decode_b64

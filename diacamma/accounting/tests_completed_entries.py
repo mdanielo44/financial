@@ -76,7 +76,7 @@ class CompletedEntryTest(LucteriosTest):
         self.assertTrue('[106] 106' in description, description)
         self.assertTrue('[512] 512' in description, description)
         self.assertTrue('[531] 531' in description, description)
-        self.assertTrue('1250.47€' in description, description)
+        self.assertTrue('1250.38€' in description, description)
         self.assertTrue('1135.93€' in description, description)
         self.assertTrue('114.45€' in description, description)
 
@@ -207,7 +207,7 @@ class CompletedEntryTest(LucteriosTest):
         self.assertEqual(len(content_csv), 30, str(content_csv))
         self.assertEqual(content_csv[1].strip(), '"Liste d\'écritures"')
         self.assertEqual(content_csv[3].strip(), '"N°";"date d\'écriture";"date de pièce";"compte";"nom";"débit";"crédit";"lettrage";')
-        self.assertEqual(content_csv[4].strip(), '"1";"%s";"1 février 2015";"[106] 106";"Report à nouveau";"";"1250.47€";"";' %
+        self.assertEqual(content_csv[4].strip(), '"1";"%s";"1 février 2015";"[106] 106";"Report à nouveau";"";"1250.38€";"";' %
                          formats.date_format(date.today(), "DATE_FORMAT"))
         self.assertEqual(content_csv[11].strip(), '"---";"---";"13 février 2015";"[607] 607";"depense 2";"194.08€";"";"C";')
 
