@@ -61,7 +61,7 @@ class ThirdList(XferListEditor):
 
     def get_items_from_filter(self):
         items = XferListEditor.get_items_from_filter(self)
-        items = sorted(items, key=lambda t: six.text_type(t))
+        items = sorted(items, key=lambda t: six.text_type(t).lower())
         if self.getparam('show_filter', 0) == 2:
             items = [item for item in items if abs(item.get_total()) > 0.0001]
         res = QuerySet(model=Third)
@@ -97,8 +97,8 @@ class ThirdList(XferListEditor):
 
         self.filter = Q(status=0)
         if contact_filter != "":
-            q_legalentity = Q(contact__legalentity__name__contains=contact_filter)
-            q_individual = (Q(contact__individual__firstname__contains=contact_filter) | Q(contact__individual__lastname__contains=contact_filter))
+            q_legalentity = Q(contact__legalentity__name__icontains=contact_filter)
+            q_individual = (Q(contact__individual__firstname__icontains=contact_filter) | Q(contact__individual__lastname__icontains=contact_filter))
             self.filter &= (q_legalentity | q_individual)
 
 
