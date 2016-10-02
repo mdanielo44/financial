@@ -342,8 +342,7 @@ class ValidationPaymentPaypal(XferContainerAbstract):
                     raise LucteriosException(IMPORTANT, "No paypal account!")
                 support = Supporting.objects.get(id=self.getparam('custom', 0))
                 new_payoff = Payoff()
-                new_payoff.supporting = support.get_final_child().support_validated(
-                    self.item.date)
+                new_payoff.supporting = support.get_final_child().support_validated(self.item.date)
                 new_payoff.date = self.item.date
                 new_payoff.amount = self.item.amount
                 new_payoff.payer = self.item.payer
@@ -358,7 +357,8 @@ class ValidationPaymentPaypal(XferContainerAbstract):
                 self.item.contains += "{[newline]}--- INVALID ---{[newline]}"
             else:
                 self.item.contains += "{[newline]}"
-                self.item.contains += "NO VALID:"
+                if conf_res != 'VERIFIED':
+                    self.item.contains += "NO VALID:"
                 self.item.contains += conf_res.replace('\n', '{[newline]}')
         except Exception as err:
             logging.getLogger('diacamma.payoff').exception("ValidationPaymentPaypal")
