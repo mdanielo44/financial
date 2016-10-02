@@ -24,6 +24,7 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
 from datetime import datetime, timedelta
+import logging
 
 from django.utils.translation import ugettext_lazy as _
 from django.db.models import Q
@@ -309,13 +310,12 @@ class ValidationPaymentPaypal(XferContainerAbstract):
         except:
             from urllib import quote_plus
         from requests import post
-        paypal_url = getattr(
-            settings, 'DIACAMMA_PAYOFF_PAYPAL_URL', 'https://www.paypal.com/cgi-bin/webscr')
+        paypal_url = getattr(settings, 'DIACAMMA_PAYOFF_PAYPAL_URL', 'https://www.paypal.com/cgi-bin/webscr')
         fields = 'cmd=_notify-validate'
         for key, value in self.request.POST.items():
             fields += "&%s=%s" % (key, quote_plus(value))
-        res = post(paypal_url, data=fields.encode(), headers={
-                   "Content-Type": "application/x-www-form-urlencoded", 'Content-Length': len(fields)})
+        res = post(paypal_url, data=fields.encode(),
+                   headers={"Content-Type": "application/x-www-form-urlencoded", 'Content-Length': len(fields)})
         return res.text
 
     def fillresponse(self):
@@ -358,8 +358,10 @@ class ValidationPaymentPaypal(XferContainerAbstract):
                 self.item.contains += "{[newline]}--- INVALID ---{[newline]}"
             else:
                 self.item.contains += "{[newline]}"
+                self.item.contains += "NO VALID:"
                 self.item.contains += conf_res.replace('\n', '{[newline]}')
         except Exception as err:
+            logging.getLogger('diacamma.payoff').exception("ValidationPaymentPaypal")
             self.item.contains += "{[newline]}"
             self.item.contains += six.text_type(err)
         self.item.save()
