@@ -120,8 +120,11 @@ class FiscalYearReport(XferContainerCustom):
 
     def fill_header(self):
         self.item = FiscalYear.get_current(self.getparam("year"))
-        self.item.begin = convert_date(self.getparam("begin"), self.item.begin)
-        self.item.end = convert_date(self.getparam("end"), self.item.end)
+        new_begin = convert_date(self.getparam("begin"), self.item.begin)
+        new_end = convert_date(self.getparam("end"), self.item.end)
+        if (new_begin >= self.item.begin) and (new_end <= self.item.end):
+            self.item.begin = new_begin
+            self.item.end = new_end
         img = XferCompImage('img')
         img.set_value(self.icon_path())
         img.set_location(0, 0, 1, 3)
