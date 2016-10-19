@@ -20,7 +20,6 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import unicode_literals
 import re
 
-from django.utils.translation import ugettext_lazy as _
 from django.utils import six
 
 from diacamma.accounting.system.default import DefaultSystemAccounting
@@ -127,9 +126,9 @@ GENERAL_CHARTS_ACCOUNT = [
      "TVA déductible sur 0 et services", 1),
     ("4457", "44579999", "TVA sur ventes due à l'Etat", 1),
     ("4458", "44999999",
-     "Autres impéts et taxes dus à l'état", 1),
+     "Autres impôts et taxes dus à l'état", 1),
     ("447", "44799999",
-     "Autres impéts, taxes et versements assimilés", 1),
+     "Autres impôts, taxes et versements assimilés", 1),
     ("448", "44899999",
      "état - Charges à payer et produits à recevoir", 1),
     ("449", "44999999",
@@ -192,7 +191,7 @@ GENERAL_CHARTS_ACCOUNT = [
     ("680", "68999999",
      "Dotations aux amortissements et provisions", 4),
     ("691", "69199999", "Participations des salariés", 4),
-    ("695", "69899999", "Impéts sur bénéfices", 4),
+    ("695", "69899999", "Impôts sur bénéfices", 4),
     ("699", "699", "Compte pour résultat positif", 4),
     ("700", "70899999",
      "Ventes de produits, services, marchandises, etc.", 3),

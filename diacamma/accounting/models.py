@@ -504,6 +504,7 @@ class CostAccounting(LucteriosModel):
         verbose_name = _('cost accounting')
         verbose_name_plural = _('costs accounting')
         default_permissions = []
+        ordering = ['name']
 
 
 class ChartsAccount(LucteriosModel):
@@ -661,6 +662,7 @@ class AccountLink(LucteriosModel):
     def create_link(cls, entries):
         year = None
         for entry in entries:
+            entry = EntryAccount.objects.get(id=entry.id)
             if entry.year.status == 2:
                 raise LucteriosException(IMPORTANT, _("Fiscal year finished!"))
             if year is None:
@@ -911,6 +913,7 @@ class EntryAccount(LucteriosModel):
     class Meta(object):
         verbose_name = _('entry of account')
         verbose_name_plural = _('entries of account')
+        ordering = ['date_value']
 
 
 class EntryLineAccount(LucteriosModel):

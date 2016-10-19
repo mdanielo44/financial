@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-09-24 11:42+0000\n"
+"POT-Creation-Date: 2016-10-19 18:21+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -495,7 +495,7 @@ msgstr "Invoice"
 #: views.py:447
 #, python-format
 msgid "You are %d bills"
-msgstr "You are %d bills"
+msgstr "%d invoices for your account"
 
 #: views_conf.py:54
 msgid "Management of parameters and configuration of invoice"
