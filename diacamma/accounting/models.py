@@ -584,6 +584,16 @@ class ChartsAccount(LucteriosModel):
         else:
             return accounts[0]
 
+    @classmethod
+    def get_chart_account(cls, code):
+        code = correct_accounting_code(code)
+        try:
+            chart = FiscalYear.get_current().chartsaccount_set.get(code=code)
+        except ObjectDoesNotExist:
+            descript, typeaccount = current_system_account().new_charts_account(code)
+            chart = ChartsAccount(year=self, code=code, name=descript, type_of_account=typeaccount)
+        return chart
+
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         try:
             self.code = correct_accounting_code(self.code)
@@ -1230,6 +1240,78 @@ class ModelLineEntry(LucteriosModel):
         verbose_name = _('Model line')
         verbose_name_plural = _('Model lines')
         default_permissions = []
+
+
+class Budget(LucteriosModel):
+    year = models.ForeignKey('FiscalYear', verbose_name=_('year'), null=True, default=None, on_delete=models.PROTECT)
+    cost_accounting = models.ForeignKey('CostAccounting', verbose_name=_('cost accounting'), null=True, default=None, on_delete=models.PROTECT)
+    code = models.CharField(_('code'), max_length=50)
+    amount = models.FloatField(_('amount'), default=0)
+
+    def __str__(self):
+        self.budget
+
+    @property
+    def budget(self):
+        chart = ChartsAccount.get_chart_account(self.code)
+        return six.text_type(chart)
+
+    @classmethod
+    def get_default_fields(cls):
+        return [(_('code'), 'budget'), (_('amount'), 'montant')]
+
+    @classmethod
+    def get_edit_fields(cls):
+        return ['code']
+
+    def credit_debit_way(self):
+        chart_account = current_system_account().new_charts_account(self.code)
+        if chart_account[0] == '':
+            raise LucteriosException(IMPORTANT, _("Invalid code"))
+        if chart_account[1] in [0, 4]:
+            return -1
+        else:
+            return 1
+
+    @property
+    def montant(self):
+        return format_devise(self.credit_debit_way() * self.amount, 2)
+
+    def get_debit(self):
+        try:
+            return max((0, -1 * self.credit_debit_way() * self.amount))
+        except LucteriosException:
+            return 0.0
+
+    def get_credit(self):
+        try:
+            return max((0, self.credit_debit_way() * self.amount))
+        except LucteriosException:
+            return 0.0
+
+    def set_montant(self, debit_val, credit_val):
+        if debit_val > 0:
+            self.amount = -1 * debit_val * self.credit_debit_way()
+        elif credit_val > 0:
+            self.amount = credit_val * self.credit_debit_way()
+        else:
+            self.amount = 0
+
+    @classmethod
+    def get_total(cls, year, cost):
+        budget_filter = Q()
+        if year is not None:
+            budget_filter &= Q(year_id=year)
+        if cost is not None:
+            budget_filter &= Q(cost_accounting_id=cost)
+        total_revenue = get_amount_sum(cls.objects.filter(budget_filter & Q(code__regex=current_system_account().get_revenue_mask())).aggregate(Sum('amount')))
+        total_expense = get_amount_sum(cls.objects.filter(budget_filter & Q(code__regex=current_system_account().get_expence_mask())).aggregate(Sum('amount')))
+        return total_revenue - total_expense
+
+    class Meta(object):
+        verbose_name = _('Budget line')
+        verbose_name_plural = _('Budget lines')
+        ordering = ['code']
 
 
 @Signal.decorate('checkparam')

@@ -12,7 +12,7 @@ from lucterios.framework.xfergraphic import XferContainerAcknowledge
 from lucterios.framework.error import LucteriosException, IMPORTANT
 from lucterios.framework.xfercomponents import XferCompCheck, XferCompLabelForm
 
-from diacamma.accounting.models import CostAccounting, ModelLineEntry, ModelEntry, EntryAccount
+from diacamma.accounting.models import CostAccounting, ModelLineEntry, ModelEntry
 
 
 @MenuManage.describ('accounting.change_entryaccount', FORMTYPE_NOMODAL, 'bookkeeping', _('Edition of costs accounting'))

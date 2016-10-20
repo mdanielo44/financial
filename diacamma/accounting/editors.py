@@ -41,7 +41,6 @@ from lucterios.CORE.parameters import Params
 
 from diacamma.accounting.models import current_system_account, FiscalYear, EntryLineAccount, EntryAccount, get_amount_sum, Third, CostAccounting
 from lucterios.framework.xferadvance import TITLE_MODIFY
-from lucterios.framework import signal_and_lock
 
 
 class ThirdEditor(LucteriosEditor):
@@ -437,6 +436,24 @@ class ModelLineEntryEditor(EntryLineAccountEditor):
         if match(current_system_account().get_third_mask(), self.item.code) is not None:
             edit_third_for_line(
                 xfer, 1, xfer.get_max_row() + 1, self.item.code, None, False)
+        self.edit_creditdebit_for_line(xfer, 1, xfer.get_max_row() + 1)
+
+    def before_save(self, xfer):
+        self.item.set_montant(xfer.getparam('debit_val', 0.0), xfer.getparam('credit_val', 0.0))
+
+
+class BudgetEditor(EntryLineAccountEditor):
+
+    def edit(self, xfer):
+        xfer.params['model'] = xfer.getparam('modelentry', 0)
+        code = xfer.get_components('code')
+        code.col += 1
+        if xfer.field_id == 'budget_revenue':
+            code.mask = current_system_account().get_revenue_mask()
+        elif xfer.field_id == 'budget_expense':
+            code.mask = current_system_account().get_expence_mask()
+        else:
+            code.mask = current_system_account().get_revenue_mask() + "|" + current_system_account().get_expence_mask()
         self.edit_creditdebit_for_line(xfer, 1, xfer.get_max_row() + 1)
 
     def before_save(self, xfer):
