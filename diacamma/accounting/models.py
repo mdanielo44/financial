@@ -41,13 +41,13 @@ from django_fsm import FSMIntegerField, transition
 
 from lucterios.framework.models import LucteriosModel, get_value_converted, get_value_if_choices
 from lucterios.framework.error import LucteriosException, IMPORTANT, GRAVE
-from lucterios.contacts.models import AbstractContact
 from lucterios.framework.filetools import read_file, xml_validator, save_file, get_user_path
+from lucterios.framework.signal_and_lock import RecordLocker, Signal
+from lucterios.CORE.models import Parameter
+from lucterios.contacts.models import AbstractContact
 
 from diacamma.accounting.tools import get_amount_sum, format_devise, \
     current_system_account, currency_round, correct_accounting_code
-from lucterios.framework.signal_and_lock import RecordLocker, Signal
-from lucterios.CORE.models import Parameter
 
 
 class Third(LucteriosModel):
@@ -586,12 +586,13 @@ class ChartsAccount(LucteriosModel):
 
     @classmethod
     def get_chart_account(cls, code):
+        current_year = FiscalYear.get_current()
         code = correct_accounting_code(code)
         try:
-            chart = FiscalYear.get_current().chartsaccount_set.get(code=code)
+            chart = current_year.chartsaccount_set.get(code=code)
         except ObjectDoesNotExist:
             descript, typeaccount = current_system_account().new_charts_account(code)
-            chart = ChartsAccount(year=self, code=code, name=descript, type_of_account=typeaccount)
+            chart = ChartsAccount(year=current_year, code=code, name=descript, type_of_account=typeaccount)
         return chart
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
@@ -1243,7 +1244,7 @@ class ModelLineEntry(LucteriosModel):
 
 
 class Budget(LucteriosModel):
-    year = models.ForeignKey('FiscalYear', verbose_name=_('year'), null=True, default=None, on_delete=models.PROTECT)
+    year = models.ForeignKey('FiscalYear', verbose_name=_('fiscal year'), null=True, default=None, on_delete=models.PROTECT)
     cost_accounting = models.ForeignKey('CostAccounting', verbose_name=_('cost accounting'), null=True, default=None, on_delete=models.PROTECT)
     code = models.CharField(_('code'), max_length=50)
     amount = models.FloatField(_('amount'), default=0)

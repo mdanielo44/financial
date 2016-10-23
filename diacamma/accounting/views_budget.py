@@ -4,7 +4,8 @@ from __future__ import unicode_literals
 from django.utils.translation import ugettext_lazy as _
 from django.db.models import Q
 
-from lucterios.framework.xferadvance import TITLE_MODIFY, TITLE_ADD, TITLE_DELETE
+from lucterios.framework.xferadvance import TITLE_MODIFY, TITLE_ADD, TITLE_DELETE,\
+    TITLE_PRINT
 from lucterios.framework.xferadvance import XferListEditor
 from lucterios.framework.xferadvance import XferAddEditor
 from lucterios.framework.xferadvance import XferDelete
@@ -16,6 +17,8 @@ from lucterios.framework.tools import SELECT_SINGLE, SELECT_MULTI
 from diacamma.accounting.tools import current_system_account, format_devise
 from diacamma.accounting.models import Budget, CostAccounting, FiscalYear,\
     ChartsAccount
+from lucterios.framework.signal_and_lock import Signal
+from lucterios.CORE.xferprint import XferPrintAction
 
 
 @MenuManage.describ('accounting.change_budget')
@@ -28,11 +31,12 @@ class BudgetList(XferListEditor):
     def fillresponse_header(self):
         self.filter = Q()
         if self.getparam('year') is not None:
-            year = FiscalYear.get_current(self.getparam('year', 0))
+            year = FiscalYear.get_current(self.getparam('year'))
             self.filter &= Q(year=year)
             row_id = self.get_max_row() + 1
             lbl = XferCompLabelForm('title_year')
-            lbl.set_value_as_header("%s : %s" % (_('year'), year))
+            lbl.set_italic()
+            lbl.set_value("{[b]}%s{[/b]} : %s" % (_('fiscal year'), year))
             lbl.set_location(1, row_id, 1)
             self.add_component(lbl)
         if self.getparam('cost_accounting') is not None:
@@ -40,9 +44,11 @@ class BudgetList(XferListEditor):
             self.filter &= Q(cost_accounting=cost)
             row_id = self.get_max_row() + 1
             lbl = XferCompLabelForm('title_cost')
-            lbl.set_value_as_header("%s : %s" % (_('cost accounting'), cost))
+            lbl.set_italic()
+            lbl.set_value("{[b]}%s{[/b]} : %s" % (_('cost accounting'), cost))
             lbl.set_location(1, row_id, 1)
             self.add_component(lbl)
+        Signal.call_signal('editbudget', self)
 
     def fillresponse_body(self):
         self.get_components("title").colspan = 2
@@ -79,8 +85,19 @@ class BudgetList(XferListEditor):
             self.add_component(lbl)
 
 
-@ActionsManage.affect_grid(TITLE_MODIFY, "images/edit.png", unique=SELECT_SINGLE)
-@ActionsManage.affect_list(TITLE_ADD, "images/add.png")
+@MenuManage.describ('accounting.change_budget')
+@ActionsManage.affect_list(TITLE_PRINT, "images/print.png")
+class BudgetPrint(XferPrintAction):
+    icon = "account.png"
+    model = Budget
+    field_id = 'budget'
+    caption = _("Print previsionnal budget")
+    with_text_export = True
+    action_class = BudgetList
+
+
+@ActionsManage.affect_grid(TITLE_MODIFY, "images/edit.png", unique=SELECT_SINGLE, condition=lambda xfer, gridname='': xfer.getparam('readonly', False) == False)
+@ActionsManage.affect_list(TITLE_ADD, "images/add.png", condition=lambda item: item.getparam('readonly', False) == False)
 @MenuManage.describ('accounting.add_budget')
 class BudgetAddModify(XferAddEditor):
     icon = "account.png"
@@ -97,7 +114,7 @@ class BudgetAddModify(XferAddEditor):
         XferAddEditor._search_model(self)
 
 
-@ActionsManage.affect_grid(TITLE_DELETE, "images/delete.png", unique=SELECT_MULTI)
+@ActionsManage.affect_grid(TITLE_DELETE, "images/delete.png", unique=SELECT_MULTI, condition=lambda xfer, gridname='': xfer.getparam('readonly', False) == False)
 @MenuManage.describ('accounting.change_budget')
 class BudgetDel(XferDelete):
     icon = "account.png"
@@ -122,7 +139,8 @@ class CostAccountingBudget(XferContainerAcknowledge):
     caption = _("Budget")
 
     def fillresponse(self):
-        self.redirect_action(BudgetList.get_action(), close=CLOSE_YES, params={'cost_accounting': self.item.id})
+        read_only = (self.item.status == 1) or self.item.is_protected
+        self.redirect_action(BudgetList.get_action(), close=CLOSE_YES, params={'cost_accounting': self.item.id, 'readonly': read_only})
 
 
 @ActionsManage.affect_list(_("Budget"), "account.png")
@@ -133,5 +151,7 @@ class FiscalYearBudget(XferContainerAcknowledge):
     field_id = 'chartsaccount'
     caption = _("Budget")
 
-    def fillresponse(self, year=0):
-        self.redirect_action(BudgetList.get_action(), close=CLOSE_YES, params={'year': year})
+    def fillresponse(self, year):
+        fiscal_year = FiscalYear.get_current(year)
+        read_only = (fiscal_year.status == 2)
+        self.redirect_action(BudgetList.get_action(), close=CLOSE_YES, params={'year': fiscal_year.id, 'readonly': read_only})

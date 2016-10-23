@@ -380,8 +380,8 @@ class FiscalYearIncomeStatement(FiscalYearReport):
             self.add_component(lbl)
 
     def calcul_table(self):
-        self.budgetfilter_left = Q(year=self.item) & Q(code__regex=current_system_account().get_revenue_mask())
-        self.budgetfilter_right = Q(year=self.item) & Q(code__regex=current_system_account().get_expence_mask())
+        self.budgetfilter_right = Q(year=self.item) & Q(code__regex=current_system_account().get_revenue_mask())
+        self.budgetfilter_left = Q(year=self.item) & Q(code__regex=current_system_account().get_expence_mask())
         self._add_left_right_accounting(Q(account__type_of_account=4), Q(account__type_of_account=3), True)
 
 
@@ -614,8 +614,8 @@ class CostAccountingIncomeStatement(CostAccountingReport, FiscalYearIncomeStatem
                 self.item = old_accounting
 
     def calcul_table(self):
-        self.budgetfilter_left = Q(cost_accounting=self.item) & Q(code__regex=current_system_account().get_revenue_mask())
-        self.budgetfilter_right = Q(cost_accounting=self.item) & Q(code__regex=current_system_account().get_expence_mask())
+        self.budgetfilter_right = Q(cost_accounting=self.item) & Q(code__regex=current_system_account().get_revenue_mask())
+        self.budgetfilter_left = Q(cost_accounting=self.item) & Q(code__regex=current_system_account().get_expence_mask())
         self._add_left_right_accounting(Q(account__type_of_account=4), Q(account__type_of_account=3), True)
 
 
