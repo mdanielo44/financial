@@ -290,17 +290,17 @@ class Payoff(LucteriosModel):
             is_revenu = 1
         fiscal_year = FiscalYear.get_current()
         new_entry = EntryAccount.objects.create(
-            year=fiscal_year, date_value=self.date, designation=_(
-                "payoff for %s") % six.text_type(supporting),
+            year=fiscal_year, date_value=self.date, designation=_("payoff for %s") % six.text_type(supporting),
             journal=Journal.objects.get(id=4), costaccounting=supporting.default_costaccounting())
+        amount_to_bank = 0
         for third, amount in third_amounts:
             third_account = third.get_account(fiscal_year, supporting.get_third_mask())
             if third_account.type_of_account == 0:
                 is_liability = 1
             else:
                 is_liability = -1
-            EntryLineAccount.objects.create(
-                account=third_account, amount=is_liability * is_revenu * amount, third=third, entry=new_entry)
+            EntryLineAccount.objects.create(account=third_account, amount=is_liability * is_revenu * amount, third=third, entry=new_entry)
+            amount_to_bank += float(amount)
         if self.bank_account is None:
             bank_code = Params.getvalue("payoff-cash-account")
         else:
@@ -309,7 +309,6 @@ class Payoff(LucteriosModel):
         if bank_account is None:
             raise LucteriosException(
                 IMPORTANT, _("account is not defined!"))
-        amount_to_bank = float(self.amount)
         fee_code = Params.getvalue("payoff-bankcharges-account")
         if (fee_code != '') and (float(self.bank_fee) > 0.001):
             fee_account = ChartsAccount.get_account(fee_code, fiscal_year)
@@ -400,7 +399,7 @@ class DepositSlip(LucteriosModel):
 
     @classmethod
     def get_show_fields(cls):
-        return ['bank_account', 'bank_account.reference', ("date", "reference"), "depositdetail_set", ((_('number'), "nb"), (_('total'), 'total'))]
+        return ['bank_account', 'bank_account.reference', ("date", "reference"), ((_('number'), "nb"), (_('total'), 'total')), "depositdetail_set"]
 
     def get_total(self):
         value = 0

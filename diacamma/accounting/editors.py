@@ -193,16 +193,13 @@ class EntryAccountEditor(LucteriosEditor):
 
     def _add_cost_savebtn(self, xfer):
         name_comp = xfer.get_components('designation')
-        if (self.item.costaccounting is None) or (self.item.costaccounting.status == 0):
-            xfer.fill_from_model(
-                1, name_comp.row + 1, False, ['costaccounting'])
+        if (self.item.costaccounting_id is None) or (self.item.costaccounting_id == 0) or (self.item.costaccounting.status == 0):
+            xfer.fill_from_model(1, name_comp.row + 1, False, ['costaccounting'])
             sel = xfer.get_components('costaccounting')
-            sel.set_select_query(
-                CostAccounting.objects.filter(status=0))
+            sel.set_select_query(CostAccounting.objects.filter(status=0))
             self.added = True
         else:
-            xfer.fill_from_model(
-                1, name_comp.row + 1, True, ['costaccounting'])
+            xfer.fill_from_model(1, name_comp.row + 1, True, ['costaccounting'])
             self.added = isinstance(name_comp, XferCompEdit)
 
     def show(self, xfer):
