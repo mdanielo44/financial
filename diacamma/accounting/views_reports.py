@@ -347,17 +347,17 @@ class FiscalYearIncomeStatement(FiscalYearReport):
         self.grid = XferCompGrid('report_%d' % self.item.id)
         self.grid.add_header('left', _('Expense'))
         self.grid.add_header('left_n', self.item.get_identify())
+        self.grid.add_header('left_b', _('Budget'))
         if self.lastfilter is not None:
             self.grid.add_header(
                 'left_n_1', self.item.last_fiscalyear.get_identify())
-        self.grid.add_header('left_b', _('Budget'))
         self.grid.add_header('space', '')
         self.grid.add_header('right', _('Revenue'))
         self.grid.add_header('right_n', self.item.get_identify())
+        self.grid.add_header('right_b', _('Budget'))
         if self.lastfilter is not None:
             self.grid.add_header(
                 'right_n_1', self.item.last_fiscalyear.get_identify())
-        self.grid.add_header('left_b', _('Budget'))
 
     def fill_filterheader(self):
         if self.item.last_fiscalyear is not None:
@@ -546,15 +546,15 @@ class CostAccountingReport(FiscalYearReport):
         self.grid = XferCompGrid('report_%d' % self.item.id)
         self.grid.add_header('left', _('Expenses'))
         self.grid.add_header('left_n', _('Value'))
+        self.grid.add_header('left_b', _('Budget'))
         if self.lastfilter is not None:
             self.grid.add_header('left_n_1', _('Last'))
-        self.grid.add_header('left_b', _('Budget'))
         self.grid.add_header('space', '')
         self.grid.add_header('right', _('Revenues'))
         self.grid.add_header('right_n', _('Value'))
+        self.grid.add_header('right_b', _('Budget'))
         if self.lastfilter is not None:
             self.grid.add_header('right_n_1', _('Last'))
-        self.grid.add_header('right_b', _('Budget'))
 
     def fill_filterheader(self):
         pass
