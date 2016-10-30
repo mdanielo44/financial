@@ -85,15 +85,15 @@ class BudgetList(XferListEditor):
             self.add_component(lbl)
 
 
-@MenuManage.describ('accounting.change_budget')
-@ActionsManage.affect_list(TITLE_PRINT, "images/print.png")
-class BudgetPrint(XferPrintAction):
-    icon = "account.png"
-    model = Budget
-    field_id = 'budget'
-    caption = _("Print previsionnal budget")
-    with_text_export = True
-    action_class = BudgetList
+# @MenuManage.describ('accounting.change_budget')
+# @ActionsManage.affect_list(TITLE_PRINT, "images/print.png")
+# class BudgetPrint(XferPrintAction):
+#     icon = "account.png"
+#     model = Budget
+#     field_id = 'budget'
+#     caption = _("Print previsionnal budget")
+#     with_text_export = True
+#     action_class = BudgetList
 
 
 @ActionsManage.affect_grid(TITLE_MODIFY, "images/edit.png", unique=SELECT_SINGLE, condition=lambda xfer, gridname='': xfer.getparam('readonly', False) == False)
