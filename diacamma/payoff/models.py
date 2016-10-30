@@ -275,22 +275,26 @@ class Payoff(LucteriosModel):
         supporting = self.supporting.get_final_child()
         if (self.entry is not None) and (abs(supporting.get_total_rest_topay()) < 0.0001) and (supporting.entry_links() is not None) and (len(supporting.entry_links()) > 0):
             try:
-                entryline = supporting.entry_links()
+                entryline = []
                 for all_payoff in supporting.payoff_set.filter(supporting.payoff_query):
+                    entryline.extend(all_payoff.supporting.entry_links())
                     entryline.append(all_payoff.entry)
+                entryline = list(set(entryline))
                 AccountLink.create_link(entryline)
             except LucteriosException:
                 pass
 
-    def generate_accounting(self, third_amounts):
+    def generate_accounting(self, third_amounts, designation=None):
         supporting = self.supporting.get_final_child()
         if self.supporting.is_revenu:
             is_revenu = -1
         else:
             is_revenu = 1
         fiscal_year = FiscalYear.get_current()
+        if designation is None:
+            designation = _("payoff for %s") % six.text_type(supporting)
         new_entry = EntryAccount.objects.create(
-            year=fiscal_year, date_value=self.date, designation=_("payoff for %s") % six.text_type(supporting),
+            year=fiscal_year, date_value=self.date, designation=designation,
             journal=Journal.objects.get(id=4), costaccounting=supporting.default_costaccounting())
         amount_to_bank = 0
         for third, amount in third_amounts:
@@ -324,10 +328,8 @@ class Payoff(LucteriosModel):
              update_fields=None, do_generate=True, do_linking=True):
         if not force_insert and do_generate:
             self.delete_accounting()
-            self.entry = self.generate_accounting(
-                [(self.supporting.third, float(self.amount))])
-        res = LucteriosModel.save(
-            self, force_insert, force_update, using, update_fields)
+            self.entry = self.generate_accounting([(self.supporting.third, float(self.amount))])
+        res = LucteriosModel.save(self, force_insert, force_update, using, update_fields)
         if not force_insert and do_linking:
             self.generate_accountlink()
         return res
@@ -358,14 +360,31 @@ class Payoff(LucteriosModel):
             new_paypoff.amount += amount_rest
             new_paypoff.save(do_generate=False)
         third_amounts = {}
+        designation_items = []
         for paypoff_item in paypoff_list:
             if paypoff_item.supporting.third not in third_amounts.keys():
                 third_amounts[paypoff_item.supporting.third] = 0
             third_amounts[paypoff_item.supporting.third] += paypoff_item.amount
-        new_entry = paypoff_list[0].generate_accounting(third_amounts.items())
+            designation_items.append(six.text_type(paypoff_item.supporting.get_final_child()))
+        designation = _("payoff for %s") % ",".join(designation_items)
+        if len(designation) > 190:
+            designation = _("payoff for %d multi-pay") % len(designation_items)
+        new_entry = paypoff_list[0].generate_accounting(third_amounts.items(), designation)
         for paypoff_item in paypoff_list:
             paypoff_item.entry = new_entry
             paypoff_item.save(do_generate=False)
+        new_entry.unlink()
+        try:
+            entrylines = []
+            for supporting in supporting_list:
+                supporting = supporting.get_final_child()
+                if (abs(supporting.get_total_rest_topay()) < 0.0001) and (supporting.entry_links() is not None) and (len(supporting.payoff_set.filter(supporting.payoff_query)) == 1):
+                    entrylines.extend(supporting.entry_links())
+            if len(entrylines) == len(supporting_list):
+                entrylines.append(new_entry)
+                AccountLink.create_link(entrylines)
+        except LucteriosException:
+            pass
 
     def delete(self, using=None):
         self.delete_accounting()
@@ -663,6 +682,40 @@ class BankTransaction(LucteriosModel):
         ordering = ['-date']
 
 
+def check_payoff_accounting():
+    for entry in EntryAccount.objects.filter(close=False, journal_id=4):
+        _no_change, debit_rest, credit_rest = entry.serial_control(entry.get_serial())
+        payoff_list = entry.payoff_set.all()
+        if abs(debit_rest - credit_rest) > 0.0001:
+            if len(payoff_list) > 0:
+                third_amounts = []
+                designation_items = []
+                for paypoff_item in payoff_list:
+                    third_amounts.append((paypoff_item.supporting.third, float(paypoff_item.amount)))
+                    designation_items.append(six.text_type(paypoff_item.supporting.get_final_child()))
+                designation = _("payoff for %s") % ",".join(designation_items)
+                if len(designation) > 190:
+                    designation = _("payoff for %d multi-pay") % len(designation_items)
+                entry.unlink()
+                new_entry = payoff_list[0].generate_accounting(third_amounts, designation)
+                for paypoff_item in payoff_list:
+                    paypoff_item.entry = new_entry
+                    paypoff_item.save(do_generate=False)
+                new_entry.unlink()
+                entry.delete()
+                try:
+                    entrylines = []
+                    for paypoff_item in payoff_list:
+                        supporting = paypoff_item.supporting.get_final_child()
+                        if (abs(supporting.get_total_rest_topay()) < 0.0001) and (supporting.entry_links() is not None) and (len(supporting.payoff_set.filter(supporting.payoff_query)) == 1):
+                            entrylines.extend(supporting.entry_links())
+                    if len(entrylines) == len(payoff_list):
+                        entrylines.append(new_entry)
+                        AccountLink.create_link(entrylines)
+                except LucteriosException:
+                    pass
+
+
 @Signal.decorate('checkparam')
 def payoff_checkparam():
     Parameter.check_and_create(name='payoff-bankcharges-account', typeparam=0,
@@ -670,3 +723,4 @@ def payoff_checkparam():
     Parameter.check_and_create(name='payoff-cash-account', typeparam=0, title=_("payoff-cash-account"), args="{'Multi':False}", value='531')
     Parameter.check_and_create(name='payoff-email-message', typeparam=0, title=_("payoff-email-message"),
                                args="{'Multi':True}", value=_('%(name)s\n\nJoint in this email %(doc)s.\n\nRegards'))
+    check_payoff_accounting()

@@ -869,7 +869,7 @@ class EntryAccount(LucteriosModel):
             self.save()
 
     def unlink(self):
-        if (self.year.status != 2) and (self.link is not None):
+        if (self.year.status != 2) and (self.link_id is not None):
             for entry in self.link.entryaccount_set.all():
                 entry.link = None
                 if not entry.delete_if_ghost_entry():

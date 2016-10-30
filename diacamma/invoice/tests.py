@@ -1268,154 +1268,122 @@ class BillTest(InvoiceTest):
         self.assert_observer('core.print', 'diacamma.invoice', 'billPrint')
 
     def test_payoff_multi(self):
-        details = [
-            {'article': 0, 'designation': 'article 0', 'price': '100.00', 'quantity': 1}]
+        details = [{'article': 0, 'designation': 'article 0', 'price': '100.00', 'quantity': 1}]
         bill_id1 = self._create_bill(details, 1, '2015-04-01', 6, True)
-        details = [
-            {'article': 0, 'designation': 'article 0', 'price': '50.00', 'quantity': 1}]
+        details = [{'article': 0, 'designation': 'article 0', 'price': '50.00', 'quantity': 1}]
         bill_id2 = self._create_bill(details, 1, '2015-04-01', 4, True)
 
         self.factory.xfer = EntryAccountList()
-        self.call('/diacamma.accounting/entryAccountList',
-                  {'year': '1', 'journal': '-1', 'filter': '0'}, False)
-        self.assert_observer(
-            'core.custom', 'diacamma.accounting', 'entryAccountList')
-        self.assert_count_equal(
-            'COMPONENTS/GRID[@name="entryaccount"]/RECORD', 2)
+        self.call('/diacamma.accounting/entryAccountList', {'year': '1', 'journal': '-1', 'filter': '0'}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
+        self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', 2)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[1]/VALUE[@name="link"]', '---')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[2]/VALUE[@name="link"]', '---')
+        self.assert_xml_equal("COMPONENTS/LABELFORM[@name='result']",
+                              '{[center]}{[b]}Produit:{[/b]} 150.00€ - {[b]}Charge:{[/b]} 0.00€ = {[b]}Résultat:{[/b]} 150.00€ | {[b]}Trésorie:{[/b]} 0.00€ - {[b]}Validé:{[/b]} 0.00€{[/center]}')
 
         self.factory.xfer = BillMultiPay()
-        self.call('/diacamma.invoice/billMultiPay',
-                  {'bill': '%s;%s' % (bill_id1, bill_id2)}, False)
-        self.assert_observer(
-            'core.acknowledge', 'diacamma.invoice', 'billMultiPay')
-        self.assert_attrib_equal(
-            "ACTION", "id", "diacamma.payoff/payoffAddModify")
+        self.call('/diacamma.invoice/billMultiPay', {'bill': '%s;%s' % (bill_id1, bill_id2)}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'billMultiPay')
+        self.assert_attrib_equal("ACTION", "id", "diacamma.payoff/payoffAddModify")
         self.assert_count_equal("ACTION/PARAM", 1)
-        self.assert_xml_equal(
-            "ACTION/PARAM[@name='supportings']", '%s;%s' % (bill_id1, bill_id2))
+        self.assert_xml_equal("ACTION/PARAM[@name='supportings']", '%s;%s' % (bill_id1, bill_id2))
 
         self.factory.xfer = PayoffAddModify()
-        self.call(
-            '/diacamma.payoff/payoffAddModify', {'supportings': '%s;%s' % (bill_id1, bill_id2)}, False)
-        self.assert_observer(
-            'core.custom', 'diacamma.payoff', 'payoffAddModify')
-        self.assert_xml_equal(
-            'COMPONENTS/FLOAT[@name="amount"]', "150.00")
-        self.assert_attrib_equal(
-            'COMPONENTS/FLOAT[@name="amount"]', 'max', "150.0")
-        self.assert_xml_equal(
-            'COMPONENTS/EDIT[@name="payer"]', "Dalton Jack")
+        self.call('/diacamma.payoff/payoffAddModify', {'supportings': '%s;%s' % (bill_id1, bill_id2)}, False)
+        self.assert_observer('core.custom', 'diacamma.payoff', 'payoffAddModify')
+        self.assert_xml_equal('COMPONENTS/FLOAT[@name="amount"]', "150.00")
+        self.assert_attrib_equal('COMPONENTS/FLOAT[@name="amount"]', 'max', "150.0")
+        self.assert_xml_equal('COMPONENTS/EDIT[@name="payer"]', "Dalton Jack")
 
         self.factory.xfer = PayoffAddModify()
-        self.call(
-            '/diacamma.payoff/payoffAddModify', {'SAVE': 'YES', 'supportings': '%s;%s' % (bill_id1, bill_id2), 'amount': '100.0', 'date': '2015-04-04', 'mode': 0, 'reference': '', 'bank_account': 0, 'payer': "Ma'a Dalton"}, False)
-        self.assert_observer(
-            'core.acknowledge', 'diacamma.payoff', 'payoffAddModify')
+        self.call('/diacamma.payoff/payoffAddModify', {'SAVE': 'YES', 'supportings': '%s;%s' % (bill_id1, bill_id2), 'amount': '100.0', 'date': '2015-04-04', 'mode': 0, 'reference': '', 'bank_account': 0, 'payer': "Ma'a Dalton"}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.payoff', 'payoffAddModify')
 
         self.factory.xfer = BillShow()
         self.call('/diacamma.invoice/billShow', {'bill': bill_id1}, False)
-        self.assert_observer(
-            'core.custom', 'diacamma.invoice', 'billShow')
-        self.assert_xml_equal(
-            'COMPONENTS/LABELFORM[@name="total_excltax"]', "100.00€")
-        self.assert_xml_equal(
-            'COMPONENTS/LABELFORM[@name="total_payed"]', "66.67€")
-        self.assert_xml_equal(
-            'COMPONENTS/LABELFORM[@name="total_rest_topay"]', "33.33€")
+        self.assert_observer('core.custom', 'diacamma.invoice', 'billShow')
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="total_excltax"]', "100.00€")
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="total_payed"]', "66.67€")
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="total_rest_topay"]', "33.33€")
 
         self.factory.xfer = BillShow()
         self.call('/diacamma.invoice/billShow', {'bill': bill_id2}, False)
-        self.assert_observer(
-            'core.custom', 'diacamma.invoice', 'billShow')
-        self.assert_xml_equal(
-            'COMPONENTS/LABELFORM[@name="total_excltax"]', "50.00€")
-        self.assert_xml_equal(
-            'COMPONENTS/LABELFORM[@name="total_payed"]', "33.33€")
-        self.assert_xml_equal(
-            'COMPONENTS/LABELFORM[@name="total_rest_topay"]', "16.67€")
+        self.assert_observer('core.custom', 'diacamma.invoice', 'billShow')
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="total_excltax"]', "50.00€")
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="total_payed"]', "33.33€")
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="total_rest_topay"]', "16.67€")
 
         self.factory.xfer = EntryAccountList()
         self.call('/diacamma.accounting/entryAccountList',
                   {'year': '1', 'journal': '-1', 'filter': '0'}, False)
-        self.assert_observer(
-            'core.custom', 'diacamma.accounting', 'entryAccountList')
-        self.assert_count_equal(
-            'COMPONENTS/GRID[@name="entryaccount"]/RECORD', 3)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
+        self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', 3)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[1]/VALUE[@name="link"]', '---')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[2]/VALUE[@name="link"]', '---')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[3]/VALUE[@name="link"]', '---')
+        self.assert_xml_equal("COMPONENTS/LABELFORM[@name='result']",
+                              '{[center]}{[b]}Produit:{[/b]} 150.00€ - {[b]}Charge:{[/b]} 0.00€ = {[b]}Résultat:{[/b]} 150.00€ | {[b]}Trésorie:{[/b]} 100.00€ - {[b]}Validé:{[/b]} 0.00€{[/center]}')
 
     def test_payoff_multi_samethird(self):
-        details = [
-            {'article': 0, 'designation': 'article 0', 'price': '100.00', 'quantity': 1}]
+        details = [{'article': 0, 'designation': 'article 0', 'price': '100.00', 'quantity': 1}]
         bill_id1 = self._create_bill(details, 1, '2015-04-01', 6, True)
-        details = [
-            {'article': 0, 'designation': 'article 0', 'price': '50.00', 'quantity': 1}]
+        details = [{'article': 0, 'designation': 'article 0', 'price': '50.00', 'quantity': 1}]
         bill_id2 = self._create_bill(details, 1, '2015-04-01', 6, True)
 
         self.factory.xfer = EntryAccountList()
         self.call('/diacamma.accounting/entryAccountList',
                   {'year': '1', 'journal': '-1', 'filter': '0'}, False)
-        self.assert_observer(
-            'core.custom', 'diacamma.accounting', 'entryAccountList')
-        self.assert_count_equal(
-            'COMPONENTS/GRID[@name="entryaccount"]/RECORD', 2)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
+        self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', 2)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[1]/VALUE[@name="link"]', '---')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[2]/VALUE[@name="link"]', '---')
+        self.assert_xml_equal("COMPONENTS/LABELFORM[@name='result']",
+                              '{[center]}{[b]}Produit:{[/b]} 150.00€ - {[b]}Charge:{[/b]} 0.00€ = {[b]}Résultat:{[/b]} 150.00€ | {[b]}Trésorie:{[/b]} 0.00€ - {[b]}Validé:{[/b]} 0.00€{[/center]}')
 
         self.factory.xfer = BillMultiPay()
         self.call('/diacamma.invoice/billMultiPay',
                   {'bill': '%s;%s' % (bill_id1, bill_id2)}, False)
-        self.assert_observer(
-            'core.acknowledge', 'diacamma.invoice', 'billMultiPay')
-        self.assert_attrib_equal(
-            "ACTION", "id", "diacamma.payoff/payoffAddModify")
+        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'billMultiPay')
+        self.assert_attrib_equal("ACTION", "id", "diacamma.payoff/payoffAddModify")
         self.assert_count_equal("ACTION/PARAM", 1)
-        self.assert_xml_equal(
-            "ACTION/PARAM[@name='supportings']", '%s;%s' % (bill_id1, bill_id2))
+        self.assert_xml_equal("ACTION/PARAM[@name='supportings']", '%s;%s' % (bill_id1, bill_id2))
 
         self.factory.xfer = PayoffAddModify()
-        self.call(
-            '/diacamma.payoff/payoffAddModify', {'supportings': '%s;%s' % (bill_id1, bill_id2)}, False)
-        self.assert_observer(
-            'core.custom', 'diacamma.payoff', 'payoffAddModify')
-        self.assert_xml_equal(
-            'COMPONENTS/FLOAT[@name="amount"]', "150.00")
-        self.assert_attrib_equal(
-            'COMPONENTS/FLOAT[@name="amount"]', 'max', "150.0")
-        self.assert_xml_equal(
-            'COMPONENTS/EDIT[@name="payer"]', "Dalton Jack")
+        self.call('/diacamma.payoff/payoffAddModify', {'supportings': '%s;%s' % (bill_id1, bill_id2)}, False)
+        self.assert_observer('core.custom', 'diacamma.payoff', 'payoffAddModify')
+        self.assert_xml_equal('COMPONENTS/FLOAT[@name="amount"]', "150.00")
+        self.assert_attrib_equal('COMPONENTS/FLOAT[@name="amount"]', 'max', "150.0")
+        self.assert_xml_equal('COMPONENTS/EDIT[@name="payer"]', "Dalton Jack")
 
         self.factory.xfer = PayoffAddModify()
-        self.call(
-            '/diacamma.payoff/payoffAddModify', {'SAVE': 'YES', 'supportings': '%s;%s' % (bill_id1, bill_id2), 'amount': '100.0', 'date': '2015-04-04', 'mode': 0, 'reference': '', 'bank_account': 0, 'payer': "Ma'a Dalton"}, False)
-        self.assert_observer(
-            'core.acknowledge', 'diacamma.payoff', 'payoffAddModify')
+        self.call('/diacamma.payoff/payoffAddModify', {'SAVE': 'YES', 'supportings': '%s;%s' % (bill_id1, bill_id2), 'amount': '150.0', 'date': '2015-04-04', 'mode': 0, 'reference': '', 'bank_account': 0, 'payer': "Ma'a Dalton"}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.payoff', 'payoffAddModify')
 
         self.factory.xfer = BillShow()
         self.call('/diacamma.invoice/billShow', {'bill': bill_id1}, False)
-        self.assert_observer(
-            'core.custom', 'diacamma.invoice', 'billShow')
-        self.assert_xml_equal(
-            'COMPONENTS/LABELFORM[@name="total_excltax"]', "100.00€")
-        self.assert_xml_equal(
-            'COMPONENTS/LABELFORM[@name="total_payed"]', "66.67€")
-        self.assert_xml_equal(
-            'COMPONENTS/LABELFORM[@name="total_rest_topay"]', "33.33€")
+        self.assert_observer('core.custom', 'diacamma.invoice', 'billShow')
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="total_excltax"]', "100.00€")
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="total_payed"]', "100.00€")
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="total_rest_topay"]', "0.00€")
 
         self.factory.xfer = BillShow()
         self.call('/diacamma.invoice/billShow', {'bill': bill_id2}, False)
-        self.assert_observer(
-            'core.custom', 'diacamma.invoice', 'billShow')
-        self.assert_xml_equal(
-            'COMPONENTS/LABELFORM[@name="total_excltax"]', "50.00€")
-        self.assert_xml_equal(
-            'COMPONENTS/LABELFORM[@name="total_payed"]', "33.33€")
-        self.assert_xml_equal(
-            'COMPONENTS/LABELFORM[@name="total_rest_topay"]', "16.67€")
+        self.assert_observer('core.custom', 'diacamma.invoice', 'billShow')
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="total_excltax"]', "50.00€")
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="total_payed"]', "50.00€")
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="total_rest_topay"]', "0.00€")
 
         self.factory.xfer = EntryAccountList()
         self.call('/diacamma.accounting/entryAccountList',
                   {'year': '1', 'journal': '-1', 'filter': '0'}, False)
-        self.assert_observer(
-            'core.custom', 'diacamma.accounting', 'entryAccountList')
-        self.assert_count_equal(
-            'COMPONENTS/GRID[@name="entryaccount"]/RECORD', 3)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
+        self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', 3)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[3]/VALUE[@name="link"]', 'A')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[2]/VALUE[@name="link"]', 'A')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[1]/VALUE[@name="link"]', 'A')
+        self.assert_xml_equal("COMPONENTS/LABELFORM[@name='result']",
+                              '{[center]}{[b]}Produit:{[/b]} 150.00€ - {[b]}Charge:{[/b]} 0.00€ = {[b]}Résultat:{[/b]} 150.00€ | {[b]}Trésorie:{[/b]} 150.00€ - {[b]}Validé:{[/b]} 0.00€{[/center]}')
 
     def test_send_bill(self):
         configSMTP('localhost', 1025)
