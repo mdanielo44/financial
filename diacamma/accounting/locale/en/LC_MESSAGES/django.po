@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-10-23 16:36+0000\n"
+"POT-Creation-Date: 2016-10-30 13:28+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -41,39 +41,39 @@ msgstr "Invalid code"
 msgid "Changment not allowed!"
 msgstr "Changment not allowed!"
 
-#: editors.py:224
+#: editors.py:221
 msgid "entry of accounting for an asset"
 msgstr "entry of accounting for an asset"
 
-#: editors.py:237
+#: editors.py:234
 msgid "Linked entries"
 msgstr "Linked entries"
 
-#: editors.py:256
+#: editors.py:253
 msgid "Add a entry line"
 msgstr "Add a entry line"
 
-#: editors.py:305 models.py:139 models.py:145 models.py:939 models.py:1175
+#: editors.py:302 models.py:139 models.py:145 models.py:939 models.py:1175
 msgid "third"
 msgstr "third"
 
-#: editors.py:336 models.py:189 models.py:933 models.py:953 models.py:957
+#: editors.py:333 models.py:189 models.py:933 models.py:953 models.py:957
 #: models.py:963 models.py:968 models.py:972
 #: printmodel/EntryLineAccount_0001.py:44 printmodel/Third_0001.py:39
 msgid "account"
 msgstr "account"
 
-#: editors.py:371 models.py:937
+#: editors.py:368 models.py:937
 msgid "reference"
 msgstr "reference"
 
-#: editors.py:391 models.py:953 models.py:958 models.py:963 models.py:968
+#: editors.py:388 models.py:953 models.py:958 models.py:963 models.py:968
 #: models.py:972 models.py:1180 printmodel/EntryLineAccount_0001.py:44
 #: views_reports.py:406 views_reports.py:458
 msgid "debit"
 msgstr "debit"
 
-#: editors.py:400 models.py:953 models.py:958 models.py:963 models.py:968
+#: editors.py:397 models.py:953 models.py:958 models.py:963 models.py:968
 #: models.py:972 models.py:1180 printmodel/EntryLineAccount_0001.py:44
 #: views_reports.py:407 views_reports.py:459
 msgid "credit"
@@ -285,7 +285,8 @@ msgstr "This costa accounting has some not validated entry!"
 msgid "This cost accounting is include in a model of entry!"
 msgstr "This cost accounting is include in a model of entry!"
 
-#: models.py:504 models.py:709 models.py:1123 models.py:1248 views_budget.py:48
+#: models.py:504 models.py:709 models.py:1123 models.py:1248
+#: views_budget.py:48
 msgid "cost accounting"
 msgstr "cost accounting"
 
@@ -828,10 +829,6 @@ msgstr "result (profit)"
 msgid "result (deficit)"
 msgstr "result (deficit)"
 
-#: views_budget.py:94
-msgid "Print previsionnal budget"
-msgstr "Print previsionnal budget"
-
 #: views_budget.py:106
 msgid "Add budget line"
 msgstr "Add budget line"
@@ -1137,3 +1134,6 @@ msgstr "Ledger of cost accounting"
 #: views_reports.py:641
 msgid "Trial balance of cost accounting"
 msgstr "Trial balance of cost accounting"
+
+#~ msgid "Print previsionnal budget"
+#~ msgstr "Print previsionnal budget"

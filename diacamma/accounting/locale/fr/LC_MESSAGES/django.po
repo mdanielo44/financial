@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-10-23 16:36+0000\n"
+"POT-Creation-Date: 2016-10-30 13:28+0000\n"
 "PO-Revision-Date: 2016-01-11 23:01+0000\n"
 "Last-Translator: b'Paul ARULATEDA <paul531@orange.fr>'\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -43,39 +43,39 @@ msgstr "Code invalide!"
 msgid "Changment not allowed!"
 msgstr "Changement non permis!"
 
-#: editors.py:224
+#: editors.py:221
 msgid "entry of accounting for an asset"
 msgstr "écriture d'un avoir"
 
-#: editors.py:237
+#: editors.py:234
 msgid "Linked entries"
 msgstr "Ecritures associées"
 
-#: editors.py:256
+#: editors.py:253
 msgid "Add a entry line"
 msgstr "Ajouter une ligne d'écriture"
 
-#: editors.py:305 models.py:139 models.py:145 models.py:939 models.py:1175
+#: editors.py:302 models.py:139 models.py:145 models.py:939 models.py:1175
 msgid "third"
 msgstr "tiers"
 
-#: editors.py:336 models.py:189 models.py:933 models.py:953 models.py:957
+#: editors.py:333 models.py:189 models.py:933 models.py:953 models.py:957
 #: models.py:963 models.py:968 models.py:972
 #: printmodel/EntryLineAccount_0001.py:44 printmodel/Third_0001.py:39
 msgid "account"
 msgstr "compte"
 
-#: editors.py:371 models.py:937
+#: editors.py:368 models.py:937
 msgid "reference"
 msgstr "référence"
 
-#: editors.py:391 models.py:953 models.py:958 models.py:963 models.py:968
+#: editors.py:388 models.py:953 models.py:958 models.py:963 models.py:968
 #: models.py:972 models.py:1180 printmodel/EntryLineAccount_0001.py:44
 #: views_reports.py:406 views_reports.py:458
 msgid "debit"
 msgstr "débit"
 
-#: editors.py:400 models.py:953 models.py:958 models.py:963 models.py:968
+#: editors.py:397 models.py:953 models.py:958 models.py:963 models.py:968
 #: models.py:972 models.py:1180 printmodel/EntryLineAccount_0001.py:44
 #: views_reports.py:407 views_reports.py:459
 msgid "credit"
@@ -287,7 +287,8 @@ msgstr "Cette comptabilité a des écritures non validées!"
 msgid "This cost accounting is include in a model of entry!"
 msgstr "Cette comptabilité est utilisée dans un modèle d'écriture!"
 
-#: models.py:504 models.py:709 models.py:1123 models.py:1248 views_budget.py:48
+#: models.py:504 models.py:709 models.py:1123 models.py:1248
+#: views_budget.py:48
 msgid "cost accounting"
 msgstr "comptabilité analytique"
 
@@ -830,10 +831,6 @@ msgstr "résultat (bénéfice)"
 msgid "result (deficit)"
 msgstr "résultat (déficit)"
 
-#: views_budget.py:94
-msgid "Print previsionnal budget"
-msgstr "Impression du budget prévisionnel"
-
 #: views_budget.py:106
 msgid "Add budget line"
 msgstr "Ajouter une ligne de budget"
@@ -1139,3 +1136,6 @@ msgstr "Bilan de comptabilité analytique"
 #: views_reports.py:641
 msgid "Trial balance of cost accounting"
 msgstr "Compte de résultat de comptabilité analytique"
+
+#~ msgid "Print previsionnal budget"
+#~ msgstr "Impression du budget prévisionnel"
