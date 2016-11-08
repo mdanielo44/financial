@@ -100,7 +100,7 @@ class EntryAccountList(XferListEditor):
         self.add_component(lbl)
 
 
-@ActionsManage.affect_list(_("Search"), "diacamma.accounting/images/entry.png")
+@ActionsManage.affect_list(_("Search"), "diacamma.accounting/images/entry.png", close=CLOSE_YES, condition=lambda xfer: xfer.url_text.endswith('AccountList'))
 @MenuManage.describ('accounting.change_entryaccount')
 class EntryAccountSearch(XferSavedCriteriaSearchEditor):
     icon = "entry.png"
@@ -140,9 +140,9 @@ class EntryAccountListing(XferPrintListing):
                 new_filter &= Q(entry__journal__id=select_journal)
         else:
             self.item = EntryAccount()
-            entry_filter = XferPrintListing.get_filter(self)
+            entries = EntryAccount.objects.filter(XferPrintListing.get_filter(self))
             self.item = EntryLineAccount()
-            new_filter = Q(entry_id__in=[entry.id for entry in EntryAccount.objects.filter(entry_filter[0])])
+            new_filter = Q(entry_id__in=[entry.id for entry in entries])
         return new_filter
 
 

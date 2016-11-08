@@ -33,7 +33,7 @@ from lucterios.framework.filetools import get_user_dir, get_user_path
 
 from diacamma.accounting.views_entries import EntryAccountList, EntryAccountListing, \
     EntryAccountEdit, EntryAccountShow, EntryAccountClose, \
-    EntryAccountCostAccounting
+    EntryAccountCostAccounting, EntryAccountSearch
 from diacamma.accounting.test_tools import default_compta, initial_thirds, fill_entries
 from lucterios.CORE.views import StatusMenu
 from base64 import b64decode
@@ -173,13 +173,6 @@ class CompletedEntryTest(LucteriosTest):
 
     def test_close(self):
         self._goto_entrylineaccountlist(-1, 2, 7)
-        self.factory.xfer = EntryAccountList()
-        self.call('/diacamma.accounting/entryAccountList',
-                  {'year': '1', 'journal': '-1', 'filter': '2'}, False)
-        self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
-        self.assert_count_equal('COMPONENTS/*', 11)
-        self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/HEADER', 6)
-        self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', 7)
 
     def test_letter(self):
         self._goto_entrylineaccountlist(-1, 3, 6)
@@ -252,6 +245,28 @@ class CompletedEntryTest(LucteriosTest):
             six.text_type(self.get_first_xpath('PRINT').text)).decode("utf-8")
         content_csv = csv_value.split('\n')
         self.assertEqual(len(content_csv), 13, str(content_csv))
+
+    def test_search(self):
+        self.factory.xfer = EntryAccountSearch()
+        self.call('/diacamma.accounting/entryAccountSearch',
+                  {'year': '1', 'journal': '-1', 'filter': '0', 'CRITERIA': 'year||8||1//entrylineaccount_set.account.code||6||7'}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountSearch')
+        self.assert_count_equal('COMPONENTS/*', 23)
+        self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/HEADER', 6)
+        self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', 3)
+
+    def test_listing_search(self):
+        self.factory.xfer = EntryAccountListing()
+        self.call('/diacamma.accounting/entryAccountListing',
+                  {'PRINT_MODE': '4', 'MODEL': 7, 'year': '1', 'journal': '-1', 'filter': '0', 'CRITERIA': 'year||8||1//entrylineaccount_set.account.code||6||7'}, False)
+        self.assert_observer('core.print', 'diacamma.accounting', 'entryAccountListing')
+        csv_value = b64decode(six.text_type(self.get_first_xpath('PRINT').text)).decode("utf-8")
+        content_csv = csv_value.split('\n')
+        self.assertEqual(len(content_csv), 13, str(content_csv))
+        self.assertEqual(content_csv[1].strip(), '"Liste d\'écritures"')
+        self.assertEqual(content_csv[3].strip(), '"N°";"date d\'écriture";"date de pièce";"compte";"nom";"débit";"crédit";"lettrage";')
+        self.assertEqual(content_csv[4].strip(), '"4";"%s";"21 février 2015";"[707] 707";"vente 1";"";"70.64€";"E";' % formats.date_format(date.today(), "DATE_FORMAT"))
+        self.assertEqual(content_csv[8].strip(), '"---";"---";"24 février 2015";"[707] 707";"vente 3";"";"34.01€";"";')
 
     def test_costaccounting(self):
         self.factory.xfer = EntryAccountEdit()
