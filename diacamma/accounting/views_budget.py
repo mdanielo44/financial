@@ -19,6 +19,7 @@ from diacamma.accounting.models import Budget, CostAccounting, FiscalYear,\
     ChartsAccount
 from lucterios.framework.signal_and_lock import Signal
 from lucterios.CORE.xferprint import XferPrintAction
+from django.utils import six
 
 
 @MenuManage.describ('accounting.change_budget')
@@ -30,25 +31,47 @@ class BudgetList(XferListEditor):
 
     def fillresponse_header(self):
         self.filter = Q()
-        if self.getparam('year') is not None:
+        row_id = self.get_max_row() + 1
+        if self.getparam('year', 0) != 0:
             year = FiscalYear.get_current(self.getparam('year'))
             self.filter &= Q(year=year)
-            row_id = self.get_max_row() + 1
             lbl = XferCompLabelForm('title_year')
             lbl.set_italic()
             lbl.set_value("{[b]}%s{[/b]} : %s" % (_('fiscal year'), year))
-            lbl.set_location(1, row_id, 1)
+            lbl.set_location(1, row_id, 3)
             self.add_component(lbl)
+        row_id += 1
         if self.getparam('cost_accounting') is not None:
             cost = CostAccounting.objects.get(id=self.getparam('cost_accounting', 0))
             self.filter &= Q(cost_accounting=cost)
-            row_id = self.get_max_row() + 1
             lbl = XferCompLabelForm('title_cost')
             lbl.set_italic()
             lbl.set_value("{[b]}%s{[/b]} : %s" % (_('cost accounting'), cost))
-            lbl.set_location(1, row_id, 1)
+            lbl.set_location(1, row_id, 3)
             self.add_component(lbl)
         Signal.call_signal('editbudget', self)
+
+    def fill_grid(self, row, model, field_id, items):
+        XferListEditor.fill_grid(self, row, model, field_id, items)
+        if self.getparam('readonly', False):
+            grid = self.get_components(field_id)
+            grid.record_ids = []
+            grid.records = {}
+            last_code = ''
+            value = 0
+            for current_budget in items:
+                if last_code != current_budget.code:
+                    if last_code != '':
+                        chart = ChartsAccount.get_chart_account(last_code)
+                        grid.set_value(last_code, 'budget', six.text_type(chart))
+                        grid.set_value(last_code, 'montant', format_devise(value, 2))
+                        value = 0
+                    last_code = current_budget.code
+                value += current_budget.credit_debit_way() * current_budget.amount
+            if last_code != '':
+                chart = ChartsAccount.get_chart_account(last_code)
+                grid.set_value(last_code, 'budget', six.text_type(chart))
+                grid.set_value(last_code, 'montant', format_devise(value, 2))
 
     def fillresponse_body(self):
         self.get_components("title").colspan = 2
@@ -85,15 +108,15 @@ class BudgetList(XferListEditor):
             self.add_component(lbl)
 
 
-# @MenuManage.describ('accounting.change_budget')
-# @ActionsManage.affect_list(TITLE_PRINT, "images/print.png")
-# class BudgetPrint(XferPrintAction):
-#     icon = "account.png"
-#     model = Budget
-#     field_id = 'budget'
-#     caption = _("Print previsionnal budget")
-#     with_text_export = True
-#     action_class = BudgetList
+@MenuManage.describ('accounting.change_budget')
+@ActionsManage.affect_list(TITLE_PRINT, "images/print.png")
+class BudgetPrint(XferPrintAction):
+    icon = "account.png"
+    model = Budget
+    field_id = 'budget'
+    caption = _("Print previsionnal budget")
+    with_text_export = True
+    action_class = BudgetList
 
 
 @ActionsManage.affect_grid(TITLE_MODIFY, "images/edit.png", unique=SELECT_SINGLE, condition=lambda xfer, gridname='': xfer.getparam('readonly', False) == False)

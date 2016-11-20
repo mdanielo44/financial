@@ -237,35 +237,7 @@ class FiscalYearReport(XferContainerCustom):
         self.fill_filterheader()
         self.define_gridheader()
 
-    def _add_left_right_accounting(self, left_filter, rigth_filter, total_in_left):
-        data_line_left, total1_left, total2_left, totalb_left = convert_query_to_account(
-            self.filter & left_filter, self.lastfilter & left_filter if self.lastfilter is not None else None, self.budgetfilter_left)
-        data_line_right, total1_right, total2_right, totalb_right = convert_query_to_account(
-            self.filter & rigth_filter, self.lastfilter & rigth_filter if self.lastfilter is not None else None, self.budgetfilter_right)
-        line_idx = 0
-        for line_idx in range(max(len(data_line_left), len(data_line_right))):
-            if line_idx < len(data_line_left):
-                self.grid.set_value(
-                    line_idx, 'left', data_line_left[line_idx][0])
-                self.grid.set_value(
-                    line_idx, 'left_n', data_line_left[line_idx][1])
-                if self.lastfilter is not None:
-                    self.grid.set_value(
-                        line_idx, 'left_n_1', data_line_left[line_idx][2])
-                if self.budgetfilter_left is not None:
-                    self.grid.set_value(
-                        line_idx, 'left_b', data_line_left[line_idx][3])
-            if line_idx < len(data_line_right):
-                self.grid.set_value(
-                    line_idx, 'right', data_line_right[line_idx][0])
-                self.grid.set_value(
-                    line_idx, 'right_n', data_line_right[line_idx][1])
-                if self.lastfilter is not None:
-                    self.grid.set_value(
-                        line_idx, 'right_n_1', data_line_right[line_idx][2])
-                if self.budgetfilter_right is not None:
-                    self.grid.set_value(
-                        line_idx, 'right_b', data_line_right[line_idx][3])
+    def add_total_in_grid(self, total_in_left, total1_left, total2_left, totalb_left, total1_right, total2_right, totalb_right, line_idx):
         line_idx += 1
         self.grid.set_value(line_idx, 'left', '')
         self.grid.set_value(line_idx, 'right', '')
@@ -307,7 +279,7 @@ class FiscalYearReport(XferContainerCustom):
                     pos_b = 'right_b'
             else:
                 result_n = -1 * result_n
-                result_n_1 = -1 * result_n
+                result_n_1 = -1 * result_n_1
                 if result_n > 0:
                     pos_n = 'right_n'
                 else:
@@ -334,26 +306,49 @@ class FiscalYearReport(XferContainerCustom):
             if (pos_n != 'right_n') and (pos_n_1 != 'right_n_1') and (pos_b != 'right_b'):
                 self.grid.set_value(line_idx, 'right', '')
             line_idx += 1
-        self.grid.set_value(
-            line_idx, 'left', get_spaces(10) + "{[u]}{[b]}%s{[/b]}{[/u]}" % _('total'))
-        self.grid.set_value(
-            line_idx, 'left_n', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(total1_left, total1_right), 5))
+        self.grid.set_value(line_idx, 'left', get_spaces(10) + "{[u]}{[b]}%s{[/b]}{[/u]}" % _('total'))
+        self.grid.set_value(line_idx, 'left_n', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(total1_left, total1_right), 5))
         if self.lastfilter is not None:
-            self.grid.set_value(
-                line_idx, 'left_n_1', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(total2_left, total2_right), 5))
+            self.grid.set_value(line_idx, 'left_n_1', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(total2_left, total2_right), 5))
         if self.budgetfilter_left is not None:
-            self.grid.set_value(
-                line_idx, 'left_b', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(totalb_left, totalb_right), 5))
-        self.grid.set_value(
-            line_idx, 'right', get_spaces(10) + "{[u]}{[b]}%s{[/b]}{[/u]}" % _('total'))
-        self.grid.set_value(
-            line_idx, 'right_n', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(total1_left, total1_right), 5))
+            self.grid.set_value(line_idx, 'left_b', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(totalb_left, totalb_right), 5))
+        self.grid.set_value(line_idx, 'right', get_spaces(10) + "{[u]}{[b]}%s{[/b]}{[/u]}" % _('total'))
+        self.grid.set_value(line_idx, 'right_n', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(total1_left, total1_right), 5))
         if self.lastfilter is not None:
-            self.grid.set_value(
-                line_idx, 'right_n_1', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(total2_left, total2_right), 5))
+            self.grid.set_value(line_idx, 'right_n_1', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(total2_left, total2_right), 5))
         if self.budgetfilter_right is not None:
-            self.grid.set_value(
-                line_idx, 'right_b', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(totalb_left, totalb_right), 5))
+            self.grid.set_value(line_idx, 'right_b', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(totalb_left, totalb_right), 5))
+
+    def _add_left_right_accounting(self, left_filter, rigth_filter, total_in_left):
+        data_line_left, total1_left, total2_left, totalb_left = convert_query_to_account(
+            self.filter & left_filter, self.lastfilter & left_filter if self.lastfilter is not None else None, self.budgetfilter_left)
+        data_line_right, total1_right, total2_right, totalb_right = convert_query_to_account(
+            self.filter & rigth_filter, self.lastfilter & rigth_filter if self.lastfilter is not None else None, self.budgetfilter_right)
+        line_idx = 0
+        for line_idx in range(max(len(data_line_left), len(data_line_right))):
+            if line_idx < len(data_line_left):
+                self.grid.set_value(
+                    line_idx, 'left', data_line_left[line_idx][0])
+                self.grid.set_value(
+                    line_idx, 'left_n', data_line_left[line_idx][1])
+                if self.lastfilter is not None:
+                    self.grid.set_value(
+                        line_idx, 'left_n_1', data_line_left[line_idx][2])
+                if self.budgetfilter_left is not None:
+                    self.grid.set_value(
+                        line_idx, 'left_b', data_line_left[line_idx][3])
+            if line_idx < len(data_line_right):
+                self.grid.set_value(
+                    line_idx, 'right', data_line_right[line_idx][0])
+                self.grid.set_value(
+                    line_idx, 'right_n', data_line_right[line_idx][1])
+                if self.lastfilter is not None:
+                    self.grid.set_value(
+                        line_idx, 'right_n_1', data_line_right[line_idx][2])
+                if self.budgetfilter_right is not None:
+                    self.grid.set_value(
+                        line_idx, 'right_b', data_line_right[line_idx][3])
+        self.add_total_in_grid(total_in_left, total1_left, total2_left, totalb_left, total1_right, total2_right, totalb_right, line_idx)
 
     def calcul_table(self):
         pass
@@ -406,9 +401,38 @@ class FiscalYearBalanceSheet(FiscalYearReport):
             self.grid.add_header(
                 'right_n_1', self.item.last_fiscalyear.get_identify())
 
+    def fill_grid(self, index_begin, side, data_line):
+        line_idx = index_begin
+        for data_item in data_line:
+            self.grid.set_value(line_idx, side, data_item[0])
+            self.grid.set_value(line_idx, side + '_n', data_item[1])
+            if self.item.last_fiscalyear is not None:
+                self.grid.set_value(line_idx, side + '_n_1', data_item[2])
+            line_idx += 1
+        return line_idx
+
     def calcul_table(self):
-        self._add_left_right_accounting(
-            Q(account__type_of_account=0), Q(account__type_of_account__in=(1, 2)), False)
+        cash_filter = Q(account__code__regex=current_system_account().get_cash_mask())
+        data_line_left, total1_lefta, total2_lefta, _b_left = convert_query_to_account(self.filter & cash_filter,
+                                                                                       self.lastfilter & cash_filter if self.lastfilter is not None else None,
+                                                                                       None)
+        left_line_idx = self.fill_grid(0, 'left', data_line_left)
+
+        other_filter = Q(account__type_of_account__in=(0, 1, 2)) & ~cash_filter
+        data_line_left, total1_leftb, total2_leftb, _b_left = convert_query_to_account(self.filter & other_filter,
+                                                                                       self.lastfilter & other_filter if self.lastfilter is not None else None,
+                                                                                       None, sign_value=-1)
+        left_line_idx = self.fill_grid(left_line_idx, 'left', data_line_left)
+        total1_left = total1_lefta + total1_leftb
+        if self.lastfilter is not None:
+            total2_left = total2_lefta + total2_leftb
+        else:
+            total2_left = None
+        data_line_right, total1_right, total2_right, _b_right = convert_query_to_account(self.filter & other_filter,
+                                                                                         self.lastfilter & other_filter if self.lastfilter is not None else None,
+                                                                                         None, sign_value=1)
+        right_line_idx = self.fill_grid(0, 'right', data_line_right)
+        self.add_total_in_grid(False, total1_left, total2_left, 0, total1_right, total2_right, 0, max(left_line_idx, right_line_idx))
 
 
 @MenuManage.describ('accounting.change_fiscalyear', FORMTYPE_NOMODAL, 'bookkeeping', _('Show income statement for current fiscal year'))
@@ -590,8 +614,7 @@ class FiscalYearReportPrint(XferPrintAction):
         self.caption = self.__class__.caption
 
     def get_report_generator(self):
-        self.action_class = getattr(
-            sys.modules[__name__], self.getparam("classname", ''))
+        self.action_class = getattr(sys.modules[self.getparam("modulename", __name__)], self.getparam("classname", ''))
         gen = XferPrintAction.get_report_generator(self)
         own_struct = LegalEntity.objects.get(id=1)
         gen.title = "{[u]}{[b]}%s{[/b]}{[/u]}{[br/]}{[i]}%s{[/i]}{[br/]}{[b]}%s{[/b]}" % (
