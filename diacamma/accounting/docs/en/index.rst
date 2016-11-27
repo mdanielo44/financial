@@ -15,6 +15,7 @@ Contents:
    entity.rst
    costaccounting.rst
    model.rst
+   budget.rst
    reporting.rst
 
 
