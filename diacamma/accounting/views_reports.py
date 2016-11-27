@@ -67,11 +67,12 @@ def convert_query_to_account(query1, query2=None, query_budget=None, sign_value=
             account_code = correct_accounting_code(account.code)
         elif 'code' in data_line.keys():
             account_code = correct_accounting_code(data_line['code'])
+        if ('third' in data_line.keys()) and (data_line['third'] is not None):
+            account_code = "%s#%s" % (account_code, data_line['third'])
         if account_code not in dict_account.keys():
-            account = ChartsAccount.get_chart_account(account_code)
+            account = ChartsAccount.get_chart_account(account_code.split('#')[0])
             if ('third' in data_line.keys()) and (data_line['third'] is not None):
                 third = Third.objects.get(id=data_line['third'])
-                account_code = "%s#%s" % (account_code, data_line['third'])
                 account_title = "[%s %s]" % (account.code, six.text_type(third))
             else:
                 account_title = account.get_name()

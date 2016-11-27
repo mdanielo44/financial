@@ -512,10 +512,10 @@ class DepositDetail(LucteriosModel):
         entity_unknown = Payoff.objects.filter(supporting__is_revenu=True, mode=1).exclude(entry_id__in=entity_known).values(
             'entry_id', 'date', 'reference', 'payer').annotate(amount=Sum('amount'))
         if payer != '':
-            entity_unknown = entity_unknown.filter(payer__contains=payer)
+            entity_unknown = entity_unknown.filter(payer__icontains=payer)
         if reference != '':
             entity_unknown = entity_unknown.filter(
-                reference__contains=reference)
+                reference__icontains=reference)
         if order_list is not None:
             entity_unknown = entity_unknown.order_by(*order_list)
         for values in entity_unknown:

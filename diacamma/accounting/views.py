@@ -225,9 +225,9 @@ class ThirdListing(XferPrintListing):
             contact_filter = self.getparam('filter', '')
             new_filter = Q(status=0)
             if contact_filter != "":
-                q_legalentity = Q(contact__legalentity__name__contains=contact_filter)
-                q_individual = (Q(contact__individual__firstname__contains=contact_filter) | Q(
-                    contact__individual__lastname__contains=contact_filter))
+                q_legalentity = Q(contact__legalentity__name__icontains=contact_filter)
+                q_individual = (Q(contact__individual__firstname__icontains=contact_filter) | Q(
+                    contact__individual__lastname__icontains=contact_filter))
                 new_filter &= (q_legalentity | q_individual)
         else:
             new_filter = XferPrintListing.get_filter(self)

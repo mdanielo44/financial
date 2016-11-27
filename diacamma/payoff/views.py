@@ -126,9 +126,9 @@ class SupportingThird(XferListEditor):
             self.filter &= Q(accountthird__code__regex=self.code_mask)
         if contact_filter != "":
             q_legalentity = Q(
-                contact__legalentity__name__contains=contact_filter)
-            q_individual = (Q(contact__individual__firstname__contains=contact_filter) | Q(
-                contact__individual__lastname__contains=contact_filter))
+                contact__legalentity__name__icontains=contact_filter)
+            q_individual = (Q(contact__individual__firstname__icontains=contact_filter) | Q(
+                contact__individual__lastname__icontains=contact_filter))
             self.filter &= (q_legalentity | q_individual)
 
     def fillresponse(self, code_mask=''):
