@@ -269,6 +269,7 @@ class Payoff(LucteriosModel):
                 raise LucteriosException(
                     IMPORTANT, _("an entry associated to this payoff is closed!"))
             self.entry = None
+            self.save(do_generate=False)
             payoff_entry.delete()
 
     def generate_accountlink(self):
@@ -290,7 +291,11 @@ class Payoff(LucteriosModel):
             is_revenu = -1
         else:
             is_revenu = 1
-        fiscal_year = FiscalYear.get_current()
+        years = FiscalYear.objects.filter(begin__lte=self.date, end__gte=self.date)
+        if len(years) == 1:
+            fiscal_year = years[0]
+        else:
+            fiscal_year = FiscalYear.get_current()
         if designation is None:
             designation = _("payoff for %s") % six.text_type(supporting)
         new_entry = EntryAccount.objects.create(
