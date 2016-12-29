@@ -1315,6 +1315,17 @@ class Budget(LucteriosModel):
         ordering = ['code']
 
 
+def check_accountingcost():
+    for entry in EntryAccount.objects.filter(costaccounting_id__gt=0, year__status__lt=2):
+        try:
+            if (entry.costaccounting.status == 1) and not entry.close:
+                entry.costaccounting = None
+                entry.save()
+        except ObjectDoesNotExist:
+            entry.costaccounting = None
+            entry.save()
+
+
 @Signal.decorate('checkparam')
 def accounting_checkparam():
     Parameter.check_and_create(name='accounting-devise', typeparam=0, title=_("accounting-devise"), args="{'Multi':False}", value='€')
@@ -1322,3 +1333,4 @@ def accounting_checkparam():
     Parameter.check_and_create(name='accounting-devise-prec', typeparam=1, title=_("accounting-devise-prec"), args="{'Min':0, 'Max':4}", value='2')
     Parameter.check_and_create(name='accounting-system', typeparam=0, title=_("accounting-system"), args="{'Multi':False}", value='')
     Parameter.check_and_create(name='accounting-sizecode', typeparam=1, title=_("accounting-sizecode"), args="{'Min':3, 'Max':50}", value='3')
+    check_accountingcost()

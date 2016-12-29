@@ -39,6 +39,7 @@ from lucterios.CORE.editors import XferSavedCriteriaSearchEditor
 
 from diacamma.accounting.models import EntryLineAccount, EntryAccount, FiscalYear, Journal, AccountLink, current_system_account, CostAccounting,\
     ModelEntry
+from lucterios.framework.error import LucteriosException, IMPORTANT
 
 
 @MenuManage.describ('accounting.change_entryaccount', FORMTYPE_NOMODAL, 'bookkeeping', _('Edition of accounting entry for current fiscal year'),)
@@ -194,11 +195,16 @@ class EntryAccountLink(XferContainerAcknowledge):
 class EntryAccountCostAccounting(XferContainerAcknowledge):
     icon = "entry.png"
     model = EntryAccount
+    readonly = True
     field_id = 'entryaccount'
     caption = _("cost accounting for entry")
 
     def fillresponse(self, costaccounting=0):
         if self.getparam("SAVE") is None:
+            if len(self.items) == 1:
+                item = self.items[0]
+                if (item.costaccounting is not None) and (item.costaccounting.status != 0):
+                    raise LucteriosException(IMPORTANT, _('This cost accounting is already closed!'))
             dlg = self.create_custom()
             icon = XferCompImage('img')
             icon.set_location(0, 0, 1, 6)
