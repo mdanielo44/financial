@@ -87,6 +87,7 @@ class CostAccountingAddModify(XferAddEditor):
             raise LucteriosException(IMPORTANT, _("This cost accounting is protected by other modules!"))
         XferAddEditor.fillresponse(self)
 
+
 @ActionsManage.affect_grid(TITLE_DELETE, "images/delete.png", unique=SELECT_MULTI)
 @MenuManage.describ('accounting.delete_entryaccount')
 class CostAccountingDel(XferDelete):
@@ -94,6 +95,7 @@ class CostAccountingDel(XferDelete):
     model = CostAccounting
     field_id = 'costaccounting'
     caption = _("Delete cost accounting")
+
 
 @MenuManage.describ('accounting.change_entryaccount', FORMTYPE_NOMODAL, 'bookkeeping', _('Edition of entry model'),)
 class ModelEntryList(XferListEditor):
