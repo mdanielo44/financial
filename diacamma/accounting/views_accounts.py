@@ -33,7 +33,8 @@ from lucterios.framework.xferadvance import XferDelete
 from lucterios.framework.tools import FORMTYPE_NOMODAL, FORMTYPE_REFRESH, CLOSE_NO, SELECT_SINGLE, WrapAction, SELECT_MULTI, SELECT_NONE,\
     FORMTYPE_MODAL, CLOSE_YES
 from lucterios.framework.tools import ActionsManage, MenuManage
-from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompImage
+from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompImage,\
+    XferCompButton
 from lucterios.framework.xfergraphic import XferContainerAcknowledge
 from lucterios.framework.signal_and_lock import Signal
 from lucterios.framework import signal_and_lock
@@ -46,6 +47,7 @@ from django.utils import six
 MenuManage.add_sub("bookkeeping", "financial", "diacamma.accounting/images/accounting.png", _("Bookkeeping"), _("Manage of Bookkeeping"), 30)
 
 
+@ActionsManage.affect_other(_("charts of account"), "images/edit.png")
 @MenuManage.describ('accounting.change_chartsaccount', FORMTYPE_NOMODAL, 'bookkeeping', _('Editing and modifying of Charts of accounts for current fiscal year'))
 class ChartsAccountList(XferListEditor):
     icon = "account.png"
@@ -59,7 +61,13 @@ class ChartsAccountList(XferListEditor):
         select_type = self.getparam('type_of_account', 0)
         self.item.year = FiscalYear.get_current(select_year)
         self.fill_from_model(0, 1, False, ['year', 'type_of_account'])
-        self.get_components('year').set_action(self.request, self.get_action(), close=CLOSE_NO, modal=FORMTYPE_REFRESH)
+        comp_year = self.get_components('year')
+        comp_year.set_action(self.request, self.get_action(), close=CLOSE_NO, modal=FORMTYPE_REFRESH)
+        btn = XferCompButton('confyear')
+        btn.set_location(comp_year.col + 1, comp_year.row)
+        btn.set_action(self.request, ActionsManage.get_action_url(FiscalYear.get_long_name(), 'configuration', self), close=CLOSE_NO)
+        btn.set_is_mini(True)
+        self.add_component(btn)
         type_of_account = self.get_components('type_of_account')
         type_of_account.select_list.append((-1, '---'))
         type_of_account.set_value(select_type)

@@ -555,7 +555,7 @@ class AdminTest(LucteriosTest):
         self.call('/diacamma.accounting/configuration', {}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'configuration')
         self.assert_count_equal('COMPONENTS/TAB', 3)
-        self.assert_count_equal('COMPONENTS/*', 2 + 3 + 4 + 2 + 9)
+        self.assert_count_equal('COMPONENTS/*', 2 + 3 + 5 + 2 + 9)
         self.assert_count_equal('COMPONENTS/GRID[@name="fiscalyear"]/HEADER', 4)
         self.assert_xml_equal('COMPONENTS/GRID[@name="fiscalyear"]/HEADER[@name="begin"]', "début")
         self.assert_xml_equal('COMPONENTS/GRID[@name="fiscalyear"]/HEADER[@name="end"]', "fin")

@@ -30,11 +30,9 @@ class BudgetList(XferListEditor):
     caption = _("Prévisionnal budget")
 
     def fillresponse_header(self):
-        self.filter = Q()
         row_id = self.get_max_row() + 1
         if self.getparam('year', 0) != 0:
             year = FiscalYear.get_current(self.getparam('year'))
-            self.filter &= Q(year=year)
             lbl = XferCompLabelForm('title_year')
             lbl.set_italic()
             lbl.set_value("{[b]}%s{[/b]} : %s" % (_('fiscal year'), year))
@@ -43,13 +41,17 @@ class BudgetList(XferListEditor):
         row_id += 1
         if self.getparam('cost_accounting') is not None:
             cost = CostAccounting.objects.get(id=self.getparam('cost_accounting', 0))
-            self.filter &= Q(cost_accounting=cost)
             lbl = XferCompLabelForm('title_cost')
             lbl.set_italic()
             lbl.set_value("{[b]}%s{[/b]} : %s" % (_('cost accounting'), cost))
             lbl.set_location(1, row_id, 3)
             self.add_component(lbl)
         Signal.call_signal('editbudget', self)
+        self.filter = Q()
+        if self.getparam('year', 0) != 0:
+            self.filter &= Q(year_id=self.getparam('year'))
+        if self.getparam('cost_accounting') is not None:
+            self.filter &= Q(cost_accounting_id=self.getparam('cost_accounting'))
 
     def fill_grid(self, row, model, field_id, items):
         XferListEditor.fill_grid(self, row, model, field_id, items)

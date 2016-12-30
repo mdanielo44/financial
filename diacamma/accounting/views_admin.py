@@ -69,6 +69,39 @@ def fill_params(xfer, is_mini=False):
     xfer.add_component(btn)
 
 
+def add_year_info(xfer, is_mini=False):
+    try:
+        row = xfer.get_max_row() + 1
+        current_year = FiscalYear.get_current()
+        nb_account = len(ChartsAccount.objects.filter(year=current_year))
+        lbl = XferCompLabelForm('nb_account')
+        if is_mini and (nb_account == 0):
+            lbl.set_value(_("No charts of accounts in current fiscal year"))
+        else:
+            lbl.set_value(_("Total of charts of accounts in current fiscal year: %d") % nb_account)
+        lbl.set_location(0, row, 4)
+        xfer.add_component(lbl)
+        if nb_account == 0:
+            lbl.set_color('red')
+            xfer.item = ChartsAccount()
+            xfer.item.year = current_year
+            btn2 = XferCompButton('accountfiscalyear')
+            btn2.set_location(0, row + 1)
+            btn2.set_action(xfer.request, ActionsManage.get_action_url(ChartsAccount.get_long_name(), 'AccountList', xfer), close=CLOSE_NO)
+            xfer.add_component(btn2)
+            if not is_mini:
+                btn1 = XferCompButton('initialfiscalyear')
+                btn1.set_location(1, row + 1, 3)
+                btn1.set_action(xfer.request, ActionsManage.get_action_url(ChartsAccount.get_long_name(), 'AccountInitial', xfer), close=CLOSE_NO)
+                xfer.add_component(btn1)
+    except LucteriosException as lerr:
+        lbl = XferCompLabelForm('nb_account')
+        lbl.set_value(six.text_type(lerr))
+        lbl.set_location(0, row, 4)
+        xfer.add_component(lbl)
+
+
+@ActionsManage.affect_other(_("Accounting configuration"), "images/edit.png")
 @MenuManage.describ('accounting.change_fiscalyear', FORMTYPE_MODAL, 'financial.conf', _('Management of fiscal year and financial parameters'))
 class Configuration(XferListEditor):
     icon = "accountingYear.png"
@@ -86,6 +119,7 @@ class Configuration(XferListEditor):
 
     def fillresponse(self):
         XferListEditor.fillresponse(self)
+        add_year_info(self)
         self.new_tab(_('Journals'))
         self.fill_grid(self.get_max_row() + 1, Journal, 'journal', Journal.objects.all())
         self.new_tab(_('Parameters'))
@@ -223,25 +257,7 @@ def conf_wizard_accounting(wizard_ident, xfer):
     elif (xfer is not None) and (wizard_ident == "accounting_fiscalyear"):
         xfer.add_title(_("Diacamma accounting"), _('Fiscal year list'), _('Configuration of fiscal years'))
         xfer.fill_grid(5, FiscalYear, 'fiscalyear', FiscalYear.objects.all())
-        try:
-            current_year = FiscalYear.get_current()
-            nb_account = len(ChartsAccount.objects.filter(year=current_year))
-            lbl = XferCompLabelForm('nb_account')
-            lbl.set_value(_("Total of charts of accounts in current fiscal year: %d") % nb_account)
-            lbl.set_location(0, 10)
-            xfer.add_component(lbl)
-            if nb_account == 0:
-                xfer.item = ChartsAccount()
-                xfer.item.year = current_year
-                btn = XferCompButton('initialfiscalyear')
-                btn.set_location(1, 10)
-                btn.set_action(xfer.request, ActionsManage.get_action_url(ChartsAccount.get_long_name(), 'AccountInitial', xfer), close=CLOSE_NO)
-                xfer.add_component(btn)
-        except LucteriosException as lerr:
-            lbl = XferCompLabelForm('nb_account')
-            lbl.set_value(six.text_type(lerr))
-            lbl.set_location(0, 10, 2)
-            xfer.add_component(lbl)
+        add_year_info(xfer)
     elif (xfer is not None) and (wizard_ident == "accounting_journal"):
         xfer.add_title(_("Diacamma accounting"), _('Journals'), _('Configuration of journals'))
         xfer.fill_grid(5, Journal, 'journal', Journal.objects.all())

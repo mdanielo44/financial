@@ -32,8 +32,7 @@ from django.utils import six
 
 from lucterios.framework import signal_and_lock
 from lucterios.framework.xferadvance import XferListEditor, XferAddEditor, XferShowEditor, XferDelete,\
-    TITLE_MODIFY, TITLE_ADD, TITLE_EDIT, TITLE_DELETE, TITLE_OK, TITLE_CANCEL,\
-    XferTransition
+    TITLE_ADD, TITLE_EDIT, TITLE_DELETE, TITLE_OK, TITLE_CANCEL, XferTransition
 from lucterios.framework.xfergraphic import XferContainerAcknowledge
 from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompEdit, XferCompButton, XferCompSelect, XferCompImage, XferCompDate, XferCompGrid
 from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage, FORMTYPE_REFRESH, CLOSE_NO, WrapAction, FORMTYPE_MODAL, SELECT_SINGLE,\
@@ -45,8 +44,8 @@ from lucterios.contacts.tools import ContactSelection
 from lucterios.contacts.models import AbstractContact
 
 from diacamma.accounting.models import Third, AccountThird, FiscalYear, \
-    EntryLineAccount, ModelLineEntry, EntryAccount
-from diacamma.accounting.views_admin import Configuration
+    EntryLineAccount, ModelLineEntry, EntryAccount, ChartsAccount
+from diacamma.accounting.views_admin import Configuration, add_year_info
 from diacamma.accounting.tools import correct_accounting_code
 
 MenuManage.add_sub("financial", None, "diacamma.accounting/images/financial.png", _("Financial"), _("Financial tools"), 50)
@@ -271,6 +270,8 @@ def summary_accounting(xfer):
             lbl.set_value_center(year.total_result_text)
             lbl.set_location(0, row + 2, 4)
             xfer.add_component(lbl)
+            if len(ChartsAccount.objects.filter(year=year)) == 0:
+                add_year_info(xfer, True)
         except LucteriosException as lerr:
             lbl = XferCompLabelForm("accounting_error")
             lbl.set_value_center(six.text_type(lerr))
@@ -280,9 +281,10 @@ def summary_accounting(xfer):
             btn.set_action(xfer.request, Configuration.get_action(_("conf."), ""), close=CLOSE_NO)
             btn.set_location(0, row + 2, 4)
             xfer.add_component(btn)
+        row = xfer.get_max_row() + 1
         lab = XferCompLabelForm('accountingend')
         lab.set_value_center('{[hr/]}')
-        lab.set_location(0, row + 3, 4)
+        lab.set_location(0, row, 4)
         xfer.add_component(lab)
         return True
     else:
