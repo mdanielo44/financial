@@ -204,8 +204,7 @@ class BillMultiPay(XferContainerAcknowledge):
     field_id = 'bill'
 
     def fillresponse(self, bill):
-        self.redirect_action(
-            PayoffAddModify.get_action("", ""), params={"supportings": bill})
+        self.redirect_action(PayoffAddModify.get_action("", ""), params={"supportings": bill})
 
 
 @ActionsManage.affect_show(_("=> Bill"), "images/ok.png", close=CLOSE_YES, condition=lambda xfer: (xfer.item.status == 1) and (xfer.item.bill_type == 0))

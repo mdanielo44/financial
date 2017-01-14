@@ -194,6 +194,9 @@ class Bill(Supporting):
         else:
             return self.total_excltax
 
+    def get_current_date(self):
+        return self.date
+
     def get_total_excltax(self):
         val = 0
         for detail in self.detail_set.all():

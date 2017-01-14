@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-12-30 15:23+0000\n"
+"POT-Creation-Date: 2017-01-14 10:30+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -285,8 +285,7 @@ msgstr "This costa accounting has some not validated entry!"
 msgid "This cost accounting is include in a model of entry!"
 msgstr "This cost accounting is include in a model of entry!"
 
-#: models.py:504 models.py:709 models.py:1123 models.py:1248
-#: views_budget.py:46
+#: models.py:504 models.py:709 models.py:1123 models.py:1248 views_budget.py:46
 msgid "cost accounting"
 msgstr "cost accounting"
 
@@ -436,7 +435,7 @@ msgstr "entry lines of account"
 msgid "Model of entry"
 msgstr "Model of entry"
 
-#: models.py:1165 views_other.py:103
+#: models.py:1165 views_other.py:105
 msgid "Models of entry"
 msgstr "Models of entry"
 
@@ -1023,39 +1022,39 @@ msgstr "Add cost accounting"
 msgid "Modify cost accounting"
 msgstr "Modify cost accounting"
 
-#: views_other.py:96
+#: views_other.py:97
 msgid "Delete cost accounting"
 msgstr "Delete cost accounting"
 
-#: views_other.py:98
+#: views_other.py:100
 msgid "Edition of entry model"
 msgstr "Edition of entry model"
 
-#: views_other.py:113
+#: views_other.py:115
 msgid "Add model of entry"
 msgstr "Add model of entry"
 
-#: views_other.py:114
+#: views_other.py:116
 msgid "Modify model of entry"
 msgstr "Modify model of entry"
 
-#: views_other.py:123
+#: views_other.py:125
 msgid "Show Model of entry"
 msgstr "Show Model of entry"
 
-#: views_other.py:132
+#: views_other.py:134
 msgid "Delete Model of entry"
 msgstr "Delete Model of entry"
 
-#: views_other.py:142
+#: views_other.py:144
 msgid "Add model line  of entry"
 msgstr "Add model line  of entry"
 
-#: views_other.py:143
+#: views_other.py:145
 msgid "Modify model line  of entry"
 msgstr "Modify model line  of entry"
 
-#: views_other.py:152
+#: views_other.py:154
 msgid "Delete Model line  of entry"
 msgstr "Delete Model line  of entry"
 

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-12-30 15:23+0000\n"
+"POT-Creation-Date: 2017-01-14 10:30+0000\n"
 "PO-Revision-Date: 2016-01-11 23:01+0000\n"
 "Last-Translator: b'Paul ARULATEDA <paul531@orange.fr>'\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -287,8 +287,7 @@ msgstr "Cette comptabilité a des écritures non validées!"
 msgid "This cost accounting is include in a model of entry!"
 msgstr "Cette comptabilité est utilisée dans un modèle d'écriture!"
 
-#: models.py:504 models.py:709 models.py:1123 models.py:1248
-#: views_budget.py:46
+#: models.py:504 models.py:709 models.py:1123 models.py:1248 views_budget.py:46
 msgid "cost accounting"
 msgstr "comptabilité analytique"
 
@@ -438,7 +437,7 @@ msgstr "lignes d'écriture"
 msgid "Model of entry"
 msgstr "Modèle d'écriture"
 
-#: models.py:1165 views_other.py:103
+#: models.py:1165 views_other.py:105
 msgid "Models of entry"
 msgstr "Modèles d'écriture"
 
@@ -1025,39 +1024,39 @@ msgstr "Ajouter une comptabilité analytique"
 msgid "Modify cost accounting"
 msgstr "Modifier une comptabilité analytique"
 
-#: views_other.py:96
+#: views_other.py:97
 msgid "Delete cost accounting"
 msgstr "Supprimer une comptabilité analytique"
 
-#: views_other.py:98
+#: views_other.py:100
 msgid "Edition of entry model"
 msgstr "Edition de modèle d'écriture"
 
-#: views_other.py:113
+#: views_other.py:115
 msgid "Add model of entry"
 msgstr "Ajouter un modèle d'écriture"
 
-#: views_other.py:114
+#: views_other.py:116
 msgid "Modify model of entry"
 msgstr "Modifier un modèle d'écriture"
 
-#: views_other.py:123
+#: views_other.py:125
 msgid "Show Model of entry"
 msgstr "Voir un modèle d'écriture"
 
-#: views_other.py:132
+#: views_other.py:134
 msgid "Delete Model of entry"
 msgstr "Supprimer un modèle d'écriture"
 
-#: views_other.py:142
+#: views_other.py:144
 msgid "Add model line  of entry"
 msgstr "Ajouter une ligne de modèle"
 
-#: views_other.py:143
+#: views_other.py:145
 msgid "Modify model line  of entry"
 msgstr "Modifier une ligne de modèle"
 
-#: views_other.py:152
+#: views_other.py:154
 msgid "Delete Model line  of entry"
 msgstr "Suprimer une ligne de modèle"
 

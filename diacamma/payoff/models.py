@@ -205,6 +205,9 @@ class Supporting(LucteriosModel):
     def get_docname(self):
         return six.text_type(self)
 
+    def get_current_date(self):
+        raise Exception('no implemented!')
+
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         self.is_revenu = self.get_final_child().payoff_is_revenu()
         return LucteriosModel.save(self, force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields)
@@ -340,23 +343,26 @@ class Payoff(LucteriosModel):
         return res
 
     @classmethod
-    def multi_save(cls, supportings, amount, mode, payer, reference, bank_account, date):
-        supporting_list = Supporting.objects.filter(id__in=supportings, is_revenu=True)
+    def multi_save(cls, supportings, amount, mode, payer, reference, bank_account, date, repartition):
+        supporting_list = []
         amount_sum = 0
-        for supporting in supporting_list:
+        for supporting in Supporting.objects.filter(id__in=supportings):
+            supporting = supporting.get_final_child()
             amount_sum += supporting.get_final_child().get_total_rest_topay()
+            supporting_list.append(supporting)
         if abs(amount_sum) < 0.0001:
             raise LucteriosException(IMPORTANT, _('No-valid selection!'))
+        supporting_list.sort(key=lambda item: item.get_current_date())
         amount_rest = amount
         paypoff_list = []
         for supporting in supporting_list:
-            new_paypoff = Payoff(
-                supporting=supporting, date=date, payer=payer, mode=mode, reference=reference)
+            new_paypoff = Payoff(supporting=supporting, date=date, payer=payer, mode=mode, reference=reference)
             if bank_account != 0:
-                new_paypoff.bank_account = BankAccount.objects.get(
-                    id=bank_account)
-            new_paypoff.amount = currency_round(
-                supporting.get_final_child().get_total_rest_topay() * amount / amount_sum)
+                new_paypoff.bank_account = BankAccount.objects.get(id=bank_account)
+            if repartition == 0:
+                new_paypoff.amount = currency_round(supporting.get_total_rest_topay() * amount / amount_sum)
+            else:
+                new_paypoff.amount = min(supporting.get_total_rest_topay(), amount_rest)
             if new_paypoff.amount > 0.0001:
                 amount_rest -= new_paypoff.amount
                 new_paypoff.save(do_generate=False)
@@ -379,12 +385,21 @@ class Payoff(LucteriosModel):
             paypoff_item.entry = new_entry
             paypoff_item.save(do_generate=False)
         new_entry.unlink()
+        cost_accouting = new_entry.costaccounting
+        for supporting in supporting_list:
+            if supporting.default_costaccounting != cost_accouting:
+                cost_accouting = None
+        if cost_accouting is None:
+            new_entry.costaccounting = None
+            new_entry.save()
         try:
             entrylines = []
             for supporting in supporting_list:
-                supporting = supporting.get_final_child()
                 if (abs(supporting.get_total_rest_topay()) < 0.0001) and (supporting.entry_links() is not None) and (len(supporting.payoff_set.filter(supporting.payoff_query)) == 1):
-                    entrylines.extend(supporting.entry_links())
+                    entries = supporting.entry_links()
+                    for entry in entries:
+                        entry.unlink()
+                    entrylines.extend(entries)
             if len(entrylines) == len(supporting_list):
                 entrylines.append(new_entry)
                 AccountLink.create_link(entrylines)

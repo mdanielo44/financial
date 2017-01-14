@@ -29,7 +29,7 @@ from django.utils import six
 
 from lucterios.framework.editors import LucteriosEditor
 from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompButton, \
-    XferCompEdit, XferCompMemo
+    XferCompEdit, XferCompMemo, XferCompSelect
 from lucterios.CORE.parameters import Params
 from lucterios.framework.tools import ActionsManage, CLOSE_NO, FORMTYPE_REFRESH, FORMTYPE_MODAL, WrapAction
 from lucterios.framework.error import LucteriosException, IMPORTANT
@@ -103,8 +103,9 @@ class PayoffEditor(LucteriosEditor):
         fee_code = Params.getvalue("payoff-bankcharges-account")
         supportings = xfer.getparam('supportings', ())
         if len(supportings) > 0:
-            supporting_list = Supporting.objects.filter(
-                id__in=supportings, is_revenu=True)
+            supporting_list = Supporting.objects.filter(id__in=supportings, is_revenu=True)
+            if len(supporting_list) == 0:
+                supporting_list = Supporting.objects.filter(id__in=supportings, is_revenu=False)
             if len(supporting_list) == 0:
                 raise LucteriosException(IMPORTANT, _('No-valid selection!'))
         else:
@@ -127,6 +128,17 @@ class PayoffEditor(LucteriosEditor):
         lbl.set_value_center("{[br/]}".join(title))
         lbl.set_location(1, 0, 2)
         xfer.add_component(lbl)
+        if len(supportings) > 0:
+            row = xfer.get_max_row() + 1
+            lbl = XferCompLabelForm('lblrepartition')
+            lbl.set_value_as_name(_('repartition mode'))
+            lbl.set_location(1, row)
+            xfer.add_component(lbl)
+            sel = XferCompSelect('repartition')
+            sel.set_value(xfer.getparam('repartition', 0))
+            sel.set_select([(0, _('by ratio')), (1, _('by date'))])
+            sel.set_location(2, row)
+            xfer.add_component(sel)
         amount = xfer.get_components("amount")
         if self.item.id is None:
             amount.value = max(0.0, amount_sum)
