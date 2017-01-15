@@ -47,6 +47,7 @@ from lucterios.contacts.models import LegalEntity, Individual
 from diacamma.accounting.models import EntryAccount, FiscalYear, Third, Journal, \
     ChartsAccount, EntryLineAccount, AccountLink
 from diacamma.accounting.tools import format_devise, currency_round, correct_accounting_code
+from django.core.exceptions import ObjectDoesNotExist
 
 
 def remove_accent(text, replace_space=False):
@@ -343,28 +344,72 @@ class Payoff(LucteriosModel):
         return res
 
     @classmethod
+    def _correct_account_multipay(cls, new_entry, paypoff_list):
+        first_payoff = paypoff_list[0]
+        years = FiscalYear.objects.filter(begin__lte=first_payoff.date, end__gte=first_payoff.date)
+        if len(years) == 1:
+            fiscal_year = years[0]
+        else:
+            fiscal_year = FiscalYear.get_current()
+        first_supporting = first_payoff.supporting.get_final_child()
+        if first_supporting.is_revenu:
+            is_revenu = -1
+        else:
+            is_revenu = 1
+        first_third_account = first_supporting.third.get_account(fiscal_year, first_supporting.get_third_mask())
+        if first_third_account.type_of_account == 0:
+            is_liability = 1
+        else:
+            is_liability = -1
+        first_entry_line = EntryLineAccount.objects.get(account=first_third_account, entry=new_entry, third=first_supporting.third)
+        cost_accouting = new_entry.costaccounting
+        for item_paypoff in paypoff_list:
+            item_supporting = item_paypoff.supporting.get_final_child()
+            if (cost_accouting is not None) and (item_supporting.default_costaccounting != cost_accouting):
+                new_entry.costaccounting = None
+                new_entry.save()
+                cost_accouting = None
+            item_third_account = item_supporting.third.get_account(fiscal_year, item_supporting.get_third_mask())
+            if item_third_account != first_third_account:
+                try:
+                    item_entry_line = EntryLineAccount.objects.get(account=item_third_account, entry=new_entry, third=item_supporting.third)
+                except ObjectDoesNotExist:
+                    item_entry_line = EntryLineAccount.objects.create(account=item_third_account, entry=new_entry, third=item_supporting.third, amount=0)
+                item_entry_line.amount += is_liability * is_revenu * item_paypoff.amount
+                item_entry_line.save()
+                first_entry_line.amount -= is_liability * is_revenu * item_paypoff.amount
+                first_entry_line.save()
+            item_paypoff.entry = new_entry
+            item_paypoff.save(do_generate=False)
+        new_entry.unlink()
+
+    @classmethod
     def multi_save(cls, supportings, amount, mode, payer, reference, bank_account, date, repartition):
         supporting_list = []
         amount_sum = 0
+        amount_max = 0
         for supporting in Supporting.objects.filter(id__in=supportings):
             supporting = supporting.get_final_child()
             amount_sum += supporting.get_final_child().get_total_rest_topay()
+            amount_max += supporting.get_final_child().get_max_payoff()
             supporting_list.append(supporting)
         if abs(amount_sum) < 0.0001:
             raise LucteriosException(IMPORTANT, _('No-valid selection!'))
+        if (amount > amount_sum) and (amount_sum < amount_max):
+            amount_sum = amount
         supporting_list.sort(key=lambda item: item.get_current_date())
-        amount_rest = amount
+        amount_rest = float(amount)
         paypoff_list = []
         for supporting in supporting_list:
             new_paypoff = Payoff(supporting=supporting, date=date, payer=payer, mode=mode, reference=reference)
-            if bank_account != 0:
+            if (bank_account != 0) and (mode != 0):
                 new_paypoff.bank_account = BankAccount.objects.get(id=bank_account)
             if repartition == 0:
                 new_paypoff.amount = currency_round(supporting.get_total_rest_topay() * amount / amount_sum)
             else:
-                new_paypoff.amount = min(supporting.get_total_rest_topay(), amount_rest)
+                new_paypoff.amount = min(supporting.get_max_payoff(), amount_rest)
             if new_paypoff.amount > 0.0001:
-                amount_rest -= new_paypoff.amount
+                amount_rest -= float(new_paypoff.amount)
                 new_paypoff.save(do_generate=False)
                 paypoff_list.append(new_paypoff)
         if abs(amount_rest) > 0.001:
@@ -381,17 +426,7 @@ class Payoff(LucteriosModel):
         if len(designation) > 190:
             designation = _("payoff for %d multi-pay") % len(designation_items)
         new_entry = paypoff_list[0].generate_accounting(third_amounts.items(), designation)
-        for paypoff_item in paypoff_list:
-            paypoff_item.entry = new_entry
-            paypoff_item.save(do_generate=False)
-        new_entry.unlink()
-        cost_accouting = new_entry.costaccounting
-        for supporting in supporting_list:
-            if supporting.default_costaccounting != cost_accouting:
-                cost_accouting = None
-        if cost_accouting is None:
-            new_entry.costaccounting = None
-            new_entry.save()
+        cls._correct_account_multipay(new_entry, paypoff_list)
         try:
             entrylines = []
             for supporting in supporting_list:

@@ -139,6 +139,8 @@ class PayoffEditor(LucteriosEditor):
             sel.set_select([(0, _('by ratio')), (1, _('by date'))])
             sel.set_location(2, row)
             xfer.add_component(sel)
+            if xfer.getparam('NO_REPARTITION') is not None:
+                xfer.change_to_readonly('repartition')
         amount = xfer.get_components("amount")
         if self.item.id is None:
             amount.value = max(0.0, amount_sum)
