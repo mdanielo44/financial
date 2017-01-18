@@ -35,7 +35,7 @@ from lucterios.framework.tools import MenuManage, FORMTYPE_NOMODAL, CLOSE_NO, FO
     WrapAction, convert_date, ActionsManage, SELECT_MULTI
 from lucterios.framework.xfergraphic import XferContainerCustom
 from lucterios.framework.xfercomponents import XferCompImage, XferCompSelect, XferCompLabelForm, XferCompGrid, \
-    XferCompEdit
+    XferCompEdit, XferCompCheck
 from lucterios.contacts.models import LegalEntity
 from lucterios.CORE.xferprint import XferPrintAction
 
@@ -446,15 +446,13 @@ class FiscalYearIncomeStatement(FiscalYearReport):
         self.grid.add_header('left_n', self.item.get_identify())
         self.grid.add_header('left_b', _('Budget'))
         if self.lastfilter is not None:
-            self.grid.add_header(
-                'left_n_1', self.item.last_fiscalyear.get_identify())
+            self.grid.add_header('left_n_1', self.item.last_fiscalyear.get_identify())
         self.grid.add_header('space', '')
         self.grid.add_header('right', _('Revenue'))
         self.grid.add_header('right_n', self.item.get_identify())
         self.grid.add_header('right_b', _('Budget'))
         if self.lastfilter is not None:
-            self.grid.add_header(
-                'right_n_1', self.item.last_fiscalyear.get_identify())
+            self.grid.add_header('right_n_1', self.item.last_fiscalyear.get_identify())
 
     def fill_filterheader(self):
         if self.item.last_fiscalyear is not None:
@@ -505,12 +503,9 @@ class FiscalYearLedger(FiscalYearReport):
 
     def _add_total_account(self):
         if self.last_account is not None:
-            self.grid.set_value(self.line_idx, 'entry.designation', get_spaces(
-                30) + "{[i]}%s{[/i]}" % _('total'))
-            self.grid.set_value(self.line_idx, 'debit', "{[i]}%s{[/i]}" % format_devise(
-                max((0, -1 * self.last_account.credit_debit_way() * self.last_total)), 0))
-            self.grid.set_value(self.line_idx, 'credit', "{[i]}%s{[/i]}" % format_devise(
-                max((0, self.last_account.credit_debit_way() * self.last_total)), 0))
+            self.grid.set_value(self.line_idx, 'entry.designation', get_spaces(30) + "{[i]}%s{[/i]}" % _('total'))
+            self.grid.set_value(self.line_idx, 'debit', "{[i]}%s{[/i]}" % format_devise(max((0, -1 * self.last_account.credit_debit_way() * self.last_total)), 0))
+            self.grid.set_value(self.line_idx, 'credit', "{[i]}%s{[/i]}" % format_devise(max((0, self.last_account.credit_debit_way() * self.last_total)), 0))
             self.line_idx += 1
             self.grid.set_value(self.line_idx, 'entry.designation', '{[br/]}')
             self.line_idx += 1
@@ -526,17 +521,14 @@ class FiscalYearLedger(FiscalYearReport):
                 self._add_total_account()
                 self.last_account = line.account
                 self.last_third = None
-                self.grid.set_value(self.line_idx, 'entry.designation', get_spaces(
-                    15) + "{[u]}{[b]}%s{[/b]}{[/u]}" % six.text_type(self.last_account))
+                self.grid.set_value(self.line_idx, 'entry.designation', get_spaces(15) + "{[u]}{[b]}%s{[/b]}{[/u]}" % six.text_type(self.last_account))
                 self.line_idx += 1
             if self.last_third != line.third:
-                self.grid.set_value(self.line_idx, 'entry.designation', get_spaces(
-                    8) + "{[b]}%s{[/b]}" % six.text_type(line.entry_account))
+                self.grid.set_value(self.line_idx, 'entry.designation', get_spaces(8) + "{[b]}%s{[/b]}" % six.text_type(line.entry_account))
                 self.line_idx += 1
             self.last_third = line.third
             for header in self.grid.headers:
-                self.grid.set_value(
-                    self.line_idx, header.name, line.evaluate('#' + header.name))
+                self.grid.set_value(self.line_idx, header.name, line.evaluate('#' + header.name))
             self.last_total += line.amount
             self.line_idx += 1
         self._add_total_account()
@@ -546,6 +538,20 @@ class FiscalYearLedger(FiscalYearReport):
 class FiscalYearTrialBalance(FiscalYearReport):
     caption = _("Trial balance")
     add_filtering = True
+
+    def fill_filterCode(self):
+        FiscalYearReport.fill_filterCode(self)
+        row = self.get_max_row() + 1
+        self.with_third = self.getparam('with_third', False)
+        lbl = XferCompLabelForm('with_third_lbl')
+        lbl.set_value_as_name(_("Detail by third"))
+        lbl.set_location(2, row, 1)
+        self.add_component(lbl)
+        edt = XferCompCheck('with_third')
+        edt.set_value(self.with_third)
+        edt.set_location(3, row, 2)
+        edt.set_action(self.request, self.__class__.get_action(), close=CLOSE_NO, modal=FORMTYPE_REFRESH)
+        self.add_component(edt)
 
     def define_gridheader(self):
         self.grid = XferCompGrid('report_%d' % self.item.id)
@@ -557,23 +563,29 @@ class FiscalYearTrialBalance(FiscalYearReport):
 
     def _get_balance_values(self):
         balance_values = {}
-        data_line_positifs = list(EntryLineAccount.objects.filter(self.filter & Q(amount__gt=0)).values(
-            'account').annotate(data_sum=Sum('amount')))
-        data_line_negatifs = list(EntryLineAccount.objects.filter(self.filter & Q(amount__lt=0)).values(
-            'account').annotate(data_sum=Sum('amount')))
+        if self.with_third:
+            fields = ['account', 'third']
+        else:
+            fields = ['account']
+        data_line_positifs = list(EntryLineAccount.objects.filter(self.filter & Q(amount__gt=0)).values(*fields).annotate(data_sum=Sum('amount')))
+        data_line_negatifs = list(EntryLineAccount.objects.filter(self.filter & Q(amount__lt=0)).values(*fields).annotate(data_sum=Sum('amount')))
         for data_line in data_line_positifs + data_line_negatifs:
             if abs(data_line['data_sum']) > 0.0001:
-                account = ChartsAccount.objects.get(
-                    id=data_line['account'])
-                if account.code not in balance_values.keys():
-                    balance_values[account.code] = [
-                        six.text_type(account), 0, 0]
+                account = ChartsAccount.objects.get(id=data_line['account'])
+                account_code = correct_accounting_code(account.code)
+                if ('third' in data_line.keys()) and (data_line['third'] is not None):
+                    account_code = "%s#%s" % (account_code, data_line['third'])
+                if account_code not in balance_values.keys():
+                    if ('third' in data_line.keys()) and (data_line['third'] is not None):
+                        third = Third.objects.get(id=data_line['third'])
+                        account_title = "[%s %s]" % (account.code, six.text_type(third))
+                    else:
+                        account_title = account.get_name()
+                    balance_values[account_code] = [account_title, 0, 0]
                 if (account.credit_debit_way() * data_line['data_sum']) > 0.0001:
-                    balance_values[account.code][
-                        2] = account.credit_debit_way() * data_line['data_sum']
+                    balance_values[account_code][2] = account.credit_debit_way() * data_line['data_sum']
                 else:
-                    balance_values[account.code][
-                        1] = -1 * account.credit_debit_way() * data_line['data_sum']
+                    balance_values[account_code][1] = -1 * account.credit_debit_way() * data_line['data_sum']
         return balance_values
 
     def calcul_table(self):
@@ -582,21 +594,15 @@ class FiscalYearTrialBalance(FiscalYearReport):
         keys = list(balance_values.keys())
         keys.sort()
         for key in keys:
-            self.grid.set_value(
-                line_idx, 'designation', balance_values[key][0])
-            self.grid.set_value(
-                line_idx, 'total_debit', format_devise(balance_values[key][1], 5))
-            self.grid.set_value(
-                line_idx, 'total_credit', format_devise(balance_values[key][2], 5))
+            self.grid.set_value(line_idx, 'designation', balance_values[key][0])
+            self.grid.set_value(line_idx, 'total_debit', format_devise(balance_values[key][1], 5))
+            self.grid.set_value(line_idx, 'total_credit', format_devise(balance_values[key][2], 5))
             diff = balance_values[key][1] - balance_values[key][2]
-            self.grid.set_value(
-                line_idx, 'solde_debit', format_devise(max(0, diff), 0))
+            self.grid.set_value(line_idx, 'solde_debit', format_devise(max(0, diff), 0))
             if abs(diff) < 0.0001:
-                self.grid.set_value(
-                    line_idx, 'solde_credit', format_devise(0, 5))
+                self.grid.set_value(line_idx, 'solde_credit', format_devise(0, 5))
             else:
-                self.grid.set_value(
-                    line_idx, 'solde_credit', format_devise(max(0, -1 * diff), 0))
+                self.grid.set_value(line_idx, 'solde_credit', format_devise(max(0, -1 * diff), 0))
             line_idx += 1
 
 
