@@ -37,6 +37,7 @@ from lucterios.CORE.parameters import Params
 from diacamma.accounting.tools import current_system_account
 from diacamma.accounting.models import CostAccounting
 from diacamma.payoff.editors import SupportingEditor
+from django.core.exceptions import ObjectDoesNotExist
 
 
 class ArticleEditor(LucteriosEditor):
@@ -72,7 +73,11 @@ class BillEditor(SupportingEditor):
             comp.set_select(sel_list)
 
     def show(self, xfer):
-        if xfer.item.cost_accounting is None:
+        try:
+            if xfer.item.cost_accounting is None:
+                xfer.remove_component("cost_accounting")
+                xfer.remove_component("lbl_cost_accounting")
+        except ObjectDoesNotExist:
             xfer.remove_component("cost_accounting")
             xfer.remove_component("lbl_cost_accounting")
         xfer.params['new_account'] = Params.getvalue('invoice-account-third')

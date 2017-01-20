@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-01-18 20:54+0000\n"
+"POT-Creation-Date: 2017-01-20 15:29+0000\n"
 "PO-Revision-Date: 2016-01-11 23:01+0000\n"
 "Last-Translator: b'Paul ARULATEDA <paul531@orange.fr>'\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -122,7 +122,7 @@ msgid "Disable"
 msgstr "Inactif"
 
 #: models.py:66 models.py:74 models.py:159 models.py:1131 models.py:1139
-#: printmodel/Third_0001.py:39 views.py:328 views_reports.py:310
+#: printmodel/Third_0001.py:39 views.py:337 views_reports.py:310
 #: views_reports.py:316 views_reports.py:506
 msgid "total"
 msgstr "total"
@@ -131,7 +131,7 @@ msgstr "total"
 msgid "001@AccountThird information"
 msgstr "001@Infomation comptable tiers"
 
-#: models.py:117 views.py:136
+#: models.py:117 views.py:145
 msgid "Disabled"
 msgstr "Désactiver"
 
@@ -143,7 +143,7 @@ msgstr "Activer"
 msgid "third has not correct account"
 msgstr "Ce tiers n'a pas de compte correct!"
 
-#: models.py:140 views.py:302
+#: models.py:140 views.py:311
 msgid "thirds"
 msgstr "tiers"
 
@@ -414,7 +414,7 @@ msgstr "Ce type d'écriture n'est pas permis dans ce journal"
 msgid "payment of %s"
 msgstr "règlement de %s"
 
-#: models.py:925 views.py:347
+#: models.py:925 views.py:356
 msgid "entry of account"
 msgstr "écriture comptable"
 
@@ -500,7 +500,7 @@ msgstr "Crédit"
 msgid "Debit"
 msgstr "Débit"
 
-#: views.py:51 views.py:326 views_admin.py:44
+#: views.py:51 views.py:335 views_admin.py:44
 msgid "Financial"
 msgstr "Financier"
 
@@ -516,103 +516,103 @@ msgstr "Gestion des tiers comptables"
 msgid "Thirds"
 msgstr "Tiers"
 
-#: views.py:74
+#: views.py:83
 msgid "Filtrer by contact"
 msgstr "Filtre par contact"
 
-#: views.py:84
+#: views.py:93
 msgid "Accounts displayed"
 msgstr "Comptes affichés"
 
-#: views.py:88
+#: views.py:97
 msgid "Hide the account total of thirds"
 msgstr "Cacher les totaux des comptes de tiers"
 
-#: views.py:88
+#: views.py:97
 msgid "Show the account total of thirds"
 msgstr "Voir les totaux des comptes de tiers"
 
-#: views.py:89
+#: views.py:98
 msgid "Filter any thirds unbalanced"
 msgstr "Filtrer les tiers non-soldés"
 
-#: views.py:104 views_entries.py:104
+#: views.py:113 views_entries.py:104
 msgid "Search"
 msgstr "Recherche"
 
-#: views.py:110
+#: views.py:119
 msgid "Search third"
 msgstr "Recherche de tiers"
 
-#: views.py:141
+#: views.py:150
 msgid "Disable third"
 msgstr "Désactiver des tiers"
 
-#: views.py:151
+#: views.py:160
 msgid "limit date"
 msgstr "date limite d'activation de tiers"
 
-#: views.py:174
+#: views.py:183
 msgid "Add third"
 msgstr "Ajout d'un tiers"
 
-#: views.py:185
+#: views.py:194
 msgid "Show third"
 msgstr "Voir un tiers"
 
-#: views.py:202
+#: views.py:211
 msgid "Delete third"
 msgstr "Supprimer un tiers"
 
-#: views.py:205
+#: views.py:214
 msgid "Listing"
 msgstr "Listing"
 
-#: views.py:211
+#: views.py:220
 msgid "Listing third"
 msgstr "Liste de tiers"
 
-#: views.py:242
+#: views.py:251
 msgid "Add account"
 msgstr "Ajouter un compte"
 
-#: views.py:243
+#: views.py:252
 msgid "Modify account"
 msgstr "Modifier un compte"
 
-#: views.py:252
+#: views.py:261
 msgid "Delete account"
 msgstr "Supprimer un compte"
 
-#: views.py:260 views_accounts.py:47
+#: views.py:269 views_accounts.py:47
 msgid "Bookkeeping"
 msgstr "Comptabilité"
 
-#: views.py:281
+#: views.py:290
 msgid "conf."
 msgstr "conf."
 
-#: views.py:304
+#: views.py:313
 msgid "models"
 msgstr "modèles"
 
-#: views.py:307
+#: views.py:316
 msgid "Accounting"
 msgstr "Comptabilité"
 
-#: views.py:349
+#: views.py:358
 msgid "Accounts filter"
 msgstr "Filtre sur les comptes"
 
-#: views.py:353
+#: views.py:362
 msgid "All entries of current fiscal year"
 msgstr "Toutes les ecritures de l'exercice courant"
 
-#: views.py:354
+#: views.py:363
 msgid "Only no-closed entries of current fiscal year"
 msgstr "Seulement les écritures non-validées de l'exercice courant"
 
-#: views.py:354
+#: views.py:363
 msgid "All entries for all fiscal year"
 msgstr "Toutes les écritures de tous les exercices"
 

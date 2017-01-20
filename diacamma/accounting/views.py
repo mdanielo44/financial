@@ -60,7 +60,16 @@ class ThirdList(XferListEditor):
 
     def get_items_from_filter(self):
         items = XferListEditor.get_items_from_filter(self)
-        items = sorted(items, key=lambda t: six.text_type(t).lower())
+        sort_third = self.getparam('GRID_ORDER%third', '')
+        sort_thirdbis = self.getparam('GRID_ORDER%third+', '')
+        self.params['GRID_ORDER%third'] = ""
+        if sort_third != '':
+            if sort_thirdbis.startswith('-'):
+                sort_thirdbis = "+"
+            else:
+                sort_thirdbis = "-"
+            self.params['GRID_ORDER%third+'] = sort_thirdbis
+        items = sorted(items, key=lambda t: six.text_type(t).lower(), reverse=sort_thirdbis.startswith('-'))
         if self.getparam('show_filter', 0) == 2:
             items = [item for item in items if abs(item.get_total()) > 0.0001]
         res = QuerySet(model=Third)

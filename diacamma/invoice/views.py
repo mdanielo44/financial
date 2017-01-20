@@ -33,7 +33,8 @@ from lucterios.framework.xferadvance import XferListEditor, XferShowEditor, TITL
     XferTransition
 from lucterios.framework.xferadvance import XferAddEditor
 from lucterios.framework.xferadvance import XferDelete
-from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompSelect, XferCompHeader, XferCompImage, XferCompGrid, XferCompCheck
+from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompSelect, XferCompHeader, XferCompImage, XferCompGrid, XferCompCheck,\
+    XferCompEdit
 from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage, FORMTYPE_MODAL, CLOSE_YES, SELECT_SINGLE, FORMTYPE_REFRESH, CLOSE_NO, SELECT_MULTI, WrapAction
 from lucterios.framework.xfergraphic import XferContainerAcknowledge, XferContainerCustom
 from lucterios.framework.error import LucteriosException, IMPORTANT
@@ -49,11 +50,29 @@ from diacamma.invoice.models import Article, Bill, Detail
 from diacamma.accounting.models import FiscalYear, Third
 from diacamma.payoff.views import PayoffAddModify
 from diacamma.payoff.models import Payoff
+from django.db.models.query import QuerySet
 
 MenuManage.add_sub("invoice", "financial", "diacamma.invoice/images/invoice.png", _("invoice"), _("Manage of billing"), 20)
 
 
-def _add_bill_filter(xfer, row):
+def _add_bill_filter(xfer, row, with_third=False):
+    current_filter = Q()
+    if with_third:
+        third_filter = xfer.getparam('filter', '')
+        lbl = XferCompLabelForm('lbl_filtre')
+        lbl.set_value_as_name(_('Filtrer by third'))
+        lbl.set_location(0, row)
+        xfer.add_component(lbl)
+        comp = XferCompEdit('filter')
+        comp.set_value(third_filter)
+        comp.set_action(xfer.request, xfer.get_action(), modal=FORMTYPE_REFRESH, close=CLOSE_NO)
+        comp.set_location(1, row)
+        xfer.add_component(comp)
+        row += 1
+        if third_filter != "":
+            q_legalentity = Q(third__contact__legalentity__name__icontains=third_filter)
+            q_individual = (Q(third__contact__individual__firstname__icontains=third_filter) | Q(third__contact__individual__lastname__icontains=third_filter))
+            current_filter &= (q_legalentity | q_individual)
     status_filter = xfer.getparam('status_filter', -1)
     lbl = XferCompLabelForm('lbl_filter')
     lbl.set_value_as_name(_('Filter by type'))
@@ -68,7 +87,6 @@ def _add_bill_filter(xfer, row):
     edt.set_location(1, row)
     edt.set_action(xfer.request, xfer.get_action(), modal=FORMTYPE_REFRESH, close=CLOSE_NO)
     xfer.add_component(edt)
-    current_filter = Q()
     if status_filter >= 0:
         current_filter &= Q(status=status_filter)
     elif status_filter == -1:
@@ -84,8 +102,27 @@ class BillList(XferListEditor):
     caption = _("Bill")
 
     def fillresponse_header(self):
-        self.filter, status_filter = _add_bill_filter(self, 3)
+        self.filter, status_filter = _add_bill_filter(self, 3, True)
         self.fieldnames = Bill.get_default_fields(status_filter)
+
+    def get_items_from_filter(self):
+        items = XferListEditor.get_items_from_filter(self)
+        sort_bill = self.getparam('GRID_ORDER%bill', '').split(',')
+        sort_bill_third = self.getparam('GRID_ORDER%bill_third', '')
+        if ((len(sort_bill) == 0) and (sort_bill_third != '')) or (sort_bill.count('third') + sort_bill.count('-third')) > 0:
+            self.params['GRID_ORDER%bill'] = ""
+            if sort_bill_third.startswith('+'):
+                sort_bill_third = "-"
+            else:
+                sort_bill_third = "+"
+            self.params['GRID_ORDER%bill_third'] = sort_bill_third
+            items = sorted(items, key=lambda t: six.text_type(t.third).lower(), reverse=sort_bill_third.startswith('-'))
+            res = QuerySet(model=Bill)
+            res._result_cache = items
+            return res
+        else:
+            self.params['GRID_ORDER%bill_third'] = ''
+            return items
 
     def fillresponse(self):
         XferListEditor.fillresponse(self)
