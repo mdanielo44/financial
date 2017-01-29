@@ -229,7 +229,7 @@ class BillTransition(XferTransition):
             XferTransition.fill_confirm(self, transition, trans)
             if (self.item.bill_type != 0) and withpayoff:
                 Payoff.multi_save((self.item.id,), self.getparam('amount', 0.0), self.getparam('mode', 0), self.getparam('payer'),
-                                  self.getparam('reference'), self.getparam('bank_account', 0), self.getparam('date_payoff'))
+                                  self.getparam('reference'), self.getparam('bank_account', 0), self.getparam('date_payoff'), repartition=0)
 
 
 @ActionsManage.affect_grid(_('payoff'), '', close=CLOSE_NO, unique=SELECT_MULTI, condition=lambda xfer, gridname='': xfer.getparam('status_filter', -1) == 1)
