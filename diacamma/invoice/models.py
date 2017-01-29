@@ -142,7 +142,7 @@ class Bill(Supporting):
     def get_default_fields(cls, status=-1):
         fields = ["bill_type", (_('numeros'), "num_txt"),
                   "date", "third", "comment", (_('total'), 'total')]
-        if status == -1:
+        if status < 0:
             fields.append("status")
         elif status == 1:
             fields.append(Supporting.get_payoff_fields()[-1][-1])

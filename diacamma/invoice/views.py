@@ -81,6 +81,7 @@ def _add_bill_filter(xfer, row, with_third=False):
     dep_field = Bill.get_field_by_name('status')
     sel_list = list(dep_field.choices)
     sel_list.insert(0, (-1, _('building+valid')))
+    sel_list.append((-2, None))
     edt = XferCompSelect("status_filter")
     edt.set_select(sel_list)
     edt.set_value(status_filter)
