@@ -37,6 +37,7 @@ from django.template import engines
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils.translation import ugettext_lazy as _
 from django.utils import six
+from django.db.models.signals import pre_save
 from django_fsm import FSMIntegerField, transition
 
 from lucterios.framework.models import LucteriosModel, get_value_converted, get_value_if_choices
@@ -1326,6 +1327,13 @@ def check_accountingcost():
             entry.save()
 
 
+def pre_save_datadb(sender, **kwargs):
+    if (sender == EntryAccount) and ('instance' in kwargs):
+        if kwargs['instance'].costaccounting_id == 0:
+            six.print_('* Convert EntryAccount #%d' % kwargs['instance'].id)
+            kwargs['instance'].costaccounting_id = None
+
+
 @Signal.decorate('checkparam')
 def accounting_checkparam():
     Parameter.check_and_create(name='accounting-devise', typeparam=0, title=_("accounting-devise"), args="{'Multi':False}", value='€')
@@ -1334,3 +1342,5 @@ def accounting_checkparam():
     Parameter.check_and_create(name='accounting-system', typeparam=0, title=_("accounting-system"), args="{'Multi':False}", value='')
     Parameter.check_and_create(name='accounting-sizecode', typeparam=1, title=_("accounting-sizecode"), args="{'Min':3, 'Max':50}", value='3')
     check_accountingcost()
+
+pre_save.connect(pre_save_datadb)

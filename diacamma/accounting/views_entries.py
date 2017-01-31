@@ -264,6 +264,8 @@ class EntryAccountShow(XferShowEditor):
     def clear_fields_in_params(self):
         if (self.getparam('SAVE', '') == 'YES') and (self.getparam('costaccounting') is not None):
             self.item.costaccounting_id = self.getparam('costaccounting', 0)
+            if self.item.costaccounting_id == 0:
+                self.item.costaccounting_id = None
             self.item.save()
         XferShowEditor.clear_fields_in_params(self)
 
