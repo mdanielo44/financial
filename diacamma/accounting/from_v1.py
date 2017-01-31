@@ -32,6 +32,7 @@ from lucterios.install.lucterios_migration import MigrateAbstract
 import sys
 import datetime
 from lucterios.CORE.parameters import Params
+from django.db.utils import IntegrityError
 
 
 def decode_html(data):
@@ -115,14 +116,18 @@ class AccountingMigrate(MigrateAbstract):
         cur = self.old_db.open()
         cur.execute(
             "SELECT id, title, description, etat, last, codeDefault FROM fr_sdlibre_compta_Analytique ORDER BY id")
-        for yearid, title, description, etat, last, code_default in cur.fetchall():
+        for costid, title, description, etat, last, code_default in cur.fetchall():
             self.print_debug("=> cost accounting %s", (title,))
-            self.costaccounting_list[yearid] = costaccounting_mdl.objects.create(name=title, description=description,
-                                                                                 status=etat, is_default=(code_default == 'o'))
+            try:
+                cost_item = costaccounting_mdl.objects.create(name=title, description=description, status=etat, is_default=(code_default == 'o'))
+            except IntegrityError:
+                new_name = "[%d] %s" % (costid, title[:43])
+                self.print_debug("=> cost accounting new_name %s", (new_name,))
+                cost_item = costaccounting_mdl.objects.create(name=new_name, description=description, status=etat, is_default=(code_default == 'o'))
+            self.costaccounting_list[costid] = cost_item
             if (last is not None) and (last in self.costaccounting_list.keys()):
-                self.costaccounting_list[
-                    yearid].last_costaccounting = self.costaccounting_list[last]
-                self.costaccounting_list[yearid].save()
+                self.costaccounting_list[costid].last_costaccounting = self.costaccounting_list[last]
+                self.costaccounting_list[costid].save()
 
     def _chartsaccount(self):
         chartsaccount_mdl = apps.get_model("accounting", "ChartsAccount")
