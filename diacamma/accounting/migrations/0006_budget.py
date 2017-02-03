@@ -42,6 +42,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='budget',
             name='year',
-            field=models.ForeignKey(default=None, null=True, on_delete=django.db.models.deletion.PROTECT, to='accounting.FiscalYear', verbose_name='year'),
+            field=models.ForeignKey(default=None, null=True, on_delete=django.db.models.deletion.PROTECT, to='accounting.FiscalYear', verbose_name='fiscal year'),
         ),
     ]
