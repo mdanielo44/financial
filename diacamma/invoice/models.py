@@ -563,9 +563,9 @@ class Detail(LucteriosModel):
         return ["article", "designation", (_('price'), "price_txt"), "unit", "quantity", (_('reduce'), "reduce_txt")]
 
     @classmethod
-    def create_for_bill(cls, bill, article, qty=1):
+    def create_for_bill(cls, bill, article, qty=1, reduce=0.0):
         newdetail = cls(
-            bill=bill, article=article, designation=article.designation, price=article.price, unit=article.unit, quantity=qty)
+            bill=bill, article=article, designation=article.designation, price=article.price, unit=article.unit, quantity=qty, reduce=reduce)
         newdetail.editor.before_save(None)
         newdetail.save()
         return newdetail

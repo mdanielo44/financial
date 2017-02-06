@@ -26,7 +26,6 @@ from __future__ import unicode_literals
 
 from django.utils.translation import ugettext_lazy as _
 from django.db.models import Q
-from django.utils import six
 
 from lucterios.framework.editors import LucteriosEditor
 from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompHeader
@@ -61,16 +60,16 @@ class BillEditor(SupportingEditor):
             xfer.remove_component("lbl_cost_accounting")
         else:
             comp = xfer.get_components("cost_accounting")
-            sel_list = []
-            sel_list.append((0, "---"))
-            comp.set_value(0)
-            for select_obj in CostAccounting.objects.filter(Q(status=0)):
-                sel_list.append((select_obj.id, six.text_type(select_obj)))
-                if select_obj.is_default:
-                    comp.set_value(select_obj.id)
-            if xfer.item.id is not None:
+            comp.set_needed(False)
+            comp.set_select_query(CostAccounting.objects.filter(Q(status=0)))
+            if xfer.item.id is None:
                 comp.set_value(xfer.item.cost_accounting_id)
-            comp.set_select(sel_list)
+            else:
+                cost_acc = CostAccounting.objects.filter(is_default=True)
+                if len(cost_acc) > 0:
+                    comp.set_value(cost_acc[0].id)
+                else:
+                    comp.set_value(0)
 
     def show(self, xfer):
         try:
