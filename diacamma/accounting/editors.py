@@ -442,16 +442,21 @@ class ModelLineEntryEditor(EntryLineAccountEditor):
 class BudgetEditor(EntryLineAccountEditor):
 
     def edit(self, xfer):
-        xfer.params['model'] = xfer.getparam('modelentry', 0)
-        code = xfer.get_components('code')
-        code.col += 1
-        if xfer.field_id == 'budget_revenue':
-            code.mask = current_system_account().get_revenue_mask()
-        elif xfer.field_id == 'budget_expense':
-            code.mask = current_system_account().get_expence_mask()
-        else:
-            code.mask = current_system_account().get_revenue_mask() + "|" + current_system_account().get_expence_mask()
         self.edit_creditdebit_for_line(xfer, 1, xfer.get_max_row() + 1)
+        if xfer.field_id == 'budget_revenue':
+            code_mask = current_system_account().get_revenue_mask()
+        elif xfer.field_id == 'budget_expense':
+            code_mask = current_system_account().get_expence_mask()
+        else:
+            code_mask = current_system_account().get_revenue_mask() + "|" + current_system_account().get_expence_mask()
+        old_account = xfer.get_components("code")
+        xfer.remove_component("code")
+        sel_code = XferCompSelect("code")
+        sel_code.set_location(old_account.col, old_account.row, old_account.colspan + 1, old_account.rowspan)
+        for item in FiscalYear.get_current().chartsaccount_set.all().filter(code__regex=code_mask).order_by('code'):
+            sel_code.select_list.append((item.code, six.text_type(item)))
+        sel_code.set_value(self.item.code)
+        xfer.add_component(sel_code)
 
     def before_save(self, xfer):
         self.item.set_montant(xfer.getparam('debit_val', 0.0), xfer.getparam('credit_val', 0.0))

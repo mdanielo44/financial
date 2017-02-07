@@ -5,21 +5,25 @@ from django.utils.translation import ugettext_lazy as _
 from django.db.models import Q
 
 from lucterios.framework.xferadvance import TITLE_MODIFY, TITLE_ADD, TITLE_DELETE,\
-    TITLE_PRINT
+    TITLE_PRINT, TITLE_OK, TITLE_CANCEL
 from lucterios.framework.xferadvance import XferListEditor
 from lucterios.framework.xferadvance import XferAddEditor
 from lucterios.framework.xferadvance import XferDelete
 from lucterios.framework.xfergraphic import XferContainerAcknowledge
-from lucterios.framework.xfercomponents import XferCompLabelForm
-from lucterios.framework.tools import ActionsManage, MenuManage, CLOSE_YES
+from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompImage,\
+    XferCompSelect
+from lucterios.framework.tools import ActionsManage, MenuManage, CLOSE_YES,\
+    WrapAction
 from lucterios.framework.tools import SELECT_SINGLE, SELECT_MULTI
 
-from diacamma.accounting.tools import current_system_account, format_devise
+from diacamma.accounting.tools import current_system_account, format_devise,\
+    get_amount_sum
 from diacamma.accounting.models import Budget, CostAccounting, FiscalYear,\
-    ChartsAccount
+    ChartsAccount, EntryLineAccount
 from lucterios.framework.signal_and_lock import Signal
 from lucterios.CORE.xferprint import XferPrintAction
 from django.utils import six
+from django.db.models.aggregates import Sum
 
 
 @MenuManage.describ('accounting.change_budget')
@@ -166,6 +170,91 @@ class CostAccountingBudget(XferContainerAcknowledge):
     def fillresponse(self):
         read_only = (self.item.status == 1) or self.item.is_protected
         self.redirect_action(BudgetList.get_action(), close=CLOSE_YES, params={'cost_accounting': self.item.id, 'readonly': read_only})
+
+
+@ActionsManage.affect_list(_("Import"), "account.png", condition=lambda xfer: xfer.getparam('readonly', False) == False)
+@MenuManage.describ('accounting.add_budget')
+class BudgetImport(XferContainerAcknowledge):
+    icon = "account.png"
+    model = Budget
+    field_id = 'budget'
+    caption = _("Import budget")
+
+    def add_sel(self, costaccounting):
+        res = []
+        if costaccounting is not None:
+            res.append((costaccounting.id, six.text_type(costaccounting)))
+            res.extend(self.add_sel(costaccounting.last_costaccounting))
+        return res
+
+    def fillresponse(self, year=0, cost_accounting=0):
+        if self.getparam("CONFIRME", "") != "YES":
+            dlg = self.create_custom()
+            img = XferCompImage('img')
+            img.set_value(self.icon_path())
+            img.set_location(0, 0, 1, 3)
+            dlg.add_component(img)
+            lbl = XferCompLabelForm('title')
+            lbl.set_value_as_title(self.caption)
+            lbl.set_location(1, 0, 6)
+            dlg.add_component(lbl)
+
+            if cost_accounting == 0:
+                year = FiscalYear.get_current(year)
+                lbl = XferCompLabelForm('lbl_currentyear')
+                lbl.set_value(_('fiscal year'))
+                lbl.set_location(1, 1)
+                dlg.add_component(lbl)
+                sel = XferCompSelect('currentyear')
+                sel.set_needed(True)
+                sel.set_select_query(FiscalYear.objects.filter(end__lt=year.begin))
+                sel.set_location(2, 1)
+                dlg.add_component(sel)
+            else:
+                current_cost = CostAccounting.objects.get(id=cost_accounting)
+                lbl = XferCompLabelForm('lbl_costaccounting')
+                lbl.set_value(_('cost accounting'))
+                lbl.set_location(1, 1)
+                dlg.add_component(lbl)
+                sel = XferCompSelect('costaccounting')
+                sel.set_needed(True)
+                sel.set_select(self.add_sel(current_cost.last_costaccounting))
+                sel.set_location(2, 1)
+                dlg.add_component(sel)
+            lbl = XferCompLabelForm('lbl_info')
+            lbl.set_value_as_header(_('All budget lines will be delete and income statement of select item will be import as new budget.'))
+            lbl.set_location(1, 2, 2)
+            dlg.add_component(lbl)
+            dlg.add_action(self.get_action(TITLE_OK, "images/ok.png"), close=CLOSE_YES, params={'CONFIRME': 'YES'})
+            dlg.add_action(WrapAction(TITLE_CANCEL, 'images/cancel.png'))
+        else:
+            currentyear = self.getparam('currentyear', 0)
+            costaccounting = self.getparam('costaccounting', 0)
+            if cost_accounting == 0:
+                budget_filter = Q(year_id=year)
+            else:
+                budget_filter = Q(cost_accounting_id=cost_accounting)
+            for budget_line in Budget.objects.filter(budget_filter):
+                if (cost_accounting != 0) or (budget_line.cost_accounting_id is None):
+                    budget_line.delete()
+            if cost_accounting == 0:
+                for chart in ChartsAccount.objects.filter(Q(year_id=currentyear) & Q(type_of_account__in=(3, 4))):
+                    value = chart.get_current_total()
+                    for current_budget in Budget.objects.filter(year_id=year, code=chart.code):
+                        value -= current_budget.credit_debit_way() * current_budget.amount
+                    if abs(value) > 0.001:
+                        Budget.objects.create(code=chart.code, amount=value, year_id=year)
+            else:
+                if year == 0:
+                    year = None
+                values = {}
+                for line in EntryLineAccount.objects.filter(account__type_of_account__in=(3, 4), entry__costaccounting_id=costaccounting):
+                    if line.account.code not in values.keys():
+                        values[line.account.code] = 0.0
+                    values[line.account.code] += line.amount
+                for code, value in values.items():
+                    if abs(value) > 0.001:
+                        Budget.objects.create(code=code, amount=value, year_id=year, cost_accounting_id=cost_accounting)
 
 
 @ActionsManage.affect_list(_("Budget"), "account.png")
