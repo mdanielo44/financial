@@ -83,8 +83,7 @@ def create_third(abstractids, codes=None):
 
 
 def create_year(status=0):
-    new_year = FiscalYear.objects.create(
-        begin='2015-01-01', end='2015-12-31', status=status)
+    new_year = FiscalYear.objects.create(begin='2015-01-01', end='2015-12-31', status=status)
     new_year.set_has_actif()
     return new_year
 

@@ -47,8 +47,7 @@ from lucterios.framework.signal_and_lock import RecordLocker, Signal
 from lucterios.CORE.models import Parameter
 from lucterios.contacts.models import AbstractContact
 
-from diacamma.accounting.tools import get_amount_sum, format_devise, \
-    current_system_account, currency_round, correct_accounting_code
+from diacamma.accounting.tools import get_amount_sum, format_devise, current_system_account, currency_round, correct_accounting_code
 
 
 class Third(LucteriosModel):
@@ -421,6 +420,8 @@ class FiscalYear(LucteriosModel):
         return nb_entry_noclose
 
     def closed(self):
+        for cost in CostAccounting.objects.filter(year=self):
+            cost.close()
         self.move_entry_noclose()
         current_system_account().finalize_year(self)
         self.status = 2
@@ -433,14 +434,13 @@ class FiscalYear(LucteriosModel):
 
 class CostAccounting(LucteriosModel):
     name = models.CharField(_('name'), max_length=50, unique=True)
-    description = models.CharField(
-        _('description'), max_length=50)
-    status = models.IntegerField(verbose_name=_('status'), choices=(
-        (0, _('opened')), (1, _('closed'))), default=0)
+    description = models.CharField(_('description'), max_length=50)
+    status = models.IntegerField(verbose_name=_('status'), choices=((0, _('opened')), (1, _('closed'))), default=0)
     last_costaccounting = models.ForeignKey('CostAccounting', verbose_name=_(
         'last cost accounting'), related_name='next_costaccounting', null=True, on_delete=models.SET_NULL)
     is_default = models.BooleanField(verbose_name=_('default'), default=False)
     is_protected = models.BooleanField(verbose_name=_('default'), default=False)
+    year = models.ForeignKey('FiscalYear', verbose_name=_('fiscal year'), null=True, default=None, on_delete=models.PROTECT, db_index=True)
 
     def __str__(self):
         return self.name
@@ -454,12 +454,11 @@ class CostAccounting(LucteriosModel):
 
     @classmethod
     def get_default_fields(cls):
-        return ['name', 'description', (_('total revenue'), 'total_revenue'), (_('total expense'), 'total_expense'),
-                        'status', 'is_default']
+        return ['name', 'description', 'year', (_('total revenue'), 'total_revenue'), (_('total expense'), 'total_expense'), 'status', 'is_default']
 
     @classmethod
     def get_edit_fields(cls):
-        return ['name', 'description', 'last_costaccounting']
+        return ['name', 'description', 'year', 'last_costaccounting']
 
     @property
     def total_revenue(self):
@@ -497,9 +496,20 @@ class CostAccounting(LucteriosModel):
     def check_before_close(self):
         EntryAccount.clear_ghost()
         if self.entryaccount_set.filter(close=False).count() > 0:
-            raise LucteriosException(IMPORTANT, _('This cost accounting has some not validated entry!'))
+            raise LucteriosException(IMPORTANT, _('The cost accounting "%s" has some not validated entry!') % self)
         if self.modelentry_set.all().count() > 0:
-            raise LucteriosException(IMPORTANT, _('This cost accounting is include in a model of entry!'))
+            raise LucteriosException(IMPORTANT, _('The cost accounting "%s" is include in a model of entry!') % self)
+
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+        if (self.id is not None) and (self.year is not None):
+            entries = EntryAccount.objects.filter(costaccounting=self).exclude(year=self.year)
+            if len(entries) > 0:
+                raise LucteriosException(IMPORTANT, _('This cost accounting have entry with another year!'))
+        res = LucteriosModel.save(self, force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields)
+        for budget_item in self.budget_set.all():
+            budget_item.year = self.year
+            budget_item.save()
+        return res
 
     class Meta(object):
         verbose_name = _('cost accounting')
@@ -922,6 +932,11 @@ class EntryAccount(LucteriosModel):
     def has_cash(self):
         return self.entrylineaccount_set.filter(account__code__regex=current_system_account().get_cash_mask()).count() > 0
 
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+        if (self.costaccounting is not None) and (self.costaccounting.year_id is not None) and (self.costaccounting.year_id != self.year_id):
+            self.costaccounting_id = None
+        return LucteriosModel.save(self, force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields)
+
     class Meta(object):
         verbose_name = _('entry of account')
         verbose_name_plural = _('entries of account')
@@ -1309,6 +1324,29 @@ class Budget(LucteriosModel):
         total_revenue = get_amount_sum(cls.objects.filter(budget_filter & Q(code__regex=current_system_account().get_revenue_mask())).aggregate(Sum('amount')))
         total_expense = get_amount_sum(cls.objects.filter(budget_filter & Q(code__regex=current_system_account().get_expence_mask())).aggregate(Sum('amount')))
         return total_revenue - total_expense
+
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+        if self.cost_accounting is not None:
+            self.year = self.cost_accounting.year
+        if six.text_type(self.id)[0] == 'C':
+            value = self.amount
+            year = self.year_id
+            chart_code = self.code
+            self.delete()
+            for current_budget in Budget.objects.filter(year_id=year, code=chart_code):
+                value -= current_budget.amount
+            if abs(value) > 0.001:
+                Budget.objects.create(code=chart_code, amount=value, year_id=year)
+        else:
+            return LucteriosModel.save(self, force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields)
+
+    def delete(self, using=None):
+        if six.text_type(self.id)[0] == 'C':
+            for budget_line in Budget.objects.filter(Q(year_id=self.year_id) & Q(code=self.code)):
+                if budget_line.cost_accounting_id is None:
+                    budget_line.delete()
+        else:
+            LucteriosModel.delete(self, using=using)
 
     class Meta(object):
         verbose_name = _('Budget line')

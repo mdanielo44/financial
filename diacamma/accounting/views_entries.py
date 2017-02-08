@@ -34,12 +34,11 @@ from lucterios.framework.tools import ActionsManage, MenuManage, WrapAction
 from lucterios.framework.xferadvance import XferListEditor, XferAddEditor
 from lucterios.framework.xfergraphic import XferContainerAcknowledge, XferContainerCustom
 from lucterios.framework.xfercomponents import XferCompSelect, XferCompLabelForm, XferCompImage, XferCompFloat
+from lucterios.framework.error import LucteriosException, IMPORTANT
 from lucterios.CORE.xferprint import XferPrintListing
 from lucterios.CORE.editors import XferSavedCriteriaSearchEditor
 
-from diacamma.accounting.models import EntryLineAccount, EntryAccount, FiscalYear, Journal, AccountLink, current_system_account, CostAccounting,\
-    ModelEntry
-from lucterios.framework.error import LucteriosException, IMPORTANT
+from diacamma.accounting.models import EntryLineAccount, EntryAccount, FiscalYear, Journal, AccountLink, current_system_account, CostAccounting, ModelEntry
 
 
 @MenuManage.describ('accounting.change_entryaccount', FORMTYPE_NOMODAL, 'bookkeeping', _('Edition of accounting entry for current fiscal year'),)
@@ -199,12 +198,16 @@ class EntryAccountCostAccounting(XferContainerAcknowledge):
     field_id = 'entryaccount'
     caption = _("cost accounting for entry")
 
-    def fillresponse(self, costaccounting=0):
+    def fillresponse(self, cost_accounting_id=0):
         if self.getparam("SAVE") is None:
             if len(self.items) == 1:
                 item = self.items[0]
                 if (item.costaccounting is not None) and (item.costaccounting.status != 0):
                     raise LucteriosException(IMPORTANT, _('This cost accounting is already closed!'))
+            if len(self.items) > 0:
+                current_year = self.items[0].year
+            else:
+                current_year = None
             dlg = self.create_custom()
             icon = XferCompImage('img')
             icon.set_location(0, 0, 1, 6)
@@ -214,8 +217,8 @@ class EntryAccountCostAccounting(XferContainerAcknowledge):
             lbl.set_value_as_name(CostAccounting._meta.verbose_name)
             lbl.set_location(1, 1)
             dlg.add_component(lbl)
-            sel = XferCompSelect('costaccounting')
-            sel.set_select_query(CostAccounting.objects.filter(status=0))
+            sel = XferCompSelect('cost_accounting_id')
+            sel.set_select_query(CostAccounting.objects.filter(Q(status=0) & (Q(year=None) | Q(year=current_year))))
             if self.item is not None:
                 sel.set_value(self.item.costaccounting_id)
             sel.set_location(1, 2)
@@ -223,10 +226,10 @@ class EntryAccountCostAccounting(XferContainerAcknowledge):
             dlg.add_action(self.get_action(_('Ok'), 'images/ok.png'), params={"SAVE": "YES"})
             dlg.add_action(WrapAction(_('Cancel'), 'images/cancel.png'))
         else:
-            if costaccounting == 0:
+            if cost_accounting_id == 0:
                 new_cost = None
             else:
-                new_cost = CostAccounting.objects.get(id=costaccounting)
+                new_cost = CostAccounting.objects.get(id=cost_accounting_id)
             for item in self.items:
                 if (item.costaccounting is None) or (item.costaccounting.status == 0):
                     item.costaccounting = new_cost

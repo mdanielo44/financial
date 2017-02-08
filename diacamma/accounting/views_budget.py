@@ -2,27 +2,23 @@
 from __future__ import unicode_literals
 
 from django.utils.translation import ugettext_lazy as _
+from django.utils import six
 from django.db.models import Q
 
-from lucterios.framework.xferadvance import TITLE_MODIFY, TITLE_ADD, TITLE_DELETE,\
-    TITLE_PRINT, TITLE_OK, TITLE_CANCEL
+from lucterios.framework.xferadvance import TITLE_MODIFY, TITLE_ADD, TITLE_DELETE, TITLE_PRINT, TITLE_OK, TITLE_CANCEL,\
+    XferSave
 from lucterios.framework.xferadvance import XferListEditor
 from lucterios.framework.xferadvance import XferAddEditor
 from lucterios.framework.xferadvance import XferDelete
 from lucterios.framework.xfergraphic import XferContainerAcknowledge
-from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompImage,\
-    XferCompSelect
-from lucterios.framework.tools import ActionsManage, MenuManage, CLOSE_YES,\
-    WrapAction
+from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompImage, XferCompSelect
+from lucterios.framework.tools import ActionsManage, MenuManage, CLOSE_YES, WrapAction
 from lucterios.framework.tools import SELECT_SINGLE, SELECT_MULTI
-
-from diacamma.accounting.tools import current_system_account, format_devise,\
-    get_amount_sum
-from diacamma.accounting.models import Budget, CostAccounting, FiscalYear,\
-    ChartsAccount, EntryLineAccount
 from lucterios.framework.signal_and_lock import Signal
 from lucterios.CORE.xferprint import XferPrintAction
-from django.utils import six
+
+from diacamma.accounting.tools import current_system_account, format_devise
+from diacamma.accounting.models import Budget, CostAccounting, FiscalYear, ChartsAccount, EntryLineAccount
 from django.db.models.aggregates import Sum
 
 
@@ -59,7 +55,7 @@ class BudgetList(XferListEditor):
 
     def fill_grid(self, row, model, field_id, items):
         XferListEditor.fill_grid(self, row, model, field_id, items)
-        if self.getparam('readonly', False):
+        if self.getparam('cost_accounting') is None:
             grid = self.get_components(field_id)
             grid.record_ids = []
             grid.records = {}
@@ -69,15 +65,19 @@ class BudgetList(XferListEditor):
                 if last_code != current_budget.code:
                     if last_code != '':
                         chart = ChartsAccount.get_chart_account(last_code)
-                        grid.set_value(last_code, 'budget', six.text_type(chart))
-                        grid.set_value(last_code, 'montant', format_devise(value, 2))
+                        grid.set_value('C' + last_code, 'budget', six.text_type(chart))
+                        grid.set_value('C' + last_code, 'montant', format_devise(value, 2))
                         value = 0
                     last_code = current_budget.code
                 value += current_budget.credit_debit_way() * current_budget.amount
             if last_code != '':
                 chart = ChartsAccount.get_chart_account(last_code)
-                grid.set_value(last_code, 'budget', six.text_type(chart))
-                grid.set_value(last_code, 'montant', format_devise(value, 2))
+                grid.set_value('C' + last_code, 'budget', six.text_type(chart))
+                grid.set_value('C' + last_code, 'montant', format_devise(value, 2))
+            grid.nb_lines = len(grid.records)
+            grid.order_list = None
+            grid.page_max = 1
+            grid.page_num = 0
 
     def fillresponse_body(self):
         self.get_components("title").colspan = 2
@@ -135,6 +135,37 @@ class BudgetAddModify(XferAddEditor):
     caption_add = _("Add budget line")
     caption_modify = _("Modify budget line")
 
+    class XferSaveBudget(XferSave):
+
+        def _load_unique_record(self, itemid):
+            if itemid[0] == 'C':
+                self.item = Budget()
+                self.item.id = itemid
+                self.item.year_id = self.getparam('year', 0)
+                self.item.code = itemid[1:]
+                self.fill_simple_fields()
+            else:
+                XferSave._load_unique_record(self, itemid)
+
+    def run_save(self, request, *args, **kwargs):
+        save = BudgetAddModify.XferSaveBudget()
+        save.is_view_right = self.is_view_right
+        save.locked = self.locked
+        save.model = self.model
+        save.field_id = self.field_id
+        save.caption = self.caption
+        return save.get(request, *args, **kwargs)
+
+    def _load_unique_record(self, itemid):
+        if itemid[0] == 'C':
+            self.item = Budget()
+            self.item.id = itemid
+            self.item.code = itemid[1:]
+            val = Budget.objects.filter(code=self.item.code, year_id=self.getparam('year', 0)).aggregate(Sum('amount'))
+            self.item.amount = val['amount__sum']
+        else:
+            XferAddEditor._load_unique_record(self, itemid)
+
     def _search_model(self):
         if self.getparam("budget_revenue") != None:
             self.field_id = 'budget_revenue'
@@ -143,13 +174,22 @@ class BudgetAddModify(XferAddEditor):
         XferAddEditor._search_model(self)
 
 
-@ActionsManage.affect_grid(TITLE_DELETE, "images/delete.png", unique=SELECT_MULTI, condition=lambda xfer, gridname='': xfer.getparam('readonly', False) == False)
+@ActionsManage.affect_grid(TITLE_DELETE, "images/delete.png", unique=SELECT_SINGLE, condition=lambda xfer, gridname='': xfer.getparam('readonly', False) == False)
 @MenuManage.describ('accounting.change_budget')
 class BudgetDel(XferDelete):
     icon = "account.png"
     model = Budget
     field_id = 'budget'
     caption = _("Delete Budget line")
+
+    def _load_unique_record(self, itemid):
+        if itemid[0] == 'C':
+            self.item = Budget()
+            self.item.id = itemid
+            self.item.year_id = self.getparam('year', 0)
+            self.item.code = itemid[1:]
+        else:
+            XferAddEditor._load_unique_record(self, itemid)
 
     def _search_model(self):
         if self.getparam("budget_revenue") != None:
@@ -241,7 +281,7 @@ class BudgetImport(XferContainerAcknowledge):
                 for chart in ChartsAccount.objects.filter(Q(year_id=currentyear) & Q(type_of_account__in=(3, 4))):
                     value = chart.get_current_total()
                     for current_budget in Budget.objects.filter(year_id=year, code=chart.code):
-                        value -= current_budget.credit_debit_way() * current_budget.amount
+                        value -= current_budget.amount
                     if abs(value) > 0.001:
                         Budget.objects.create(code=chart.code, amount=value, year_id=year)
             else:

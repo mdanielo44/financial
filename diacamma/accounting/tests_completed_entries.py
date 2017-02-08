@@ -39,11 +39,12 @@ from lucterios.CORE.views import StatusMenu
 from base64 import b64decode
 from datetime import date
 from diacamma.accounting.views_other import CostAccountingList, \
-    CostAccountingClose
+    CostAccountingClose, CostAccountingAddModify
 from diacamma.accounting.views_reports import FiscalYearBalanceSheet,\
     FiscalYearIncomeStatement, FiscalYearLedger, FiscalYearTrialBalance
 from diacamma.accounting.views_admin import FiscalYearExport
 from os.path import exists
+from diacamma.accounting.models import FiscalYear
 
 
 class CompletedEntryTest(LucteriosTest):
@@ -301,11 +302,12 @@ class CompletedEntryTest(LucteriosTest):
         self.factory.xfer = CostAccountingList()
         self.call('/diacamma.accounting/costAccountingList', {}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'costAccountingList')
-        self.assert_count_equal('COMPONENTS/*', 6)
-        self.assert_count_equal('COMPONENTS/GRID[@name="costaccounting"]/HEADER', 6)
+        self.assert_count_equal('COMPONENTS/*', 8)
+        self.assert_count_equal('COMPONENTS/GRID[@name="costaccounting"]/HEADER', 7)
         self.assert_count_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD', 1)
         self.assert_xml_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD[1]/VALUE[@name="name"]', 'open')
         self.assert_xml_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD[1]/VALUE[@name="description"]', 'Open cost')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD[1]/VALUE[@name="year"]', '---')
         self.assert_xml_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD[1]/VALUE[@name="total_revenue"]', '70.64€')
         self.assert_xml_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD[1]/VALUE[@name="total_expense"]', '258.02€')
         self.assert_xml_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD[1]/VALUE[@name="status"]', 'ouverte')
@@ -315,7 +317,7 @@ class CompletedEntryTest(LucteriosTest):
         self.call('/diacamma.accounting/costAccountingClose',
                   {'costaccounting': 2}, False)
         self.assert_observer('core.exception', 'diacamma.accounting', 'costAccountingClose')
-        self.assert_xml_equal('EXCEPTION/MESSAGE', 'Cette comptabilité a des écritures non validées!')
+        self.assert_xml_equal('EXCEPTION/MESSAGE', 'La comptabilité  "open" a des écritures non validées!')
 
         self.factory.xfer = EntryAccountClose()
         self.call('/diacamma.accounting/entryAccountClose',
@@ -330,61 +332,122 @@ class CompletedEntryTest(LucteriosTest):
         self.factory.xfer = CostAccountingList()
         self.call('/diacamma.accounting/costAccountingList', {}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'costAccountingList')
-        self.assert_count_equal('COMPONENTS/*', 6)
-        self.assert_count_equal('COMPONENTS/GRID[@name="costaccounting"]/HEADER', 6)
         self.assert_count_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD', 0)
 
         self.factory.xfer = CostAccountingList()
         self.call('/diacamma.accounting/costAccountingList', {'all_cost': True}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'costAccountingList')
-        self.assert_count_equal('COMPONENTS/*', 6)
-        self.assert_count_equal('COMPONENTS/GRID[@name="costaccounting"]/HEADER', 6)
         self.assert_count_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD', 2)
 
     def test_costaccounting_change(self):
+        FiscalYear.objects.create(begin='2016-01-01', end='2016-12-31', status=0, last_fiscalyear_id=1)
+
+        self.factory.xfer = CostAccountingAddModify()
+        self.call('/diacamma.accounting/costAccountingAddModify', {}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'costAccountingAddModify')
+        self.assert_count_equal('COMPONENTS/*', 9)
+        self.assert_count_equal("COMPONENTS/SELECT[@name='last_costaccounting']/CASE", 3)
+        self.assert_count_equal("COMPONENTS/SELECT[@name='year']/CASE", 3)
+
+        self.factory.xfer = CostAccountingAddModify()
+        self.call('/diacamma.accounting/costAccountingAddModify', {"SAVE": "YES", 'name': 'aaa', 'description': 'aaa', 'year': '1'}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.accounting', 'costAccountingAddModify')  # id = 3
+
+        self.factory.xfer = CostAccountingAddModify()
+        self.call('/diacamma.accounting/costAccountingAddModify', {"SAVE": "YES", 'name': 'bbb', 'description': 'bbb', 'year': '2'}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.accounting', 'costAccountingAddModify')  # id = 4
+
         self.factory.xfer = CostAccountingList()
         self.call('/diacamma.accounting/costAccountingList', {}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'costAccountingList')
-        self.assert_count_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD', 1)
-        self.assert_xml_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD[1]/VALUE[@name="name"]', 'open')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD[1]/VALUE[@name="total_revenue"]', '70.64€')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD[1]/VALUE[@name="total_expense"]', '258.02€')
+        self.assert_count_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD', 3)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD[1]/VALUE[@name="name"]', 'aaa')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD[1]/VALUE[@name="year"]', 'Exercice du 1 janvier 2015 au 31 décembre 2015 [en création]')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD[1]/VALUE[@name="total_revenue"]', '0.00€')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD[1]/VALUE[@name="total_expense"]', '0.00€')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD[2]/VALUE[@name="name"]', 'bbb')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD[2]/VALUE[@name="year"]', 'Exercice du 1 janvier 2016 au 31 décembre 2016 [en création]')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD[2]/VALUE[@name="total_revenue"]', '0.00€')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD[2]/VALUE[@name="total_expense"]', '0.00€')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD[3]/VALUE[@name="name"]', 'open')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD[3]/VALUE[@name="year"]', '---')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD[3]/VALUE[@name="total_revenue"]', '70.64€')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD[3]/VALUE[@name="total_expense"]', '258.02€')
 
         self.factory.xfer = EntryAccountCostAccounting()
-        self.call('/diacamma.accounting/entryAccountCostAccounting',
-                  {'entryaccount': '4;6;9'}, False)
+        self.call('/diacamma.accounting/entryAccountCostAccounting', {'entryaccount': '4;6;9'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountCostAccounting')
-
         self.assert_count_equal('COMPONENTS/*', 3)
-        self.assert_xml_equal("COMPONENTS/SELECT[@name='costaccounting']", '0')
-        self.assert_count_equal("COMPONENTS/SELECT[@name='costaccounting']/CASE", 2)
+        self.assert_xml_equal("COMPONENTS/SELECT[@name='cost_accounting_id']", '0')
+        self.assert_count_equal("COMPONENTS/SELECT[@name='cost_accounting_id']/CASE", 3)
 
         self.factory.xfer = EntryAccountCostAccounting()
-        self.call('/diacamma.accounting/entryAccountCostAccounting',
-                  {"SAVE": "YES", 'entryaccount': '4;6;9', 'costaccounting': '2'}, False)  # -78.24 / +125.97
-
+        self.call('/diacamma.accounting/entryAccountCostAccounting', {"SAVE": "YES", 'entryaccount': '4;6;9', 'cost_accounting_id': '2'}, False)  # -78.24 / +125.97
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountCostAccounting')
 
         self.factory.xfer = CostAccountingList()
         self.call('/diacamma.accounting/costAccountingList', {}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'costAccountingList')
-        self.assert_count_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD', 1)
-        self.assert_xml_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD[1]/VALUE[@name="name"]', 'open')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD[1]/VALUE[@name="total_revenue"]', '196.61€')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD[1]/VALUE[@name="total_expense"]', '336.26€')
+        self.assert_count_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD', 3)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD[1]/VALUE[@name="total_revenue"]', '0.00€')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD[1]/VALUE[@name="total_expense"]', '0.00€')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD[2]/VALUE[@name="total_revenue"]', '0.00€')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD[2]/VALUE[@name="total_expense"]', '0.00€')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD[3]/VALUE[@name="name"]', 'open')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD[3]/VALUE[@name="total_revenue"]', '196.61€')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD[3]/VALUE[@name="total_expense"]', '336.26€')
 
         self.factory.xfer = EntryAccountCostAccounting()
-        self.call('/diacamma.accounting/entryAccountCostAccounting',
-                  {"SAVE": "YES", 'entryaccount': '4;6;9', 'costaccounting': '0'}, False)  # - -194.08 / 0
-
+        self.call('/diacamma.accounting/entryAccountCostAccounting', {"SAVE": "YES", 'entryaccount': '4;6;9', 'cost_accounting_id': '0'}, False)  # - -194.08 / 0
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountCostAccounting')
 
         self.factory.xfer = CostAccountingList()
         self.call('/diacamma.accounting/costAccountingList', {}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'costAccountingList')
-        self.assert_count_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD', 1)
-        self.assert_xml_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD[1]/VALUE[@name="name"]', 'open')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD[1]/VALUE[@name="total_revenue"]', '70.64€')
+        self.assert_count_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD', 3)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD[1]/VALUE[@name="total_revenue"]', '0.00€')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD[1]/VALUE[@name="total_expense"]', '0.00€')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD[2]/VALUE[@name="total_revenue"]', '0.00€')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD[2]/VALUE[@name="total_expense"]', '0.00€')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD[3]/VALUE[@name="name"]', 'open')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD[3]/VALUE[@name="total_revenue"]', '70.64€')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD[3]/VALUE[@name="total_expense"]', '63.94€')
+
+        self.factory.xfer = EntryAccountCostAccounting()
+        self.call('/diacamma.accounting/entryAccountCostAccounting', {"SAVE": "YES", 'entryaccount': '4;6;9', 'cost_accounting_id': '3'}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountCostAccounting')
+
+        self.factory.xfer = CostAccountingList()
+        self.call('/diacamma.accounting/costAccountingList', {}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'costAccountingList')
+        self.assert_count_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD', 3)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD[1]/VALUE[@name="total_revenue"]', '125.97€')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD[1]/VALUE[@name="total_expense"]', '272.32€')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD[2]/VALUE[@name="total_revenue"]', '0.00€')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD[2]/VALUE[@name="total_expense"]', '0.00€')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD[3]/VALUE[@name="name"]', 'open')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD[3]/VALUE[@name="total_revenue"]', '70.64€')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD[3]/VALUE[@name="total_expense"]', '63.94€')
+
+        self.factory.xfer = CostAccountingAddModify()
+        self.call('/diacamma.accounting/costAccountingAddModify', {"SAVE": "YES", 'id': '3', 'year': '2'}, False)
+        self.assert_observer('core.exception', 'diacamma.accounting', 'costAccountingAddModify')
+
+        self.factory.xfer = EntryAccountCostAccounting()
+        self.call('/diacamma.accounting/entryAccountCostAccounting', {"SAVE": "YES", 'entryaccount': '4;6;9', 'cost_accounting_id': '4'}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountCostAccounting')
+
+        self.factory.xfer = CostAccountingList()
+        self.call('/diacamma.accounting/costAccountingList', {}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'costAccountingList')
+        self.assert_count_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD', 3)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD[1]/VALUE[@name="total_revenue"]', '0.00€')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD[1]/VALUE[@name="total_expense"]', '0.00€')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD[2]/VALUE[@name="total_revenue"]', '0.00€')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD[2]/VALUE[@name="total_expense"]', '0.00€')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD[3]/VALUE[@name="name"]', 'open')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD[3]/VALUE[@name="total_revenue"]', '70.64€')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD[3]/VALUE[@name="total_expense"]', '63.94€')
 
     def test_fiscalyear_balancesheet(self):
         self.factory.xfer = FiscalYearBalanceSheet()

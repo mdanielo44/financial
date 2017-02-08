@@ -25,6 +25,7 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import unicode_literals
 
 from django.utils.translation import ugettext_lazy as _
+from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 
 from lucterios.framework.editors import LucteriosEditor
@@ -34,9 +35,8 @@ from lucterios.framework.models import get_value_if_choices
 from lucterios.CORE.parameters import Params
 
 from diacamma.accounting.tools import current_system_account
-from diacamma.accounting.models import CostAccounting
+from diacamma.accounting.models import CostAccounting, FiscalYear
 from diacamma.payoff.editors import SupportingEditor
-from django.core.exceptions import ObjectDoesNotExist
 
 
 class ArticleEditor(LucteriosEditor):
@@ -61,7 +61,7 @@ class BillEditor(SupportingEditor):
         else:
             comp = xfer.get_components("cost_accounting")
             comp.set_needed(False)
-            comp.set_select_query(CostAccounting.objects.filter(Q(status=0)))
+            comp.set_select_query(CostAccounting.objects.filter(Q(status=0) & (Q(year=None) | Q(year=FiscalYear.get_current()))))
             if xfer.item.id is None:
                 comp.set_value(xfer.item.cost_accounting_id)
             else:

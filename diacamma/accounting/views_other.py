@@ -12,7 +12,8 @@ from lucterios.framework.xfergraphic import XferContainerAcknowledge
 from lucterios.framework.error import LucteriosException, IMPORTANT
 from lucterios.framework.xfercomponents import XferCompCheck, XferCompLabelForm
 
-from diacamma.accounting.models import CostAccounting, ModelLineEntry, ModelEntry
+from diacamma.accounting.models import CostAccounting, ModelLineEntry, ModelEntry,\
+    FiscalYear
 
 
 @MenuManage.describ('accounting.change_entryaccount', FORMTYPE_NOMODAL, 'bookkeeping', _('Edition of costs accounting'))
@@ -23,7 +24,11 @@ class CostAccountingList(XferListEditor):
     caption = _("costs accounting")
 
     def fillresponse_header(self):
+        self.filter = Q()
+
         all_cost = self.getparam('all_cost', False)
+        if not all_cost:
+            self.filter = Q(status=0)
         sel = XferCompCheck("all_cost")
         sel.set_value(all_cost)
         sel.set_location(1, 3)
@@ -33,8 +38,16 @@ class CostAccountingList(XferListEditor):
         lbl.set_location(2, 3)
         lbl.set_value_as_name(_("Show all cost accounting"))
         self.add_component(lbl)
-        if not all_cost:
-            self.filter = Q(status=0)
+
+        select_year = self.getparam('year', 0)
+        if select_year != 0:
+            self.filter = Q(year_id=select_year)
+            self.item.year = FiscalYear.get_current(select_year)
+        else:
+            self.item.year = None
+        self.fill_from_model(1, 4, False, ['year'])
+        comp_year = self.get_components('year')
+        comp_year.set_action(self.request, self.get_action(), close=CLOSE_NO, modal=FORMTYPE_REFRESH)
 
     def fillresponse(self):
         XferListEditor.fillresponse(self)

@@ -30,6 +30,7 @@ from django.db.models.aggregates import Sum
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils.translation import ugettext_lazy as _
 from django.utils import six
+from django.db.models import Q
 
 from lucterios.framework.signal_and_lock import Signal
 from lucterios.framework.models import get_value_if_choices
@@ -37,10 +38,10 @@ from lucterios.framework.error import LucteriosException, IMPORTANT
 from lucterios.framework.editors import LucteriosEditor
 from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompSelect, XferCompButton, XferCompGrid, XferCompEdit, XferCompFloat
 from lucterios.framework.tools import FORMTYPE_REFRESH, CLOSE_NO, ActionsManage, SELECT_SINGLE, SELECT_MULTI, CLOSE_YES
+from lucterios.framework.xferadvance import TITLE_MODIFY
 from lucterios.CORE.parameters import Params
 
 from diacamma.accounting.models import current_system_account, FiscalYear, EntryLineAccount, EntryAccount, get_amount_sum, Third, CostAccounting
-from lucterios.framework.xferadvance import TITLE_MODIFY
 
 
 class ThirdEditor(LucteriosEditor):
@@ -122,9 +123,13 @@ class CostAccountingEditor(LucteriosEditor):
             xfer.change_to_readonly('name')
             xfer.change_to_readonly('description')
             xfer.change_to_readonly('last_costaccounting')
-        elif self.item.id is not None:
-            sel = xfer.get_components('last_costaccounting')
-            sel.set_select_query(CostAccounting.objects.all().exclude(id=self.item.id))
+            xfer.change_to_readonly('year')
+        else:
+            sel_year = xfer.get_components('year')
+            sel_year.set_select_query(FiscalYear.objects.filter(status__lt=2))
+            if self.item.id is not None:
+                sel = xfer.get_components('last_costaccounting')
+                sel.set_select_query(CostAccounting.objects.all().exclude(id=self.item.id))
 
     def before_save(self, xfer):
         if self.item.id is None and (len(CostAccounting.objects.all()) == 0):
@@ -196,7 +201,7 @@ class EntryAccountEditor(LucteriosEditor):
         if (self.item.costaccounting_id is None) or (self.item.costaccounting_id == 0) or (self.item.costaccounting.status == 0):
             xfer.fill_from_model(1, name_comp.row + 1, False, ['costaccounting'])
             sel = xfer.get_components('costaccounting')
-            sel.set_select_query(CostAccounting.objects.filter(status=0))
+            sel.set_select_query(CostAccounting.objects.filter(Q(status=0) & (Q(year=None) | Q(year=xfer.item.year))))
             self.added = True
         else:
             xfer.fill_from_model(1, name_comp.row + 1, True, ['costaccounting'])
@@ -419,7 +424,7 @@ class ModelEntryEditor(EntryLineAccountEditor):
                 break
         comp_journal.select_list = select_jrn
         sel = xfer.get_components('costaccounting')
-        sel.set_select_query(CostAccounting.objects.filter(status=0))
+        sel.set_select_query(CostAccounting.objects.filter(Q(status=0) & (Q(year=None) | Q(year=FiscalYear.get_current()))))
 
 
 class ModelLineEntryEditor(EntryLineAccountEditor):
