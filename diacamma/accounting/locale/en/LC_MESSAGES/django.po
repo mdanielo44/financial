@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-02-08 21:22+0000\n"
+"POT-Creation-Date: 2017-02-10 10:34+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -266,7 +266,7 @@ msgstr "last cost accounting"
 msgid "This cost accounting is closed!"
 msgstr "This cost accounting is closed!"
 
-#: models.py:452 views_other.py:82 views_other.py:100
+#: models.py:452 views_other.py:76 views_other.py:94
 msgid "This cost accounting is protected by other modules!"
 msgstr "This cost accounting is protected by other modules!"
 
@@ -297,7 +297,7 @@ msgstr "This cost accounting have entry with another year!"
 msgid "cost accounting"
 msgstr "cost accounting"
 
-#: models.py:516 views_other.py:24
+#: models.py:516 views_other.py:22
 msgid "costs accounting"
 msgstr "costs accounting"
 
@@ -443,7 +443,7 @@ msgstr "entry lines of account"
 msgid "Model of entry"
 msgstr "Model of entry"
 
-#: models.py:1181 views_other.py:118
+#: models.py:1181 views_other.py:112
 msgid "Models of entry"
 msgstr "Models of entry"
 
@@ -1018,67 +1018,67 @@ msgstr "Modify entry line of account"
 msgid "Delete entry line of account"
 msgstr "Delete entry line of account"
 
-#: views_other.py:19
+#: views_other.py:17
 msgid "Edition of costs accounting"
 msgstr "Edition of costs accounting"
 
 #: views_other.py:39
-msgid "Show all cost accounting"
-msgstr "Show all cost accounting"
+msgid "- without fiscal year -"
+msgstr "- without fiscal year -"
 
-#: views_other.py:59 views_other.py:65
+#: views_other.py:53 views_other.py:59
 msgid "Default"
 msgstr "Default"
 
-#: views_other.py:71 views_other.py:77
+#: views_other.py:65 views_other.py:71
 msgid "Close"
 msgstr "Close"
 
-#: views_other.py:84
+#: views_other.py:78
 msgid "Do you want to close this cost accounting?"
 msgstr "Do you want to close this cost accounting?"
 
-#: views_other.py:95
+#: views_other.py:89
 msgid "Add cost accounting"
 msgstr "Add cost accounting"
 
-#: views_other.py:96
+#: views_other.py:90
 msgid "Modify cost accounting"
 msgstr "Modify cost accounting"
 
-#: views_other.py:110
+#: views_other.py:104
 msgid "Delete cost accounting"
 msgstr "Delete cost accounting"
 
-#: views_other.py:113
+#: views_other.py:107
 msgid "Edition of entry model"
 msgstr "Edition of entry model"
 
-#: views_other.py:128
+#: views_other.py:122
 msgid "Add model of entry"
 msgstr "Add model of entry"
 
-#: views_other.py:129
+#: views_other.py:123
 msgid "Modify model of entry"
 msgstr "Modify model of entry"
 
-#: views_other.py:138
+#: views_other.py:132
 msgid "Show Model of entry"
 msgstr "Show Model of entry"
 
-#: views_other.py:147
+#: views_other.py:141
 msgid "Delete Model of entry"
 msgstr "Delete Model of entry"
 
-#: views_other.py:157
+#: views_other.py:151
 msgid "Add model line  of entry"
 msgstr "Add model line  of entry"
 
-#: views_other.py:158
+#: views_other.py:152
 msgid "Modify model line  of entry"
 msgstr "Modify model line  of entry"
 
-#: views_other.py:167
+#: views_other.py:161
 msgid "Delete Model line  of entry"
 msgstr "Delete Model line  of entry"
 

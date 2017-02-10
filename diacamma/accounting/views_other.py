@@ -10,10 +10,8 @@ from lucterios.framework.xferadvance import XferListEditor
 from lucterios.framework.xferadvance import XferAddEditor
 from lucterios.framework.xfergraphic import XferContainerAcknowledge
 from lucterios.framework.error import LucteriosException, IMPORTANT
-from lucterios.framework.xfercomponents import XferCompCheck, XferCompLabelForm
 
-from diacamma.accounting.models import CostAccounting, ModelLineEntry, ModelEntry,\
-    FiscalYear
+from diacamma.accounting.models import CostAccounting, ModelLineEntry, ModelEntry
 
 
 @MenuManage.describ('accounting.change_entryaccount', FORMTYPE_NOMODAL, 'bookkeeping', _('Edition of costs accounting'))
@@ -26,28 +24,24 @@ class CostAccountingList(XferListEditor):
     def fillresponse_header(self):
         self.filter = Q()
 
-        all_cost = self.getparam('all_cost', False)
-        if not all_cost:
-            self.filter = Q(status=0)
-        sel = XferCompCheck("all_cost")
-        sel.set_value(all_cost)
-        sel.set_location(1, 3)
-        sel.set_action(self.request, self.get_action(), modal=FORMTYPE_REFRESH, close=CLOSE_NO)
-        self.add_component(sel)
-        lbl = XferCompLabelForm("all_costLbl")
-        lbl.set_location(2, 3)
-        lbl.set_value_as_name(_("Show all cost accounting"))
-        self.add_component(lbl)
+        status_filter = self.getparam('status', -1)
+        if status_filter != -1:
+            self.filter &= Q(status=status_filter)
+        self.status = status_filter
 
         select_year = self.getparam('year', 0)
-        if select_year != 0:
-            self.filter = Q(year_id=select_year)
-            self.item.year = FiscalYear.get_current(select_year)
-        else:
-            self.item.year = None
-        self.fill_from_model(1, 4, False, ['year'])
+        if select_year > 0:
+            self.filter &= Q(year_id=select_year)
+        if select_year == -1:
+            self.filter &= Q(year__isnull=True)
+        self.fill_from_model(1, 4, False, ['status', 'year'])
         comp_year = self.get_components('year')
+        comp_year.select_list.append((-1, _('- without fiscal year -')))
+        comp_year.set_value(select_year)
         comp_year.set_action(self.request, self.get_action(), close=CLOSE_NO, modal=FORMTYPE_REFRESH)
+        comp_status = self.get_components('status')
+        comp_status.select_list.insert(0, (-1, None))
+        comp_status.set_action(self.request, self.get_action(), close=CLOSE_NO, modal=FORMTYPE_REFRESH)
 
     def fillresponse(self):
         XferListEditor.fillresponse(self)
@@ -56,7 +50,7 @@ class CostAccountingList(XferListEditor):
         self.get_components('nb_costaccounting').colspan += 1
 
 
-@ActionsManage.affect_grid(_("Default"), "", unique=SELECT_SINGLE)
+@ActionsManage.affect_grid(_("Default"), "", unique=SELECT_SINGLE, condition=lambda xfer, gridname='': xfer.getparam('status', 0) != 1)
 @MenuManage.describ('accounting.add_fiscalyear')
 class CostAccountingDefault(XferContainerAcknowledge):
     icon = ""
@@ -68,7 +62,7 @@ class CostAccountingDefault(XferContainerAcknowledge):
         self.item.change_has_default()
 
 
-@ActionsManage.affect_grid(_("Close"), "images/ok.png", unique=SELECT_SINGLE)
+@ActionsManage.affect_grid(_("Close"), "images/ok.png", unique=SELECT_SINGLE, condition=lambda xfer, gridname='': xfer.getparam('status', 0) != 1)
 @MenuManage.describ('accounting.add_fiscalyear')
 class CostAccountingClose(XferContainerAcknowledge):
     icon = "images/ok.png"
@@ -85,8 +79,8 @@ class CostAccountingClose(XferContainerAcknowledge):
                 self.item.close()
 
 
-@ActionsManage.affect_grid(TITLE_ADD, "images/add.png", unique=SELECT_NONE)
-@ActionsManage.affect_grid(TITLE_MODIFY, "images/edit.png", unique=SELECT_SINGLE)
+@ActionsManage.affect_grid(TITLE_ADD, "images/add.png", unique=SELECT_NONE, condition=lambda xfer, gridname='': xfer.getparam('status', 0) != 1)
+@ActionsManage.affect_grid(TITLE_MODIFY, "images/edit.png", unique=SELECT_SINGLE, condition=lambda xfer, gridname='': xfer.getparam('status', 0) != 1)
 @MenuManage.describ('accounting.add_entryaccount')
 class CostAccountingAddModify(XferAddEditor):
     icon = "costAccounting.png"
@@ -96,12 +90,14 @@ class CostAccountingAddModify(XferAddEditor):
     caption_modify = _("Modify cost accounting")
 
     def fillresponse(self):
+        if 'status' in self.params.keys():
+            del self.params['status']
         if (self.item.id is not None) and self.item.is_protected:
             raise LucteriosException(IMPORTANT, _("This cost accounting is protected by other modules!"))
         XferAddEditor.fillresponse(self)
 
 
-@ActionsManage.affect_grid(TITLE_DELETE, "images/delete.png", unique=SELECT_MULTI)
+@ActionsManage.affect_grid(TITLE_DELETE, "images/delete.png", unique=SELECT_MULTI, condition=lambda xfer, gridname='': xfer.getparam('status', 0) != 1)
 @MenuManage.describ('accounting.delete_entryaccount')
 class CostAccountingDel(XferDelete):
     icon = "costAccounting.png"
