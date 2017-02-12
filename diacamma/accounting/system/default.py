@@ -27,6 +27,9 @@ from __future__ import unicode_literals
 
 class DefaultSystemAccounting(object):
 
+    def has_minium_code_size(self):
+        return True
+
     def get_general_mask(self):
         return ''
 

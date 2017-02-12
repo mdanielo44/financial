@@ -38,7 +38,8 @@ from lucterios.CORE.models import Parameter
 
 from diacamma.accounting.models import FiscalYear, Journal, AccountThird, ChartsAccount, ModelLineEntry
 from diacamma.accounting.system import accounting_system_list, accounting_system_name
-from diacamma.accounting.tools import clear_system_account, correct_accounting_code
+from diacamma.accounting.tools import clear_system_account, correct_accounting_code,\
+    current_system_account
 from django.utils import six
 
 MenuManage.add_sub("financial.conf", "core.extensions", "", _("Financial"), "", 2)
@@ -60,7 +61,9 @@ def select_account_system(xfer):
 
 
 def fill_params(xfer, is_mini=False):
-    xfer.params['params'] = ['accounting-devise', 'accounting-devise-iso', 'accounting-devise-prec', 'accounting-sizecode']
+    xfer.params['params'] = ['accounting-devise', 'accounting-devise-iso', 'accounting-devise-prec']
+    if current_system_account().has_minium_code_size():
+        xfer.params['params'].append('accounting-sizecode')
     Params.fill(xfer, xfer.params['params'], 1, xfer.get_max_row() + 1)
     btn = XferCompButton('editparam')
     btn.set_is_mini(is_mini)

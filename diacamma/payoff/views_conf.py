@@ -17,6 +17,7 @@ from lucterios.CORE.models import Parameter
 
 from diacamma.accounting.tools import correct_accounting_code
 from diacamma.payoff.models import BankAccount, PaymentMethod
+from diacamma.accounting.system import accounting_system_ident
 
 
 def fill_params(xfer, is_mini=False):
@@ -119,6 +120,12 @@ def paramchange_payoff(params):
         if pvalue != '':
             Parameter.change_value(
                 'payoff-bankcharges-account', correct_accounting_code(pvalue))
+    if 'accounting-system' in params:
+        system_ident = accounting_system_ident(Params.getvalue("accounting-system"))
+        if system_ident == "french":
+            Parameter.change_value('payoff-cash-account', correct_accounting_code('531'))
+        elif system_ident == "belgium":
+            Parameter.change_value('payoff-cash-account', correct_accounting_code('570'))
     Params.clear()
 
 

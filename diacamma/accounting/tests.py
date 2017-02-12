@@ -38,9 +38,11 @@ from diacamma.accounting.views_admin import Configuration, JournalAddModify, Jou
 from diacamma.accounting.views_other import ModelEntryList, ModelEntryAddModify, ModelLineEntryAddModify
 from diacamma.accounting.test_tools import initial_contacts, fill_entries, initial_thirds, create_third, fill_accounts, fill_thirds, default_compta, set_accounting_system, add_models
 from diacamma.accounting.models import FiscalYear
-from diacamma.accounting.system import get_accounting_system
+from diacamma.accounting.system import get_accounting_system,\
+    accounting_system_ident
 from diacamma.accounting.tools import current_system_account, clear_system_account
 from diacamma.accounting.views_entries import EntryAccountModelSelector
+from lucterios.CORE.parameters import Params
 
 
 class ThirdTest(LucteriosTest):
@@ -750,12 +752,17 @@ class AdminTest(LucteriosTest):
         self.assert_xml_equal('EXCEPTION/MESSAGE', "Cet exercice est terminé!")
 
     def test_system_accounting(self):
+        clear_system_account()
         self.assertEqual(get_accounting_system('').__class__.__name__, "DefaultSystemAccounting")
         self.assertEqual(get_accounting_system('accountingsystem.foo.DummySystemAcounting').__class__.__name__, "DefaultSystemAccounting")
-        self.assertEqual(get_accounting_system(
-            'diacamma.accounting.system.french.DummySystemAcounting').__class__.__name__, "DefaultSystemAccounting")
+        self.assertEqual(get_accounting_system('diacamma.accounting.system.french.DummySystemAcounting').__class__.__name__, "DefaultSystemAccounting")
         self.assertEqual(get_accounting_system('diacamma.accounting.system.french.FrenchSystemAcounting').__class__.__name__, "FrenchSystemAcounting")
+        self.assertEqual(get_accounting_system('diacamma.accounting.system.belgium.BelgiumSystemAcounting').__class__.__name__, "BelgiumSystemAcounting")
+        self.assertEqual(accounting_system_ident('diacamma.accounting.system.french.DummySystemAcounting'), "---")
+        self.assertEqual(accounting_system_ident('diacamma.accounting.system.french.FrenchSystemAcounting'), "french")
+        self.assertEqual(accounting_system_ident('diacamma.accounting.system.belgium.BelgiumSystemAcounting'), "belgium")
 
+        self.assertEqual(Params.getvalue("accounting-system"), "")
         self.assertEqual(current_system_account().__class__.__name__, "DefaultSystemAccounting")
         set_accounting_system()
         self.assertEqual(current_system_account().__class__.__name__, "FrenchSystemAcounting")

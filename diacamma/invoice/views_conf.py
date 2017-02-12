@@ -37,6 +37,7 @@ from lucterios.CORE.models import Parameter
 
 from diacamma.accounting.tools import correct_accounting_code
 from diacamma.invoice.models import Vat, Article
+from diacamma.accounting.system import accounting_system_ident
 
 
 def fill_params(xfer, param_lists=None, is_mini=False):
@@ -107,8 +108,7 @@ def paramchange_invoice(params):
                       'invoice-reduce-account', 'invoice-account-third']
     if 'accounting-sizecode' in params:
         for param_item in invoice_params:
-            Parameter.change_value(
-                param_item, correct_accounting_code(Params.getvalue(param_item)))
+            Parameter.change_value(param_item, correct_accounting_code(Params.getvalue(param_item)))
         Params.clear()
         for art in Article.objects.all():
             if art.sell_account != correct_accounting_code(art.sell_account):
@@ -116,8 +116,20 @@ def paramchange_invoice(params):
                 art.save()
     for invoice_param in invoice_params:
         if invoice_param in params:
-            Parameter.change_value(
-                invoice_param, correct_accounting_code(Params.getvalue(invoice_param)))
+            Parameter.change_value(invoice_param, correct_accounting_code(Params.getvalue(invoice_param)))
+    if 'accounting-system' in params:
+        system_ident = accounting_system_ident(Params.getvalue("accounting-system"))
+        if system_ident == "french":
+            Parameter.change_value('invoice-default-sell-account', correct_accounting_code('706'))
+            Parameter.change_value('invoice-reduce-account', correct_accounting_code('709'))
+            Parameter.change_value('invoice-vatsell-account', correct_accounting_code('4455'))
+            Parameter.change_value("invoice-account-third", correct_accounting_code('411'))
+        elif system_ident == "belgium":
+            Parameter.change_value('invoice-default-sell-account', correct_accounting_code('700'))
+            Parameter.change_value('invoice-reduce-account', correct_accounting_code('708'))
+            Parameter.change_value('invoice-vatsell-account', correct_accounting_code('451'))
+            Parameter.change_value("invoice-account-third", correct_accounting_code('400'))
+    Params.clear()
 
 
 @signal_and_lock.Signal.decorate('conf_wizard')

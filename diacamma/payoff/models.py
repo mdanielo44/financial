@@ -775,7 +775,7 @@ def check_payoff_accounting():
 def payoff_checkparam():
     Parameter.check_and_create(name='payoff-bankcharges-account', typeparam=0,
                                title=_("payoff-bankcharges-account"), args="{'Multi':False}", value='')
-    Parameter.check_and_create(name='payoff-cash-account', typeparam=0, title=_("payoff-cash-account"), args="{'Multi':False}", value='531')
+    Parameter.check_and_create(name='payoff-cash-account', typeparam=0, title=_("payoff-cash-account"), args="{'Multi':False}", value='')
     Parameter.check_and_create(name='payoff-email-message', typeparam=0, title=_("payoff-email-message"),
                                args="{'Multi':True}", value=_('%(name)s\n\nJoint in this email %(doc)s.\n\nRegards'))
     check_payoff_accounting()

@@ -35,8 +35,7 @@ def current_system_account():
     import sys
     current_module = sys.modules[__name__]
     if not hasattr(current_module, 'SYSTEM_ACCOUNT_CACHE'):
-        setattr(current_module, 'SYSTEM_ACCOUNT_CACHE',
-                get_accounting_system(Params.getvalue("accounting-system")))
+        setattr(current_module, 'SYSTEM_ACCOUNT_CACHE', get_accounting_system(Params.getvalue("accounting-system")))
     return current_module.SYSTEM_ACCOUNT_CACHE
 
 
@@ -64,11 +63,12 @@ def currency_round(amount):
 
 
 def correct_accounting_code(code):
-    code_size = Params.getvalue("accounting-sizecode")
-    while len(code) > code_size and code[-1] == '0':
-        code = code[:-1]
-    while len(code) < code_size:
-        code += '0'
+    if current_system_account().has_minium_code_size():
+        code_size = Params.getvalue("accounting-sizecode")
+        while len(code) > code_size and code[-1] == '0':
+            code = code[:-1]
+        while len(code) < code_size:
+            code += '0'
     return code
 
 

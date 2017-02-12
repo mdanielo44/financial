@@ -31,6 +31,7 @@ from django.utils.module_loading import import_module
 def accounting_system_list():
     res = {}
     res['diacamma.accounting.system.french.FrenchSystemAcounting'] = _('French system acounting')
+    res['diacamma.accounting.system.belgium.BelgiumSystemAcounting'] = _('Belgium system acounting')
     return res
 
 
@@ -38,6 +39,14 @@ def accounting_system_name(complete_name):
     sys_list = accounting_system_list()
     if complete_name in sys_list.keys():
         return sys_list[complete_name]
+    else:
+        return "---"
+
+
+def accounting_system_ident(complete_name):
+    modules_long = complete_name.split('.')
+    if len(modules_long) == 5:
+        return modules_long[3]
     else:
         return "---"
 

@@ -33,6 +33,7 @@ from diacamma.accounting.models import Third, AccountThird, FiscalYear, \
 from lucterios.CORE.models import Parameter
 from lucterios.CORE.parameters import Params
 from diacamma.accounting.tools import clear_system_account
+from lucterios.framework import signal_and_lock
 
 
 def create_individual(firstname, lastname):
@@ -139,10 +140,10 @@ def add_models():
 
 
 def set_accounting_system():
-    Parameter.change_value(
-        'accounting-system', 'diacamma.accounting.system.french.FrenchSystemAcounting')
+    Parameter.change_value('accounting-system', 'diacamma.accounting.system.french.FrenchSystemAcounting')
     Params.clear()
     clear_system_account()
+    signal_and_lock.Signal.call_signal("param_change", ['accounting-system'])
 
 
 def default_compta(status=0):
