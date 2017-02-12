@@ -45,15 +45,17 @@ def accounting_system_name(complete_name):
 
 def accounting_system_ident(complete_name):
     modules_long = complete_name.split('.')
-    if len(modules_long) == 5:
+    sys_list = accounting_system_list()
+    if (complete_name in sys_list.keys()) and (len(modules_long) == 5):
         return modules_long[3]
     else:
         return "---"
 
 
 def get_accounting_system(complete_name):
-    modules_long = complete_name.split('.')
-    if len(modules_long) > 1:
+    sys_list = accounting_system_list()
+    if complete_name in sys_list.keys():
+        modules_long = complete_name.split('.')
         module_name = ".".join(modules_long[:-1])
         class_name = modules_long[-1]
         try:

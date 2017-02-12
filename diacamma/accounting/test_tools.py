@@ -147,6 +147,8 @@ def set_accounting_system():
 
 
 def default_compta(status=0):
+    from diacamma.payoff.views_conf import paramchange_payoff
+    paramchange_payoff([])
     set_accounting_system()
     year = create_year(status)
     fill_accounts(year)
