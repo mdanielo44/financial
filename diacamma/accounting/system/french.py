@@ -20,12 +20,8 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import unicode_literals
 import re
 
-from django.utils import six
-
 from diacamma.accounting.system.default import DefaultSystemAccounting
 from os.path import dirname, join
-from lucterios.framework.tools import get_icon_path
-from lucterios.framework.xferadvance import TITLE_OK, TITLE_CANCEL
 
 GENERAL_MASK = r'^[0-8][0-9]{2}[0-9a-zA-Z]*$'
 
@@ -234,6 +230,9 @@ def find_charts(code):
 
 class FrenchSystemAcounting(DefaultSystemAccounting):
 
+    NEGATIF_ACCOUNT = "129"
+    POSITIF_ACCOUNT = "120"
+
     def get_general_mask(self):
         return GENERAL_MASK
 
@@ -274,182 +273,6 @@ class FrenchSystemAcounting(DefaultSystemAccounting):
             if current_charts is not None:
                 return current_charts[2], current_charts[3]
         return '', -2
-
-    def _create_custom_for_profit(self, year, custom, val_profit):
-        from lucterios.framework.xfercomponents import XferCompImage, XferCompLabelForm, XferCompSelect
-        from diacamma.accounting.models import format_devise
-        if val_profit > 0.0001:
-            type_profit = 'bénéfice'
-        else:
-            type_profit = 'déficite'
-        img = XferCompImage("img")
-        img.set_location(0, 0)
-        img.set_value(get_icon_path("diacamma.accounting/images/account.png"))
-        custom.add_component(img)
-        lbl = XferCompLabelForm("title")
-        lbl.set_value_as_headername("Bénéfices et Pertes")
-        lbl.set_location(1, 0)
-        custom.add_component(lbl)
-        text = "{[i]}Vous avez un %s de %s.{[br/]}Vous devez definir sur quel compte l'affecter.{[br/]}{[/i]}" % (
-            type_profit, format_devise(val_profit, 4))
-        text += "{[br/]}En validant, vous commencerez '%s'{[br/]}{[br/]}{[i]}{[u]}Attention:{[/u]} Votre report à nouveau doit être totalement fait.{[/i]}" % six.text_type(
-            year)
-        lbl = XferCompLabelForm("info")
-        lbl.set_value(text)
-        lbl.set_location(0, 1, 2)
-        custom.add_component(lbl)
-        sel_cmpt = []
-        for account in year.chartsaccount_set.all().filter(code__startswith='10').order_by('code'):
-            sel_cmpt.append((account.id, six.text_type(account)))
-        sel = XferCompSelect("profit_account")
-        sel.set_select(sel_cmpt)
-        sel.set_location(1, 2)
-        custom.add_component(sel)
-        return custom
-
-    def _get_profit(self, year):
-        from diacamma.accounting.models import EntryLineAccount, get_amount_sum
-        from django.db.models.aggregates import Sum
-        from django.db.models import Q
-        query = Q(account__code__startswith='110') | Q(
-            account__code__startswith='119')
-        query &= Q(account__year=year)
-        val_profit = get_amount_sum(EntryLineAccount.objects.filter(
-            query).aggregate(Sum('amount')))
-        return val_profit
-
-    def _create_profit_entry(self, year, profit_account):
-        from diacamma.accounting.models import Journal, EntryAccount, EntryLineAccount, ChartsAccount
-        from django.db.models import Q
-        paym_journ = Journal.objects.get(id=1)
-        paym_desig = 'Affectation des bénéfices/pertes'
-        new_entry = EntryAccount.objects.create(
-            year=year, journal=paym_journ, designation=paym_desig, date_value=year.begin)
-        query = Q(account__code__startswith='110') | Q(
-            account__code__startswith='119')
-        query &= Q(account__year=year)
-        sum_profit = 0
-        for new_line in EntryLineAccount.objects.filter(query):
-            sum_profit += new_line.amount
-            new_line.id = None
-            new_line.entry = new_entry
-            new_line.amount = -1 * new_line.amount
-            new_line.save()
-        new_line = EntryLineAccount()
-        new_line.entry = new_entry
-        new_line.amount = sum_profit
-        new_line.account = ChartsAccount.objects.get(
-            id=profit_account)
-        new_line.save()
-        new_entry.closed()
-        return True
-
-    def check_begin(self, year, xfer):
-        profit_account = xfer.getparam('profit_account', 0)
-        if profit_account > 0:
-            return self._create_profit_entry(year, profit_account)
-        val_profit = self._get_profit(year)
-        if abs(val_profit) > 0.0001:
-            from lucterios.framework.tools import WrapAction, CLOSE_YES, FORMTYPE_MODAL
-            custom = xfer.create_custom()
-            self._create_custom_for_profit(year, custom, val_profit)
-            custom.add_action(xfer.get_action(TITLE_OK, "images/ok.png"), modal=FORMTYPE_MODAL, close=CLOSE_YES)
-            custom.add_action(WrapAction(TITLE_CANCEL, "images/cancel.png"))
-            return False
-        else:
-            text = "Voulez-vous commencer '%s'? {[br/]}{[br/]}{[i]}{[u]}Attention:{[/u]} Votre report à nouveau doit être totalement fait.{[/i]}" % six.text_type(
-                year)
-            return xfer.confirme(text)
-
-    def _create_result_entry(self, year):
-        revenue = year.total_revenue
-        expense = year.total_expense
-        if abs(expense - revenue) > 0.0001:
-            from diacamma.accounting.models import Journal, EntryAccount
-            end_journ = Journal.objects.get(id=5)
-            end_desig = "Cloture d'exercice - Résultat"
-            new_entry = EntryAccount.objects.create(
-                year=year, journal=end_journ, designation=end_desig, date_value=year.end)
-            if expense > revenue:
-                new_entry.add_entry_line(revenue - expense, '129')
-            else:
-                new_entry.add_entry_line(revenue - expense, '120')
-            new_entry.closed(check_balance=False)
-
-    def _create_thirds_ending_entry(self, year):
-        from diacamma.accounting.models import get_amount_sum, Journal, EntryAccount, EntryLineAccount, ChartsAccount, Third
-        from django.db.models.aggregates import Sum
-        sum40 = get_amount_sum(EntryLineAccount.objects.filter(
-            account__code__startswith='401', account__year=year).aggregate(Sum('amount')))
-        sum41 = get_amount_sum(EntryLineAccount.objects.filter(
-            account__code__startswith='411', account__year=year).aggregate(Sum('amount')))
-        sum42 = get_amount_sum(EntryLineAccount.objects.filter(
-            account__code__startswith='421', account__year=year).aggregate(Sum('amount')))
-        sum45 = get_amount_sum(EntryLineAccount.objects.filter(
-            account__code__startswith='450', account__year=year).aggregate(Sum('amount')))
-        if (abs(sum40) > 0.001) or (abs(sum41) > 0.001) or (abs(sum42) > 0.001) or (abs(sum45) > 0.001):
-            end_journ = Journal.objects.get(id=5)
-            end_desig = "Cloture d'exercice - Résultat"
-            new_entry = EntryAccount.objects.create(
-                year=year, journal=end_journ, designation=end_desig, date_value=year.end)
-            for data_line in EntryLineAccount.objects.filter(account__code__regex=THIRD_MASK, account__year=year).values('account', 'third').annotate(data_sum=Sum('amount')):
-                if abs(data_line['data_sum']) > 0.0001:
-                    new_line = EntryLineAccount()
-                    new_line.entry = new_entry
-                    new_line.amount = -1 * data_line['data_sum']
-                    new_line.account = ChartsAccount.objects.get(
-                        id=data_line['account'])
-                    if data_line['third'] is not None:
-                        new_line.third = Third.objects.get(
-                            id=data_line['third'])
-                    new_line.save()
-            new_entry.add_entry_line(sum40, '401')
-            new_entry.add_entry_line(sum41, '411')
-            new_entry.add_entry_line(sum42, '421')
-            new_entry.add_entry_line(sum45, '450')
-            new_entry.closed()
-
-    def finalize_year(self, year):
-        self._create_result_entry(year)
-        self._create_thirds_ending_entry(year)
-
-    def _create_report_lastyearresult(self, year, import_result):
-        from diacamma.accounting.models import Journal, EntryAccount
-        end_journ = Journal.objects.get(id=1)
-        end_desig = "Report à nouveau - Bilan"
-        new_entry = EntryAccount.objects.create(
-            year=year, journal=end_journ, designation=end_desig, date_value=year.begin)
-        for charts_account in year.last_fiscalyear.chartsaccount_set.filter(type_of_account__in=(0, 1, 2)):
-            if import_result and charts_account.code[:3] == '120':
-                code = "110"
-                name = None
-            elif import_result and charts_account.code[:3] == '129':
-                code = "119"
-                name = None
-            else:
-                code = charts_account.code
-                name = charts_account.name
-            new_entry.add_entry_line(charts_account.get_current_validated(), code, name)
-        new_entry.closed()
-
-    def _create_report_third(self, year):
-        from diacamma.accounting.models import Journal, EntryAccount
-        last_entry_account = list(
-            year.last_fiscalyear.entryaccount_set.filter(journal__id=5).order_by('num'))[-1]
-        end_journ = Journal.objects.get(id=1)
-        end_desig = "Report à nouveau - Dette tiers"
-        new_entry = EntryAccount.objects.create(
-            year=year, journal=end_journ, designation=end_desig, date_value=year.begin)
-        for entry_line in last_entry_account.entrylineaccount_set.all():
-            if re.match(THIRD_MASK, entry_line.account.code):
-                new_entry.add_entry_line(-1 * entry_line.amount,
-                                         entry_line.account.code, entry_line.account.name, entry_line.third)
-        new_entry.closed()
-
-    def import_lastyear(self, year, import_result):
-        self._create_report_lastyearresult(year, import_result)
-        self._create_report_third(year)
-        return
 
     def get_export_xmlfiles(self):
         file_path = dirname(__file__)

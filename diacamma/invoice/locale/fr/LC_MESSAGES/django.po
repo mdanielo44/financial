@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-02-10 10:34+0000\n"
+"POT-Creation-Date: 2017-02-23 16:15+0000\n"
 "PO-Revision-Date: 2016-01-14 21:59+0000\n"
 "Last-Translator: b'Paul ARULATEDA <paul531@orange.fr>'\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,28 +19,28 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Translated-Using: django-rosetta 0.7.8\n"
 
-#: __init__.py:41 views_conf.py:129 views_conf.py:132
+#: __init__.py:41 views_conf.py:141 views_conf.py:144
 msgid "Diacamma invoice"
 msgstr "Facturier Diacamma"
 
-#: editors.py:93
+#: editors.py:101
 msgid "price excl. taxes"
 msgstr "prix HT"
 
-#: editors.py:95 editors.py:102 printmodel/Bill_0001.py:134 views.py:133
+#: editors.py:103 editors.py:110 printmodel/Bill_0001.py:134 views.py:133
 msgid "total excl. taxes"
 msgstr "total HT"
 
-#: editors.py:98
+#: editors.py:106
 msgid "price incl. taxes"
 msgstr "prix TTC"
 
-#: editors.py:100 editors.py:104 models.py:182 printmodel/Bill_0001.py:135
+#: editors.py:108 editors.py:112 models.py:182 printmodel/Bill_0001.py:135
 #: views.py:136
 msgid "total incl. taxes"
 msgstr "total TTC"
 
-#: editors.py:104 models.py:182
+#: editors.py:112 models.py:182
 msgid "VTA sum"
 msgstr "total TVA"
 
@@ -56,7 +56,7 @@ msgstr "taux"
 msgid "is actif"
 msgstr "actif?"
 
-#: models.py:69 views_conf.py:64 views_conf.py:132
+#: models.py:69 views_conf.py:65 views_conf.py:144
 msgid "VAT"
 msgstr "TVA"
 
@@ -99,7 +99,7 @@ msgstr "TVA"
 msgid "article"
 msgstr "article"
 
-#: models.py:115 views_conf.py:95
+#: models.py:115 views_conf.py:96
 msgid "articles"
 msgstr "articles"
 
@@ -242,35 +242,35 @@ msgstr "détail"
 msgid "details"
 msgstr "détails"
 
-#: models.py:678
+#: models.py:677
 msgid "invoice-default-sell-account"
 msgstr "compte de vente par défaut"
 
-#: models.py:679
+#: models.py:678
 msgid "invoice-reduce-account"
 msgstr "compte de réduction"
 
-#: models.py:681
+#: models.py:679
 msgid "invoice-vatsell-account"
 msgstr "compte de TVA de vente"
 
-#: models.py:683
+#: models.py:680
 msgid "invoice-vat-mode"
 msgstr "mode TVA"
 
-#: models.py:684
+#: models.py:680
 msgid "invoice-vat-mode.0"
 msgstr "non applicable"
 
-#: models.py:684
+#: models.py:680
 msgid "invoice-vat-mode.1"
 msgstr "prix hors taxe"
 
-#: models.py:684
+#: models.py:680
 msgid "invoice-vat-mode.2"
 msgstr "prix toutes taxes comprises"
 
-#: models.py:685
+#: models.py:681
 msgid "invoice-account-third"
 msgstr "Compte tiers par défault"
 
@@ -494,7 +494,7 @@ msgstr "Financier"
 msgid "There are %(build)d bills in building and %(valid)d validated"
 msgstr "Il y a %(build)d factures en construction et %(valid)d validées"
 
-#: views.py:477 views.py:510 views_conf.py:100
+#: views.py:477 views.py:510 views_conf.py:101
 msgid "Invoice"
 msgstr "Facturier"
 
@@ -503,39 +503,39 @@ msgstr "Facturier"
 msgid "You are %d bills"
 msgstr "Vous avez %d factures sur votre compte"
 
-#: views_conf.py:54
+#: views_conf.py:55
 msgid "Management of parameters and configuration of invoice"
 msgstr "Gestion des paramètres et configuraiton du facturier"
 
-#: views_conf.py:59
+#: views_conf.py:60
 msgid "Invoice configuration"
 msgstr "Configuration du facturier"
 
-#: views_conf.py:62 views_conf.py:129
+#: views_conf.py:63 views_conf.py:141
 msgid "Parameters"
 msgstr "Paramètres"
 
-#: views_conf.py:74
+#: views_conf.py:75
 msgid "Add VAT"
 msgstr "Ajouter une TVA"
 
-#: views_conf.py:75
+#: views_conf.py:76
 msgid "Modify VAT"
 msgstr "Modifier une TVA"
 
-#: views_conf.py:84
+#: views_conf.py:85
 msgid "Delete VAT"
 msgstr "Supprimer une TVA"
 
-#: views_conf.py:97
+#: views_conf.py:98
 msgid "parameters"
 msgstr "paramètres"
 
-#: views_conf.py:129
+#: views_conf.py:141
 msgid "Configuration of parameters"
 msgstr "Définissez les paramètres du facturier."
 
-#: views_conf.py:132
+#: views_conf.py:144
 msgid "Configuration of vat"
 msgstr "Configurez votre gestion de TVA."
 

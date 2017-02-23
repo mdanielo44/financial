@@ -29,7 +29,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 
 from lucterios.framework.editors import LucteriosEditor
-from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompHeader
+from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompHeader,\
+    XferCompSelect
 from lucterios.framework.tools import CLOSE_NO, FORMTYPE_REFRESH
 from lucterios.framework.models import get_value_if_choices
 from lucterios.CORE.parameters import Params
@@ -37,6 +38,7 @@ from lucterios.CORE.parameters import Params
 from diacamma.accounting.tools import current_system_account
 from diacamma.accounting.models import CostAccounting, FiscalYear
 from diacamma.payoff.editors import SupportingEditor
+from django.utils import six
 
 
 class ArticleEditor(LucteriosEditor):
@@ -44,8 +46,14 @@ class ArticleEditor(LucteriosEditor):
     def edit(self, xfer):
         currency_decimal = Params.getvalue("accounting-devise-prec")
         xfer.get_components('price').prec = currency_decimal
-        xfer.get_components(
-            'sell_account').mask = current_system_account().get_revenue_mask()
+        old_account = xfer.get_components("sell_account")
+        xfer.remove_component("sell_account")
+        sel_code = XferCompSelect("sell_account")
+        sel_code.set_location(old_account.col, old_account.row, old_account.colspan + 1, old_account.rowspan)
+        for item in FiscalYear.get_current().chartsaccount_set.all().filter(code__regex=current_system_account().get_revenue_mask()).order_by('code'):
+            sel_code.select_list.append((item.code, six.text_type(item)))
+        sel_code.set_value(self.item.sell_account)
+        xfer.add_component(sel_code)
 
 
 class BillEditor(SupportingEditor):

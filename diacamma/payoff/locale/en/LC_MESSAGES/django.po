@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-02-10 10:34+0000\n"
+"POT-Creation-Date: 2017-02-23 16:15+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,27 +17,27 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: __init__.py:41 views_conf.py:132 views_conf.py:135 views_conf.py:138
+#: __init__.py:41 views_conf.py:139 views_conf.py:142 views_conf.py:145
 msgid "Diacamma payoff"
 msgstr "Diacamma payoff"
 
-#: editors.py:95
+#: editors.py:110
 msgid "payoff null!"
 msgstr "payoff null!"
 
-#: editors.py:110 models.py:397
+#: editors.py:125 models.py:397
 msgid "No-valid selection!"
 msgstr "No-valid selection!"
 
-#: editors.py:134
+#: editors.py:149
 msgid "repartition mode"
 msgstr "repartition mode"
 
-#: editors.py:139
+#: editors.py:154
 msgid "by ratio"
 msgstr "by ratio"
 
-#: editors.py:139
+#: editors.py:154
 msgid "by date"
 msgstr "by date"
 
@@ -85,7 +85,7 @@ msgstr "reference"
 msgid "account code"
 msgstr "account code"
 
-#: models.py:235 models.py:253 models.py:458 models.py:600 views_conf.py:98
+#: models.py:235 models.py:253 models.py:458 models.py:600 views_conf.py:99
 msgid "bank account"
 msgstr "bank account"
 
@@ -240,7 +240,7 @@ msgstr "PayPal"
 msgid "data"
 msgstr "data"
 
-#: models.py:605 views_conf.py:100
+#: models.py:605 views_conf.py:101
 msgid "parameters"
 msgstr "parameters"
 
@@ -379,63 +379,63 @@ msgstr "No payment for this document."
 msgid "Payement methods"
 msgstr "Payement methods"
 
-#: views_conf.py:32
+#: views_conf.py:33
 msgid "Management of parameters and configuration of payoff"
 msgstr "Management of parameters and configuration of payoff"
 
-#: views_conf.py:37
+#: views_conf.py:38
 msgid "Payoff configuration"
 msgstr "Payoff configuration"
 
-#: views_conf.py:40 views_conf.py:135
+#: views_conf.py:41 views_conf.py:142
 msgid "Bank account"
 msgstr "Bank account"
 
-#: views_conf.py:44 views_conf.py:138
+#: views_conf.py:45 views_conf.py:145
 msgid "Payment method"
 msgstr "Payment method"
 
-#: views_conf.py:46 views_conf.py:132
+#: views_conf.py:47 views_conf.py:139
 msgid "Parameters"
 msgstr "Parameters"
 
-#: views_conf.py:57
+#: views_conf.py:58
 msgid "Add bank account"
 msgstr "Add bank account"
 
-#: views_conf.py:58
+#: views_conf.py:59
 msgid "Modify bank account"
 msgstr "Modify bank account"
 
-#: views_conf.py:67
+#: views_conf.py:68
 msgid "Delete bank account"
 msgstr "Delete bank account"
 
-#: views_conf.py:77
+#: views_conf.py:78
 msgid "Add payment method"
 msgstr "Add payment method"
 
-#: views_conf.py:78
+#: views_conf.py:79
 msgid "Modify payment method"
 msgstr "Modify payment method"
 
-#: views_conf.py:87
+#: views_conf.py:88
 msgid "Delete payment method"
 msgstr "Delete payment method"
 
-#: views_conf.py:103
+#: views_conf.py:104
 msgid "Payoff"
 msgstr "Payoff"
 
-#: views_conf.py:132
+#: views_conf.py:139
 msgid "Configuration of payoff parameters"
 msgstr "Define parameters for payoff"
 
-#: views_conf.py:135
+#: views_conf.py:142
 msgid "Configuration of bank account"
 msgstr "Add your bank accounts"
 
-#: views_conf.py:138
+#: views_conf.py:145
 msgid "Configuration of payment method"
 msgstr "Add your payment methods"
 

@@ -469,7 +469,7 @@ GENERAL_CHARTS_ACCOUNT = [
     ("407", "Créances douteuses", 0),
     ("408", "Compensation clients", 0),
     ("409", "Réductions de valeur actées", 0),
-    ("410", "Capital appelé, non versé", 1),
+    ("410", "Capital appelé, non versé", 0),
     ("4100", "Appels de fonds", 0),
     ("4101", "Actionnaires défaillants", 0),
     ("411", "T.V.A. à récupérer", 1),
@@ -959,6 +959,9 @@ def find_charts(code):
 
 class BelgiumSystemAcounting(DefaultSystemAccounting):
 
+    NEGATIF_ACCOUNT = "141"
+    POSITIF_ACCOUNT = "140"
+
     def has_minium_code_size(self):
         return False
 
@@ -1002,16 +1005,6 @@ class BelgiumSystemAcounting(DefaultSystemAccounting):
             if current_charts is not None:
                 return current_charts[1], current_charts[2]
         return '', -2
-
-    def check_begin(self, year, xfer):
-        text = "Voulez-vous commencer '%s'? {[br/]}{[br/]}{[i]}{[u]}Attention:{[/u]} Votre report à nouveau doit être totalement fait.{[/i]}" % six.text_type(year)
-        return xfer.confirme(text)
-
-    def finalize_year(self, year):
-        pass
-
-    def import_lastyear(self, year, import_result):
-        return
 
     def get_export_xmlfiles(self):
         return None

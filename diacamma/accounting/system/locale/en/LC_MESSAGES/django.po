@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-02-10 10:34+0000\n"
+"POT-Creation-Date: 2017-02-23 16:15+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,8 +21,65 @@ msgstr ""
 msgid "French system acounting"
 msgstr "French system acounting"
 
-#~ msgid "Ok"
-#~ msgstr "Ok"
+#: system/__init__.py:34
+msgid "Belgium system acounting"
+msgstr "Belgium system acounting"
 
-#~ msgid "Cancel"
-#~ msgstr "Cancel"
+#: system/default.py:81
+msgid "profit"
+msgstr "profit"
+
+#: system/default.py:83
+msgid "deficit"
+msgstr "deficit"
+
+#: system/default.py:89
+msgid "Profit and deficit"
+msgstr "Profit and deficit"
+
+#: system/default.py:94
+#, python-format
+msgid ""
+"{[i]}You have a %(type)s of %(value)s.{[br/]}You must to define the account "
+"to affect.{[br/]}{[/i]}"
+msgstr ""
+"{[i]}You have a %(type)s of %(value)s.{[br/]}You must to define the account "
+"to affect.{[br/]}{[/i]}"
+
+#: system/default.py:95
+#, python-format
+msgid ""
+"{[br/]}After validation, you begin '%s'.{[br/]}{[br/]}{[i]}{[u]}Warning:{[/"
+"u]} Your retained earnings must be completed.{[/i]}"
+msgstr ""
+"{[br/]}After validation, you begin '%s'.{[br/]}{[br/]}{[i]}{[u]}Warning:{[/"
+"u]} Your retained earnings must be completed.{[/i]}"
+
+#: system/default.py:123
+msgid "Affect of profit/deficit"
+msgstr "Affect of profit/deficit"
+
+#: system/default.py:155
+#, python-format
+msgid ""
+"Do you want to begin '%s'? {[br/]}{[br/]}{[i]}{[u]}Warning:{[/u]} Your "
+"retained earnings must be completed.{[/i]}"
+msgstr ""
+"Do you want to begin '%s'? {[br/]}{[br/]}{[i]}{[u]}Warning:{[/u]} Your "
+"retained earnings must be completed.{[/i]}"
+
+#: system/default.py:163
+msgid "Fiscal year closing - Result"
+msgstr "Fiscal year closing - Result"
+
+#: system/default.py:176
+msgid "Fiscal year closing - Third"
+msgstr "Fiscal year closing - Third"
+
+#: system/default.py:209
+msgid "Retained earnings - Balance sheet"
+msgstr "Retained earnings - Balance sheet"
+
+#: system/default.py:220
+msgid "Retained earnings - Third party debt"
+msgstr "Retained earnings - Third party debt"

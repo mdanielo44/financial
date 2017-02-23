@@ -139,6 +139,7 @@ class ConfigurationAccountingSystem(XferContainerAcknowledge):
                 Parameter.change_value('accounting-system', account_system)
                 Params.clear()
                 clear_system_account()
+                signal_and_lock.Signal.call_signal("param_change", ('accounting-system'))
 
 
 @ActionsManage.affect_grid(_("Activate"), "images/ok.png", unique=SELECT_SINGLE)
@@ -250,8 +251,8 @@ def paramchange_accounting(params):
 @signal_and_lock.Signal.decorate('conf_wizard')
 def conf_wizard_accounting(wizard_ident, xfer):
     if isinstance(wizard_ident, list) and (xfer is None):
-        wizard_ident.append(("accounting_params", 21))
-        wizard_ident.append(("accounting_fiscalyear", 22))
+        wizard_ident.append(("accounting_params", 9))
+        wizard_ident.append(("accounting_fiscalyear", 9))
         wizard_ident.append(("accounting_journal", 23))
     elif (xfer is not None) and (wizard_ident == "accounting_params"):
         xfer.add_title(_("Diacamma accounting"), _('Parameters'), _('Configuration of accounting parameters'))

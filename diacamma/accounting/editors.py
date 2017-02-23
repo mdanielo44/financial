@@ -42,6 +42,7 @@ from lucterios.framework.xferadvance import TITLE_MODIFY
 from lucterios.CORE.parameters import Params
 
 from diacamma.accounting.models import current_system_account, FiscalYear, EntryLineAccount, EntryAccount, get_amount_sum, Third, CostAccounting
+from lucterios.framework import signal_and_lock
 
 
 class ThirdEditor(LucteriosEditor):
@@ -111,6 +112,7 @@ class FiscalYearEditor(LucteriosEditor):
             nb_entry_noclose = EntryLineAccount.objects.filter(entry__journal__id=1, entry__close=False, account__year=self.item).count()
             if nb_entry_noclose > 0:
                 raise LucteriosException(IMPORTANT, _("Some enties for last year report are not closed!"))
+            signal_and_lock.Signal.call_signal("begin_year", xfer)
             if current_system_account().check_begin(self.item, xfer):
                 self.item.status = 1
                 self.item.save()

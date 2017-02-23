@@ -53,6 +53,7 @@ class ConfigTest(LucteriosTest):
     def setUp(self):
         self.xfer_class = XferContainerAcknowledge
         LucteriosTest.setUp(self)
+        default_compta()
         rmtree(get_user_dir(), True)
 
     def test_vat(self):

@@ -36,6 +36,8 @@ from lucterios.framework.error import LucteriosException, IMPORTANT
 from lucterios.contacts.models import LegalEntity
 
 from diacamma.payoff.models import Supporting
+from diacamma.accounting.models import FiscalYear
+from diacamma.accounting.tools import current_system_account
 
 
 class SupportingEditor(LucteriosEditor):
@@ -86,6 +88,19 @@ class SupportingEditor(LucteriosEditor):
         payoff = xfer.get_components("payoff")
         if not self.item.is_revenu:
             payoff.delete_header('payer')
+
+
+class BankAccountEditor(LucteriosEditor):
+
+    def edit(self, xfer):
+        old_account = xfer.get_components("account_code")
+        xfer.remove_component("account_code")
+        sel_code = XferCompSelect("account_code")
+        sel_code.set_location(old_account.col, old_account.row, old_account.colspan + 1, old_account.rowspan)
+        for item in FiscalYear.get_current().chartsaccount_set.all().filter(code__regex=current_system_account().get_cash_mask()).order_by('code'):
+            sel_code.select_list.append((item.code, six.text_type(item)))
+        sel_code.set_value(self.item.account_code)
+        xfer.add_component(sel_code)
 
 
 class PayoffEditor(LucteriosEditor):

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-02-10 10:34+0000\n"
+"POT-Creation-Date: 2017-02-23 16:15+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -22,8 +22,65 @@ msgstr ""
 msgid "French system acounting"
 msgstr "Plan comptable générale Français"
 
-#~ msgid "Ok"
-#~ msgstr "Ok"
+#: system/__init__.py:34
+msgid "Belgium system acounting"
+msgstr "Plan comptable Belge"
 
-#~ msgid "Cancel"
-#~ msgstr "Cancel"
+#: system/default.py:81
+msgid "profit"
+msgstr "bénéfice"
+
+#: system/default.py:83
+msgid "deficit"
+msgstr "déficite"
+
+#: system/default.py:89
+msgid "Profit and deficit"
+msgstr "Bénéfices et Pertes"
+
+#: system/default.py:94
+#, python-format
+msgid ""
+"{[i]}You have a %(type)s of %(value)s.{[br/]}You must to define the account "
+"to affect.{[br/]}{[/i]}"
+msgstr ""
+"{[i]}Vous avez un %(type)s de %(value)s.{[br/]}Vous devez definir sur quel "
+"compte l'affecter.{[br/]}{[/i]}"
+
+#: system/default.py:95
+#, python-format
+msgid ""
+"{[br/]}After validation, you begin '%s'.{[br/]}{[br/]}{[i]}{[u]}Warning:{[/"
+"u]} Your retained earnings must be completed.{[/i]}"
+msgstr ""
+"{[br/]}En validant, vous commencerez '%s'{[br/]}{[br/]}{[i]}{[u]}Attention:"
+"{[/u]} Votre report à nouveau doit être totalement fait.{[/i]}"
+
+#: system/default.py:123
+msgid "Affect of profit/deficit"
+msgstr "Affectation des bénéfices/pertes"
+
+#: system/default.py:155
+#, python-format
+msgid ""
+"Do you want to begin '%s'? {[br/]}{[br/]}{[i]}{[u]}Warning:{[/u]} Your "
+"retained earnings must be completed.{[/i]}"
+msgstr ""
+"Voulez-vous commencer '%s'? {[br/]}{[br/]}{[i]}{[u]}Attention:{[/u]} Votre "
+"report à nouveau doit être totalement fait.{[/i]}"
+
+#: system/default.py:163
+msgid "Fiscal year closing - Result"
+msgstr "Cloture d'exercice - Résultat"
+
+#: system/default.py:176
+msgid "Fiscal year closing - Third"
+msgstr "Cloture d'exercice - Tiers"
+
+#: system/default.py:209
+msgid "Retained earnings - Balance sheet"
+msgstr "Report à nouveau - Bilan"
+
+#: system/default.py:220
+msgid "Retained earnings - Third party debt"
+msgstr "Report à nouveau - Dette tiers"

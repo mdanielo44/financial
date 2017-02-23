@@ -674,7 +674,7 @@ def get_or_create_customer(contact_id):
 
 @Signal.decorate('checkparam')
 def invoice_checkparam():
-    Parameter.check_and_create(name='invoice-default-sell-account', typeparam=0, title=_("invoice-default-sel00l-account"), args="{'Multi':False}", value='')
+    Parameter.check_and_create(name='invoice-default-sell-account', typeparam=0, title=_("invoice-default-sell-account"), args="{'Multi':False}", value='')
     Parameter.check_and_create(name='invoice-reduce-account', typeparam=0, title=_("invoice-reduce-account"), args="{'Multi':False}", value='')
     Parameter.check_and_create(name='invoice-vatsell-account', typeparam=0, title=_("invoice-vatsell-account"), args="{'Multi':False}", value='')
     Parameter.check_and_create(name='invoice-vat-mode', typeparam=4, title=_("invoice-vat-mode"), args="{'Enum':3}", value='0', param_titles=(_("invoice-vat-mode.0"), _("invoice-vat-mode.1"), _("invoice-vat-mode.2")))
