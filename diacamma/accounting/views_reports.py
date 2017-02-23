@@ -238,6 +238,16 @@ class FiscalYearReport(XferContainerCustom):
         self.fill_filterheader()
         self.define_gridheader()
 
+    def fill_grid(self, index_begin, side, data_line):
+        line_idx = index_begin
+        for data_item in data_line:
+            self.grid.set_value(line_idx, side, data_item[0])
+            self.grid.set_value(line_idx, side + '_n', data_item[1])
+            if self.item.last_fiscalyear is not None:
+                self.grid.set_value(line_idx, side + '_n_1', data_item[2])
+            line_idx += 1
+        return line_idx
+
     def add_total_in_grid(self, total_in_left, total1_left, total2_left, totalb_left, total1_right, total2_right, totalb_right, line_idx):
         line_idx += 1
         self.grid.set_value(line_idx, 'left', '')
@@ -319,6 +329,7 @@ class FiscalYearReport(XferContainerCustom):
             self.grid.set_value(line_idx, 'right_n_1', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(total2_left, total2_right), 5))
         if self.budgetfilter_right is not None:
             self.grid.set_value(line_idx, 'right_b', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(totalb_left, totalb_right), 5))
+        return line_idx
 
     def _add_left_right_accounting(self, left_filter, rigth_filter, total_in_left):
         data_line_left, total1_left, total2_left, totalb_left = convert_query_to_account(
@@ -349,7 +360,7 @@ class FiscalYearReport(XferContainerCustom):
                 if self.budgetfilter_right is not None:
                     self.grid.set_value(
                         line_idx, 'right_b', data_line_right[line_idx][3])
-        self.add_total_in_grid(total_in_left, total1_left, total2_left, totalb_left, total1_right, total2_right, totalb_right, line_idx)
+        return self.add_total_in_grid(total_in_left, total1_left, total2_left, totalb_left, total1_right, total2_right, totalb_right, line_idx)
 
     def calcul_table(self):
         pass
@@ -401,16 +412,6 @@ class FiscalYearBalanceSheet(FiscalYearReport):
         if self.lastfilter is not None:
             self.grid.add_header(
                 'right_n_1', self.item.last_fiscalyear.get_identify())
-
-    def fill_grid(self, index_begin, side, data_line):
-        line_idx = index_begin
-        for data_item in data_line:
-            self.grid.set_value(line_idx, side, data_item[0])
-            self.grid.set_value(line_idx, side + '_n', data_item[1])
-            if self.item.last_fiscalyear is not None:
-                self.grid.set_value(line_idx, side + '_n_1', data_item[2])
-            line_idx += 1
-        return line_idx
 
     def calcul_table(self):
         cash_filter = Q(account__code__regex=current_system_account().get_cash_mask())
@@ -477,7 +478,22 @@ class FiscalYearIncomeStatement(FiscalYearReport):
     def calcul_table(self):
         self.budgetfilter_right = Q(year=self.item) & Q(code__regex=current_system_account().get_revenue_mask())
         self.budgetfilter_left = Q(year=self.item) & Q(code__regex=current_system_account().get_expence_mask())
-        self._add_left_right_accounting(Q(account__type_of_account=4), Q(account__type_of_account=3), True)
+        line_idx = self._add_left_right_accounting(Q(account__type_of_account=4), Q(account__type_of_account=3), True)
+
+        other_filter = Q(account__type_of_account=5)
+        data_line_left, _total1_leftb, _total2_leftb, _b_left = convert_query_to_account(self.filter & other_filter,
+                                                                                         self.lastfilter & other_filter if self.lastfilter is not None else None,
+                                                                                         None, sign_value=-1)
+        left_line_idx = self.fill_grid(line_idx + 2, 'left', data_line_left)
+
+        data_line_right, _total1_right, _total2_right, _b_right = convert_query_to_account(self.filter & other_filter,
+                                                                                           self.lastfilter & other_filter if self.lastfilter is not None else None,
+                                                                                           None, sign_value=1)
+        right_line_idx = self.fill_grid(line_idx + 2, 'right', data_line_right)
+
+        if (left_line_idx != line_idx + 2) or (right_line_idx != line_idx + 2):
+            self.grid.set_value(line_idx + 1, 'left', '---')
+            self.grid.set_value(line_idx + 1, 'right', '---')
 
 
 @MenuManage.describ('accounting.change_fiscalyear', FORMTYPE_NOMODAL, 'bookkeeping', _('Show ledger for current fiscal year'))
