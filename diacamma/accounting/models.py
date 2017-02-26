@@ -410,10 +410,18 @@ class FiscalYear(LucteriosModel):
             nb_year = int(div) - 1
         return letters[nb_year] + res
 
+    def _check_annexe(self):
+        total = 0
+        for chart in self.chartsaccount_set.filter(type_of_account=5):
+            total += chart.get_current_total()
+        if abs(total) > 0.0001:
+            raise LucteriosException(IMPORTANT, _("The sum of annexe account must be null!"))
+
     def check_to_close(self):
         if self.status == 0:
             raise LucteriosException(IMPORTANT, _("This fiscal year is not 'in running'!"))
         EntryAccount.clear_ghost()
+        self._check_annexe()
         nb_entry_noclose = EntryAccount.objects.filter(close=False, entrylineaccount__account__year=self).distinct().count()
         if (nb_entry_noclose > 0) and (FiscalYear.objects.filter(last_fiscalyear=self).count() == 0):
             raise LucteriosException(IMPORTANT, _("This fiscal year has entries not closed and not next fiscal year!"))
@@ -422,6 +430,7 @@ class FiscalYear(LucteriosModel):
     def closed(self):
         for cost in CostAccounting.objects.filter(year=self):
             cost.close()
+        self._check_annexe()
         self.move_entry_noclose()
         current_system_account().finalize_year(self)
         self.status = 2
