@@ -674,8 +674,8 @@ def get_or_create_customer(contact_id):
 
 @Signal.decorate('checkparam')
 def invoice_checkparam():
-    Parameter.check_and_create(name='invoice-default-sell-account', typeparam=0, title=_("invoice-default-sell-account"), args="{'Multi':False}", value='')
-    Parameter.check_and_create(name='invoice-reduce-account', typeparam=0, title=_("invoice-reduce-account"), args="{'Multi':False}", value='')
-    Parameter.check_and_create(name='invoice-vatsell-account', typeparam=0, title=_("invoice-vatsell-account"), args="{'Multi':False}", value='')
+    Parameter.check_and_create(name='invoice-default-sell-account', typeparam=0, title=_("invoice-default-sell-account"), args="{'Multi':False}", value='', meta='("accounting","ChartsAccount", Q(type_of_account=3) & Q(year__is_actif=True), "code", True)')
+    Parameter.check_and_create(name='invoice-reduce-account', typeparam=0, title=_("invoice-reduce-account"), args="{'Multi':False}", value='', meta='("accounting","ChartsAccount", Q(type_of_account=3) & Q(year__is_actif=True), "code", True)')
+    Parameter.check_and_create(name='invoice-vatsell-account', typeparam=0, title=_("invoice-vatsell-account"), args="{'Multi':False}", value='', meta='("accounting","ChartsAccount", Q(type_of_account=4) & Q(year__is_actif=True), "code", False)')
     Parameter.check_and_create(name='invoice-vat-mode', typeparam=4, title=_("invoice-vat-mode"), args="{'Enum':3}", value='0', param_titles=(_("invoice-vat-mode.0"), _("invoice-vat-mode.1"), _("invoice-vat-mode.2")))
-    Parameter.check_and_create(name="invoice-account-third", typeparam=0, title=_("invoice-account-third"), args="{'Multi':False}", value='')
+    Parameter.check_and_create(name="invoice-account-third", typeparam=0, title=_("invoice-account-third"), args="{'Multi':False}", value='', meta='("accounting","ChartsAccount","import diacamma.accounting.tools;django.db.models.Q(code__regex=diacamma.accounting.tools.current_system_account().get_customer_mask()) & django.db.models.Q(year__is_actif=True)", "code", True)')

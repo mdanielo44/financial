@@ -116,7 +116,9 @@ def paramchange_invoice(params):
                 art.save()
     for invoice_param in invoice_params:
         if invoice_param in params:
-            Parameter.change_value(invoice_param, correct_accounting_code(Params.getvalue(invoice_param)))
+            code_value = Params.getvalue(invoice_param)
+            if code_value != "":
+                Parameter.change_value(invoice_param, correct_accounting_code(code_value))
     if 'accounting-system' in params:
         system_ident = accounting_system_ident(Params.getvalue("accounting-system"))
         if system_ident == "french":
