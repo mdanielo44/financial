@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-02-26 09:54+0000\n"
+"POT-Creation-Date: 2017-03-08 18:00+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: __init__.py:41 views_conf.py:141 views_conf.py:144
+#: __init__.py:41 views_conf.py:143 views_conf.py:146
 msgid "Diacamma invoice"
 msgstr "Diacamma invoice"
 
@@ -54,7 +54,7 @@ msgstr "rate"
 msgid "is actif"
 msgstr "is actif"
 
-#: models.py:69 views_conf.py:65 views_conf.py:144
+#: models.py:69 views_conf.py:65 views_conf.py:146
 msgid "VAT"
 msgstr "VAT"
 
@@ -509,7 +509,7 @@ msgstr "Management of parameters and configuration of invoice"
 msgid "Invoice configuration"
 msgstr "Invoice configuration"
 
-#: views_conf.py:63 views_conf.py:141
+#: views_conf.py:63 views_conf.py:143
 msgid "Parameters"
 msgstr "Parameters"
 
@@ -529,11 +529,11 @@ msgstr "Delete VAT"
 msgid "parameters"
 msgstr "parameters"
 
-#: views_conf.py:141
+#: views_conf.py:143
 msgid "Configuration of parameters"
 msgstr "Define parameters for invoice"
 
-#: views_conf.py:144
+#: views_conf.py:146
 msgid "Configuration of vat"
 msgstr "Configuration of vat"
 

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-02-26 09:54+0000\n"
+"POT-Creation-Date: 2017-03-08 18:00+0000\n"
 "PO-Revision-Date: 2016-01-14 21:59+0000\n"
 "Last-Translator: b'Paul ARULATEDA <paul531@orange.fr>'\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,7 +19,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Translated-Using: django-rosetta 0.7.8\n"
 
-#: __init__.py:41 views_conf.py:141 views_conf.py:144
+#: __init__.py:41 views_conf.py:143 views_conf.py:146
 msgid "Diacamma invoice"
 msgstr "Facturier Diacamma"
 
@@ -56,7 +56,7 @@ msgstr "taux"
 msgid "is actif"
 msgstr "actif?"
 
-#: models.py:69 views_conf.py:65 views_conf.py:144
+#: models.py:69 views_conf.py:65 views_conf.py:146
 msgid "VAT"
 msgstr "TVA"
 
@@ -511,7 +511,7 @@ msgstr "Gestion des paramètres et configuraiton du facturier"
 msgid "Invoice configuration"
 msgstr "Configuration du facturier"
 
-#: views_conf.py:63 views_conf.py:141
+#: views_conf.py:63 views_conf.py:143
 msgid "Parameters"
 msgstr "Paramètres"
 
@@ -531,11 +531,11 @@ msgstr "Supprimer une TVA"
 msgid "parameters"
 msgstr "paramètres"
 
-#: views_conf.py:141
+#: views_conf.py:143
 msgid "Configuration of parameters"
 msgstr "Définissez les paramètres du facturier."
 
-#: views_conf.py:144
+#: views_conf.py:146
 msgid "Configuration of vat"
 msgstr "Configurez votre gestion de TVA."
 

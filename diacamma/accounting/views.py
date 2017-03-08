@@ -46,7 +46,8 @@ from lucterios.contacts.models import AbstractContact
 from diacamma.accounting.models import Third, AccountThird, FiscalYear, \
     EntryLineAccount, ModelLineEntry, EntryAccount, ChartsAccount
 from diacamma.accounting.views_admin import Configuration, add_year_info
-from diacamma.accounting.tools import correct_accounting_code
+from diacamma.accounting.tools import correct_accounting_code,\
+    current_system_account
 
 MenuManage.add_sub("financial", None, "diacamma.accounting/images/financial.png", _("Financial"), _("Financial tools"), 50)
 
@@ -79,6 +80,7 @@ class ThirdList(XferListEditor):
     def fillresponse_header(self):
         contact_filter = self.getparam('filter', '')
         show_filter = self.getparam('show_filter', 0)
+        thirdtype = self.getparam('thirdtype', 0)
         lbl = XferCompLabelForm('lbl_filtre')
         lbl.set_value_as_name(_('Filtrer by contact'))
         lbl.set_location(0, 2)
@@ -89,15 +91,26 @@ class ThirdList(XferListEditor):
         comp.set_location(1, 2)
         self.add_component(comp)
 
+        lbl = XferCompLabelForm('lbl_thirdtype')
+        lbl.set_value_as_name(_('Third type'))
+        lbl.set_location(0, 3)
+        self.add_component(lbl)
+        edt = XferCompSelect("thirdtype")
+        edt.set_select([(0, '---'), (1, _('Customer')), (2, _('Provider')), (3, _('Shareholder')), (4, _('Employee'))])
+        edt.set_value(thirdtype)
+        edt.set_location(1, 3)
+        edt.set_action(self.request, self.get_action(), modal=FORMTYPE_REFRESH, close=CLOSE_NO)
+        self.add_component(edt)
+
         lbl = XferCompLabelForm('lbl_showing')
         lbl.set_value_as_name(_('Accounts displayed'))
-        lbl.set_location(0, 3)
+        lbl.set_location(0, 4)
         self.add_component(lbl)
         edt = XferCompSelect("show_filter")
         edt.set_select([(0, _('Hide the account total of thirds')), (1, _('Show the account total of thirds')),
                         (2, _('Filter any thirds unbalanced'))])
         edt.set_value(show_filter)
-        edt.set_location(1, 3)
+        edt.set_location(1, 4)
         edt.set_action(self.request, self.get_action(), modal=FORMTYPE_REFRESH, close=CLOSE_NO)
         self.add_component(edt)
         if show_filter != 0:
@@ -108,6 +121,14 @@ class ThirdList(XferListEditor):
             q_legalentity = Q(contact__legalentity__name__icontains=contact_filter)
             q_individual = (Q(contact__individual__firstname__icontains=contact_filter) | Q(contact__individual__lastname__icontains=contact_filter))
             self.filter &= (q_legalentity | q_individual)
+        if thirdtype == 1:
+            self.filter &= Q(accountthird__code__regex=current_system_account().get_customer_mask())
+        elif thirdtype == 2:
+            self.filter &= Q(accountthird__code__regex=current_system_account().get_provider_mask())
+        elif thirdtype == 3:
+            self.filter &= Q(accountthird__code__regex=current_system_account().get_societary_mask())
+        elif thirdtype == 4:
+            self.filter &= Q(accountthird__code__regex=current_system_account().get_employed_mask())
 
 
 @ActionsManage.affect_list(_("Search"), "diacamma.accounting/images/thirds.png")

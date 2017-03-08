@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-02-26 09:54+0000\n"
+"POT-Creation-Date: 2017-03-08 18:00+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -120,7 +120,7 @@ msgid "Disable"
 msgstr "Disable"
 
 #: models.py:66 models.py:74 models.py:159 models.py:1154 models.py:1162
-#: printmodel/Third_0001.py:39 views.py:337 views_reports.py:322
+#: printmodel/Third_0001.py:39 views.py:358 views_reports.py:322
 #: views_reports.py:328 views_reports.py:545
 msgid "total"
 msgstr "total"
@@ -129,7 +129,7 @@ msgstr "total"
 msgid "001@AccountThird information"
 msgstr "001@Account information"
 
-#: models.py:117 views.py:145
+#: models.py:117 views.py:166
 msgid "Disabled"
 msgstr "Disable"
 
@@ -141,7 +141,7 @@ msgstr "Enabled"
 msgid "third has not correct account"
 msgstr "Third has not a correct account!"
 
-#: models.py:140 views.py:311
+#: models.py:140 views.py:332
 msgid "thirds"
 msgstr "thirds"
 
@@ -423,7 +423,7 @@ msgstr "This kind of entry is not allowed for this journal!"
 msgid "payment of %s"
 msgstr "payment of %s"
 
-#: models.py:948 views.py:356
+#: models.py:948 views.py:377
 msgid "entry of account"
 msgstr "entry of account"
 
@@ -509,119 +509,139 @@ msgstr "Credit"
 msgid "Debit"
 msgstr "Debit"
 
-#: views.py:51 views.py:335 views_admin.py:45
+#: views.py:52 views.py:356 views_admin.py:45
 msgid "Financial"
 msgstr "Financial"
 
-#: views.py:51
+#: views.py:52
 msgid "Financial tools"
 msgstr "Financial tools"
 
-#: views.py:54
+#: views.py:55
 msgid "Management of third account"
 msgstr "Management of third account"
 
-#: views.py:59
+#: views.py:60
 msgid "Thirds"
 msgstr "Thirds"
 
-#: views.py:83
+#: views.py:85
 msgid "Filtrer by contact"
 msgstr "Filtrer by contact"
 
-#: views.py:93
+#: views.py:95
+msgid "Third type"
+msgstr "Third type"
+
+#: views.py:99
+msgid "Customer"
+msgstr "Customer"
+
+#: views.py:99
+msgid "Provider"
+msgstr "Provider"
+
+#: views.py:99
+msgid "Shareholder"
+msgstr "Shareholder"
+
+#: views.py:99
+msgid "Employee"
+msgstr "Employee"
+
+#: views.py:106
 msgid "Accounts displayed"
 msgstr "Accounts displayed"
 
-#: views.py:97
+#: views.py:110
 msgid "Hide the account total of thirds"
 msgstr "Hide the account total of thirds"
 
-#: views.py:97
+#: views.py:110
 msgid "Show the account total of thirds"
 msgstr "Show the account total of thirds"
 
-#: views.py:98
+#: views.py:111
 msgid "Filter any thirds unbalanced"
 msgstr "Filter any thirds unbalanced"
 
-#: views.py:113 views_entries.py:103
+#: views.py:134 views_entries.py:103
 msgid "Search"
 msgstr "Search"
 
-#: views.py:119
+#: views.py:140
 msgid "Search third"
 msgstr "Search third"
 
-#: views.py:150
+#: views.py:171
 msgid "Disable third"
 msgstr "Disable third"
 
-#: views.py:160
+#: views.py:181
 msgid "limit date"
 msgstr "limit date to activate third"
 
-#: views.py:183
+#: views.py:204
 msgid "Add third"
 msgstr "Add third"
 
-#: views.py:194
+#: views.py:215
 msgid "Show third"
 msgstr "Show third"
 
-#: views.py:211
+#: views.py:232
 msgid "Delete third"
 msgstr "Delete third"
 
-#: views.py:214
+#: views.py:235
 msgid "Listing"
 msgstr "Listing"
 
-#: views.py:220
+#: views.py:241
 msgid "Listing third"
 msgstr "Listing third"
 
-#: views.py:251
+#: views.py:272
 msgid "Add account"
 msgstr "Add account"
 
-#: views.py:252
+#: views.py:273
 msgid "Modify account"
 msgstr "Modify account"
 
-#: views.py:261
+#: views.py:282
 msgid "Delete account"
 msgstr "Delete account"
 
-#: views.py:269 views_accounts.py:47
+#: views.py:290 views_accounts.py:47
 msgid "Bookkeeping"
 msgstr "Bookkeeping"
 
-#: views.py:290
+#: views.py:311
 msgid "conf."
 msgstr "conf."
 
-#: views.py:313
+#: views.py:334
 msgid "models"
 msgstr "models"
 
-#: views.py:316
+#: views.py:337
 msgid "Accounting"
 msgstr "Accounting"
 
-#: views.py:358
+#: views.py:379
 msgid "Accounts filter"
 msgstr "Accounts filter"
 
-#: views.py:362
+#: views.py:383
 msgid "All entries of current fiscal year"
 msgstr "All entries of current fiscal year"
 
-#: views.py:363
+#: views.py:384
 msgid "Only no-closed entries of current fiscal year"
 msgstr "Only no-closed entries of current fiscal year"
 
-#: views.py:363
+#: views.py:384
 msgid "All entries for all fiscal year"
 msgstr "All entries for all fiscal year"
 

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-02-26 09:54+0000\n"
+"POT-Creation-Date: 2017-03-08 18:00+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -292,19 +292,19 @@ msgstr "bank transaction"
 msgid "bank transactions"
 msgstr "bank transactions"
 
-#: models.py:777
+#: models.py:776
 msgid "payoff-bankcharges-account"
 msgstr "bank charges account"
 
-#: models.py:778
+#: models.py:777
 msgid "payoff-cash-account"
 msgstr "cash account"
 
-#: models.py:779
+#: models.py:778
 msgid "payoff-email-message"
 msgstr "default email message"
 
-#: models.py:780
+#: models.py:778
 #, python-format
 msgid ""
 "%(name)s\n"
