@@ -995,6 +995,9 @@ class BelgiumSystemAcounting(DefaultSystemAccounting):
     def get_expence_mask(self):
         return EXPENSE_MASK
 
+    def get_annexe_mask(self):
+        return r'X'
+
     def new_charts_account(self, code):
         code = code.strip()
         if code == '':

@@ -263,6 +263,9 @@ class FrenchSystemAcounting(DefaultSystemAccounting):
     def get_expence_mask(self):
         return EXPENSE_MASK
 
+    def get_annexe_mask(self):
+        return r'^8[0-9][0-9][0-9a-zA-Z]*$'
+
     def new_charts_account(self, code):
         code = code.strip()
         if code == '':

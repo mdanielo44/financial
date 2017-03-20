@@ -246,11 +246,16 @@ class FiscalYearReport(XferContainerCustom):
             self.grid.set_value(line_idx, side + '_n', data_item[1])
             if self.lastfilter is not None:
                 self.grid.set_value(line_idx, side + '_n_1', data_item[2])
+            if (self.budgetfilter_left is not None) and (self.budgetfilter_right is not None):
+                self.grid.set_value(line_idx, side + '_b', data_item[3])
             line_idx += 1
         return line_idx
 
     def add_total_in_grid(self, total_in_left, total1_left, total2_left, totalb_left, total1_right, total2_right, totalb_right, line_idx):
-        self.total_summary = (total1_left, total2_left, totalb_left, total1_right, total2_right, totalb_right)
+        if (total2_left is None) or (total2_right is None):
+            self.total_summary = (max(total1_left, total1_right), None, max(totalb_left, totalb_right))
+        else:
+            self.total_summary = (max(total1_left, total1_right), max(total2_left, total2_right), max(totalb_left, totalb_right))
         line_idx += 1
         self.grid.set_value(line_idx, 'left', '')
         self.grid.set_value(line_idx, 'right', '')
@@ -477,22 +482,26 @@ class FiscalYearIncomeStatement(FiscalYearReport):
             lbl.set_location(2, 13, 4)
             self.add_component(lbl)
 
-    def show_annexe(self, line_idx):
+    def show_annexe(self, line_idx, budgetfilter):
         self.grid.set_value(line_idx + 1, 'left', '')
-        other_filter = Q(account__type_of_account=5)
+        other_filter = Q(account__code__regex=current_system_account().get_annexe_mask())
+        budget_other = Q(code__regex=current_system_account().get_annexe_mask())
         data_line_left, anx_total1_left, anx_total2_left, anx_totalb_left = convert_query_to_account(self.filter & other_filter,
                                                                                                      self.lastfilter & other_filter if self.lastfilter is not None else None,
-                                                                                                     None, sign_value=-1)
+                                                                                                     budgetfilter & budget_other,
+                                                                                                     sign_value=-1)
         left_line_idx = self.fill_grid(line_idx + 2, 'left', data_line_left)
         data_line_right, anx_total1_right, anx_total2_right, anx_totalb_right = convert_query_to_account(self.filter & other_filter,
                                                                                                          self.lastfilter & other_filter if self.lastfilter is not None else None,
-                                                                                                         None, sign_value=1)
+                                                                                                         budgetfilter & budget_other,
+                                                                                                         sign_value=1)
         right_line_idx = self.fill_grid(line_idx + 2, 'right', data_line_right)
         if (left_line_idx != line_idx + 2) or (right_line_idx != line_idx + 2):
             self.grid.set_value(line_idx + 1, 'left', get_spaces(20) + "{[i]}%s{[/i]}" % _('annexe'))
             self.grid.set_value(line_idx + 1, 'right', get_spaces(20) + "{[i]}%s{[/i]}" % _('annexe'))
             left_line_idx += 1
-            total1_left, total2_left, totalb_left, total1_right, total2_right, totalb_right = self.total_summary
+            total1_left, total2_left, totalb_left = self.total_summary
+            total1_right, total2_right, totalb_right = self.total_summary
             self.grid.set_value(left_line_idx, 'left', get_spaces(10) + "{[u]}{[b]}%s{[/b]}{[/u]}" % _('total with annexe'))
             total1_left += anx_total1_left
             self.grid.set_value(left_line_idx, 'left_n', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(total1_left, total1_right), 5))
@@ -516,7 +525,7 @@ class FiscalYearIncomeStatement(FiscalYearReport):
         self.budgetfilter_right = Q(year=self.item) & Q(code__regex=current_system_account().get_revenue_mask())
         self.budgetfilter_left = Q(year=self.item) & Q(code__regex=current_system_account().get_expence_mask())
         line_idx = self._add_left_right_accounting(Q(account__type_of_account=4), Q(account__type_of_account=3), True)
-        self.show_annexe(line_idx)
+        self.show_annexe(line_idx, Q(year=self.item))
 
 
 @MenuManage.describ('accounting.change_fiscalyear', FORMTYPE_NOMODAL, 'bookkeeping', _('Show ledger for current fiscal year'))
@@ -758,7 +767,7 @@ class CostAccountingIncomeStatement(CostAccountingReport, FiscalYearIncomeStatem
         self.budgetfilter_right = Q(cost_accounting=self.item) & Q(code__regex=current_system_account().get_revenue_mask())
         self.budgetfilter_left = Q(cost_accounting=self.item) & Q(code__regex=current_system_account().get_expence_mask())
         line_idx = self._add_left_right_accounting(Q(account__type_of_account=4), Q(account__type_of_account=3), True)
-        self.show_annexe(line_idx)
+        self.show_annexe(line_idx, Q(cost_accounting=self.item))
 
 
 @ActionsManage.affect_grid(_("Ledger"), 'images/print.png', unique=SELECT_MULTI, modal=FORMTYPE_NOMODAL)

@@ -13,7 +13,7 @@ from lucterios.framework.xferadvance import XferDelete
 from lucterios.framework.xfergraphic import XferContainerAcknowledge
 from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompImage, XferCompSelect
 from lucterios.framework.tools import ActionsManage, MenuManage, CLOSE_YES, WrapAction
-from lucterios.framework.tools import SELECT_SINGLE, SELECT_MULTI
+from lucterios.framework.tools import SELECT_SINGLE
 from lucterios.framework.signal_and_lock import Signal
 from lucterios.CORE.xferprint import XferPrintAction
 
@@ -92,9 +92,11 @@ class BudgetList(XferListEditor):
         self.add_component(lbl)
 
         row_id = self.get_max_row()
-        self.fill_grid(row_id, self.model, 'budget_revenue', self.model.objects.filter(self.filter & Q(code__regex=current_system_account().get_revenue_mask())))
+        revenue_filter = Q(code__regex=current_system_account().get_revenue_mask()) | (Q(code__regex=current_system_account().get_annexe_mask()) & Q(amount__gte=0))
+        self.fill_grid(row_id, self.model, 'budget_revenue', self.model.objects.filter(self.filter & revenue_filter))
         self.move_components('budget_revenue', 2, 0)
-        self.fill_grid(row_id, self.model, 'budget_expense', self.model.objects.filter(self.filter & Q(code__regex=current_system_account().get_expence_mask())))
+        expense_filter = Q(code__regex=current_system_account().get_expence_mask()) | (Q(code__regex=current_system_account().get_annexe_mask()) & Q(amount__lt=0))
+        self.fill_grid(row_id, self.model, 'budget_expense', self.model.objects.filter(self.filter & expense_filter))
         self.remove_component('nb_budget_expense')
         self.remove_component('nb_budget_revenue')
 

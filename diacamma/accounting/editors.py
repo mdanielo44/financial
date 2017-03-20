@@ -451,11 +451,11 @@ class BudgetEditor(EntryLineAccountEditor):
     def edit(self, xfer):
         self.edit_creditdebit_for_line(xfer, 1, xfer.get_max_row() + 1)
         if xfer.field_id == 'budget_revenue':
-            code_mask = current_system_account().get_revenue_mask()
+            code_mask = current_system_account().get_revenue_mask() + "|" + current_system_account().get_annexe_mask()
         elif xfer.field_id == 'budget_expense':
-            code_mask = current_system_account().get_expence_mask()
+            code_mask = current_system_account().get_expence_mask() + "|" + current_system_account().get_annexe_mask()
         else:
-            code_mask = current_system_account().get_revenue_mask() + "|" + current_system_account().get_expence_mask()
+            code_mask = current_system_account().get_revenue_mask() + "|" + current_system_account().get_expence_mask() + "|" + current_system_account().get_annexe_mask()
         old_account = xfer.get_components("code")
         xfer.remove_component("code")
         sel_code = XferCompSelect("code")

@@ -70,6 +70,9 @@ class DefaultSystemAccounting(object):
     def get_third_mask(self):
         return ''
 
+    def get_annexe_mask(self):
+        return ''
+
     def new_charts_account(self, code):
         return ''
 
