@@ -65,8 +65,6 @@ class SupportingEditor(LucteriosEditor):
             btn.set_action(xfer.request, ActionsManage.get_action_url('accounting.Third', 'Show', xfer),
                            modal=FORMTYPE_MODAL, close=CLOSE_NO, params={'third': self.item.third.id})
             xfer.add_component(btn)
-        xfer.get_components('date').colspan += 1 
-        xfer.get_components('detail').colspan += 1
         lbl = XferCompLabelForm('info')
         lbl.set_color('red')
         lbl.set_location(1, xfer.get_max_row() + 1, 4)
