@@ -49,9 +49,10 @@ class SupportingEditor(LucteriosEditor):
     def show_third(self, xfer, right=''):
         xfer.params['supporting'] = self.item.id
         third = xfer.get_components('third')
-        third.colspan -= 2
+        third.colspan -= 1
         if WrapAction.is_permission(xfer.request, right):
             btn = XferCompButton('change_third')
+            btn.set_is_mini(True)
             btn.set_location(third.col + third.colspan, third.row)
             btn.set_action(xfer.request, ActionsManage.get_action_url('payoff.Supporting', 'Third', xfer),
                            modal=FORMTYPE_MODAL, close=CLOSE_NO, params={'code_mask': self.item.get_third_mask()})
@@ -64,6 +65,8 @@ class SupportingEditor(LucteriosEditor):
             btn.set_action(xfer.request, ActionsManage.get_action_url('accounting.Third', 'Show', xfer),
                            modal=FORMTYPE_MODAL, close=CLOSE_NO, params={'third': self.item.third.id})
             xfer.add_component(btn)
+        xfer.get_components('date').colspan += 1 
+        xfer.get_components('detail').colspan += 1
         lbl = XferCompLabelForm('info')
         lbl.set_color('red')
         lbl.set_location(1, xfer.get_max_row() + 1, 4)
@@ -96,6 +99,7 @@ class BankAccountEditor(LucteriosEditor):
         old_account = xfer.get_components("account_code")
         xfer.remove_component("account_code")
         sel_code = XferCompSelect("account_code")
+        sel_code.description = old_account.description
         sel_code.set_location(old_account.col, old_account.row, old_account.colspan + 1, old_account.rowspan)
         for item in FiscalYear.get_current().chartsaccount_set.all().filter(code__regex=current_system_account().get_cash_mask()).order_by('code'):
             sel_code.select_list.append((item.code, six.text_type(item)))
@@ -145,14 +149,11 @@ class PayoffEditor(LucteriosEditor):
         xfer.add_component(lbl)
         if len(supportings) > 0:
             row = xfer.get_max_row() + 1
-            lbl = XferCompLabelForm('lblrepartition')
-            lbl.set_value_as_name(_('repartition mode'))
-            lbl.set_location(1, row)
-            xfer.add_component(lbl)
             sel = XferCompSelect('repartition')
             sel.set_value(xfer.getparam('repartition', 0))
             sel.set_select([(0, _('by ratio')), (1, _('by date'))])
-            sel.set_location(2, row)
+            sel.set_location(1, row)
+            sel.description = _('repartition mode')
             xfer.add_component(sel)
             if xfer.getparam('NO_REPARTITION') is not None:
                 xfer.change_to_readonly('repartition')
@@ -181,20 +182,16 @@ class PayoffEditor(LucteriosEditor):
             xfer.get_components("mode").set_action(xfer.request, xfer.get_action(), close=CLOSE_NO, modal=FORMTYPE_REFRESH)
         if self.item.mode == 0:
             xfer.remove_component("bank_account")
-            xfer.remove_component("lbl_bank_account")
         else:
             banks = xfer.get_components("bank_account")
             if banks.select_list[0][0] == 0:
                 del banks.select_list[0]
             if len(banks.select_list) == 0:
                 xfer.remove_component("bank_account")
-                xfer.remove_component("lbl_bank_account")
         if not supporting_list[0].is_revenu:
             xfer.remove_component("payer")
-            xfer.remove_component("lbl_payer")
         if (fee_code == '') or (self.item.mode == 0):
             xfer.remove_component("bank_fee")
-            xfer.remove_component("lbl_bank_fee")
         else:
             bank_fee = xfer.get_components("bank_fee")
             bank_fee.prec = currency_decimal
@@ -213,10 +210,10 @@ class DepositSlipEditor(LucteriosEditor):
         lbl.set_value_center("{[hr/]}")
         lbl.set_location(1, 4, 4)
         xfer.add_component(lbl)
-        xfer.remove_component("lbl_depositdetail_set")
         depositdetail = xfer.get_components("depositdetail")
         depositdetail.col = 1
         depositdetail.colspan = 4
+        depositdetail.description = ''
 
 
 class PaymentMethodEditor(LucteriosEditor):
@@ -235,14 +232,11 @@ class PaymentMethodEditor(LucteriosEditor):
         items = self.item.get_items()
         for fieldid, fieldtitle, fieldtype in self.item.get_extra_fields():
             row = xfer.get_max_row() + 1
-            lbl = XferCompLabelForm('lbl_item_%d' % fieldid)
-            lbl.set_value_as_name(fieldtitle)
-            lbl.set_location(1, row)
-            xfer.add_component(lbl)
             if fieldtype == 0:
                 edt = XferCompEdit('item_%d' % fieldid)
             elif fieldtype == 1:
                 edt = XferCompMemo('item_%d' % fieldid)
             edt.set_value(items[fieldid - 1])
-            edt.set_location(2, row)
+            edt.set_location(1, row)
+            edt.description = fieldtitle
             xfer.add_component(edt)

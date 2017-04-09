@@ -51,6 +51,8 @@ from diacamma.accounting.tools import get_amount_sum, format_devise, current_sys
 
 
 class Third(LucteriosModel):
+    is_simple_gui = True
+
     contact = models.ForeignKey('contacts.AbstractContact', verbose_name=_('contact'), null=False, on_delete=models.CASCADE)
     status = FSMIntegerField(verbose_name=_('status'), choices=((0, _('Enable')), (1, _('Disable'))))
 
@@ -141,6 +143,8 @@ class Third(LucteriosModel):
 
 
 class AccountThird(LucteriosModel):
+    is_simple_gui = True
+
     third = models.ForeignKey(
         Third, verbose_name=_('third'), null=False, on_delete=models.CASCADE)
     code = models.CharField(_('code'), max_length=50)
@@ -192,6 +196,7 @@ class AccountThird(LucteriosModel):
 
 
 class FiscalYear(LucteriosModel):
+    is_simple_gui = True
 
     begin = models.DateField(verbose_name=_('begin'))
     end = models.DateField(verbose_name=_('end'))
@@ -442,6 +447,8 @@ class FiscalYear(LucteriosModel):
 
 
 class CostAccounting(LucteriosModel):
+    is_simple_gui = True
+
     name = models.CharField(_('name'), max_length=50, unique=True)
     description = models.CharField(_('description'), max_length=50)
     status = models.IntegerField(verbose_name=_('status'), choices=((0, _('opened')), (1, _('closed'))), default=0)
@@ -528,6 +535,8 @@ class CostAccounting(LucteriosModel):
 
 
 class ChartsAccount(LucteriosModel):
+    is_simple_gui = True
+
     code = models.CharField(_('code'), max_length=50, db_index=True)
     name = models.CharField(_('name'), max_length=200)
     year = models.ForeignKey('FiscalYear', verbose_name=_(
@@ -648,6 +657,8 @@ class ChartsAccount(LucteriosModel):
 
 
 class Journal(LucteriosModel):
+    is_simple_gui = True
+
     name = models.CharField(_('name'), max_length=50, unique=True)
 
     def __str__(self):
@@ -671,6 +682,7 @@ class Journal(LucteriosModel):
 
 
 class AccountLink(LucteriosModel):
+    is_simple_gui = True
 
     def __str__(self):
         return self.letter
@@ -712,6 +724,8 @@ class AccountLink(LucteriosModel):
 
 
 class EntryAccount(LucteriosModel):
+    is_simple_gui = True
+
     year = models.ForeignKey('FiscalYear', verbose_name=_(
         'fiscal year'), null=False, on_delete=models.CASCADE)
     num = models.IntegerField(verbose_name=_('numeros'), null=True)
@@ -951,6 +965,7 @@ class EntryAccount(LucteriosModel):
 
 
 class EntryLineAccount(LucteriosModel):
+    is_simple_gui = True
 
     account = models.ForeignKey('ChartsAccount', verbose_name=_(
         'account'), null=False, on_delete=models.PROTECT)
@@ -1140,6 +1155,7 @@ class EntryLineAccount(LucteriosModel):
 
 
 class ModelEntry(LucteriosModel):
+    is_simple_gui = True
 
     journal = models.ForeignKey('Journal', verbose_name=_('journal'), null=False, default=0, on_delete=models.PROTECT)
     designation = models.CharField(_('name'), max_length=200)
@@ -1190,6 +1206,7 @@ class ModelEntry(LucteriosModel):
 
 
 class ModelLineEntry(LucteriosModel):
+    is_simple_gui = True
 
     model = models.ForeignKey('ModelEntry', verbose_name=_(
         'model'), null=False, default=0, on_delete=models.CASCADE)
@@ -1267,6 +1284,8 @@ class ModelLineEntry(LucteriosModel):
 
 
 class Budget(LucteriosModel):
+    is_simple_gui = True
+
     year = models.ForeignKey('FiscalYear', verbose_name=_('fiscal year'), null=True, default=None, on_delete=models.PROTECT)
     cost_accounting = models.ForeignKey('CostAccounting', verbose_name=_('cost accounting'), null=True, default=None, on_delete=models.PROTECT)
     code = models.CharField(_('account'), max_length=50)

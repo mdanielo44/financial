@@ -54,6 +54,7 @@ class EntryAccountList(XferListEditor):
         self.item.journal = Journal.objects.get(id=1)
         self.fill_from_model(0, 1, False, ['year', 'journal'])
         self.get_components('year').set_action(self.request, self.get_action(), modal=FORMTYPE_REFRESH, close=CLOSE_NO)
+        self.get_components('year').colspan = 2
         self.filter = Q(year=self.item.year)
 
     def _filter_by_journal(self):
@@ -62,19 +63,17 @@ class EntryAccountList(XferListEditor):
         journal.select_list.append((-1, '---'))
         journal.set_value(select_journal)
         journal.set_action(self.request, self.get_action(), modal=FORMTYPE_REFRESH, close=CLOSE_NO)
+        journal.colspan = 2
         if select_journal != -1:
             self.filter &= Q(journal__id=select_journal)
 
     def _filter_by_nature(self):
         select_filter = self.getparam('filter', 1)
-        lbl = XferCompLabelForm("filterLbl")
-        lbl.set_location(0, 3)
-        lbl.set_value_as_name(_("Filter"))
-        self.add_component(lbl)
         sel = XferCompSelect("filter")
         sel.set_select({0: _('All'), 1: _('In progress'), 2: _('Valid'), 3: _('Lettered'), 4: _('Not lettered')})
         sel.set_value(select_filter)
-        sel.set_location(1, 3)
+        sel.set_location(0, 3, 2)
+        sel.description = _("Filter")
         sel.set_size(20, 200)
         sel.set_action(self.request, self.get_action(), close=CLOSE_NO, modal=FORMTYPE_REFRESH)
         self.add_component(sel)
@@ -399,26 +398,20 @@ class EntryAccountModelSelector(XferContainerAcknowledge):
             image.set_value(self.icon_path())
             image.set_location(0, 0, 1, 6)
             dlg.add_component(image)
-            lbl = XferCompLabelForm('lblmodel')
-            lbl.set_value(_('model name'))
-            lbl.set_location(1, 0)
-            dlg.add_component(lbl)
             if journal > 0:
                 mod_query = ModelEntry.objects.filter(journal=journal)
             else:
                 mod_query = ModelEntry.objects.all()
             sel = XferCompSelect('model')
-            sel.set_location(2, 0)
+            sel.set_location(1, 0)
             sel.set_needed(True)
             sel.set_select_query(mod_query)
+            sel.description = _('model name')
             dlg.add_component(sel)
-            lbl = XferCompLabelForm('lblfactor')
-            lbl.set_value(_('factor'))
-            lbl.set_location(1, 1)
-            dlg.add_component(lbl)
             fact = XferCompFloat('factor', 0.00, 1000000.0, 2)
             fact.set_value(1.0)
-            fact.set_location(2, 1)
+            fact.set_location(1, 1)
+            fact.description = _('factor')
             dlg.add_component(fact)
             dlg.add_action(self.get_action(TITLE_OK, 'images/ok.png'), params={"SAVE": "YES"})
             dlg.add_action(WrapAction(TITLE_CANCEL, 'images/cancel.png'))

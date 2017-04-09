@@ -50,7 +50,7 @@ class PayoffTest(LucteriosTest):
         self.call('/diacamma.payoff/payoffConf', {}, False)
         self.assert_observer('core.custom', 'diacamma.payoff', 'payoffConf')
         self.assert_count_equal('COMPONENTS/TAB', 3)
-        self.assert_count_equal('COMPONENTS/*', 2 + 2 + 2 + 3 + 7)
+        self.assert_count_equal('COMPONENTS/*', 3 + 3 + 7)
 
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="bankaccount"]/HEADER', 3)
@@ -67,7 +67,7 @@ class PayoffTest(LucteriosTest):
         self.call('/diacamma.payoff/bankAccountAddModify', {}, False)
         self.assert_observer(
             'core.custom', 'diacamma.payoff', 'bankAccountAddModify')
-        self.assert_count_equal('COMPONENTS/*', 7)
+        self.assert_count_equal('COMPONENTS/*', 4)
 
         self.factory.xfer = BankAccountAddModify()
         self.call('/diacamma.payoff/bankAccountAddModify',
@@ -106,7 +106,7 @@ class PayoffTest(LucteriosTest):
         self.call('/diacamma.payoff/payoffConf', {}, False)
         self.assert_observer('core.custom', 'diacamma.payoff', 'payoffConf')
         self.assert_count_equal('COMPONENTS/TAB', 3)
-        self.assert_count_equal('COMPONENTS/*', 2 + 2 + 2 + 3 + 7)
+        self.assert_count_equal('COMPONENTS/*', 3 + 3 + 7)
         self.assert_count_equal(
             'COMPONENTS/GRID[@name="paymentmethod"]/HEADER', 3)
         self.assert_xml_equal(
@@ -122,39 +122,39 @@ class PayoffTest(LucteriosTest):
         self.call('/diacamma.payoff/paymentMethodAddModify', {}, False)
         self.assert_observer(
             'core.custom', 'diacamma.payoff', 'paymentMethodAddModify')
-        self.assert_count_equal('COMPONENTS/*', 9)
+        self.assert_count_equal('COMPONENTS/*', 5)
         self.assert_count_equal('COMPONENTS/SELECT[@name="bank_account"]/CASE', 1)
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="lbl_item_1"]', "{[b]}IBAN{[/b]}")
+        self.assert_attrib_equal('COMPONENTS/EDIT[@name="item_1"]', 'description', 'IBAN')
         self.assert_xml_equal('COMPONENTS/EDIT[@name="item_1"]', None)
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="lbl_item_2"]', "{[b]}BIC{[/b]}")
+        self.assert_attrib_equal('COMPONENTS/EDIT[@name="item_2"]', 'description', 'BIC')
         self.assert_xml_equal('COMPONENTS/EDIT[@name="item_2"]', None)
 
         self.factory.xfer = PaymentMethodAddModify()
         self.call('/diacamma.payoff/paymentMethodAddModify', {'paytype': 0}, False)
         self.assert_observer(
             'core.custom', 'diacamma.payoff', 'paymentMethodAddModify')
-        self.assert_count_equal('COMPONENTS/*', 9)
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="lbl_item_1"]', "{[b]}IBAN{[/b]}")
+        self.assert_count_equal('COMPONENTS/*', 5)
+        self.assert_attrib_equal('COMPONENTS/EDIT[@name="item_1"]', 'description', 'IBAN')
         self.assert_xml_equal('COMPONENTS/EDIT[@name="item_1"]', None)
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="lbl_item_2"]', "{[b]}BIC{[/b]}")
+        self.assert_attrib_equal('COMPONENTS/EDIT[@name="item_2"]', 'description', 'BIC')
         self.assert_xml_equal('COMPONENTS/EDIT[@name="item_2"]', None)
 
         self.factory.xfer = PaymentMethodAddModify()
         self.call('/diacamma.payoff/paymentMethodAddModify', {'paytype': 1}, False)
         self.assert_observer(
             'core.custom', 'diacamma.payoff', 'paymentMethodAddModify')
-        self.assert_count_equal('COMPONENTS/*', 9)
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="lbl_item_1"]', "{[b]}libellé à{[/b]}")
+        self.assert_count_equal('COMPONENTS/*', 5)
+        self.assert_attrib_equal('COMPONENTS/EDIT[@name="item_1"]', 'description', 'libellé à')
         self.assert_xml_equal('COMPONENTS/EDIT[@name="item_1"]', "WoldCompany")
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="lbl_item_2"]', "{[b]}adresse{[/b]}")
+        self.assert_attrib_equal('COMPONENTS/MEMO[@name="item_2"]', 'description', 'adresse')
         self.assert_xml_equal('COMPONENTS/MEMO[@name="item_2"]', "Place des cocotiers{[newline]}97200 FORT DE FRANCE")
 
         self.factory.xfer = PaymentMethodAddModify()
         self.call('/diacamma.payoff/paymentMethodAddModify', {'paytype': 2}, False)
         self.assert_observer(
             'core.custom', 'diacamma.payoff', 'paymentMethodAddModify')
-        self.assert_count_equal('COMPONENTS/*', 7)
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="lbl_item_1"]', "{[b]}compte Paypal{[/b]}")
+        self.assert_count_equal('COMPONENTS/*', 4)
+        self.assert_attrib_equal('COMPONENTS/EDIT[@name="item_1"]', 'description', 'compte Paypal')
         self.assert_xml_equal('COMPONENTS/EDIT[@name="item_1"]', None)
 
         self.factory.xfer = PaymentMethodAddModify()

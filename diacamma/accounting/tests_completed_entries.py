@@ -61,13 +61,10 @@ class CompletedEntryTest(LucteriosTest):
         self.factory.xfer = EntryAccountList()
         self.call('/diacamma.accounting/entryAccountList',
                   {'year': '1', 'journal': journal, 'filter': filterlist}, False)
-        self.assert_observer(
-            'core.custom', 'diacamma.accounting', 'entryAccountList')
-        self.assert_count_equal('COMPONENTS/*', 11)
-        self.assert_count_equal(
-            'COMPONENTS/GRID[@name="entryaccount"]/HEADER', 6)
-        self.assert_count_equal(
-            'COMPONENTS/GRID[@name="entryaccount"]/RECORD', nb_line)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
+        self.assert_count_equal('COMPONENTS/*', 8)
+        self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/HEADER', 6)
+        self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', nb_line)
 
     def test_lastyear(self):
         self._goto_entrylineaccountlist(1, 0, 1)
@@ -274,7 +271,7 @@ class CompletedEntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryAccountEdit',
                   {'year': '1', 'journal': '2'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountEdit')
-        self.assert_count_equal('COMPONENTS/*', 9)
+        self.assert_count_equal('COMPONENTS/*', 5)
         self.assert_xml_equal("COMPONENTS/SELECT[@name='costaccounting']", '0')
         self.assert_count_equal("COMPONENTS/SELECT[@name='costaccounting']/CASE", 2)
         self.assert_count_equal('ACTIONS/ACTION', 2)
@@ -283,7 +280,7 @@ class CompletedEntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryAccountShow',
                   {'year': '1', 'journal': '2', 'entryaccount': '2'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountShow')
-        self.assert_count_equal('COMPONENTS/*', 19)
+        self.assert_count_equal('COMPONENTS/*', 12)
         self.assert_xml_equal("COMPONENTS/LABELFORM[@name='designation']", 'depense 1')
         self.assert_xml_equal("COMPONENTS/SELECT[@name='costaccounting']", '2')
         self.assert_count_equal("COMPONENTS/SELECT[@name='costaccounting']/CASE", 2)
@@ -293,7 +290,7 @@ class CompletedEntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryAccountShow',
                   {'year': '1', 'journal': '2', 'entryaccount': '11'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountShow')
-        self.assert_count_equal('COMPONENTS/*', 16)
+        self.assert_count_equal('COMPONENTS/*', 9)
         self.assert_xml_equal("COMPONENTS/LABELFORM[@name='designation']", 'Frais bancaire')
         self.assert_xml_equal("COMPONENTS/LABELFORM[@name='costaccounting']", 'close')
         self.assert_count_equal('ACTIONS/ACTION', 1)
@@ -302,7 +299,7 @@ class CompletedEntryTest(LucteriosTest):
         self.factory.xfer = CostAccountingList()
         self.call('/diacamma.accounting/costAccountingList', {'status': 0}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'costAccountingList')
-        self.assert_count_equal('COMPONENTS/*', 8)
+        self.assert_count_equal('COMPONENTS/*', 6)
         self.assert_count_equal('COMPONENTS/GRID[@name="costaccounting"]/HEADER', 7)
         self.assert_count_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD', 1)
         self.assert_xml_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD[1]/VALUE[@name="name"]', 'open')
@@ -355,7 +352,7 @@ class CompletedEntryTest(LucteriosTest):
         self.factory.xfer = CostAccountingAddModify()
         self.call('/diacamma.accounting/costAccountingAddModify', {}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'costAccountingAddModify')
-        self.assert_count_equal('COMPONENTS/*', 9)
+        self.assert_count_equal('COMPONENTS/*', 5)
         self.assert_count_equal("COMPONENTS/SELECT[@name='last_costaccounting']/CASE", 3)
         self.assert_count_equal("COMPONENTS/SELECT[@name='year']/CASE", 3)
 

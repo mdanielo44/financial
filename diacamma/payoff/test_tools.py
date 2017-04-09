@@ -104,30 +104,20 @@ class PaymentTest(LucteriosTest):
         self.assertEqual(paypal_params['tax'], tax, paypal_params)
 
     def check_payment(self, itemid, title, amount='100.0', tax='0.0'):
-        self.assert_xml_equal(
-            'COMPONENTS/LABELFORM[@name="lb_paymeth_1"]', '{[b]}virement{[/b]}')
-        txt_value = self.get_first_xpath(
-            'COMPONENTS/LABELFORM[@name="paymeth_1"]').text
-        self.assertTrue(
-            txt_value.find('{[u]}{[i]}IBAN{[/i]}{[/u]}') != -1, txt_value)
+        self.assert_attrib_equal('COMPONENTS/LABELFORM[@name="paymeth_1"]', 'description', 'virement')
+        txt_value = self.get_first_xpath('COMPONENTS/LABELFORM[@name="paymeth_1"]').text
+        self.assertTrue(txt_value.find('{[u]}{[i]}IBAN{[/i]}{[/u]}') != -1, txt_value)
         self.assertTrue(txt_value.find('123456789') != -1, txt_value)
 
-        self.assert_xml_equal(
-            'COMPONENTS/LABELFORM[@name="lb_paymeth_2"]', '{[b]}chèque{[/b]}')
-        txt_value = self.get_first_xpath(
-            'COMPONENTS/LABELFORM[@name="paymeth_2"]').text
-        self.assertTrue(
-            txt_value.find('{[u]}{[i]}libellé à{[/i]}{[/u]}') != -1, txt_value)
-        self.assertTrue(
-            txt_value.find('{[u]}{[i]}adresse{[/i]}{[/u]}') != -1, txt_value)
+        self.assert_attrib_equal('COMPONENTS/LABELFORM[@name="paymeth_2"]', 'description', 'chèque')
+        txt_value = self.get_first_xpath('COMPONENTS/LABELFORM[@name="paymeth_2"]').text
+        self.assertTrue(txt_value.find('{[u]}{[i]}libellé à{[/i]}{[/u]}') != -1, txt_value)
+        self.assertTrue(txt_value.find('{[u]}{[i]}adresse{[/i]}{[/u]}') != -1, txt_value)
         self.assertTrue(txt_value.find('Truc') != -1, txt_value)
-        self.assertTrue(
-            txt_value.find('1 rue de la Paix{[newline]}99000 LA-BAS') != -1, txt_value)
+        self.assertTrue(txt_value.find('1 rue de la Paix{[newline]}99000 LA-BAS') != -1, txt_value)
 
-        self.assert_xml_equal(
-            'COMPONENTS/LABELFORM[@name="lb_paymeth_3"]', '{[b]}PayPal{[/b]}')
-        txt_value = self.get_first_xpath(
-            'COMPONENTS/LABELFORM[@name="paymeth_3"]').text
+        self.assert_attrib_equal('COMPONENTS/LABELFORM[@name="paymeth_3"]', 'description', 'PayPal')
+        txt_value = self.get_first_xpath('COMPONENTS/LABELFORM[@name="paymeth_3"]').text
         self.check_paypal_msg(txt_value.replace('{[', '<').replace(']}', '>'), itemid, title, amount, tax)
         return txt_value
 

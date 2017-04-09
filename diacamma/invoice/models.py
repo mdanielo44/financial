@@ -50,6 +50,8 @@ from diacamma.payoff.models import Supporting
 
 
 class Vat(LucteriosModel):
+    is_simple_gui = True
+
     name = models.CharField(_('name'), max_length=20)
     rate = models.DecimalField(_('rate'), max_digits=6, decimal_places=2,
                                default=10.0,
@@ -71,6 +73,8 @@ class Vat(LucteriosModel):
 
 
 class Article(LucteriosModel):
+    is_simple_gui = True
+
     reference = models.CharField(_('reference'), max_length=30)
     designation = models.TextField(_('designation'))
     price = models.DecimalField(_('price'), max_digits=10, decimal_places=3,
@@ -116,6 +120,8 @@ class Article(LucteriosModel):
 
 
 class Bill(Supporting):
+    is_simple_gui = True
+
     fiscal_year = models.ForeignKey(
         FiscalYear, verbose_name=_('fiscal year'), null=True, default=None, db_index=True, on_delete=models.PROTECT)
     bill_type = models.IntegerField(verbose_name=_('bill type'),
@@ -531,6 +537,8 @@ class Bill(Supporting):
 
 
 class Detail(LucteriosModel):
+    is_simple_gui = True
+
     bill = models.ForeignKey(
         Bill, verbose_name=_('bill'), null=False, db_index=True, on_delete=models.CASCADE)
     article = models.ForeignKey(

@@ -57,7 +57,9 @@ def select_account_system(xfer):
         edt = XferCompLabelForm("account_system")
     edt.set_value(accounting_system_name(current_account_system))
     edt.set_location(1, xfer.get_max_row() + 1)
+    edt.description = _('accounting system')
     xfer.add_component(edt)
+    return edt
 
 
 def fill_params(xfer, is_mini=False):
@@ -114,10 +116,6 @@ class Configuration(XferListEditor):
 
     def fillresponse_header(self):
         self.new_tab(_('Fiscal year list'))
-        lbl = XferCompLabelForm('lbl_account_system')
-        lbl.set_value_as_name(_('accounting system'))
-        lbl.set_location(0, 1)
-        self.add_component(lbl)
         select_account_system(self)
 
     def fillresponse(self):

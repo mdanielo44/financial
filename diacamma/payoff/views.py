@@ -112,14 +112,11 @@ class SupportingThird(XferListEditor):
         if 'status_filter' in self.params:
             del self.params['status_filter']
         contact_filter = self.getparam('filter', '')
-        lbl = XferCompLabelForm('lbl_filtre')
-        lbl.set_value_as_name(_('Filtrer by contact'))
-        lbl.set_location(0, 2)
-        self.add_component(lbl)
         comp = XferCompEdit('filter')
         comp.set_value(contact_filter)
         comp.set_action(self.request, self.get_action(), modal=FORMTYPE_REFRESH, close=CLOSE_NO)
-        comp.set_location(1, 2)
+        comp.set_location(0, 2, 2)
+        comp.description = _('Filtrer by contact')
         self.add_component(comp)
         self.filter = Q(status=0)
         if self.code_mask != '':
@@ -178,47 +175,33 @@ class PayableEmail(XferContainerAcknowledge):
             icon.set_location(0, 0, 1, 6)
             icon.set_value(self.icon_path())
             dlg.add_component(icon)
-            lbl = XferCompLabelForm('lb_subject')
-            lbl.set_value_as_name(_('subject'))
-            lbl.set_location(1, 1)
-            dlg.add_component(lbl)
-            lbl = XferCompEdit('subject')
-            lbl.set_value(six.text_type(self.item))
-            lbl.set_location(2, 1)
-            dlg.add_component(lbl)
-            lbl = XferCompLabelForm('lb_message')
-            lbl.set_value_as_name(_('message'))
-            lbl.set_location(1, 2)
-            dlg.add_component(lbl)
+            edt = XferCompEdit('subject')
+            edt.set_value(six.text_type(self.item))
+            edt.set_location(1, 1)
+            edt.description = _('subject')
+            dlg.add_component(edt)
             contact = self.item.third.contact.get_final_child()
-            lbl = XferCompMemo('message')
-            lbl.set_value(Params.getvalue('payoff-email-message') % {
-                          'name': contact.get_presentation(), 'doc': self.item.get_docname()})
-            lbl.with_hypertext = True
-            lbl.set_size(130, 450)
-            lbl.set_location(2, 2)
-            dlg.add_component(lbl)
+            memo = XferCompMemo('message')
+            memo.description = _('message')
+            memo.set_value(Params.getvalue('payoff-email-message') % {
+                'name': contact.get_presentation(), 'doc': self.item.get_docname()})
+            memo.with_hypertext = True
+            memo.set_size(130, 450)
+            memo.set_location(1, 2)
+            dlg.add_component(memo)
             selectors = PrintModel.get_print_selector(
                 2, self.item.__class__)[0]
-            lbl = XferCompLabelForm('lb_model')
-            lbl.set_value_as_name(selectors[1])
-            lbl.set_location(1, 3)
-            dlg.add_component(lbl)
             sel = XferCompSelect('model')
             sel.set_select(selectors[2])
-            sel.set_location(2, 3)
+            sel.set_location(1, 3)
+            sel.description = selectors[1]
             dlg.add_component(sel)
-
             if self.item.payoff_have_payment() and (len(PaymentMethod.objects.all()) > 0):
-                lbl = XferCompLabelForm('lb_withpayment')
-                lbl.set_value_as_name(_('add payment methods in email'))
-                lbl.set_location(1, 4)
-                dlg.add_component(lbl)
                 sel = XferCompCheck('withpayment')
                 sel.set_value(True)
-                sel.set_location(2, 4)
+                sel.description = _('add payment methods in email')
+                sel.set_location(1, 4)
                 dlg.add_component(sel)
-
             dlg.add_action(self.get_action(TITLE_OK, 'images/ok.png'), params={"OK": "YES"})
             dlg.add_action(WrapAction(TITLE_CANCEL, 'images/cancel.png'))
         else:
@@ -262,15 +245,10 @@ class PayableShow(XferContainerCustom):
         self.add_component(lbl)
         for paymeth in payments:
             max_row = self.get_max_row() + 1
-            lbl = XferCompLabelForm('lb_paymeth_%d' % paymeth.id)
-            lbl.set_value_as_name(
-                get_value_if_choices(paymeth.paytype, paymeth.get_field_by_name('paytype')))
-            lbl.set_location(1, max_row)
-            self.add_component(lbl)
             lbl = XferCompLabelForm('paymeth_%d' % paymeth.id)
-            lbl.set_value(
-                paymeth.show_pay(self.request.META.get('HTTP_REFERER', self.request.build_absolute_uri()), self.language, self.item))
-            lbl.set_location(2, max_row, 3)
+            lbl.description = get_value_if_choices(paymeth.paytype, paymeth.get_field_by_name('paytype'))
+            lbl.set_value(paymeth.show_pay(self.request.META.get('HTTP_REFERER', self.request.build_absolute_uri()), self.language, self.item))
+            lbl.set_location(1, max_row, 3)
             self.add_component(lbl)
             lbl = XferCompLabelForm('sep_paymeth_%d' % paymeth.id)
             lbl.set_value("{[br/]}")

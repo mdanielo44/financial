@@ -49,6 +49,7 @@ class ArticleEditor(LucteriosEditor):
         old_account = xfer.get_components("sell_account")
         xfer.remove_component("sell_account")
         sel_code = XferCompSelect("sell_account")
+        sel_code.description = old_account.description
         sel_code.set_location(old_account.col, old_account.row, old_account.colspan + 1, old_account.rowspan)
         for item in FiscalYear.get_current().chartsaccount_set.all().filter(code__regex=current_system_account().get_revenue_mask()).order_by('code'):
             sel_code.select_list.append((item.code, six.text_type(item)))
@@ -65,7 +66,6 @@ class BillEditor(SupportingEditor):
         com_type.set_action(xfer.request, xfer.get_action(), close=CLOSE_NO, modal=FORMTYPE_REFRESH)
         if xfer.item.bill_type == 0:
             xfer.remove_component("cost_accounting")
-            xfer.remove_component("lbl_cost_accounting")
         else:
             comp = xfer.get_components("cost_accounting")
             comp.set_needed(False)
@@ -83,10 +83,8 @@ class BillEditor(SupportingEditor):
         try:
             if xfer.item.cost_accounting is None:
                 xfer.remove_component("cost_accounting")
-                xfer.remove_component("lbl_cost_accounting")
         except ObjectDoesNotExist:
             xfer.remove_component("cost_accounting")
-            xfer.remove_component("lbl_cost_accounting")
         xfer.params['new_account'] = Params.getvalue('invoice-account-third')
         xfer.move(0, 0, 1)
         lbl = XferCompLabelForm('title')
@@ -106,10 +104,8 @@ class BillEditor(SupportingEditor):
                     'price incl. taxes'), details.headers[2].type, details.headers[2].orderable)
                 details.headers[6] = XferCompHeader(details.headers[6].name, _(
                     'total incl. taxes'), details.headers[6].type, details.headers[6].orderable)
-            xfer.get_components('lbl_total_excltax').set_value_as_name(
-                _('total excl. taxes'))
-            xfer.filltab_from_model(1, xfer.get_max_row() + 1, True,
-                                    [((_('VTA sum'), 'vta_sum'), (_('total incl. taxes'), 'total_incltax'))])
+            xfer.get_components('total_excltax').description = _('total excl. taxes')
+            xfer.filltab_from_model(1, xfer.get_max_row() + 1, True, [((_('VTA sum'), 'vta_sum'), (_('total incl. taxes'), 'total_incltax'))])
         if self.item.status == 0:
             SupportingEditor.show_third(self, xfer, 'invoice.add_bill')
         else:

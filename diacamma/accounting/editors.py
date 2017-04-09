@@ -172,19 +172,16 @@ class ChartsAccountEditor(LucteriosEditor):
 
     def show(self, xfer):
         row = xfer.get_max_row() + 1
-        lbl = XferCompLabelForm('lbl_entrylineaccount')
-        lbl.set_location(1, row)
-        lbl.set_value_as_name(EntryLineAccount._meta.verbose_name)
-        xfer.add_component(lbl)
         comp = XferCompGrid('entryaccount')
         comp.set_model(EntryAccount.objects.filter(entrylineaccount__account=self.item), None, xfer)
+        comp.description = EntryLineAccount._meta.verbose_name
         comp.add_action(xfer.request, ActionsManage.get_action_url(
             'accounting.EntryAccount', 'OpenFromLine', xfer), unique=SELECT_SINGLE, close=CLOSE_NO)
         comp.add_action(xfer.request, ActionsManage.get_action_url('accounting.EntryAccount', 'Close', xfer), unique=SELECT_MULTI, close=CLOSE_NO)
         if self.item.is_third:
             comp.add_action(xfer.request, ActionsManage.get_action_url(
                 'accounting.EntryAccount', 'Link', xfer), unique=SELECT_MULTI, close=CLOSE_NO)
-        comp.set_location(2, row)
+        comp.set_location(1, row)
         xfer.add_component(comp)
 
 
@@ -271,6 +268,7 @@ class EntryAccountEditor(LucteriosEditor):
         grid_lines = xfer.get_components('entrylineaccount')
         xfer.remove_component('entrylineaccount')
         new_grid_lines = XferCompGrid('entrylineaccount_serial')
+        new_grid_lines.description = grid_lines.description
         new_grid_lines.set_model(self.item.get_entrylineaccounts(serial_vals), None, xfer)
         new_grid_lines.set_location(grid_lines.col, grid_lines.row, grid_lines.colspan + 2, grid_lines.rowspan)
         new_grid_lines.add_action_notified(xfer, EntryLineAccount)
@@ -305,8 +303,6 @@ class EntryAccountEditor(LucteriosEditor):
 
 
 def edit_third_for_line(xfer, column, row, account_code, current_third, vertical=True):
-    lbl = XferCompLabelForm('thirdlbl')
-    lbl.set_value_as_name(_('third'))
     sel_thirds = []
     for third in Third.objects.filter(accountthird__code=account_code):
         sel_thirds.append((third.id, six.text_type(third)))
@@ -319,14 +315,15 @@ def edit_third_for_line(xfer, column, row, account_code, current_third, vertical
     else:
         cb_third.set_value(xfer.getparam('third', current_third.id))
     if vertical:
-        cb_third.set_location(column, row + 1)
-        lbl.set_location(column, row)
-    else:
-        cb_third.set_location(column + 2, row)
+        lbl = XferCompLabelForm('thirdlbl')
+        lbl.set_value_as_name(_('third'))
         lbl.set_location(column, row, 2)
-    xfer.add_component(lbl)
+        xfer.add_component(lbl)
+        cb_third.set_location(column, row + 1, 2)
+    else:
+        cb_third.set_location(column, row)
+        cb_third.description = _('third')
     xfer.add_component(cb_third)
-    return lbl
 
 
 class EntryLineAccountEditor(LucteriosEditor):
@@ -336,11 +333,11 @@ class EntryLineAccountEditor(LucteriosEditor):
         num_cpt = xfer.getparam('num_cpt', 0)
 
         lbl = XferCompLabelForm('numCptlbl')
-        lbl.set_location(column, row, 3)
+        lbl.set_location(column, row, 2)
         lbl.set_value_as_headername(_('account'))
         xfer.add_component(lbl)
         edt = XferCompEdit('num_cpt_txt')
-        edt.set_location(column, row + 1, 2)
+        edt.set_location(column, row + 1)
         edt.set_value(num_cpt_txt)
         edt.set_size(20, 25)
         edt.set_action(xfer.request, xfer.get_action(), close=CLOSE_NO, modal=FORMTYPE_REFRESH)
@@ -351,7 +348,7 @@ class EntryLineAccountEditor(LucteriosEditor):
             year = FiscalYear.get_current(xfer.getparam('year'))
             sel_val, current_account = year.get_account_list(num_cpt_txt, num_cpt)
         sel = XferCompSelect('num_cpt')
-        sel.set_location(column + 2, row + 1, 1)
+        sel.set_location(column + 1, row + 1, 1)
         sel.set_select(sel_val)
         sel.set_size(20, 150)
         sel.set_action(xfer.request, xfer.get_action(), close=CLOSE_NO, modal=FORMTYPE_REFRESH)
@@ -368,8 +365,7 @@ class EntryLineAccountEditor(LucteriosEditor):
     def edit_extra_for_line(self, xfer, column, row, vertical=True):
         try:
             if self.item.has_account and self.item.account.is_third:
-                edit_third_for_line(
-                    xfer, column, row, self.item.account.code, self.item.third, vertical)
+                edit_third_for_line(xfer, column, row, self.item.account.code, self.item.third, vertical)
             else:
                 lbl = XferCompLabelForm('referencelbl')
                 lbl.set_value_as_name(_('reference'))
@@ -378,7 +374,7 @@ class EntryLineAccountEditor(LucteriosEditor):
                 if reference is not None:
                     edt.set_value(reference)
                 if vertical:
-                    edt.set_location(column, row + 1)
+                    edt.set_location(column, row + 1, 2)
                     lbl.set_location(column, row)
                 else:
                     edt.set_location(column + 2, row)
@@ -390,29 +386,23 @@ class EntryLineAccountEditor(LucteriosEditor):
 
     def edit_creditdebit_for_line(self, xfer, column, row):
         currency_decimal = Params.getvalue("accounting-devise-prec")
-        lbl = XferCompLabelForm('debitlbl')
-        lbl.set_location(column, row, 2)
-        lbl.set_value_as_name(_('debit'))
-        xfer.add_component(lbl)
         edt = XferCompFloat('debit_val', -10000000, 10000000, currency_decimal)
-        edt.set_location(column + 2, row)
+        edt.set_location(column, row, 2)
         edt.set_value(self.item.get_debit())
         edt.set_size(20, 75)
+        edt.description = _('debit')
         xfer.add_component(edt)
-        lbl = XferCompLabelForm('creditlbl')
-        lbl.set_location(column, row + 1, 2)
-        lbl.set_value_as_name(_('credit'))
-        xfer.add_component(lbl)
         edt = XferCompFloat('credit_val', -10000000, 10000000, currency_decimal)
-        edt.set_location(column + 2, row + 1)
+        edt.set_location(column, row + 1, 2)
         edt.set_value(self.item.get_credit())
         edt.set_size(20, 75)
+        edt.description = _('credit')
         xfer.add_component(edt)
 
     def edit_line(self, xfer, init_col, init_row, debit_rest, credit_rest):
         self.edit_account_for_line(xfer, init_col, init_row, debit_rest, credit_rest)
-        self.edit_creditdebit_for_line(xfer, init_col, init_row + 2)
-        self.edit_extra_for_line(xfer, init_col + 3, init_row)
+        self.edit_creditdebit_for_line(xfer, init_col + 1, init_row + 2)
+        self.edit_extra_for_line(xfer, init_col + 2, init_row)
 
 
 class ModelEntryEditor(EntryLineAccountEditor):
@@ -434,12 +424,10 @@ class ModelLineEntryEditor(EntryLineAccountEditor):
     def edit(self, xfer):
         xfer.params['model'] = xfer.getparam('modelentry', 0)
         code = xfer.get_components('code')
-        code.col += 1
         code.mask = current_system_account().get_general_mask()
         code.set_action(xfer.request, xfer.get_action(), modal=FORMTYPE_REFRESH, close=CLOSE_NO)
         if match(current_system_account().get_third_mask(), self.item.code) is not None:
-            edit_third_for_line(
-                xfer, 1, xfer.get_max_row() + 1, self.item.code, None, False)
+            edit_third_for_line(xfer, 1, xfer.get_max_row() + 1, self.item.code, None, False)
         self.edit_creditdebit_for_line(xfer, 1, xfer.get_max_row() + 1)
 
     def before_save(self, xfer):

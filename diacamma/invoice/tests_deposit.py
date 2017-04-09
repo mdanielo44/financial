@@ -99,7 +99,7 @@ class DepositTest(InvoiceTest):
         self.call('/diacamma.payoff/depositSlipAddModify', {}, False)
         self.assert_observer(
             'core.custom', 'diacamma.payoff', 'depositSlipAddModify')
-        self.assert_count_equal('COMPONENTS/*', 7)
+        self.assert_count_equal('COMPONENTS/*', 4)
 
         self.factory.xfer = DepositSlipAddModify()
         self.call('/diacamma.payoff/depositSlipAddModify',
@@ -131,16 +131,12 @@ class DepositTest(InvoiceTest):
             '/diacamma.payoff/depositSlipShow', {'depositslip': 1}, False)
         self.assert_observer(
             'core.custom', 'diacamma.payoff', 'depositSlipShow')
-        self.assert_count_equal('COMPONENTS/*', 27)
+        self.assert_count_equal('COMPONENTS/*', 15)
         self.assert_count_equal('ACTIONS/ACTION', 2)
-        self.assert_count_equal(
-            'COMPONENTS/GRID[@name="depositdetail"]/RECORD', 0)
-        self.assert_count_equal(
-            'COMPONENTS/GRID[@name="depositdetail"]/HEADER', 4)
-        self.assert_count_equal(
-            'COMPONENTS/GRID[@name="depositdetail"]/ACTIONS/ACTION', 2)
-        self.assert_xml_equal(
-            'COMPONENTS/LABELFORM[@name="total"]', '0.00€')
+        self.assert_count_equal('COMPONENTS/GRID[@name="depositdetail"]/RECORD', 0)
+        self.assert_count_equal('COMPONENTS/GRID[@name="depositdetail"]/HEADER', 4)
+        self.assert_count_equal('COMPONENTS/GRID[@name="depositdetail"]/ACTIONS/ACTION', 2)
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="total"]', '0.00€')
 
     def test_deposit_nocheque(self):
         self.create_deposit()
@@ -150,14 +146,11 @@ class DepositTest(InvoiceTest):
             '/diacamma.payoff/depositDetailAddModify', {'depositslip': 1}, False)
         self.assert_observer(
             'core.custom', 'diacamma.payoff', 'depositDetailAddModify')
-        self.assert_count_equal('COMPONENTS/*', 7)
+        self.assert_count_equal('COMPONENTS/*', 5)
         self.assert_count_equal('ACTIONS/ACTION', 1)
-        self.assert_count_equal(
-            'COMPONENTS/GRID[@name="entry"]/RECORD', 0)
-        self.assert_count_equal(
-            'COMPONENTS/GRID[@name="entry"]/HEADER', 5)
-        self.assert_count_equal(
-            'COMPONENTS/GRID[@name="entry"]/ACTIONS/ACTION', 1)
+        self.assert_count_equal('COMPONENTS/GRID[@name="entry"]/RECORD', 0)
+        self.assert_count_equal('COMPONENTS/GRID[@name="entry"]/HEADER', 5)
+        self.assert_count_equal('COMPONENTS/GRID[@name="entry"]/ACTIONS/ACTION', 1)
 
     def test_deposit_simple(self):
         self.create_payoff(1, "75.0", "Mr Smith", 1, "ABC123")
@@ -497,7 +490,7 @@ class MethodTest(InvoiceTest, PaymentTest):
                   {'bill': 1, 'item_name': 'bill'}, False)
         self.assert_observer(
             'core.custom', 'diacamma.payoff', 'supportingPaymentMethod')
-        self.assert_count_equal('COMPONENTS/*', 22)
+        self.assert_count_equal('COMPONENTS/*', 14)
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="num_txt"]', 'A-1')
         self.check_payment(1, 'devis A-1 - 1 avril 2015')
 
@@ -521,7 +514,7 @@ class MethodTest(InvoiceTest, PaymentTest):
                   {'bill': 2, 'item_name': 'bill'}, False)
         self.assert_observer(
             'core.custom', 'diacamma.payoff', 'supportingPaymentMethod')
-        self.assert_count_equal('COMPONENTS/*', 22)
+        self.assert_count_equal('COMPONENTS/*', 14)
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="num_txt"]', 'A-1')
         self.check_payment(2, 'facture A-1 - 1 avril 2015')
 
@@ -540,7 +533,7 @@ class MethodTest(InvoiceTest, PaymentTest):
                       {'item_name': 'bill', 'bill': 2}, False)
             self.assert_observer(
                 'core.custom', 'diacamma.payoff', 'payableEmail')
-            self.assert_count_equal('COMPONENTS/*', 9)
+            self.assert_count_equal('COMPONENTS/*', 5)
             self.assert_xml_equal('COMPONENTS/EDIT[@name="subject"]', 'facture A-1 - 1 avril 2015')
             self.assert_xml_equal('COMPONENTS/MEMO[@name="message"]', 'William Dalton (Minimum)\n\nVeuillez trouver ci-Joint à ce courriel facture A-1 - 1 avril 2015.\n\nSincères salutations')
 

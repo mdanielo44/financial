@@ -190,13 +190,10 @@ class FiscalYearReport(XferContainerCustom):
     def fill_filterCode(self):
         if self.add_filtering:
             filtercode = self.getparam('filtercode', '')
-            lbl = XferCompLabelForm('filtercode_lbl')
-            lbl.set_value_as_name(_("Accounting code starting with"))
-            lbl.set_location(2, 3, 1)
-            self.add_component(lbl)
             edt = XferCompEdit('filtercode')
             edt.set_value(filtercode)
-            edt.set_location(3, 3, 2)
+            edt.description = _("Accounting code starting with")
+            edt.set_location(1, 3, 3)
             edt.set_action(self.request, self.__class__.get_action(), close=CLOSE_NO, modal=FORMTYPE_REFRESH)
             self.add_component(edt)
             if filtercode != '':
@@ -215,7 +212,7 @@ class FiscalYearReport(XferContainerCustom):
         self.add_component(img)
 
         select_year = XferCompSelect(self.field_id)
-        select_year.set_location(1, 0, 4)
+        select_year.set_location(1, 0, 5)
         select_year.set_select_query(FiscalYear.objects.all())
         select_year.set_value(self.item.id)
         select_year.set_needed(True)
@@ -591,13 +588,10 @@ class FiscalYearTrialBalance(FiscalYearReport):
         FiscalYearReport.fill_filterCode(self)
         row = self.get_max_row() + 1
         self.with_third = self.getparam('with_third', False)
-        lbl = XferCompLabelForm('with_third_lbl')
-        lbl.set_value_as_name(_("Detail by third"))
-        lbl.set_location(2, row, 1)
-        self.add_component(lbl)
         edt = XferCompCheck('with_third')
         edt.set_value(self.with_third)
-        edt.set_location(3, row, 2)
+        edt.set_location(2, row, 2)
+        edt.description = _("Detail by third")
         edt.set_action(self.request, self.__class__.get_action(), close=CLOSE_NO, modal=FORMTYPE_REFRESH)
         self.add_component(edt)
 
@@ -714,14 +708,10 @@ class CostAccountingReport(FiscalYearReport):
         img.set_value(self.icon_path())
         img.set_location(0, 0, 1, 3)
         self.add_component(img)
-        lbl = XferCompLabelForm('lblname')
-        lbl.set_value_as_name(
-            self.model._meta.verbose_name)
-        lbl.set_location(1, 2)
-        self.add_component(lbl)
         lbl = XferCompLabelForm('name')
         lbl.set_value(self.item)
-        lbl.set_location(2, 2, 4)
+        lbl.set_location(1, 2, 4)
+        lbl.description = self.model._meta.verbose_name
         self.add_component(lbl)
         self.filltab_from_model(1, 6, True, [(
             (_('total revenue'), 'total_revenue'), (_('total expense'), 'total_expense'))])

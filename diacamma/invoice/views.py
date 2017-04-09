@@ -59,14 +59,11 @@ def _add_bill_filter(xfer, row, with_third=False):
     current_filter = Q()
     if with_third:
         third_filter = xfer.getparam('filter', '')
-        lbl = XferCompLabelForm('lbl_filtre')
-        lbl.set_value_as_name(_('Filtrer by third'))
-        lbl.set_location(0, row)
-        xfer.add_component(lbl)
         comp = XferCompEdit('filter')
         comp.set_value(third_filter)
+        comp.description = _('Filtrer by third')
         comp.set_action(xfer.request, xfer.get_action(), modal=FORMTYPE_REFRESH, close=CLOSE_NO)
-        comp.set_location(1, row)
+        comp.set_location(0, row)
         xfer.add_component(comp)
         row += 1
         if third_filter != "":
@@ -74,18 +71,15 @@ def _add_bill_filter(xfer, row, with_third=False):
             q_individual = (Q(third__contact__individual__firstname__icontains=third_filter) | Q(third__contact__individual__lastname__icontains=third_filter))
             current_filter &= (q_legalentity | q_individual)
     status_filter = xfer.getparam('status_filter', -1)
-    lbl = XferCompLabelForm('lbl_filter')
-    lbl.set_value_as_name(_('Filter by type'))
-    lbl.set_location(0, row)
-    xfer.add_component(lbl)
     dep_field = Bill.get_field_by_name('status')
     sel_list = list(dep_field.choices)
     sel_list.insert(0, (-1, _('building+valid')))
     sel_list.append((-2, None))
     edt = XferCompSelect("status_filter")
     edt.set_select(sel_list)
+    edt.description = _('Filter by type')
     edt.set_value(status_filter)
-    edt.set_location(1, row)
+    edt.set_location(0, row)
     edt.set_action(xfer.request, xfer.get_action(), modal=FORMTYPE_REFRESH, close=CLOSE_NO)
     xfer.add_component(edt)
     if status_filter >= 0:
@@ -203,11 +197,8 @@ class BillTransition(XferTransition):
         parent.get('bank_account').setEnabled(type);
     }
     """
+        check_payoff.description = _("Payment of deposit or cash")
         dlg.add_component(check_payoff)
-        lbl = XferCompLabelForm('lb_withpayoff')
-        lbl.set_value_as_name(_("Payment of deposit or cash"))
-        lbl.set_location(2, 2)
-        dlg.add_component(lbl)
         dlg.item.supporting = self.item
         dlg.fill_from_model(2, 3, False)
         if dlg.get_components("bank_fee") is not None:
@@ -333,14 +324,11 @@ class ArticleList(XferListEditor):
 
     def fillresponse_header(self):
         show_filter = self.getparam('show_filter', 0)
-        lbl = XferCompLabelForm('lbl_showing')
-        lbl.set_value_as_name(_('Show articles'))
-        lbl.set_location(0, 3)
-        self.add_component(lbl)
         edt = XferCompSelect("show_filter")
         edt.set_select([(0, _('Only activate')), (1, _('All'))])
         edt.set_value(show_filter)
-        edt.set_location(1, 3)
+        edt.set_location(0, 3)
+        edt.description = _('Show articles')
         edt.set_action(self.request, self.get_action(), modal=FORMTYPE_REFRESH, close=CLOSE_NO)
         self.add_component(edt)
         self.filter = Q()
