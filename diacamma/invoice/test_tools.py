@@ -29,28 +29,53 @@ from lucterios.framework.test import LucteriosTest
 from diacamma.accounting.models import FiscalYear
 from diacamma.accounting.test_tools import create_account, default_costaccounting
 
-from diacamma.invoice.models import Article, Vat
+from diacamma.invoice.models import Article, Vat, Category, Provider
 from diacamma.invoice.views import BillTransition, DetailAddModify, BillAddModify
 from diacamma.payoff.views import SupportingThirdValid
 
 
-def default_articles():
+def default_articles(with_provider=False):
     default_costaccounting()
 
     create_account(['709'], 3, FiscalYear.get_current())
     create_account(['4455'], 1, FiscalYear.get_current())
     vat1 = Vat.objects.create(name="5%", rate=5.0, isactif=True)
     vat2 = Vat.objects.create(name="20%", rate=20.0, isactif=True)
-    Article.objects.create(reference='ABC1', designation="Article 01",
-                           price="12.34", unit="kg", isdisabled=False, sell_account="701", vat=None)
-    Article.objects.create(reference='ABC2', designation="Article 02",
-                           price="56.78", unit="l", isdisabled=False, sell_account="707", vat=vat1)
-    Article.objects.create(reference='ABC3', designation="Article 03",
-                           price="324.97", unit="", isdisabled=False, sell_account="601", vat=None)
-    Article.objects.create(reference='ABC4', designation="Article 04",
-                           price="1.31", unit="", isdisabled=False, sell_account="708", vat=None)
-    Article.objects.create(reference='ABC5', designation="Article 05",
-                           price="64.10", unit="m", isdisabled=True, sell_account="701", vat=vat2)
+    art1 = Article.objects.create(reference='ABC1', designation="Article 01",
+                                  price="12.34", unit="kg", isdisabled=False, sell_account="701", vat=None, stockable=1)
+    art2 = Article.objects.create(reference='ABC2', designation="Article 02",
+                                  price="56.78", unit="l", isdisabled=False, sell_account="707", vat=vat1, stockable=1)
+    art3 = Article.objects.create(reference='ABC3', designation="Article 03",
+                                  price="324.97", unit="", isdisabled=False, sell_account="601", vat=None, stockable=0)
+    art4 = Article.objects.create(reference='ABC4', designation="Article 04",
+                                  price="1.31", unit="", isdisabled=False, sell_account="708", vat=None, stockable=2)
+    art5 = Article.objects.create(reference='ABC5', designation="Article 05",
+                                  price="64.10", unit="m", isdisabled=True, sell_account="701", vat=vat2, stockable=0)
+    cat_list = Category.objects.all()
+    if len(cat_list) > 0:
+        art1.categories = cat_list.filter(id__in=(1,))
+        art1.save()
+        art2.categories = cat_list.filter(id__in=(2,))
+        art2.save()
+        art3.categories = cat_list.filter(id__in=(3,))
+        art3.save()
+        art4.categories = cat_list.filter(id__in=(2, 3))
+        art4.save()
+        art5.categories = cat_list.filter(id__in=(1, 2, 3))
+        art5.save()
+    if with_provider:
+        Provider.objects.create(third_id=1, reference="a123", article=art1)
+        Provider.objects.create(third_id=1, reference="b234", article=art2)
+        Provider.objects.create(third_id=1, reference="c345", article=art3)
+        Provider.objects.create(third_id=2, reference="d456", article=art3)
+        Provider.objects.create(third_id=2, reference="e567", article=art4)
+        Provider.objects.create(third_id=2, reference="f678", article=art5)
+
+
+def default_categories():
+    Category.objects.create(name='cat 1', designation="categorie N°1")
+    Category.objects.create(name='cat 2', designation="categorie N°2")
+    Category.objects.create(name='cat 3', designation="categorie N°3")
 
 
 class InvoiceTest(LucteriosTest):

@@ -72,6 +72,33 @@ class Vat(LucteriosModel):
         verbose_name_plural = _('VATs')
 
 
+class Category(LucteriosModel):
+    is_simple_gui = True
+
+    name = models.CharField(_('name'), max_length=50)
+    designation = models.TextField(_('designation'))
+
+    def __str__(self):
+        return six.text_type(self.name)
+
+    @classmethod
+    def get_default_fields(cls):
+        return ["name", "designation"]
+
+    @classmethod
+    def get_edit_fields(cls):
+        return ["name", "designation"]
+
+    @classmethod
+    def get_show_fields(cls):
+        return ["name", "designation"]
+
+    class Meta(object):
+        verbose_name = _('Category')
+        verbose_name_plural = _('Categories')
+        default_permissions = []
+
+
 class Article(LucteriosModel):
     is_simple_gui = True
 
@@ -86,21 +113,46 @@ class Article(LucteriosModel):
     sell_account = models.CharField(_('sell account'), max_length=50)
     vat = models.ForeignKey(Vat, verbose_name=_('vat'), null=True,
                             default=None, on_delete=models.PROTECT)
+    stockable = models.IntegerField(verbose_name=_('stockable'),
+                                    choices=((0, _('no stockable')), (1, _('stockable')), (2, _('stockable & no marketable'))), null=False, default=0, db_index=True)
+    categories = models.ManyToManyField(Category, verbose_name=_('categories'), blank=True)
 
     def __str__(self):
         return six.text_type(self.reference)
 
     @classmethod
     def get_default_fields(cls):
-        return ["reference", "designation", (_('price'), "price_txt"), 'unit', "isdisabled", 'sell_account']
+        fields = ["reference", "designation", (_('price'), "price_txt"), 'unit', "isdisabled", 'sell_account', "stockable"]
+        if len(Category.objects.all()) > 0:
+            fields.append('categories')
+        return fields
 
     @classmethod
     def get_edit_fields(cls):
-        return ["reference", "designation", ("price", "unit"), ("sell_account", 'vat'), "isdisabled"]
+        fields = ["reference", "designation", ("price", "unit"), ("sell_account", 'vat'), ("stockable", "isdisabled")]
+        if len(Category.objects.all()) > 0:
+            fields.append('categories')
+        return fields
 
     @classmethod
     def get_show_fields(cls):
-        return ["reference", "designation", ("price", "unit"), ("sell_account", 'vat'), "isdisabled"]
+        fields = ["reference", "designation", ("price", "unit"), ("sell_account", 'vat'), ("stockable", "isdisabled")]
+        if len(Category.objects.all()) > 0:
+            fields.append('categories')
+        if len(Provider().third_query) > 0:
+            fields.append('provider_set')
+        return fields
+
+    @classmethod
+    def get_search_fields(cls):
+        fields = ["reference", "designation", "price", "unit", "sell_account", 'vat', "stockable", "isdisabled"]
+        if len(Category.objects.all()) > 0:
+            fields.append('categories.name')
+            fields.append('categories.description')
+        if len(Provider().third_query) > 0:
+            fields.append('provider_set.third')
+            fields.append('provider_set.reference')
+        return fields
 
     @property
     def price_txt(self):
@@ -117,6 +169,39 @@ class Article(LucteriosModel):
     class Meta(object):
         verbose_name = _('article')
         verbose_name_plural = _('articles')
+
+
+class Provider(LucteriosModel):
+    is_simple_gui = True
+
+    article = models.ForeignKey(Article, verbose_name=_('article'), null=False, on_delete=models.CASCADE)
+    third = models.ForeignKey(Third, verbose_name=_('third'), null=False, on_delete=models.PROTECT)
+    reference = models.CharField(_('reference'), max_length=50)
+
+    @property
+    def third_query(self):
+        thirdfilter = Q(accountthird__code__regex=current_system_account().get_provider_mask())
+        return Third.objects.filter(thirdfilter)
+
+    def __str__(self):
+        return self.reference
+
+    @classmethod
+    def get_default_fields(cls):
+        return ["third", "reference"]
+
+    @classmethod
+    def get_edit_fields(cls):
+        return ["third", "reference"]
+
+    @classmethod
+    def get_show_fields(cls):
+        return ["third", "reference"]
+
+    class Meta(object):
+        verbose_name = _('Provider')
+        verbose_name_plural = _('Providers')
+        default_permissions = []
 
 
 class Bill(Supporting):
@@ -555,6 +640,28 @@ class Detail(LucteriosModel):
     vta_rate = models.DecimalField(_('vta rate'), max_digits=6, decimal_places=4, default=0.0, validators=[
         MinValueValidator(0.0), MaxValueValidator(1.0)])
 
+    def __init__(self, *args, **kwargs):
+        LucteriosModel.__init__(self, *args, **kwargs)
+        self.filter_thirdid = 0
+        self.filter_ref = ''
+
+    def set_context(self, xfer):
+        self.filter_thirdid = xfer.getparam('third', 0)
+        self.filter_ref = xfer.getparam('reference', '')
+        self.filter_cat = xfer.getparam('cat_filter', ())
+
+    @property
+    def article_query(self):
+        artfilter = Q(isdisabled=False)
+        artfilter &= ~Q(stockable=2)
+        if self.filter_thirdid != 0:
+            artfilter &= Q(provider__third_id=self.filter_thirdid)
+        if self.filter_ref != '':
+            artfilter &= Q(provider__reference__icontains=self.filter_ref)
+        if len(self.filter_cat) > 0:
+            artfilter &= Q(categories__in=Category.objects.filter(id__in=self.filter_cat))
+        return Article.objects.filter(artfilter)
+
     def __str__(self):
         return "[%s] %s:%f" % (six.text_type(self.reference), six.text_type(self.designation), self.price_txt)
 
@@ -564,7 +671,7 @@ class Detail(LucteriosModel):
 
     @classmethod
     def get_edit_fields(cls):
-        return ["article", "designation", "price", "unit", "quantity", "reduce"]
+        return ["article", "designation", ("price", "reduce"), ("quantity", "unit")]
 
     @classmethod
     def get_show_fields(cls):

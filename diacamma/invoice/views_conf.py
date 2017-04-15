@@ -36,7 +36,7 @@ from lucterios.CORE.views import ParamEdit
 from lucterios.CORE.models import Parameter
 
 from diacamma.accounting.tools import correct_accounting_code
-from diacamma.invoice.models import Vat, Article
+from diacamma.invoice.models import Vat, Article, Category
 from diacamma.accounting.system import accounting_system_ident
 
 
@@ -62,6 +62,8 @@ class InvoiceConf(XferListEditor):
     def fillresponse_header(self):
         self.new_tab(_('Parameters'))
         fill_params(self)
+        self.new_tab(_('Categories'))
+        self.fill_grid(self.get_max_row(), Category, 'category', Category.objects.all())
         self.new_tab(_('VAT'))
 
 
@@ -83,6 +85,26 @@ class VatDel(XferDelete):
     model = Vat
     field_id = 'vat'
     caption = _("Delete VAT")
+
+
+@ActionsManage.affect_grid(TITLE_ADD, "images/add.png")
+@ActionsManage.affect_grid(TITLE_MODIFY, "images/edit.png", unique=SELECT_SINGLE)
+@MenuManage.describ('invoice.add_vat')
+class CategoryAddModify(XferAddEditor):
+    icon = "invoice_conf.png"
+    model = Category
+    field_id = 'category'
+    caption_add = _("Add category")
+    caption_modify = _("Modify category")
+
+
+@ActionsManage.affect_grid(TITLE_DELETE, "images/delete.png", unique=SELECT_MULTI)
+@MenuManage.describ('invoice.delete_vat')
+class CategoryDel(XferDelete):
+    icon = "invoice_conf.png"
+    model = Category
+    field_id = 'category'
+    caption = _("Delete Category")
 
 
 @signal_and_lock.Signal.decorate('compte_no_found')

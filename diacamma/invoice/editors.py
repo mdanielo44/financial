@@ -30,15 +30,16 @@ from django.db.models import Q
 
 from lucterios.framework.editors import LucteriosEditor
 from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompHeader,\
-    XferCompSelect
+    XferCompSelect, XferCompCheckList
 from lucterios.framework.tools import CLOSE_NO, FORMTYPE_REFRESH
 from lucterios.framework.models import get_value_if_choices
 from lucterios.CORE.parameters import Params
 
 from diacamma.accounting.tools import current_system_account
-from diacamma.accounting.models import CostAccounting, FiscalYear
+from diacamma.accounting.models import CostAccounting, FiscalYear, Third
 from diacamma.payoff.editors import SupportingEditor
 from django.utils import six
+from diacamma.invoice.models import Provider, Category
 
 
 class ArticleEditor(LucteriosEditor):
@@ -128,9 +129,54 @@ class DetailEditor(LucteriosEditor):
             self.item.vta_rate = -1 * self.item.vta_rate
         return
 
+    def _add_provider_filter(self, xfer, sel_art, init_row):
+        old_model = xfer.model
+        xfer.model = Provider
+        xfer.item = Provider()
+        xfer.filltab_from_model(sel_art.col, init_row, False, ['third'])
+        xfer.filltab_from_model(sel_art.col + 1, init_row, False, ['reference'])
+        xfer.item = self.item
+        xfer.model = old_model
+        filter_thirdid = xfer.getparam('third', 0)
+        filter_ref = xfer.getparam('reference', '')
+        sel_third = xfer.get_components("third")
+        sel_third.set_needed(False)
+        sel_third.set_select_query(Third.objects.filter(provider__isnull=False))
+        sel_third.set_value(filter_thirdid)
+        sel_third.set_action(xfer.request, xfer.get_action('', ''), modal=FORMTYPE_REFRESH, close=CLOSE_NO, params={'CHANGE_ART': 'YES'})
+        sel_third.description = _('provider')
+        sel_ref = xfer.get_components("reference")
+        sel_ref.set_value(filter_ref)
+        sel_ref.set_action(xfer.request, xfer.get_action('', ''), modal=FORMTYPE_REFRESH, close=CLOSE_NO, params={'CHANGE_ART': 'YES'})
+        if (filter_thirdid != 0) or (filter_ref != ''):
+            sel_art.set_needed(True)
+
     def edit(self, xfer):
+        sel_art = xfer.get_components("article")
+        init_row = sel_art.row
+        xfer.move(sel_art.tab, 0, 10)
+        sel_art.set_action(xfer.request, xfer.get_action('', ''), modal=FORMTYPE_REFRESH, close=CLOSE_NO, params={'CHANGE_ART': 'YES'})
         currency_decimal = Params.getvalue("accounting-devise-prec")
-        xfer.get_components("article").set_action(
-            xfer.request, xfer.get_action('', ''), modal=FORMTYPE_REFRESH, close=CLOSE_NO, params={'CHANGE_ART': 'YES'})
         xfer.get_components('price').prec = currency_decimal
         xfer.get_components('reduce').prec = currency_decimal
+
+        has_filter = False
+        cat_list = Category.objects.all()
+        if len(cat_list) > 0:
+            filter_cat = xfer.getparam('cat_filter', ())
+            edt = XferCompCheckList("cat_filter")
+            edt.set_select_query(cat_list)
+            edt.set_value(filter_cat)
+            edt.set_location(sel_art.col, init_row, 2)
+            edt.description = _('categories')
+            edt.set_action(xfer.request, xfer.get_action('', ''), modal=FORMTYPE_REFRESH, close=CLOSE_NO, params={'CHANGE_ART': 'YES'})
+            xfer.add_component(edt)
+            has_filter = True
+        if len(Provider.objects.all()) > 0:
+            self._add_provider_filter(xfer, sel_art, init_row + 1)
+            has_filter = True
+        if has_filter:
+            lbl = XferCompLabelForm('sep_filter')
+            lbl.set_value("{[hr/]}")
+            lbl.set_location(sel_art.col, init_row + 9, 2)
+            xfer.add_component(lbl)

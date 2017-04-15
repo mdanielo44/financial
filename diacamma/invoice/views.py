@@ -34,7 +34,7 @@ from lucterios.framework.xferadvance import XferListEditor, XferShowEditor, TITL
 from lucterios.framework.xferadvance import XferAddEditor
 from lucterios.framework.xferadvance import XferDelete
 from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompSelect, XferCompHeader, XferCompImage, XferCompGrid, XferCompCheck,\
-    XferCompEdit
+    XferCompEdit, XferCompCheckList
 from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage, FORMTYPE_MODAL, CLOSE_YES, SELECT_SINGLE, FORMTYPE_REFRESH, CLOSE_NO, SELECT_MULTI, WrapAction
 from lucterios.framework.xfergraphic import XferContainerAcknowledge, XferContainerCustom
 from lucterios.framework.error import LucteriosException, IMPORTANT
@@ -46,7 +46,7 @@ from lucterios.CORE.editors import XferSavedCriteriaSearchEditor
 
 from lucterios.contacts.models import Individual, LegalEntity
 
-from diacamma.invoice.models import Article, Bill, Detail
+from diacamma.invoice.models import Article, Bill, Detail, Category, Provider
 from diacamma.accounting.models import FiscalYear, Third
 from diacamma.payoff.views import PayoffAddModify
 from diacamma.payoff.models import Payoff
@@ -303,7 +303,6 @@ class DetailAddModify(XferAddEditor):
                 self.item.price = self.item.article.price
                 self.item.unit = self.item.article.unit
         XferAddEditor.fillresponse(self)
-        self.get_components('article').set_select_query(Article.objects.filter(isdisabled=False))
 
 
 @ActionsManage.affect_grid(TITLE_DELETE, "images/delete.png", unique=SELECT_MULTI)
@@ -324,20 +323,58 @@ class ArticleList(XferListEditor):
 
     def fillresponse_header(self):
         show_filter = self.getparam('show_filter', 0)
+        show_stockable = self.getparam('stockable', -1)
+        categories_filter = self.getparam('cat_filter', ())
         edt = XferCompSelect("show_filter")
         edt.set_select([(0, _('Only activate')), (1, _('All'))])
         edt.set_value(show_filter)
-        edt.set_location(0, 3)
+        edt.set_location(0, 3, 2)
         edt.description = _('Show articles')
         edt.set_action(self.request, self.get_action(), modal=FORMTYPE_REFRESH, close=CLOSE_NO)
         self.add_component(edt)
+        self.fill_from_model(0, 4, False, ['stockable'])
+        sel_stock = self.get_components('stockable')
+        sel_stock.select_list.insert(0, (-1, '---'))
+        sel_stock.set_value(show_stockable)
+        sel_stock.set_action(self.request, self.get_action(), modal=FORMTYPE_REFRESH, close=CLOSE_NO)
+        cat_list = Category.objects.all()
+        if len(cat_list) > 0:
+            edt = XferCompCheckList("cat_filter")
+            edt.set_select_query(cat_list)
+            edt.set_value(categories_filter)
+            edt.set_location(1, 4)
+            edt.description = _('categories')
+            edt.set_action(self.request, self.get_action(), modal=FORMTYPE_REFRESH, close=CLOSE_NO)
+            self.add_component(edt)
         self.filter = Q()
         if show_filter == 0:
-            self.filter = Q(isdisabled=False)
+            self.filter &= Q(isdisabled=False)
+        if show_stockable != -1:
+            self.filter &= Q(stockable=show_stockable)
+        if len(categories_filter) > 0:
+            self.filter &= Q(categories__in=Category.objects.filter(id__in=categories_filter))
+
+
+@ActionsManage.affect_list(_("Search"), "diacamma.invoice/images/article.png")
+@MenuManage.describ('accounting.change_article')
+class ArticleSearch(XferSavedCriteriaSearchEditor):
+    icon = "article.png"
+    model = Article
+    field_id = 'article'
+    caption = _("Search article")
+
+
+@ActionsManage.affect_grid(TITLE_EDIT, "images/show.png", unique=SELECT_SINGLE)
+@MenuManage.describ('invoice.change_article')
+class ArticleShow(XferShowEditor):
+    caption = _("Show article")
+    icon = "article.png"
+    model = Article
+    field_id = 'article'
 
 
 @ActionsManage.affect_grid(TITLE_ADD, "images/add.png")
-@ActionsManage.affect_grid(TITLE_MODIFY, "images/edit.png", unique=SELECT_SINGLE)
+@ActionsManage.affect_show(TITLE_MODIFY, "images/edit.png")
 @MenuManage.describ('invoice.add_article')
 class ArticleAddModify(XferAddEditor):
     icon = "article.png"
@@ -354,6 +391,26 @@ class ArticleDel(XferDelete):
     model = Article
     field_id = 'article'
     caption = _("Delete article")
+
+
+@ActionsManage.affect_grid(TITLE_ADD, "images/add.png")
+@ActionsManage.affect_grid(TITLE_MODIFY, "images/edit.png", unique=SELECT_SINGLE)
+@MenuManage.describ('invoice.add_article')
+class ProviderAddModify(XferAddEditor):
+    icon = "article.png"
+    model = Provider
+    field_id = 'provider'
+    caption_add = _("Add provider")
+    caption_modify = _("Modify provider")
+
+
+@ActionsManage.affect_grid(TITLE_DELETE, "images/delete.png", unique=SELECT_MULTI)
+@MenuManage.describ('invoice.delete_article')
+class ProviderDel(XferDelete):
+    icon = "article.png"
+    model = Provider
+    field_id = 'provider'
+    caption = _("Delete provider")
 
 
 @MenuManage.describ('invoice.change_bill', FORMTYPE_MODAL, 'invoice', _('Statistic of selling'))
