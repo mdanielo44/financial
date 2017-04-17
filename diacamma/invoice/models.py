@@ -47,6 +47,7 @@ from diacamma.accounting.models import FiscalYear, Third, EntryAccount, \
 from diacamma.accounting.tools import current_system_account, format_devise, \
     currency_round, correct_accounting_code
 from diacamma.payoff.models import Supporting
+import logging
 
 
 class Vat(LucteriosModel):
@@ -154,6 +155,38 @@ class Article(LucteriosModel):
             fields.append('provider_set.reference')
         return fields
 
+    @classmethod
+    def get_import_fields(cls):
+        fields = super(Article, cls).get_import_fields()
+        if len(Provider().third_query) > 0:
+            fields.append('provider.third.contact')
+            fields.append('provider.reference')
+        return fields
+
+    @classmethod
+    def import_data(cls, rowdata, dateformat):
+        try:
+            new_item = super(Article, cls).import_data(rowdata, dateformat)
+            if ('categories' in rowdata.keys()) and (rowdata['categories'] is not None) and (rowdata['categories'] != ''):
+                cat = Category.objects.filter(name__iexact=rowdata['categories'])
+                if len(cat) > 0:
+                    cat_ids = [cat[0].id]
+                    for cat_item in new_item.categories.all():
+                        cat_ids.append(cat_item.id)
+                    new_item.categories = Category.objects.filter(id__in=cat_ids)
+                    new_item.save()
+            if ('provider.third.contact' in rowdata.keys()) and (rowdata['provider.third.contact'] is not None) and (rowdata['provider.third.contact'] != ''):
+                q_legalentity = Q(contact__legalentity__name__icontains=rowdata['provider.third.contact'])
+                q_individual = (Q(contact__individual__firstname__icontains=rowdata['provider.third.contact']) | Q(contact__individual__lastname__icontains=rowdata['provider.third.contact']))
+                thirds = Third.objects.filter(q_legalentity | q_individual)
+                if len(thirds) > 0:
+                    new_provider = Provider(article=new_item, third=thirds[0], reference=rowdata['provider.reference'])
+                    new_provider.save()
+            return new_item
+        except:
+            logging.getLogger('diacamma.invoice').exception("import_data")
+            return None
+
     @property
     def price_txt(self):
         return format_devise(self.price, 5)
@@ -169,6 +202,7 @@ class Article(LucteriosModel):
     class Meta(object):
         verbose_name = _('article')
         verbose_name_plural = _('articles')
+        ordering = ['reference']
 
 
 class Provider(LucteriosModel):

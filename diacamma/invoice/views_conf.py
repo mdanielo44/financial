@@ -28,11 +28,12 @@ from django.utils.translation import ugettext_lazy as _
 from lucterios.framework.xferadvance import XferListEditor, TITLE_MODIFY, TITLE_DELETE, TITLE_ADD
 from lucterios.framework.xferadvance import XferAddEditor
 from lucterios.framework.xferadvance import XferDelete
-from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage, CLOSE_NO, SELECT_MULTI, SELECT_SINGLE
+from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage, CLOSE_NO, SELECT_MULTI, SELECT_SINGLE,\
+    FORMTYPE_MODAL
 from lucterios.framework.xfercomponents import XferCompButton
 from lucterios.framework import signal_and_lock
 from lucterios.CORE.parameters import Params
-from lucterios.CORE.views import ParamEdit
+from lucterios.CORE.views import ParamEdit, ObjectImport
 from lucterios.CORE.models import Parameter
 
 from diacamma.accounting.tools import correct_accounting_code
@@ -105,6 +106,15 @@ class CategoryDel(XferDelete):
     model = Category
     field_id = 'category'
     caption = _("Delete Category")
+
+
+@MenuManage.describ('contacts.add_article', FORMTYPE_MODAL, 'financial.conf', _('Tool to import articles from CSV file.'))
+class ArticleImport(ObjectImport):
+    caption = _("Article import")
+    icon = "invoice_conf.png"
+
+    def get_select_models(self):
+        return Article.get_select_contact_type(True)
 
 
 @signal_and_lock.Signal.decorate('compte_no_found')
