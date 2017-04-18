@@ -30,7 +30,8 @@ from django.db.models import Q
 
 from lucterios.framework.editors import LucteriosEditor
 from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompHeader,\
-    XferCompSelect, XferCompCheckList
+    XferCompSelect, XferCompCheckList, XferCompCheck, XferCompFloat,\
+    XferCompEdit, XferCompMemo
 from lucterios.framework.tools import CLOSE_NO, FORMTYPE_REFRESH
 from lucterios.framework.models import get_value_if_choices
 from lucterios.CORE.parameters import Params
@@ -39,15 +40,122 @@ from diacamma.accounting.tools import current_system_account
 from diacamma.accounting.models import CostAccounting, FiscalYear, Third
 from diacamma.payoff.editors import SupportingEditor
 from django.utils import six
-from diacamma.invoice.models import Provider, Category
+from diacamma.invoice.models import Provider, Category, CustomField
+
+
+class CustomFieldEditor(LucteriosEditor):
+
+    def _edit_add_args(self, xfer, obj_kind):
+        args = self.item.get_args()
+        arg = XferCompCheck('args_multi')
+        arg.set_value(args['multi'])
+        arg.set_location(obj_kind.col, obj_kind.row + 1, obj_kind.colspan, 1)
+        arg.description = _('multi-line')
+        xfer.add_component(arg)
+        arg = XferCompFloat('args_min', -10000, 10000, 0)
+        arg.set_value(args['min'])
+        arg.set_location(obj_kind.col, obj_kind.row + 2, obj_kind.colspan, 1)
+        arg.description = _('min')
+        xfer.add_component(arg)
+        arg = XferCompFloat('args_max', -10000, 10000, 0)
+        arg.set_value(args['max'])
+        arg.set_location(obj_kind.col, obj_kind.row + 3, obj_kind.colspan, 1)
+        arg.description = _('max')
+        xfer.add_component(arg)
+        arg = XferCompFloat('args_prec', 0, 10, 0)
+        arg.set_value(args['prec'])
+        arg.set_location(obj_kind.col, obj_kind.row + 4, obj_kind.colspan, 1)
+        arg.description = _('precision')
+        xfer.add_component(arg)
+        arg = XferCompEdit('args_list')
+        arg.set_value(','.join(args['list']))
+        arg.set_location(obj_kind.col, obj_kind.row + 5, obj_kind.colspan, 1)
+        arg.description = _('list')
+        xfer.add_component(arg)
+
+    def edit(self, xfer):
+        obj_kind = xfer.get_components('kind')
+        self._edit_add_args(xfer, obj_kind)
+        obj_kind.java_script = """
+var type=current.getValue();
+parent.get('args_multi').setVisible(type==0);
+parent.get('args_min').setVisible(type==1 || type==2);
+parent.get('args_max').setVisible(type==1 || type==2);
+parent.get('args_prec').setVisible(type==2);
+parent.get('args_list').setVisible(type==4);
+"""
+
+    def saving(self, xfer):
+        args = {}
+        for arg_name in ['min', 'max', 'prec', 'list', 'multi']:
+            args_val = xfer.getparam('args_' + arg_name)
+            if args_val is not None:
+                if arg_name == 'list':
+                    args[arg_name] = list(args_val.split(','))
+                elif arg_name == 'multi':
+                    args[arg_name] = (args_val != 'False') and (args_val != '0') and (args_val != '') and (args_val != 'n')
+                else:
+                    args[arg_name] = float(args_val)
+        self.item.args = six.text_type(args)
+        LucteriosEditor.saving(self, xfer)
+        self.item.save()
+
+    def get_comp(self, value):
+        comp = None
+        args = self.item.get_args()
+        if self.item.kind == 0:
+            if args['multi']:
+                comp = XferCompMemo(self.item.get_fieldname())
+            else:
+                comp = XferCompEdit(self.item.get_fieldname())
+            comp.set_value(value)
+        elif (self.item.kind == 1) or (self.item.kind == 2):
+            comp = XferCompFloat(
+                self.item.get_fieldname(), args['min'], args['max'], args['prec'])
+            comp.set_value(value)
+        elif self.item.kind == 3:
+            comp = XferCompCheck(self.item.get_fieldname())
+            comp.set_value(value)
+        elif self.item.kind == 4:
+            val_selected = value
+            select_id = 0
+            select_list = []
+            for sel_item in args['list']:
+                if sel_item == val_selected:
+                    select_id = len(select_list)
+                select_list.append((len(select_list), sel_item))
+            comp = XferCompSelect(self.item.get_fieldname())
+            comp.set_select(select_list)
+            comp.set_value(select_id)
+        return comp
 
 
 class ArticleEditor(LucteriosEditor):
+
+    def _edit_custom_field(self, xfer, init_col):
+        col = init_col
+        col_offset = 0
+        colspan = 1
+        row = xfer.get_max_row() + 5
+        for cf_model in CustomField.objects.all():
+            cf_name = cf_model.get_fieldname()
+            comp = cf_model.editor.get_comp(getattr(self.item, cf_name))
+            comp.set_location(col + col_offset, row, colspan, 1)
+            comp.description = cf_model.name
+            xfer.add_component(comp)
+            col_offset += 1
+            if col_offset == 2:
+                col_offset = 0
+                colspan = 1
+                row += 1
+            else:
+                colspan = 2
 
     def edit(self, xfer):
         currency_decimal = Params.getvalue("accounting-devise-prec")
         xfer.get_components('price').prec = currency_decimal
         old_account = xfer.get_components("sell_account")
+        xfer.tab = old_account.tab
         xfer.remove_component("sell_account")
         sel_code = XferCompSelect("sell_account")
         sel_code.description = old_account.description
@@ -56,6 +164,11 @@ class ArticleEditor(LucteriosEditor):
             sel_code.select_list.append((item.code, six.text_type(item)))
         sel_code.set_value(self.item.sell_account)
         xfer.add_component(sel_code)
+        self._edit_custom_field(xfer, sel_code.col)
+
+    def saving(self, xfer):
+        LucteriosEditor.saving(self, xfer)
+        self.item.set_custom_values(xfer.params)
 
 
 class BillEditor(SupportingEditor):

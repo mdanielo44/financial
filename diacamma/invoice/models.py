@@ -131,26 +131,41 @@ class Article(LucteriosModel):
 
     @classmethod
     def get_edit_fields(cls):
-        fields = ["reference", "designation", ("price", "unit"), ("sell_account", 'vat'), ("stockable", "isdisabled")]
+        fields = {_('001@Description'): ["reference", "designation", ("price", "unit"), ("sell_account", 'vat'), ("stockable", "isdisabled")]}
         if len(Category.objects.all()) > 0:
-            fields.append('categories')
+            fields[_('002@Extra')] = ['categories']
         return fields
 
     @classmethod
     def get_show_fields(cls):
-        fields = ["reference", "designation", ("price", "unit"), ("sell_account", 'vat'), ("stockable", "isdisabled")]
+        fields = {'': ["reference"]}
+        fields_desc = ["designation", ("price", "unit"), ("sell_account", 'vat'), ("stockable", "isdisabled")]
+        cust_fields = CustomField.objects.all()
+        if len(cust_fields) > 0:
+            cust_item = []
+            for cf_model in cust_fields:
+                cust_item.append((cf_model.name, cf_model.get_fieldname()))
+                if len(cust_item) == 2:
+                    fields_desc.append(tuple(cust_item))
+                    cust_item = []
+            if len(cust_item) == 2:
+                fields_desc.append(tuple(cust_item))
         if len(Category.objects.all()) > 0:
-            fields.append('categories')
+            fields_desc.append('categories')
+        fields[_('001@Description')] = fields_desc
         if len(Provider().third_query) > 0:
-            fields.append('provider_set')
+            fields[_('002@Provider')] = ['provider_set']
         return fields
 
     @classmethod
     def get_search_fields(cls):
         fields = ["reference", "designation", "price", "unit", "sell_account", 'vat', "stockable", "isdisabled"]
+        for cf_model in CustomField.objects.all():
+            cf_name = cf_model.get_fieldname()
+            fields.append((cf_name, cf_model.get_field(), 'articlecustomfield__value', Q(articlecustomfield__field__id=cf_model.id)))
         if len(Category.objects.all()) > 0:
             fields.append('categories.name')
-            fields.append('categories.description')
+            fields.append('categories.designation')
         if len(Provider().third_query) > 0:
             fields.append('provider_set.third')
             fields.append('provider_set.reference')
@@ -158,39 +173,110 @@ class Article(LucteriosModel):
 
     @classmethod
     def get_import_fields(cls):
-        fields = super(Article, cls).get_import_fields()
+        fields = ["reference", "designation", "price", "unit", "sell_account", 'vat', "stockable", "isdisabled"]
+        if len(Category.objects.all()) > 0:
+            fields.append('categories')
         if len(Provider().third_query) > 0:
             fields.append('provider.third.contact')
             fields.append('provider.reference')
+        for cf_model in CustomField.objects.all():
+            fields.append((cf_model.get_fieldname(), cf_model.name))
         return fields
 
     @classmethod
     def import_data(cls, rowdata, dateformat):
         try:
             new_item = super(Article, cls).import_data(rowdata, dateformat)
-            if ('categories' in rowdata.keys()) and (rowdata['categories'] is not None) and (rowdata['categories'] != ''):
-                cat = Category.objects.filter(name__iexact=rowdata['categories'])
-                if len(cat) > 0:
-                    cat_ids = [cat[0].id]
-                    for cat_item in new_item.categories.all():
-                        cat_ids.append(cat_item.id)
-                    new_item.categories = Category.objects.filter(id__in=cat_ids)
-                    new_item.save()
-            if ('provider.third.contact' in rowdata.keys()) and (rowdata['provider.third.contact'] is not None) and (rowdata['provider.third.contact'] != ''):
-                if ('provider.reference' in rowdata.keys()) and (rowdata['provider.reference'] is not None):
-                    reference = rowdata['provider.reference']
-                else:
-                    reference = ''
-                q_legalentity = Q(contact__legalentity__name__iexact=rowdata['provider.third.contact'])
-                q_individual = Q(completename__icontains=rowdata['provider.third.contact'])
-                thirds = Third.objects.annotate(completename=Concat('contact__individual__lastname', Value(' '),
-                                                                    'contact__individual__firstname')).filter(q_legalentity | q_individual)
-                if len(thirds) > 0:
-                    Provider.objects.get_or_create(article=new_item, third=thirds[0], reference=reference)
+            if new_item is not None:
+                new_item.set_custom_values(rowdata)
+                if ('categories' in rowdata.keys()) and (rowdata['categories'] is not None) and (rowdata['categories'] != ''):
+                    cat = Category.objects.filter(name__iexact=rowdata['categories'])
+                    if len(cat) > 0:
+                        cat_ids = [cat[0].id]
+                        for cat_item in new_item.categories.all():
+                            cat_ids.append(cat_item.id)
+                        new_item.categories = Category.objects.filter(id__in=cat_ids)
+                        new_item.save()
+                if ('provider.third.contact' in rowdata.keys()) and (rowdata['provider.third.contact'] is not None) and (rowdata['provider.third.contact'] != ''):
+                    if ('provider.reference' in rowdata.keys()) and (rowdata['provider.reference'] is not None):
+                        reference = rowdata['provider.reference']
+                    else:
+                        reference = ''
+                    q_legalentity = Q(contact__legalentity__name__iexact=rowdata['provider.third.contact'])
+                    q_individual = Q(completename__icontains=rowdata['provider.third.contact'])
+                    thirds = Third.objects.annotate(completename=Concat('contact__individual__lastname', Value(' '),
+                                                                        'contact__individual__firstname')).filter(q_legalentity | q_individual)
+                    if len(thirds) > 0:
+                        Provider.objects.get_or_create(article=new_item, third=thirds[0], reference=reference)
             return new_item
         except:
             logging.getLogger('diacamma.invoice').exception("import_data")
             return None
+
+    def set_custom_values(self, params):
+        for cf_model in CustomField.objects.all():
+            cf_name = cf_model.get_fieldname()
+            if cf_name in params.keys():
+                cf_value = params[cf_name]
+                cf_id = int(cf_name[7:])
+                cf_model = CustomField.objects.get(id=cf_id)
+                try:
+                    if cf_model.kind == 1:
+                        cf_value = int(cf_value)
+                    if cf_model.kind == 2:
+                        cf_value = float(cf_value)
+                    if cf_model.kind == 3:
+                        cf_value = (cf_value != 'False') and (cf_value != '0') and (
+                            cf_value != '') and (cf_value != 'n')
+                    if cf_model.kind == 4:
+                        args_list = cf_model.get_args()['list']
+                        if args_list.count(cf_value) > 0:
+                            cf_value = args_list.index(cf_value)
+                        else:
+                            cf_value = int(cf_value)
+                except:
+                    cf_value = ""
+                ccf_model = ArticleCustomField.objects.get_or_create(article=self, field=cf_model)
+                ccf_model[0].value = six.text_type(cf_value)
+                ccf_model[0].save()
+
+    def __getattr__(self, name):
+        if name == "str":
+            return six.text_type(self)
+        elif name[:7] == "custom_":
+            cf_id = int(name[7:])
+            cf_model = CustomField.objects.get(id=cf_id)
+            if self.id is None:
+                ccf_value = ""
+            else:
+                ccf_models = ArticleCustomField.objects.filter(article=self, field=cf_model)
+                if len(ccf_models) == 0:
+                    ccf_model = ArticleCustomField.objects.create(article=self, field=cf_model)
+                elif len(ccf_models) == 1:
+                    ccf_model = ccf_models[0]
+                else:
+                    ccf_model = ccf_models[0]
+                    for old_model in ccf_models[1:]:
+                        old_model.delete()
+                ccf_value = ccf_model.value
+            if cf_model.kind == 0:
+                return six.text_type(ccf_value)
+            if ccf_value == '':
+                ccf_value = '0'
+            if cf_model.kind == 1:
+                return int(ccf_value)
+            if cf_model.kind == 2:
+                return float(ccf_value)
+            if cf_model.kind == 3:
+                return (ccf_value != 'False') and (ccf_value != '0') and (ccf_value != '') and (ccf_value != 'n')
+            if cf_model.kind == 4:
+                num = int(ccf_value)
+                args_list = cf_model.get_args()['list']
+                if num < len(args_list):
+                    return args_list[num]
+                else:
+                    return "---"
+        raise AttributeError(name)
 
     @property
     def price_txt(self):
@@ -240,6 +326,77 @@ class Provider(LucteriosModel):
     class Meta(object):
         verbose_name = _('Provider')
         verbose_name_plural = _('Providers')
+        default_permissions = []
+
+
+class CustomField(LucteriosModel):
+    is_simple_gui = True
+
+    name = models.CharField(_('name'), max_length=200, unique=False)
+    kind = models.IntegerField(_('kind'), choices=((0, _('String')), (1, _('Integer')), (2, _('Real')), (3, _('Boolean')), (4, _('Select'))))
+    args = models.CharField(_('arguments'), max_length=200, default="{}")
+
+    @classmethod
+    def get_show_fields(cls):
+        return ['name', 'kind']
+
+    @classmethod
+    def get_edit_fields(cls):
+        return ['name', 'kind']
+
+    @classmethod
+    def get_default_fields(cls):
+        return ['name', 'kind']
+
+    def get_fieldname(self):
+        return "custom_%d" % self.id
+
+    def get_args(self):
+        default_args = {'min': 0, 'max': 0, 'prec': 0, 'list': [], 'multi': False}
+        try:
+            args = eval(self.args)
+        except:
+            args = {}
+        for name, val in default_args.items():
+            if name not in args.keys():
+                args[name] = val
+        args['list'] = list(args['list'])
+        return args
+
+    def get_field(self):
+        from django.db.models.fields import IntegerField, DecimalField, BooleanField, TextField
+        args = self.get_args()
+        if self.kind == 0:
+            dbfield = TextField(self.name)
+        if self.kind == 1:
+            dbfield = IntegerField(self.name, validators=[MinValueValidator(float(args['min'])), MaxValueValidator(float(args['max']))])
+        if self.kind == 2:
+            dbfield = DecimalField(self.name, decimal_places=int(args['prec']), validators=[MinValueValidator(float(args['min'])), MaxValueValidator(float(args['max']))])
+        if self.kind == 3:
+            dbfield = BooleanField(self.name)
+        if self.kind == 4:
+            choices = []
+            for item in args['list']:
+                choices.append((len(choices), item))
+            dbfield = IntegerField(self.name, choices=tuple(choices))
+        return dbfield
+
+    class Meta(object):
+        verbose_name = _('custom field')
+        verbose_name_plural = _('custom fields')
+        default_permissions = []
+
+
+class ArticleCustomField(LucteriosModel):
+    is_simple_gui = True
+
+    article = models.ForeignKey(Article, verbose_name=_('article'), null=False, on_delete=models.CASCADE)
+    field = models.ForeignKey(CustomField, verbose_name=_('field'), null=False, on_delete=models.CASCADE)
+    value = models.TextField(_('value'), default="")
+
+    class Meta(object):
+        verbose_name = _('custom field value')
+        verbose_name_plural = _('custom field values')
         default_permissions = []
 
 

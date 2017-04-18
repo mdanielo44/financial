@@ -63,8 +63,8 @@ class ConfigTest(LucteriosTest):
         self.factory.xfer = InvoiceConf()
         self.call('/diacamma.invoice/invoiceConf', {}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'invoiceConf')
-        self.assert_count_equal('COMPONENTS/TAB', 3)
-        self.assert_count_equal('COMPONENTS/*', 2 + 3 + 6 + 2 + 2)
+        self.assert_count_equal('COMPONENTS/TAB', 4)
+        self.assert_count_equal('COMPONENTS/*', 2 + 4 + 6 + 2 + 2 + 2)
 
         self.assert_count_equal('COMPONENTS/GRID[@name="vat"]/HEADER', 3)
         self.assert_xml_equal('COMPONENTS/GRID[@name="vat"]/HEADER[@name="name"]', "nom")
@@ -102,8 +102,8 @@ class ConfigTest(LucteriosTest):
         self.factory.xfer = InvoiceConf()
         self.call('/diacamma.invoice/invoiceConf', {}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'invoiceConf')
-        self.assert_count_equal('COMPONENTS/TAB', 3)
-        self.assert_count_equal('COMPONENTS/*', 2 + 3 + 6 + 2 + 2)
+        self.assert_count_equal('COMPONENTS/TAB', 4)
+        self.assert_count_equal('COMPONENTS/*', 2 + 4 + 6 + 2 + 2 + 2)
 
         self.assert_count_equal('COMPONENTS/GRID[@name="category"]/HEADER', 2)
         self.assert_xml_equal('COMPONENTS/GRID[@name="category"]/HEADER[@name="name"]', "nom")
@@ -153,7 +153,7 @@ class ConfigTest(LucteriosTest):
         self.factory.xfer = ArticleAddModify()
         self.call('/diacamma.invoice/articleAddModify', {}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'articleAddModify')
-        self.assert_count_equal('COMPONENTS/*', 9)
+        self.assert_count_equal('COMPONENTS/*', 10)
 
         self.factory.xfer = ArticleAddModify()
         self.call('/diacamma.invoice/articleAddModify',
@@ -175,7 +175,7 @@ class ConfigTest(LucteriosTest):
         self.factory.xfer = ArticleShow()
         self.call('/diacamma.invoice/articleShow', {'article': '1'}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'articleShow')
-        self.assert_count_equal('COMPONENTS/*', 9)
+        self.assert_count_equal('COMPONENTS/*', 10)
 
         self.factory.xfer = ArticleDel()
         self.call('/diacamma.invoice/articleDel',
@@ -201,7 +201,7 @@ class ConfigTest(LucteriosTest):
         self.factory.xfer = ArticleAddModify()
         self.call('/diacamma.invoice/articleAddModify', {}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'articleAddModify')
-        self.assert_count_equal('COMPONENTS/*', 17)
+        self.assert_count_equal('COMPONENTS/*', 19)
 
         self.factory.xfer = ArticleAddModify()
         self.call('/diacamma.invoice/articleAddModify',
@@ -211,7 +211,7 @@ class ConfigTest(LucteriosTest):
         self.factory.xfer = ArticleShow()
         self.call('/diacamma.invoice/articleShow', {'article': '1'}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'articleShow')
-        self.assert_count_equal('COMPONENTS/*', 10)
+        self.assert_count_equal('COMPONENTS/*', 11)
 
         self.factory.xfer = ArticleList()
         self.call('/diacamma.invoice/articleList', {}, False)
@@ -377,7 +377,7 @@ class ConfigTest(LucteriosTest):
         self.factory.xfer = ArticleShow()
         self.call('/diacamma.invoice/articleShow', {'article': '1'}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'articleShow')
-        self.assert_count_equal('COMPONENTS/*', 11)
+        self.assert_count_equal('COMPONENTS/*', 13)
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="reference"]', "A123")
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="categories"]', "cat 2{[br/]}cat 3")
         self.assert_count_equal('COMPONENTS/GRID[@name="provider"]/RECORD', 2)
@@ -401,7 +401,7 @@ class ConfigTest(LucteriosTest):
         self.factory.xfer = ArticleShow()
         self.call('/diacamma.invoice/articleShow', {'article': '1'}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'articleShow')
-        self.assert_count_equal('COMPONENTS/*', 11)
+        self.assert_count_equal('COMPONENTS/*', 13)
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="reference"]', "A123")
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="categories"]', "cat 2{[br/]}cat 3")
         self.assert_count_equal('COMPONENTS/GRID[@name="provider"]/RECORD', 2)
@@ -479,7 +479,7 @@ class ConfigTest(LucteriosTest):
         self.factory.xfer = ArticleShow()
         self.call('/diacamma.invoice/articleShow', {'article': '1'}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'articleShow')
-        self.assert_count_equal('COMPONENTS/*', 11)
+        self.assert_count_equal('COMPONENTS/*', 13)
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="reference"]', "A123")
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="categories"]', None)
         self.assert_count_equal('COMPONENTS/GRID[@name="provider"]/RECORD', 0)
@@ -546,7 +546,7 @@ class ConfigTest(LucteriosTest):
         self.factory.xfer = ArticleShow()
         self.call('/diacamma.invoice/articleShow', {'article': '1'}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'articleShow')
-        self.assert_count_equal('COMPONENTS/*', 9)
+        self.assert_count_equal('COMPONENTS/*', 10)
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="reference"]', "A123")
 
 

@@ -37,7 +37,7 @@ from lucterios.CORE.views import ParamEdit, ObjectImport
 from lucterios.CORE.models import Parameter
 
 from diacamma.accounting.tools import correct_accounting_code
-from diacamma.invoice.models import Vat, Article, Category
+from diacamma.invoice.models import Vat, Article, Category, CustomField
 from diacamma.accounting.system import accounting_system_ident
 
 
@@ -65,6 +65,8 @@ class InvoiceConf(XferListEditor):
         fill_params(self)
         self.new_tab(_('Categories'))
         self.fill_grid(self.get_max_row(), Category, 'category', Category.objects.all())
+        self.new_tab(_("Custom field"))
+        self.fill_grid(0, CustomField, "custom_field", CustomField.objects.all())
         self.new_tab(_('VAT'))
 
 
@@ -106,6 +108,26 @@ class CategoryDel(XferDelete):
     model = Category
     field_id = 'category'
     caption = _("Delete Category")
+
+
+@ActionsManage.affect_grid(TITLE_ADD, "images/add.png")
+@ActionsManage.affect_grid(TITLE_MODIFY, "images/edit.png", unique=SELECT_SINGLE)
+@MenuManage.describ('invoice.add_vat')
+class CustomFieldAddModify(XferAddEditor):
+    icon = "invoice_conf.png"
+    model = CustomField
+    field_id = 'custom_field'
+    caption_add = _("Add custom field")
+    caption_modify = _("Modify custom field")
+
+
+@ActionsManage.affect_grid(TITLE_DELETE, "images/delete.png", unique=SELECT_MULTI)
+@MenuManage.describ('invoice.delete_vat')
+class CustomFieldDel(XferDelete):
+    icon = "invoice_conf.png"
+    model = CustomField
+    field_id = 'custom_field'
+    caption = _("Delete custom field")
 
 
 @MenuManage.describ('contacts.add_article', FORMTYPE_MODAL, 'financial.conf', _('Tool to import articles from CSV file.'))

@@ -369,7 +369,7 @@ class ArticleList(XferListEditor):
             self.filter &= Q(stockable=show_stockable)
 
 
-@ActionsManage.affect_list(_("Search"), "diacamma.invoice/images/article.png")
+@ActionsManage.affect_list(_("Search"), "diacamma.invoice/images/article.png", close=CLOSE_YES)
 @MenuManage.describ('accounting.change_article')
 class ArticleSearch(XferSavedCriteriaSearchEditor):
     icon = "article.png"
