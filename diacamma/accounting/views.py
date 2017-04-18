@@ -111,7 +111,7 @@ class ThirdList(XferListEditor):
         self.filter = Q(status=0)
         if contact_filter != "":
             q_legalentity = Q(contact__legalentity__name__icontains=contact_filter)
-            q_individual = Q(completename__icontains=contact_filter)            
+            q_individual = Q(completename__icontains=contact_filter)
             self.filter &= (q_legalentity | q_individual)
         if thirdtype == 1:
             self.filter &= Q(accountthird__code__regex=current_system_account().get_customer_mask())

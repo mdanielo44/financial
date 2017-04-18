@@ -69,7 +69,8 @@ def _add_bill_filter(xfer, row, with_third=False):
         row += 1
         if third_filter != "":
             q_legalentity = Q(third__contact__legalentity__name__icontains=third_filter)
-            q_individual = Q(completename__icontains=third_filter) # annotate(completename=Concat('third__contact__individual__lastname', Value(' '), 'third__contact__individual__firstname'))
+            # annotate(completename=Concat('third__contact__individual__lastname', Value(' '), 'third__contact__individual__firstname'))
+            q_individual = Q(completename__icontains=third_filter)
             current_filter &= (q_legalentity | q_individual)
     status_filter = xfer.getparam('status_filter', -1)
     dep_field = Bill.get_field_by_name('status')
@@ -101,8 +102,9 @@ class BillList(XferListEditor):
         self.filter, status_filter = _add_bill_filter(self, 3, True)
         self.fieldnames = Bill.get_default_fields(status_filter)
 
-    def get_items_from_filter(self):        
-        items = self.model.objects.annotate(completename=Concat('third__contact__individual__lastname', Value(' '), 'third__contact__individual__firstname')).filter(self.filter)
+    def get_items_from_filter(self):
+        items = self.model.objects.annotate(completename=Concat('third__contact__individual__lastname',
+                                                                Value(' '), 'third__contact__individual__firstname')).filter(self.filter)
         sort_bill = self.getparam('GRID_ORDER%bill', '').split(',')
         sort_bill_third = self.getparam('GRID_ORDER%bill_third', '')
         if ((len(sort_bill) == 0) and (sort_bill_third != '')) or (sort_bill.count('third') + sort_bill.count('-third')) > 0:
@@ -161,9 +163,11 @@ class BillShow(XferShowEditor):
 
     def fillresponse(self):
         XferShowEditor.fillresponse(self)
-        self.add_action(ActionsManage.get_action_url('payoff.Supporting', 'Show', self), close=CLOSE_NO, params={'item_name': self.field_id}, pos_act=0)
+        self.add_action(ActionsManage.get_action_url('payoff.Supporting', 'Show', self),
+                        close=CLOSE_NO, params={'item_name': self.field_id}, pos_act=0)
         if self.item.status in (1, 3):
-            self.add_action(ActionsManage.get_action_url('payoff.Supporting', 'Email', self), close=CLOSE_NO, params={'item_name': self.field_id}, pos_act=0)
+            self.add_action(ActionsManage.get_action_url('payoff.Supporting', 'Email', self),
+                            close=CLOSE_NO, params={'item_name': self.field_id}, pos_act=0)
 
 
 @ActionsManage.affect_transition("status")
@@ -321,7 +325,7 @@ class ArticleList(XferListEditor):
     model = Article
     field_id = 'article'
     caption = _("Articles")
-    
+
     def __init__(self, **kwargs):
         XferListEditor.__init__(self, **kwargs)
         self.categories_filter = ()
@@ -568,8 +572,8 @@ def thirdaddon_invoice(item, xfer):
             bills = Bill.objects.filter(current_filter)
             bill_grid = XferCompGrid('bill')
             bill_grid.set_model(bills, Bill.get_default_fields(status_filter), xfer)
+            bill_grid.add_action_notified(xfer, Bill)
             bill_grid.set_location(0, 2, 2)
-            bill_grid.add_action(xfer.request, ActionsManage.get_action_url('invoice.Bill', 'Show', xfer), modal=FORMTYPE_MODAL, unique=SELECT_SINGLE, close=CLOSE_NO)
             xfer.add_component(bill_grid)
         except LucteriosException:
             pass

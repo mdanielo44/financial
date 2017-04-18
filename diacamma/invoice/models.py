@@ -176,14 +176,15 @@ class Article(LucteriosModel):
                         cat_ids.append(cat_item.id)
                     new_item.categories = Category.objects.filter(id__in=cat_ids)
                     new_item.save()
-            if ('provider.third.contact' in rowdata.keys()) and (rowdata['provider.third.contact'] is not None) and (rowdata['provider.third.contact'] != ''):                
+            if ('provider.third.contact' in rowdata.keys()) and (rowdata['provider.third.contact'] is not None) and (rowdata['provider.third.contact'] != ''):
                 if ('provider.reference' in rowdata.keys()) and (rowdata['provider.reference'] is not None):
                     reference = rowdata['provider.reference']
                 else:
                     reference = ''
                 q_legalentity = Q(contact__legalentity__name__iexact=rowdata['provider.third.contact'])
                 q_individual = Q(completename__icontains=rowdata['provider.third.contact'])
-                thirds = Third.objects.annotate(completename=Concat('contact__individual__lastname', Value(' '), 'contact__individual__firstname')).filter(q_legalentity | q_individual)
+                thirds = Third.objects.annotate(completename=Concat('contact__individual__lastname', Value(' '),
+                                                                    'contact__individual__firstname')).filter(q_legalentity | q_individual)
                 if len(thirds) > 0:
                     Provider.objects.get_or_create(article=new_item, third=thirds[0], reference=reference)
             return new_item
@@ -829,8 +830,13 @@ def get_or_create_customer(contact_id):
 
 @Signal.decorate('checkparam')
 def invoice_checkparam():
-    Parameter.check_and_create(name='invoice-default-sell-account', typeparam=0, title=_("invoice-default-sell-account"), args="{'Multi':False}", value='', meta='("accounting","ChartsAccount", Q(type_of_account=3) & Q(year__is_actif=True), "code", True)')
-    Parameter.check_and_create(name='invoice-reduce-account', typeparam=0, title=_("invoice-reduce-account"), args="{'Multi':False}", value='', meta='("accounting","ChartsAccount", Q(type_of_account=3) & Q(year__is_actif=True), "code", True)')
-    Parameter.check_and_create(name='invoice-vatsell-account', typeparam=0, title=_("invoice-vatsell-account"), args="{'Multi':False}", value='', meta='("accounting","ChartsAccount", Q(type_of_account=4) & Q(year__is_actif=True), "code", False)')
-    Parameter.check_and_create(name='invoice-vat-mode', typeparam=4, title=_("invoice-vat-mode"), args="{'Enum':3}", value='0', param_titles=(_("invoice-vat-mode.0"), _("invoice-vat-mode.1"), _("invoice-vat-mode.2")))
-    Parameter.check_and_create(name="invoice-account-third", typeparam=0, title=_("invoice-account-third"), args="{'Multi':False}", value='', meta='("accounting","ChartsAccount","import diacamma.accounting.tools;django.db.models.Q(code__regex=diacamma.accounting.tools.current_system_account().get_customer_mask()) & django.db.models.Q(year__is_actif=True)", "code", True)')
+    Parameter.check_and_create(name='invoice-default-sell-account', typeparam=0, title=_("invoice-default-sell-account"),
+                               args="{'Multi':False}", value='', meta='("accounting","ChartsAccount", Q(type_of_account=3) & Q(year__is_actif=True), "code", True)')
+    Parameter.check_and_create(name='invoice-reduce-account', typeparam=0, title=_("invoice-reduce-account"),
+                               args="{'Multi':False}", value='', meta='("accounting","ChartsAccount", Q(type_of_account=3) & Q(year__is_actif=True), "code", True)')
+    Parameter.check_and_create(name='invoice-vatsell-account', typeparam=0, title=_("invoice-vatsell-account"),
+                               args="{'Multi':False}", value='', meta='("accounting","ChartsAccount", Q(type_of_account=4) & Q(year__is_actif=True), "code", False)')
+    Parameter.check_and_create(name='invoice-vat-mode', typeparam=4, title=_("invoice-vat-mode"),
+                               args="{'Enum':3}", value='0', param_titles=(_("invoice-vat-mode.0"), _("invoice-vat-mode.1"), _("invoice-vat-mode.2")))
+    Parameter.check_and_create(name="invoice-account-third", typeparam=0, title=_("invoice-account-third"),
+                               args="{'Multi':False}", value='', meta='("accounting","ChartsAccount","import diacamma.accounting.tools;django.db.models.Q(code__regex=diacamma.accounting.tools.current_system_account().get_customer_mask()) & django.db.models.Q(year__is_actif=True)", "code", True)')

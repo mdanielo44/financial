@@ -127,8 +127,8 @@ class BudgetPrint(XferPrintAction):
     action_class = BudgetList
 
 
-@ActionsManage.affect_grid(TITLE_MODIFY, "images/edit.png", unique=SELECT_SINGLE, condition=lambda xfer, gridname='': xfer.getparam('readonly', False) == False)
-@ActionsManage.affect_list(TITLE_ADD, "images/add.png", condition=lambda item: item.getparam('readonly', False) == False)
+@ActionsManage.affect_grid(TITLE_MODIFY, "images/edit.png", unique=SELECT_SINGLE, condition=lambda xfer, gridname='': not xfer.getparam('readonly', False))
+@ActionsManage.affect_list(TITLE_ADD, "images/add.png", condition=lambda item: not item.getparam('readonly', False))
 @MenuManage.describ('accounting.add_budget')
 class BudgetAddModify(XferAddEditor):
     icon = "account.png"
@@ -169,14 +169,14 @@ class BudgetAddModify(XferAddEditor):
             XferAddEditor._load_unique_record(self, itemid)
 
     def _search_model(self):
-        if self.getparam("budget_revenue") != None:
+        if self.getparam("budget_revenue") is not None:
             self.field_id = 'budget_revenue'
-        if self.getparam("budget_expense") != None:
+        if self.getparam("budget_expense") is not None:
             self.field_id = 'budget_expense'
         XferAddEditor._search_model(self)
 
 
-@ActionsManage.affect_grid(TITLE_DELETE, "images/delete.png", unique=SELECT_SINGLE, condition=lambda xfer, gridname='': xfer.getparam('readonly', False) == False)
+@ActionsManage.affect_grid(TITLE_DELETE, "images/delete.png", unique=SELECT_SINGLE, condition=lambda xfer, gridname='': not xfer.getparam('readonly', False))
 @MenuManage.describ('accounting.change_budget')
 class BudgetDel(XferDelete):
     icon = "account.png"
@@ -194,9 +194,9 @@ class BudgetDel(XferDelete):
             XferAddEditor._load_unique_record(self, itemid)
 
     def _search_model(self):
-        if self.getparam("budget_revenue") != None:
+        if self.getparam("budget_revenue") is not None:
             self.field_id = 'budget_revenue'
-        if self.getparam("budget_expense") != None:
+        if self.getparam("budget_expense") is not None:
             self.field_id = 'budget_expense'
         XferAddEditor._search_model(self)
 
@@ -214,7 +214,7 @@ class CostAccountingBudget(XferContainerAcknowledge):
         self.redirect_action(BudgetList.get_action(), close=CLOSE_YES, params={'cost_accounting': self.item.id, 'readonly': read_only})
 
 
-@ActionsManage.affect_list(_("Import"), "account.png", condition=lambda xfer: xfer.getparam('readonly', False) == False)
+@ActionsManage.affect_list(_("Import"), "account.png", condition=lambda xfer: not xfer.getparam('readonly', False))
 @MenuManage.describ('accounting.add_budget')
 class BudgetImport(XferContainerAcknowledge):
     icon = "account.png"

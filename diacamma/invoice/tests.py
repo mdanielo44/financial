@@ -38,14 +38,14 @@ from lucterios.CORE.parameters import Params
 
 from diacamma.accounting.test_tools import initial_thirds, default_compta
 from diacamma.accounting.views_entries import EntryAccountList
-from diacamma.invoice.test_tools import default_articles, InvoiceTest,\
+from diacamma.invoice.test_tools import default_articles, InvoiceTest, \
     default_categories
-from diacamma.invoice.views_conf import InvoiceConf, VatAddModify, VatDel,\
+from diacamma.invoice.views_conf import InvoiceConf, VatAddModify, VatDel, \
     CategoryAddModify, CategoryDel, ArticleImport
-from diacamma.invoice.views import ArticleList, ArticleAddModify, ArticleDel,\
-    BillList, BillAddModify, BillShow, DetailAddModify, DetailDel, BillTransition, BillDel, BillFromQuotation,\
+from diacamma.invoice.views import ArticleList, ArticleAddModify, ArticleDel, \
+    BillList, BillAddModify, BillShow, DetailAddModify, DetailDel, BillTransition, BillDel, BillFromQuotation, \
     BillStatistic, BillStatisticPrint, BillPrint, BillMultiPay, ArticleShow
-from diacamma.payoff.views import PayoffAddModify, PayoffDel, SupportingThird,\
+from diacamma.payoff.views import PayoffAddModify, PayoffDel, SupportingThird, \
     SupportingThirdValid, PayableEmail
 from diacamma.payoff.test_tools import default_bankaccount
 from lucterios.mailing.tests import configSMTP, TestReceiver, decode_b64
@@ -291,7 +291,7 @@ class ConfigTest(LucteriosTest):
 
         self.factory.xfer = ArticleImport()
         self.call('/diacamma.invoice/articleImport', {'step': 1, 'modelname': 'invoice.Article', 'quotechar': "'",
-                                                        'delimiter': ',', 'encoding': 'utf-8', 'dateformat': '%d/%m/%Y', 'csvcontent': StringIO(csv_content)}, False)
+                                                      'delimiter': ',', 'encoding': 'utf-8', 'dateformat': '%d/%m/%Y', 'csvcontent': StringIO(csv_content)}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'articleImport')
         self.assert_count_equal('COMPONENTS/*', 6 + 11)
         self.assert_count_equal('COMPONENTS/SELECT[@name="fld_reference"]/CASE', 9)
@@ -308,11 +308,11 @@ class ConfigTest(LucteriosTest):
 
         self.factory.xfer = ArticleImport()
         self.call('/diacamma.invoice/articleImport', {'step': 2, 'modelname': 'invoice.Article', 'quotechar': "'", 'delimiter': ',',
-                                                        'encoding': 'utf-8', 'dateformat': '%d/%m/%Y', 'csvcontent0': csv_content,
-                                                        "fld_reference": "num", "fld_designation": "comment", "fld_price": "prix",
-                                                        "fld_unit": "unité", "fld_isdisabled": "", "fld_sell_account": "compte",
-                                                        "fld_vat": "", "fld_stockable": "stock?", 'fld_categories': 'categorie',
-                                                        'fld_provider.third.contact': 'fournisseur', 'fld_provider.reference': 'ref', }, False)
+                                                      'encoding': 'utf-8', 'dateformat': '%d/%m/%Y', 'csvcontent0': csv_content,
+                                                      "fld_reference": "num", "fld_designation": "comment", "fld_price": "prix",
+                                                      "fld_unit": "unité", "fld_isdisabled": "", "fld_sell_account": "compte",
+                                                      "fld_vat": "", "fld_stockable": "stock?", 'fld_categories': 'categorie',
+                                                      'fld_provider.third.contact': 'fournisseur', 'fld_provider.reference': 'ref', }, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'articleImport')
         self.assert_count_equal('COMPONENTS/*', 4)
         self.assert_count_equal('COMPONENTS/GRID[@name="CSV"]/HEADER', 9)
@@ -324,11 +324,11 @@ class ConfigTest(LucteriosTest):
 
         self.factory.xfer = ArticleImport()
         self.call('/diacamma.invoice/articleImport', {'step': 3, 'modelname': 'invoice.Article', 'quotechar': "'", 'delimiter': ',',
-                                                        'encoding': 'utf-8', 'dateformat': '%d/%m/%Y', 'csvcontent0': csv_content,
-                                                        "fld_reference": "num", "fld_designation": "comment", "fld_price": "prix",
-                                                        "fld_unit": "unité", "fld_isdisabled": "", "fld_sell_account": "compte",
-                                                        "fld_vat": "", "fld_stockable": "stock?", 'fld_categories': 'categorie',
-                                                        'fld_provider.third.contact': 'fournisseur', 'fld_provider.reference': 'ref', }, False)
+                                                      'encoding': 'utf-8', 'dateformat': '%d/%m/%Y', 'csvcontent0': csv_content,
+                                                      "fld_reference": "num", "fld_designation": "comment", "fld_price": "prix",
+                                                      "fld_unit": "unité", "fld_isdisabled": "", "fld_sell_account": "compte",
+                                                      "fld_vat": "", "fld_stockable": "stock?", 'fld_categories': 'categorie',
+                                                      'fld_provider.third.contact': 'fournisseur', 'fld_provider.reference': 'ref', }, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'articleImport')
         self.assert_count_equal('COMPONENTS/*', 2)
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="result"]', "{[center]}{[i]}4 éléments ont été importés{[/i]}{[/center]}")
@@ -388,11 +388,11 @@ class ConfigTest(LucteriosTest):
 
         self.factory.xfer = ArticleImport()
         self.call('/diacamma.invoice/articleImport', {'step': 3, 'modelname': 'invoice.Article', 'quotechar': "'", 'delimiter': ',',
-                                                        'encoding': 'utf-8', 'dateformat': '%d/%m/%Y', 'csvcontent0': csv_content,
-                                                        "fld_reference": "num", "fld_designation": "comment", "fld_price": "prix",
-                                                        "fld_unit": "unité", "fld_isdisabled": "", "fld_sell_account": "compte",
-                                                        "fld_vat": "", "fld_stockable": "stock?", 'fld_categories': 'categorie',
-                                                        'fld_provider.third.contact': 'fournisseur', 'fld_provider.reference': 'ref', }, False)
+                                                      'encoding': 'utf-8', 'dateformat': '%d/%m/%Y', 'csvcontent0': csv_content,
+                                                      "fld_reference": "num", "fld_designation": "comment", "fld_price": "prix",
+                                                      "fld_unit": "unité", "fld_isdisabled": "", "fld_sell_account": "compte",
+                                                      "fld_vat": "", "fld_stockable": "stock?", 'fld_categories': 'categorie',
+                                                      'fld_provider.third.contact': 'fournisseur', 'fld_provider.reference': 'ref', }, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'articleImport')
         self.assert_count_equal('COMPONENTS/*', 2)
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="result"]', "{[center]}{[i]}4 éléments ont été importés{[/i]}{[/center]}")
@@ -426,11 +426,11 @@ class ConfigTest(LucteriosTest):
 
         self.factory.xfer = ArticleImport()
         self.call('/diacamma.invoice/articleImport', {'step': 3, 'modelname': 'invoice.Article', 'quotechar': "'", 'delimiter': ',',
-                                                        'encoding': 'utf-8', 'dateformat': '%d/%m/%Y', 'csvcontent0': csv_content,
-                                                        "fld_reference": "num", "fld_designation": "comment", "fld_price": "prix",
-                                                        "fld_unit": "unité", "fld_isdisabled": "", "fld_sell_account": "compte",
-                                                        "fld_vat": "", "fld_stockable": "stock?", 'fld_categories': '',
-                                                        'fld_provider.third.contact': '', 'fld_provider.reference': '', }, False)
+                                                      'encoding': 'utf-8', 'dateformat': '%d/%m/%Y', 'csvcontent0': csv_content,
+                                                      "fld_reference": "num", "fld_designation": "comment", "fld_price": "prix",
+                                                      "fld_unit": "unité", "fld_isdisabled": "", "fld_sell_account": "compte",
+                                                      "fld_vat": "", "fld_stockable": "stock?", 'fld_categories': '',
+                                                      'fld_provider.third.contact': '', 'fld_provider.reference': '', }, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'articleImport')
         self.assert_count_equal('COMPONENTS/*', 2)
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="result"]', "{[center]}{[i]}4 éléments ont été importés{[/i]}{[/center]}")
@@ -484,7 +484,6 @@ class ConfigTest(LucteriosTest):
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="categories"]', None)
         self.assert_count_equal('COMPONENTS/GRID[@name="provider"]/RECORD', 0)
 
-
     def test_article_import3(self):
         if six.PY2:
             return
@@ -499,10 +498,10 @@ class ConfigTest(LucteriosTest):
 
         self.factory.xfer = ArticleImport()
         self.call('/diacamma.invoice/articleImport', {'step': 3, 'modelname': 'invoice.Article', 'quotechar': "'", 'delimiter': ',',
-                                                        'encoding': 'utf-8', 'dateformat': '%d/%m/%Y', 'csvcontent0': csv_content,
-                                                        "fld_reference": "num", "fld_designation": "comment", "fld_price": "prix",
-                                                        "fld_unit": "unité", "fld_isdisabled": "", "fld_sell_account": "compte",
-                                                        "fld_vat": "", "fld_stockable": "stock?", }, False)
+                                                      'encoding': 'utf-8', 'dateformat': '%d/%m/%Y', 'csvcontent0': csv_content,
+                                                      "fld_reference": "num", "fld_designation": "comment", "fld_price": "prix",
+                                                      "fld_unit": "unité", "fld_isdisabled": "", "fld_sell_account": "compte",
+                                                      "fld_vat": "", "fld_stockable": "stock?", }, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'articleImport')
         self.assert_count_equal('COMPONENTS/*', 2)
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="result"]', "{[center]}{[i]}4 éléments ont été importés{[/i]}{[/center]}")
@@ -573,13 +572,13 @@ class BillTest(InvoiceTest):
         self.factory.xfer = BillAddModify()
         self.call('/diacamma.invoice/billAddModify', {}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'billAddModify')
-        self.assert_count_equal('COMPONENTS/*', 4)
+        self.assert_count_equal('COMPONENTS/*', 5)
         self.assert_count_equal('COMPONENTS/SELECT[@name="bill_type"]/CASE', 4)
 
         self.factory.xfer = BillAddModify()
         self.call('/diacamma.invoice/billAddModify', {'bill_type': 1}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'billAddModify')
-        self.assert_count_equal('COMPONENTS/*', 5)
+        self.assert_count_equal('COMPONENTS/*', 6)
         self.assert_count_equal('COMPONENTS/SELECT[@name="bill_type"]/CASE', 4)
         self.assert_count_equal('COMPONENTS/SELECT[@name="cost_accounting"]/CASE', 2)
 
@@ -602,7 +601,8 @@ class BillTest(InvoiceTest):
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="num_txt"]', "---")
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="status"]', "en création")
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="date"]', "1 avril 2014")
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="info"]', "{[font color=\"red\"]}aucun tiers sélectionné{[br/]}pas de détail{[br/]}la date n'est pas incluse dans l'exercice{[/font]}")
+        self.assert_xml_equal(
+            'COMPONENTS/LABELFORM[@name="info"]', "{[font color=\"red\"]}aucun tiers sélectionné{[br/]}pas de détail{[br/]}la date n'est pas incluse dans l'exercice{[/font]}")
 
         self.factory.xfer = BillAddModify()
         self.call('/diacamma.invoice/billAddModify',
@@ -935,7 +935,8 @@ class BillTest(InvoiceTest):
                   {'year': '1', 'journal': '-1', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
         self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', 2)
-        self.assert_xml_equal("COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit:{[/b]} 0.00€ - {[b]}Charge:{[/b]} 0.00€ = {[b]}Résultat:{[/b]} 0.00€ | {[b]}Trésorie:{[/b]} 0.00€ - {[b]}Validé:{[/b]} 0.00€{[/center]}')
+        self.assert_xml_equal(
+            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit:{[/b]} 0.00€ - {[b]}Charge:{[/b]} 0.00€ = {[b]}Résultat:{[/b]} 0.00€ | {[b]}Trésorie:{[/b]} 0.00€ - {[b]}Validé:{[/b]} 0.00€{[/center]}')
 
     def test_add_quotation(self):
         default_articles()
@@ -1137,7 +1138,8 @@ class BillTest(InvoiceTest):
         self.assertTrue('[4455] 4455' in description, description)
         self.assertTrue('128.02€' in description, description)
         self.assertTrue('4.51€' in description, description)
-        self.assert_xml_equal("COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit:{[/b]} 123.51€ - {[b]}Charge:{[/b]} 0.00€ = {[b]}Résultat:{[/b]} 123.51€ | {[b]}Trésorie:{[/b]} 0.00€ - {[b]}Validé:{[/b]} 0.00€{[/center]}')
+        self.assert_xml_equal(
+            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit:{[/b]} 123.51€ - {[b]}Charge:{[/b]} 0.00€ = {[b]}Résultat:{[/b]} 123.51€ | {[b]}Trésorie:{[/b]} 0.00€ - {[b]}Validé:{[/b]} 0.00€{[/center]}')
 
         self.factory.xfer = BillList()
         self.call('/diacamma.invoice/billList', {}, False)
@@ -1190,7 +1192,8 @@ class BillTest(InvoiceTest):
         self.assertTrue('[4455] 4455' in description, description)
         self.assertTrue('133.27€' in description, description)
         self.assertTrue('5.25€' in description, description)
-        self.assert_xml_equal("COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit:{[/b]} 128.02€ - {[b]}Charge:{[/b]} 0.00€ = {[b]}Résultat:{[/b]} 128.02€ | {[b]}Trésorie:{[/b]} 0.00€ - {[b]}Validé:{[/b]} 0.00€{[/center]}')
+        self.assert_xml_equal(
+            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit:{[/b]} 128.02€ - {[b]}Charge:{[/b]} 0.00€ = {[b]}Résultat:{[/b]} 128.02€ | {[b]}Trésorie:{[/b]} 0.00€ - {[b]}Validé:{[/b]} 0.00€{[/center]}')
 
         self.factory.xfer = BillList()
         self.call('/diacamma.invoice/billList', {}, False)
@@ -1288,7 +1291,8 @@ class BillTest(InvoiceTest):
                   {'year': '1', 'journal': '-1', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
         self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', 1)
-        self.assert_xml_equal("COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit:{[/b]} 100.00€ - {[b]}Charge:{[/b]} 0.00€ = {[b]}Résultat:{[/b]} 100.00€ | {[b]}Trésorie:{[/b]} 0.00€ - {[b]}Validé:{[/b]} 0.00€{[/center]}')
+        self.assert_xml_equal(
+            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit:{[/b]} 100.00€ - {[b]}Charge:{[/b]} 0.00€ = {[b]}Résultat:{[/b]} 100.00€ | {[b]}Trésorie:{[/b]} 0.00€ - {[b]}Validé:{[/b]} 0.00€{[/center]}')
 
         self.factory.xfer = BillShow()
         self.call('/diacamma.invoice/billShow', {'bill': bill_id}, False)
@@ -1340,7 +1344,8 @@ class BillTest(InvoiceTest):
         self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', 2)
         description = self.get_first_xpath('COMPONENTS/GRID[@name="entryaccount"]/RECORD[2]/VALUE[@name="description"]').text
         self.assertTrue('[531] 531' in description, description)
-        self.assert_xml_equal("COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit:{[/b]} 100.00€ - {[b]}Charge:{[/b]} 0.00€ = {[b]}Résultat:{[/b]} 100.00€ | {[b]}Trésorie:{[/b]} 60.00€ - {[b]}Validé:{[/b]} 0.00€{[/center]}')
+        self.assert_xml_equal(
+            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit:{[/b]} 100.00€ - {[b]}Charge:{[/b]} 0.00€ = {[b]}Résultat:{[/b]} 100.00€ | {[b]}Trésorie:{[/b]} 60.00€ - {[b]}Validé:{[/b]} 0.00€{[/center]}')
 
         self.factory.xfer = PayoffAddModify()
         self.call(
@@ -1373,7 +1378,8 @@ class BillTest(InvoiceTest):
         self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', 3)
         description = self.get_first_xpath('COMPONENTS/GRID[@name="entryaccount"]/RECORD[3]/VALUE[@name="description"]').text
         self.assertTrue('[581] 581' in description, description)
-        self.assert_xml_equal("COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit:{[/b]} 100.00€ - {[b]}Charge:{[/b]} 0.00€ = {[b]}Résultat:{[/b]} 100.00€ | {[b]}Trésorie:{[/b]} 100.00€ - {[b]}Validé:{[/b]} 0.00€{[/center]}')
+        self.assert_xml_equal(
+            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit:{[/b]} 100.00€ - {[b]}Charge:{[/b]} 0.00€ = {[b]}Résultat:{[/b]} 100.00€ | {[b]}Trésorie:{[/b]} 100.00€ - {[b]}Validé:{[/b]} 0.00€{[/center]}')
 
     def test_payoff_avoid(self):
         default_articles()
@@ -1386,7 +1392,8 @@ class BillTest(InvoiceTest):
                   {'year': '1', 'journal': '-1', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
         self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', 1)
-        self.assert_xml_equal("COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit:{[/b]} -50.00€ - {[b]}Charge:{[/b]} 0.00€ = {[b]}Résultat:{[/b]} -50.00€ | {[b]}Trésorie:{[/b]} 0.00€ - {[b]}Validé:{[/b]} 0.00€{[/center]}')
+        self.assert_xml_equal(
+            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit:{[/b]} -50.00€ - {[b]}Charge:{[/b]} 0.00€ = {[b]}Résultat:{[/b]} -50.00€ | {[b]}Trésorie:{[/b]} 0.00€ - {[b]}Validé:{[/b]} 0.00€{[/center]}')
 
         self.factory.xfer = PayoffAddModify()
         self.call(
@@ -1423,7 +1430,8 @@ class BillTest(InvoiceTest):
         self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', 2)
         description = self.get_first_xpath('COMPONENTS/GRID[@name="entryaccount"]/RECORD[2]/VALUE[@name="description"]').text
         self.assertTrue('[512] 512' in description, description)
-        self.assert_xml_equal("COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit:{[/b]} -50.00€ - {[b]}Charge:{[/b]} 0.00€ = {[b]}Résultat:{[/b]} -50.00€ | {[b]}Trésorie:{[/b]} -50.00€ - {[b]}Validé:{[/b]} 0.00€{[/center]}')
+        self.assert_xml_equal(
+            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit:{[/b]} -50.00€ - {[b]}Charge:{[/b]} 0.00€ = {[b]}Résultat:{[/b]} -50.00€ | {[b]}Trésorie:{[/b]} -50.00€ - {[b]}Validé:{[/b]} 0.00€{[/center]}')
 
         self.factory.xfer = PayoffDel()
         self.call(
@@ -1435,7 +1443,8 @@ class BillTest(InvoiceTest):
                   {'year': '1', 'journal': '-1', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
         self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', 1)
-        self.assert_xml_equal("COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit:{[/b]} -50.00€ - {[b]}Charge:{[/b]} 0.00€ = {[b]}Résultat:{[/b]} -50.00€ | {[b]}Trésorie:{[/b]} 0.00€ - {[b]}Validé:{[/b]} 0.00€{[/center]}')
+        self.assert_xml_equal(
+            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit:{[/b]} -50.00€ - {[b]}Charge:{[/b]} 0.00€ = {[b]}Résultat:{[/b]} -50.00€ | {[b]}Trésorie:{[/b]} 0.00€ - {[b]}Validé:{[/b]} 0.00€{[/center]}')
 
         self.factory.xfer = BillPrint()
         self.call(
@@ -1475,7 +1484,8 @@ class BillTest(InvoiceTest):
         self.assert_xml_equal('COMPONENTS/SELECT[@name="repartition"]', "0")
 
         self.factory.xfer = PayoffAddModify()
-        self.call('/diacamma.payoff/payoffAddModify', {'SAVE': 'YES', 'supportings': '%s;%s' % (bill_id1, bill_id2), 'amount': '100.0', 'date': '2015-04-04', 'mode': 0, 'reference': '', 'bank_account': 0, 'payer': "Ma'a Dalton"}, False)
+        self.call('/diacamma.payoff/payoffAddModify', {'SAVE': 'YES', 'supportings': '%s;%s' % (bill_id1, bill_id2),
+                                                       'amount': '100.0', 'date': '2015-04-04', 'mode': 0, 'reference': '', 'bank_account': 0, 'payer': "Ma'a Dalton"}, False)
         self.assert_observer('core.acknowledge', 'diacamma.payoff', 'payoffAddModify')
 
         self.factory.xfer = BillShow()
@@ -1538,7 +1548,8 @@ class BillTest(InvoiceTest):
         self.assert_xml_equal('COMPONENTS/SELECT[@name="repartition"]', "0")
 
         self.factory.xfer = PayoffAddModify()
-        self.call('/diacamma.payoff/payoffAddModify', {'SAVE': 'YES', 'supportings': '%s;%s' % (bill_id1, bill_id2), 'amount': '150.0', 'date': '2015-04-04', 'mode': 0, 'reference': '', 'bank_account': 0, 'payer': "Ma'a Dalton", "repartition": 0}, False)
+        self.call('/diacamma.payoff/payoffAddModify', {'SAVE': 'YES', 'supportings': '%s;%s' % (bill_id1, bill_id2), 'amount': '150.0',
+                                                       'date': '2015-04-04', 'mode': 0, 'reference': '', 'bank_account': 0, 'payer': "Ma'a Dalton", "repartition": 0}, False)
         self.assert_observer('core.acknowledge', 'diacamma.payoff', 'payoffAddModify')
 
         self.factory.xfer = BillShow()
@@ -1601,7 +1612,8 @@ class BillTest(InvoiceTest):
         self.assert_xml_equal('COMPONENTS/SELECT[@name="repartition"]', "0")
 
         self.factory.xfer = PayoffAddModify()
-        self.call('/diacamma.payoff/payoffAddModify', {'SAVE': 'YES', 'supportings': '%s;%s' % (bill_id1, bill_id2), 'amount': '120.0', 'date': '2015-04-07', 'mode': 0, 'reference': '', 'bank_account': 0, 'payer': "Ma'a Dalton", "repartition": 1}, False)
+        self.call('/diacamma.payoff/payoffAddModify', {'SAVE': 'YES', 'supportings': '%s;%s' % (bill_id1, bill_id2), 'amount': '120.0',
+                                                       'date': '2015-04-07', 'mode': 0, 'reference': '', 'bank_account': 0, 'payer': "Ma'a Dalton", "repartition": 1}, False)
         self.assert_observer('core.acknowledge', 'diacamma.payoff', 'payoffAddModify')
 
         self.factory.xfer = BillShow()
@@ -1646,7 +1658,8 @@ class BillTest(InvoiceTest):
             self.assert_observer('core.custom', 'diacamma.payoff', 'payableEmail')
             self.assert_count_equal('COMPONENTS/*', 4)
             self.assert_xml_equal('COMPONENTS/EDIT[@name="subject"]', 'facture A-1 - 1 avril 2015')
-            self.assert_xml_equal('COMPONENTS/MEMO[@name="message"]', 'Jack Dalton\n\nVeuillez trouver ci-Joint à ce courriel facture A-1 - 1 avril 2015.\n\nSincères salutations')
+            self.assert_xml_equal(
+                'COMPONENTS/MEMO[@name="message"]', 'Jack Dalton\n\nVeuillez trouver ci-Joint à ce courriel facture A-1 - 1 avril 2015.\n\nSincères salutations')
 
             self.factory.xfer = PayableEmail()
             self.call('/diacamma.payoff/payableEmail',
