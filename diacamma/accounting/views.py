@@ -27,7 +27,8 @@ from datetime import timedelta, date
 
 from django.utils.translation import ugettext_lazy as _
 from django.db.models.query import QuerySet
-from django.db.models import Q
+from django.db.models.functions import Concat
+from django.db.models import Q, Value
 from django.utils import six
 
 from lucterios.framework import signal_and_lock
@@ -60,7 +61,7 @@ class ThirdList(XferListEditor):
     caption = _("Thirds")
 
     def get_items_from_filter(self):
-        items = XferListEditor.get_items_from_filter(self)
+        items = self.model.objects.annotate(completename=Concat('contact__individual__lastname', Value(' '), 'contact__individual__firstname')).filter(self.filter)
         sort_third = self.getparam('GRID_ORDER%third', '')
         sort_thirdbis = self.getparam('GRID_ORDER%third+', '')
         self.params['GRID_ORDER%third'] = ""
@@ -110,7 +111,7 @@ class ThirdList(XferListEditor):
         self.filter = Q(status=0)
         if contact_filter != "":
             q_legalentity = Q(contact__legalentity__name__icontains=contact_filter)
-            q_individual = (Q(contact__individual__firstname__icontains=contact_filter) | Q(contact__individual__lastname__icontains=contact_filter))
+            q_individual = Q(completename__icontains=contact_filter)            
             self.filter &= (q_legalentity | q_individual)
         if thirdtype == 1:
             self.filter &= Q(accountthird__code__regex=current_system_account().get_customer_mask())

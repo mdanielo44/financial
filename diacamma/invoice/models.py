@@ -28,7 +28,8 @@ from datetime import date
 
 from django.db import models
 from django.db.models.aggregates import Max
-from django.db.models import Q
+from django.db.models.functions import Concat
+from django.db.models import Q, Value
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.utils.translation import ugettext_lazy as _
@@ -175,13 +176,16 @@ class Article(LucteriosModel):
                         cat_ids.append(cat_item.id)
                     new_item.categories = Category.objects.filter(id__in=cat_ids)
                     new_item.save()
-            if ('provider.third.contact' in rowdata.keys()) and (rowdata['provider.third.contact'] is not None) and (rowdata['provider.third.contact'] != ''):
-                q_legalentity = Q(contact__legalentity__name__icontains=rowdata['provider.third.contact'])
-                q_individual = (Q(contact__individual__firstname__icontains=rowdata['provider.third.contact']) | Q(contact__individual__lastname__icontains=rowdata['provider.third.contact']))
-                thirds = Third.objects.filter(q_legalentity | q_individual)
+            if ('provider.third.contact' in rowdata.keys()) and (rowdata['provider.third.contact'] is not None) and (rowdata['provider.third.contact'] != ''):                
+                if ('provider.reference' in rowdata.keys()) and (rowdata['provider.reference'] is not None):
+                    reference = rowdata['provider.reference']
+                else:
+                    reference = ''
+                q_legalentity = Q(contact__legalentity__name__iexact=rowdata['provider.third.contact'])
+                q_individual = Q(completename__icontains=rowdata['provider.third.contact'])
+                thirds = Third.objects.annotate(completename=Concat('contact__individual__lastname', Value(' '), 'contact__individual__firstname')).filter(q_legalentity | q_individual)
                 if len(thirds) > 0:
-                    new_provider = Provider(article=new_item, third=thirds[0], reference=rowdata['provider.reference'])
-                    new_provider.save()
+                    Provider.objects.get_or_create(article=new_item, third=thirds[0], reference=reference)
             return new_item
         except:
             logging.getLogger('diacamma.invoice').exception("import_data")
@@ -692,9 +696,11 @@ class Detail(LucteriosModel):
             artfilter &= Q(provider__third_id=self.filter_thirdid)
         if self.filter_ref != '':
             artfilter &= Q(provider__reference__icontains=self.filter_ref)
+        items = Article.objects.filter(artfilter)
         if len(self.filter_cat) > 0:
-            artfilter &= Q(categories__in=Category.objects.filter(id__in=self.filter_cat))
-        return Article.objects.filter(artfilter)
+            for cat_item in Category.objects.filter(id__in=self.filter_cat):
+                items = items.filter(categories__in=[cat_item])
+        return items
 
     def __str__(self):
         return "[%s] %s:%f" % (six.text_type(self.reference), six.text_type(self.designation), self.price_txt)

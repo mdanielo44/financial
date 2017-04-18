@@ -407,7 +407,7 @@ class ThirdTest(LucteriosTest):
     def test_list_withfilter(self):
         fill_thirds()
         self.factory.xfer = ThirdList()
-        self.call('/diacamma.accounting/thirdListing', {'filter': 'joe'}, False)
+        self.call('/diacamma.accounting/thirdListing', {'filter': 'dalton joe'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'thirdListing')
         self.assert_count_equal('COMPONENTS/*', 7)
         self.assert_count_equal('COMPONENTS/GRID[@name="third"]/HEADER', 2)

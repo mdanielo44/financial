@@ -171,6 +171,8 @@ class DetailEditor(LucteriosEditor):
             edt.description = _('categories')
             edt.set_action(xfer.request, xfer.get_action('', ''), modal=FORMTYPE_REFRESH, close=CLOSE_NO, params={'CHANGE_ART': 'YES'})
             xfer.add_component(edt)
+            if len(filter_cat) > 0:
+                sel_art.set_needed(True)
             has_filter = True
         if len(Provider.objects.all()) > 0:
             self._add_provider_filter(xfer, sel_art, init_row + 1)

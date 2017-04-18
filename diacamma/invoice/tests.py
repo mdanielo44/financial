@@ -40,7 +40,7 @@ from diacamma.accounting.views_entries import EntryAccountList
 from diacamma.invoice.test_tools import default_articles, InvoiceTest,\
     default_categories
 from diacamma.invoice.views_conf import InvoiceConf, VatAddModify, VatDel,\
-    CategoryAddModify, CategoryDel
+    CategoryAddModify, CategoryDel, ArticleImport
 from diacamma.invoice.views import ArticleList, ArticleAddModify, ArticleDel,\
     BillList, BillAddModify, BillShow, DetailAddModify, DetailDel, BillTransition, BillDel, BillFromQuotation,\
     BillStatistic, BillStatisticPrint, BillPrint, BillMultiPay, ArticleShow
@@ -48,6 +48,7 @@ from diacamma.payoff.views import PayoffAddModify, PayoffDel, SupportingThird,\
     SupportingThirdValid, PayableEmail
 from diacamma.payoff.test_tools import default_bankaccount
 from lucterios.mailing.tests import configSMTP, TestReceiver, decode_b64
+from _io import StringIO
 
 
 class ConfigTest(LucteriosTest):
@@ -261,13 +262,287 @@ class ConfigTest(LucteriosTest):
         self.call('/diacamma.invoice/articleList', {'show_filter': 1, 'cat_filter': '2;3'}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'articleList')
         self.assert_count_equal('COMPONENTS/*', 7)
-        self.assert_count_equal('COMPONENTS/GRID[@name="article"]/RECORD', 4)
+        self.assert_count_equal('COMPONENTS/GRID[@name="article"]/RECORD', 2)
 
         self.factory.xfer = ArticleList()
         self.call('/diacamma.invoice/articleList', {'show_filter': 1, 'cat_filter': '1;2;3'}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'articleList')
         self.assert_count_equal('COMPONENTS/*', 7)
-        self.assert_count_equal('COMPONENTS/GRID[@name="article"]/RECORD', 5)
+        self.assert_count_equal('COMPONENTS/GRID[@name="article"]/RECORD', 1)
+
+    def test_article_import1(self):
+        initial_thirds()
+        default_categories()
+        csv_content = """'num','comment','prix','unité','compte','stock?','categorie','fournisseur','ref'
+'A123','article N°1','12.45','Kg','701','stockable','cat 2','Dalton Avrel','POIYT'
+'B234','article N°2','23.56','L','701','stockable','cat 3','',''
+'C345','article N°3','45.74','','702','non stockable','cat 1','Dalton Avrel','MLKJH'
+'D456','article N°4','56.89','m','701','stockable & non vendable','','Maximum','987654'
+'A123','article N°1','13.57','Kg','701','stockable','cat 3','',''
+'A123','article N°1','16.95','Kg','701','stockable','','Maximum','654321'
+"""
+
+        self.factory.xfer = ArticleList()
+        self.call('/diacamma.invoice/articleList', {'show_filter': 1}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'articleList')
+        self.assert_count_equal('COMPONENTS/GRID[@name="article"]/RECORD', 0)
+
+        self.factory.xfer = ArticleImport()
+        self.call('/diacamma.invoice/articleImport', {'step': 1, 'modelname': 'invoice.Article', 'quotechar': "'",
+                                                        'delimiter': ',', 'encoding': 'utf-8', 'dateformat': '%d/%m/%Y', 'csvcontent': StringIO(csv_content)}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'articleImport')
+        self.assert_count_equal('COMPONENTS/*', 6 + 11)
+        self.assert_count_equal('COMPONENTS/SELECT[@name="fld_reference"]/CASE', 9)
+        self.assert_count_equal('COMPONENTS/SELECT[@name="fld_categories"]/CASE', 10)
+        self.assert_count_equal('COMPONENTS/GRID[@name="CSV"]/HEADER', 9)
+        self.assert_count_equal('COMPONENTS/GRID[@name="CSV"]/RECORD', 6)
+        self.assert_count_equal('COMPONENTS/GRID[@name="CSV"]/ACTIONS', 0)
+        self.assert_count_equal('ACTIONS/ACTION', 3)
+        self.assert_action_equal('ACTIONS/ACTION[1]', (six.text_type(
+            'Retour'), 'images/left.png', 'diacamma.invoice', 'articleImport', 0, 2, 1, {'step': '0'}))
+        self.assert_action_equal('ACTIONS/ACTION[2]', (six.text_type(
+            'Ok'), 'images/ok.png', 'diacamma.invoice', 'articleImport', 0, 2, 1, {'step': '2'}))
+        self.assert_count_equal('CONTEXT/PARAM', 8)
+
+        self.factory.xfer = ArticleImport()
+        self.call('/diacamma.invoice/articleImport', {'step': 2, 'modelname': 'invoice.Article', 'quotechar': "'", 'delimiter': ',',
+                                                        'encoding': 'utf-8', 'dateformat': '%d/%m/%Y', 'csvcontent0': csv_content,
+                                                        "fld_reference": "num", "fld_designation": "comment", "fld_price": "prix",
+                                                        "fld_unit": "unité", "fld_isdisabled": "", "fld_sell_account": "compte",
+                                                        "fld_vat": "", "fld_stockable": "stock?", 'fld_categories': 'categorie',
+                                                        'fld_provider.third.contact': 'fournisseur', 'fld_provider.reference': 'ref', }, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'articleImport')
+        self.assert_count_equal('COMPONENTS/*', 4)
+        self.assert_count_equal('COMPONENTS/GRID[@name="CSV"]/HEADER', 9)
+        self.assert_count_equal('COMPONENTS/GRID[@name="CSV"]/RECORD', 6)
+        self.assert_count_equal('COMPONENTS/GRID[@name="CSV"]/ACTIONS', 0)
+        self.assert_count_equal('ACTIONS/ACTION', 3)
+        self.assert_action_equal('ACTIONS/ACTION[2]', (six.text_type(
+            'Ok'), 'images/ok.png', 'diacamma.invoice', 'articleImport', 0, 2, 1, {'step': '3'}))
+
+        self.factory.xfer = ArticleImport()
+        self.call('/diacamma.invoice/articleImport', {'step': 3, 'modelname': 'invoice.Article', 'quotechar': "'", 'delimiter': ',',
+                                                        'encoding': 'utf-8', 'dateformat': '%d/%m/%Y', 'csvcontent0': csv_content,
+                                                        "fld_reference": "num", "fld_designation": "comment", "fld_price": "prix",
+                                                        "fld_unit": "unité", "fld_isdisabled": "", "fld_sell_account": "compte",
+                                                        "fld_vat": "", "fld_stockable": "stock?", 'fld_categories': 'categorie',
+                                                        'fld_provider.third.contact': 'fournisseur', 'fld_provider.reference': 'ref', }, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'articleImport')
+        self.assert_count_equal('COMPONENTS/*', 2)
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="result"]', "{[center]}{[i]}4 éléments ont été importés{[/i]}{[/center]}")
+        self.assert_count_equal('ACTIONS/ACTION', 1)
+
+        self.factory.xfer = ArticleList()
+        self.call('/diacamma.invoice/articleList', {'show_filter': 1}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'articleList')
+        self.assert_count_equal('COMPONENTS/GRID[@name="article"]/RECORD', 4)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[1]/VALUE[@name="reference"]', "A123")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[1]/VALUE[@name="designation"]', "article N°1")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[1]/VALUE[@name="price_txt"]', "16.95€")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[1]/VALUE[@name="unit"]', 'Kg')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[1]/VALUE[@name="isdisabled"]', "0")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[1]/VALUE[@name="sell_account"]', "701")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[1]/VALUE[@name="stockable"]', "stockable")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[1]/VALUE[@name="categories"]', "cat 2{[br/]}cat 3")
+
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[2]/VALUE[@name="reference"]', "B234")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[2]/VALUE[@name="designation"]', "article N°2")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[2]/VALUE[@name="price_txt"]', "23.56€")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[2]/VALUE[@name="unit"]', 'L')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[2]/VALUE[@name="isdisabled"]', "0")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[2]/VALUE[@name="sell_account"]', "701")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[2]/VALUE[@name="stockable"]', "stockable")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[2]/VALUE[@name="categories"]', "cat 3")
+
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[3]/VALUE[@name="reference"]', "C345")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[3]/VALUE[@name="designation"]', "article N°3")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[3]/VALUE[@name="price_txt"]', "45.74€")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[3]/VALUE[@name="unit"]', None)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[3]/VALUE[@name="isdisabled"]', "0")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[3]/VALUE[@name="sell_account"]', "702")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[3]/VALUE[@name="stockable"]', "non stockable")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[3]/VALUE[@name="categories"]', "cat 1")
+
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[4]/VALUE[@name="reference"]', "D456")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[4]/VALUE[@name="designation"]', "article N°4")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[4]/VALUE[@name="price_txt"]', "56.89€")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[4]/VALUE[@name="unit"]', 'm')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[4]/VALUE[@name="isdisabled"]', "0")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[4]/VALUE[@name="sell_account"]', "701")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[4]/VALUE[@name="stockable"]', "stockable & non vendable")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[4]/VALUE[@name="categories"]', None)
+
+        self.factory.xfer = ArticleShow()
+        self.call('/diacamma.invoice/articleShow', {'article': '1'}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'articleShow')
+        self.assert_count_equal('COMPONENTS/*', 11)
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="reference"]', "A123")
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="categories"]', "cat 2{[br/]}cat 3")
+        self.assert_count_equal('COMPONENTS/GRID[@name="provider"]/RECORD', 2)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="provider"]/RECORD[1]/VALUE[@name="third"]', "Dalton Avrel")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="provider"]/RECORD[1]/VALUE[@name="reference"]', "POIYT")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="provider"]/RECORD[2]/VALUE[@name="third"]', "Maximum")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="provider"]/RECORD[2]/VALUE[@name="reference"]', "654321")
+
+        self.factory.xfer = ArticleImport()
+        self.call('/diacamma.invoice/articleImport', {'step': 3, 'modelname': 'invoice.Article', 'quotechar': "'", 'delimiter': ',',
+                                                        'encoding': 'utf-8', 'dateformat': '%d/%m/%Y', 'csvcontent0': csv_content,
+                                                        "fld_reference": "num", "fld_designation": "comment", "fld_price": "prix",
+                                                        "fld_unit": "unité", "fld_isdisabled": "", "fld_sell_account": "compte",
+                                                        "fld_vat": "", "fld_stockable": "stock?", 'fld_categories': 'categorie',
+                                                        'fld_provider.third.contact': 'fournisseur', 'fld_provider.reference': 'ref', }, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'articleImport')
+        self.assert_count_equal('COMPONENTS/*', 2)
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="result"]', "{[center]}{[i]}4 éléments ont été importés{[/i]}{[/center]}")
+        self.assert_count_equal('ACTIONS/ACTION', 1)
+
+        self.factory.xfer = ArticleShow()
+        self.call('/diacamma.invoice/articleShow', {'article': '1'}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'articleShow')
+        self.assert_count_equal('COMPONENTS/*', 11)
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="reference"]', "A123")
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="categories"]', "cat 2{[br/]}cat 3")
+        self.assert_count_equal('COMPONENTS/GRID[@name="provider"]/RECORD', 2)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="provider"]/RECORD[1]/VALUE[@name="third"]', "Dalton Avrel")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="provider"]/RECORD[1]/VALUE[@name="reference"]', "POIYT")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="provider"]/RECORD[2]/VALUE[@name="third"]', "Maximum")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="provider"]/RECORD[2]/VALUE[@name="reference"]', "654321")
+
+    def test_article_import2(self):
+        initial_thirds()
+        default_categories()
+        csv_content = """'num','comment','prix','unité','compte','stock?','categorie','fournisseur','ref'
+'A123','article N°1','12.45','Kg','701','stockable','cat 2','Avrel','POIYT'
+'B234','article N°2','23.56','L','701','stockable','cat 3','',''
+'C345','article N°3','45.74','','702','non stockable','cat 1','Avrel','MLKJH'
+'D456','article N°4','56.89','m','701','stockable & non vendable','','Maximum','987654'
+'A123','article N°1','13.57','Kg','701','stockable','cat 3','',''
+'A123','article N°1','16.95','Kg','701','stockable','','Maximum','654321'
+"""
+
+        self.factory.xfer = ArticleImport()
+        self.call('/diacamma.invoice/articleImport', {'step': 3, 'modelname': 'invoice.Article', 'quotechar': "'", 'delimiter': ',',
+                                                        'encoding': 'utf-8', 'dateformat': '%d/%m/%Y', 'csvcontent0': csv_content,
+                                                        "fld_reference": "num", "fld_designation": "comment", "fld_price": "prix",
+                                                        "fld_unit": "unité", "fld_isdisabled": "", "fld_sell_account": "compte",
+                                                        "fld_vat": "", "fld_stockable": "stock?", 'fld_categories': '',
+                                                        'fld_provider.third.contact': '', 'fld_provider.reference': '', }, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'articleImport')
+        self.assert_count_equal('COMPONENTS/*', 2)
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="result"]', "{[center]}{[i]}4 éléments ont été importés{[/i]}{[/center]}")
+        self.assert_count_equal('ACTIONS/ACTION', 1)
+
+        self.factory.xfer = ArticleList()
+        self.call('/diacamma.invoice/articleList', {'show_filter': 1}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'articleList')
+        self.assert_count_equal('COMPONENTS/GRID[@name="article"]/RECORD', 4)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[1]/VALUE[@name="reference"]', "A123")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[1]/VALUE[@name="designation"]', "article N°1")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[1]/VALUE[@name="price_txt"]', "16.95€")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[1]/VALUE[@name="unit"]', 'Kg')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[1]/VALUE[@name="isdisabled"]', "0")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[1]/VALUE[@name="sell_account"]', "701")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[1]/VALUE[@name="stockable"]', "stockable")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[1]/VALUE[@name="categories"]', None)
+
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[2]/VALUE[@name="reference"]', "B234")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[2]/VALUE[@name="designation"]', "article N°2")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[2]/VALUE[@name="price_txt"]', "23.56€")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[2]/VALUE[@name="unit"]', 'L')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[2]/VALUE[@name="isdisabled"]', "0")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[2]/VALUE[@name="sell_account"]', "701")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[2]/VALUE[@name="stockable"]', "stockable")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[2]/VALUE[@name="categories"]', None)
+
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[3]/VALUE[@name="reference"]', "C345")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[3]/VALUE[@name="designation"]', "article N°3")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[3]/VALUE[@name="price_txt"]', "45.74€")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[3]/VALUE[@name="unit"]', None)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[3]/VALUE[@name="isdisabled"]', "0")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[3]/VALUE[@name="sell_account"]', "702")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[3]/VALUE[@name="stockable"]', "non stockable")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[3]/VALUE[@name="categories"]', None)
+
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[4]/VALUE[@name="reference"]', "D456")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[4]/VALUE[@name="designation"]', "article N°4")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[4]/VALUE[@name="price_txt"]', "56.89€")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[4]/VALUE[@name="unit"]', 'm')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[4]/VALUE[@name="isdisabled"]', "0")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[4]/VALUE[@name="sell_account"]', "701")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[4]/VALUE[@name="stockable"]', "stockable & non vendable")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[4]/VALUE[@name="categories"]', None)
+
+        self.factory.xfer = ArticleShow()
+        self.call('/diacamma.invoice/articleShow', {'article': '1'}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'articleShow')
+        self.assert_count_equal('COMPONENTS/*', 11)
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="reference"]', "A123")
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="categories"]', None)
+        self.assert_count_equal('COMPONENTS/GRID[@name="provider"]/RECORD', 0)
+
+
+    def test_article_import3(self):
+        csv_content = """'num','comment','prix','unité','compte','stock?','categorie','fournisseur','ref'
+'A123','article N°1','12.45','Kg','701','stockable','cat 2','Avrel','POIYT'
+'B234','article N°2','23.56','L','701','stockable','cat 3','',''
+'C345','article N°3','45.74','','702','non stockable','cat 1','Avrel','MLKJH'
+'D456','article N°4','56.89','m','701','stockable & non vendable','','Maximum','987654'
+'A123','article N°1','13.57','Kg','701','stockable','cat 3','',''
+'A123','article N°1','16.95','Kg','701','stockable','','Maximum','654321'
+"""
+
+        self.factory.xfer = ArticleImport()
+        self.call('/diacamma.invoice/articleImport', {'step': 3, 'modelname': 'invoice.Article', 'quotechar': "'", 'delimiter': ',',
+                                                        'encoding': 'utf-8', 'dateformat': '%d/%m/%Y', 'csvcontent0': csv_content,
+                                                        "fld_reference": "num", "fld_designation": "comment", "fld_price": "prix",
+                                                        "fld_unit": "unité", "fld_isdisabled": "", "fld_sell_account": "compte",
+                                                        "fld_vat": "", "fld_stockable": "stock?", }, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'articleImport')
+        self.assert_count_equal('COMPONENTS/*', 2)
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="result"]', "{[center]}{[i]}4 éléments ont été importés{[/i]}{[/center]}")
+        self.assert_count_equal('ACTIONS/ACTION', 1)
+
+        self.factory.xfer = ArticleList()
+        self.call('/diacamma.invoice/articleList', {'show_filter': 1}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'articleList')
+        self.assert_count_equal('COMPONENTS/GRID[@name="article"]/RECORD', 4)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[1]/VALUE[@name="reference"]', "A123")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[1]/VALUE[@name="designation"]', "article N°1")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[1]/VALUE[@name="price_txt"]', "16.95€")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[1]/VALUE[@name="unit"]', 'Kg')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[1]/VALUE[@name="isdisabled"]', "0")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[1]/VALUE[@name="sell_account"]', "701")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[1]/VALUE[@name="stockable"]', "stockable")
+
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[2]/VALUE[@name="reference"]', "B234")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[2]/VALUE[@name="designation"]', "article N°2")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[2]/VALUE[@name="price_txt"]', "23.56€")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[2]/VALUE[@name="unit"]', 'L')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[2]/VALUE[@name="isdisabled"]', "0")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[2]/VALUE[@name="sell_account"]', "701")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[2]/VALUE[@name="stockable"]', "stockable")
+
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[3]/VALUE[@name="reference"]', "C345")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[3]/VALUE[@name="designation"]', "article N°3")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[3]/VALUE[@name="price_txt"]', "45.74€")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[3]/VALUE[@name="unit"]', None)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[3]/VALUE[@name="isdisabled"]', "0")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[3]/VALUE[@name="sell_account"]', "702")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[3]/VALUE[@name="stockable"]', "non stockable")
+
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[4]/VALUE[@name="reference"]', "D456")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[4]/VALUE[@name="designation"]', "article N°4")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[4]/VALUE[@name="price_txt"]', "56.89€")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[4]/VALUE[@name="unit"]', 'm')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[4]/VALUE[@name="isdisabled"]', "0")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[4]/VALUE[@name="sell_account"]', "701")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[4]/VALUE[@name="stockable"]', "stockable & non vendable")
+
+        self.factory.xfer = ArticleShow()
+        self.call('/diacamma.invoice/articleShow', {'article': '1'}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'articleShow')
+        self.assert_count_equal('COMPONENTS/*', 9)
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="reference"]', "A123")
 
 
 class BillTest(InvoiceTest):
@@ -386,6 +661,11 @@ class BillTest(InvoiceTest):
         self.assert_observer('core.custom', 'diacamma.invoice', 'billList')
         self.assert_count_equal('COMPONENTS/GRID[@name="bill"]/RECORD', 1)
 
+        self.factory.xfer = BillList()
+        self.call('/diacamma.invoice/billList', {'filter': 'Dalton Jack'}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'billList')
+        self.assert_count_equal('COMPONENTS/GRID[@name="bill"]/RECORD', 1)
+
     def test_add_bill_with_filter(self):
         default_categories()
         default_articles(True)
@@ -403,7 +683,6 @@ class BillTest(InvoiceTest):
         self.call('/diacamma.invoice/detailAddModify', {'bill': 1}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'detailAddModify')
         self.assert_count_equal('COMPONENTS/*', 11)
-        self.print_xml('COMPONENTS/SELECT[@name="article"]')
         self.assert_count_equal('COMPONENTS/SELECT[@name="article"]/CASE', 4)
 
         self.factory.xfer = DetailAddModify()
@@ -422,7 +701,7 @@ class BillTest(InvoiceTest):
         self.call('/diacamma.invoice/detailAddModify', {'bill': 1, 'cat_filter': '2;3'}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'detailAddModify')
         self.assert_count_equal('COMPONENTS/*', 11)
-        self.assert_count_equal('COMPONENTS/SELECT[@name="article"]/CASE', 3)
+        self.assert_count_equal('COMPONENTS/SELECT[@name="article"]/CASE', 1)
 
     def test_add_bill_bad(self):
         default_articles()

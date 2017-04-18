@@ -27,7 +27,8 @@ from datetime import date
 
 from django.utils.translation import ugettext_lazy as _
 from django.utils import formats, six
-from django.db.models import Q
+from django.db.models.functions import Concat
+from django.db.models import Q, Value
 
 from lucterios.framework.xferadvance import XferListEditor, XferShowEditor, TITLE_PRINT, TITLE_CLOSE, TITLE_DELETE, TITLE_MODIFY, TITLE_ADD, TITLE_CANCEL, TITLE_OK, TITLE_EDIT,\
     XferTransition
@@ -68,7 +69,7 @@ def _add_bill_filter(xfer, row, with_third=False):
         row += 1
         if third_filter != "":
             q_legalentity = Q(third__contact__legalentity__name__icontains=third_filter)
-            q_individual = (Q(third__contact__individual__firstname__icontains=third_filter) | Q(third__contact__individual__lastname__icontains=third_filter))
+            q_individual = Q(completename__icontains=third_filter) # annotate(completename=Concat('third__contact__individual__lastname', Value(' '), 'third__contact__individual__firstname'))
             current_filter &= (q_legalentity | q_individual)
     status_filter = xfer.getparam('status_filter', -1)
     dep_field = Bill.get_field_by_name('status')
@@ -100,8 +101,8 @@ class BillList(XferListEditor):
         self.filter, status_filter = _add_bill_filter(self, 3, True)
         self.fieldnames = Bill.get_default_fields(status_filter)
 
-    def get_items_from_filter(self):
-        items = XferListEditor.get_items_from_filter(self)
+    def get_items_from_filter(self):        
+        items = self.model.objects.annotate(completename=Concat('third__contact__individual__lastname', Value(' '), 'third__contact__individual__firstname')).filter(self.filter)
         sort_bill = self.getparam('GRID_ORDER%bill', '').split(',')
         sort_bill_third = self.getparam('GRID_ORDER%bill_third', '')
         if ((len(sort_bill) == 0) and (sort_bill_third != '')) or (sort_bill.count('third') + sort_bill.count('-third')) > 0:
@@ -320,11 +321,22 @@ class ArticleList(XferListEditor):
     model = Article
     field_id = 'article'
     caption = _("Articles")
+    
+    def __init__(self, **kwargs):
+        XferListEditor.__init__(self, **kwargs)
+        self.categories_filter = ()
+
+    def get_items_from_filter(self):
+        items = XferListEditor.get_items_from_filter(self)
+        if len(self.categories_filter) > 0:
+            for cat_item in Category.objects.filter(id__in=self.categories_filter):
+                items = items.filter(categories__in=[cat_item])
+        return items
 
     def fillresponse_header(self):
         show_filter = self.getparam('show_filter', 0)
         show_stockable = self.getparam('stockable', -1)
-        categories_filter = self.getparam('cat_filter', ())
+        self.categories_filter = self.getparam('cat_filter', ())
         edt = XferCompSelect("show_filter")
         edt.set_select([(0, _('Only activate')), (1, _('All'))])
         edt.set_value(show_filter)
@@ -341,7 +353,7 @@ class ArticleList(XferListEditor):
         if len(cat_list) > 0:
             edt = XferCompCheckList("cat_filter")
             edt.set_select_query(cat_list)
-            edt.set_value(categories_filter)
+            edt.set_value(self.categories_filter)
             edt.set_location(1, 4)
             edt.description = _('categories')
             edt.set_action(self.request, self.get_action(), modal=FORMTYPE_REFRESH, close=CLOSE_NO)
@@ -351,8 +363,6 @@ class ArticleList(XferListEditor):
             self.filter &= Q(isdisabled=False)
         if show_stockable != -1:
             self.filter &= Q(stockable=show_stockable)
-        if len(categories_filter) > 0:
-            self.filter &= Q(categories__in=Category.objects.filter(id__in=categories_filter))
 
 
 @ActionsManage.affect_list(_("Search"), "diacamma.invoice/images/article.png")
@@ -374,7 +384,7 @@ class ArticleShow(XferShowEditor):
 
 
 @ActionsManage.affect_grid(TITLE_ADD, "images/add.png")
-@ActionsManage.affect_show(TITLE_MODIFY, "images/edit.png")
+@ActionsManage.affect_show(TITLE_MODIFY, "images/edit.png", close=CLOSE_YES)
 @MenuManage.describ('invoice.add_article')
 class ArticleAddModify(XferAddEditor):
     icon = "article.png"
