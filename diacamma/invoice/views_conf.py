@@ -37,8 +37,9 @@ from lucterios.CORE.views import ParamEdit, ObjectImport
 from lucterios.CORE.models import Parameter
 
 from diacamma.accounting.tools import correct_accounting_code
-from diacamma.invoice.models import Vat, Article, Category, CustomField
+from diacamma.invoice.models import Vat, Article, Category
 from diacamma.accounting.system import accounting_system_ident
+from lucterios.contacts.models import CustomField
 
 
 def fill_params(xfer, param_lists=None, is_mini=False):
@@ -61,12 +62,15 @@ class InvoiceConf(XferListEditor):
     caption = _("Invoice configuration")
 
     def fillresponse_header(self):
+        self.params['basic_model'] = 'invoice.Article'
         self.new_tab(_('Parameters'))
         fill_params(self)
         self.new_tab(_('Categories'))
         self.fill_grid(self.get_max_row(), Category, 'category', Category.objects.all())
         self.new_tab(_("Custom field"))
-        self.fill_grid(0, CustomField, "custom_field", CustomField.objects.all())
+        self.fill_grid(0, CustomField, "custom_field", CustomField.get_filter(Article))
+        grid_custom = self.get_components('custom_field')
+        grid_custom.delete_header('model_title')
         self.new_tab(_('VAT'))
 
 

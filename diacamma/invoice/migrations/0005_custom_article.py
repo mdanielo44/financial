@@ -25,20 +25,6 @@ class Migration(migrations.Migration):
                 'verbose_name': 'custom field value',
             },
         ),
-        migrations.CreateModel(
-            name='CustomField',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=200, verbose_name='name')),
-                ('kind', models.IntegerField(choices=[(0, 'String'), (1, 'Integer'), (2, 'Real'), (3, 'Boolean'), (4, 'Select')], verbose_name='kind')),
-                ('args', models.CharField(default='{}', max_length=200, verbose_name='arguments')),
-            ],
-            options={
-                'default_permissions': [],
-                'verbose_name_plural': 'custom fields',
-                'verbose_name': 'custom field',
-            },
-        ),
         migrations.AlterModelOptions(
             name='article',
             options={'ordering': ['reference'], 'verbose_name': 'article', 'verbose_name_plural': 'articles'},
@@ -51,6 +37,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='articlecustomfield',
             name='field',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='invoice.CustomField', verbose_name='field'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='contacts.CustomField', verbose_name='field'),
         ),
     ]
