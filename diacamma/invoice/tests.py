@@ -39,7 +39,7 @@ from lucterios.CORE.parameters import Params
 from diacamma.accounting.test_tools import initial_thirds, default_compta
 from diacamma.accounting.views_entries import EntryAccountList
 from diacamma.invoice.test_tools import default_articles, InvoiceTest, \
-    default_categories
+    default_categories, default_customize
 from diacamma.invoice.views_conf import InvoiceConf, VatAddModify, VatDel, \
     CategoryAddModify, CategoryDel, ArticleImport
 from diacamma.invoice.views import ArticleList, ArticleAddModify, ArticleDel, \
@@ -133,6 +133,23 @@ class ConfigTest(LucteriosTest):
         self.factory.xfer = InvoiceConf()
         self.call('/diacamma.invoice/invoiceConf', {}, False)
         self.assert_count_equal('COMPONENTS/GRID[@name="category"]/RECORD', 0)
+
+    def test_customize(self):
+        default_customize()
+        self.factory.xfer = InvoiceConf()
+        self.call('/diacamma.invoice/invoiceConf', {}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'invoiceConf')
+        self.assert_count_equal('COMPONENTS/TAB', 4)
+        self.assert_count_equal('COMPONENTS/*', 2 + 4 + 6 + 2 + 2 + 2)
+
+        self.assert_count_equal('COMPONENTS/GRID[@name="custom_field"]/HEADER', 2)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="custom_field"]/HEADER[@name="name"]', "nom")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="custom_field"]/HEADER[@name="kind_txt"]', "type")
+        self.assert_count_equal('COMPONENTS/GRID[@name="custom_field"]/RECORD', 2)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="custom_field"]/RECORD[1]/VALUE[@name="name"]', 'couleur')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="custom_field"]/RECORD[1]/VALUE[@name="kind_txt"]', 'Sélection (---,noir,blanc,rouge,bleu,jaune)')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="custom_field"]/RECORD[2]/VALUE[@name="name"]', 'taille')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="custom_field"]/RECORD[2]/VALUE[@name="kind_txt"]', 'Entier [0;100]')
 
     def test_article(self):
         self.factory.xfer = ArticleList()
@@ -485,15 +502,16 @@ class ConfigTest(LucteriosTest):
         self.assert_count_equal('COMPONENTS/GRID[@name="provider"]/RECORD', 0)
 
     def test_article_import3(self):
+        default_customize()        
         if six.PY2:
             return
-        csv_content = """'num','comment','prix','unité','compte','stock?','categorie','fournisseur','ref'
-'A123','article N°1','12.45','Kg','701','stockable','cat 2','Avrel','POIYT'
-'B234','article N°2','23.56','L','701','stockable','cat 3','',''
-'C345','article N°3','45.74','','702','non stockable','cat 1','Avrel','MLKJH'
-'D456','article N°4','56.89','m','701','stockable & non vendable','','Maximum','987654'
-'A123','article N°1','13.57','Kg','701','stockable','cat 3','',''
-'A123','article N°1','16.95','Kg','701','stockable','','Maximum','654321'
+        csv_content = """'num','comment','prix','unité','compte','stock?','categorie','fournisseur','ref','color','size'
+'A123','article N°1','12.45','Kg','701','stockable','cat 2','Avrel','POIYT','---','10'
+'B234','article N°2','23.56','L','701','stockable','cat 3','','','noir','25'
+'C345','article N°3','45.74','','702','non stockable','cat 1','Avrel','MLKJH','rouge','75'
+'D456','article N°4','56.89','m','701','stockable & non vendable','','Maximum','987654','blanc','1'
+'A123','article N°1','13.57','Kg','701','stockable','cat 3','','','bleu','10'
+'A123','article N°1','16.95','Kg','701','stockable','','Maximum','654321','bleu','15'
 """
 
         self.factory.xfer = ArticleImport()
@@ -501,7 +519,8 @@ class ConfigTest(LucteriosTest):
                                                       'encoding': 'utf-8', 'dateformat': '%d/%m/%Y', 'csvcontent0': csv_content,
                                                       "fld_reference": "num", "fld_designation": "comment", "fld_price": "prix",
                                                       "fld_unit": "unité", "fld_isdisabled": "", "fld_sell_account": "compte",
-                                                      "fld_vat": "", "fld_stockable": "stock?", }, False)
+                                                      "fld_vat": "", "fld_stockable": "stock?",
+                                                      "fld_custom_1": "color", "fld_custom_2": "size", }, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'articleImport')
         self.assert_count_equal('COMPONENTS/*', 2)
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="result"]', "{[center]}{[i]}4 éléments ont été importés{[/i]}{[/center]}")
@@ -546,8 +565,10 @@ class ConfigTest(LucteriosTest):
         self.factory.xfer = ArticleShow()
         self.call('/diacamma.invoice/articleShow', {'article': '1'}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'articleShow')
-        self.assert_count_equal('COMPONENTS/*', 10)
+        self.assert_count_equal('COMPONENTS/*', 12)
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="reference"]', "A123")
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="custom_1"]', "bleu")
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="custom_2"]', "15")
 
 
 class BillTest(InvoiceTest):

@@ -32,6 +32,7 @@ from diacamma.accounting.test_tools import create_account, default_costaccountin
 from diacamma.invoice.models import Article, Vat, Category, Provider
 from diacamma.invoice.views import BillTransition, DetailAddModify, BillAddModify
 from diacamma.payoff.views import SupportingThirdValid
+from lucterios.contacts.models import CustomField
 
 
 def default_articles(with_provider=False):
@@ -76,6 +77,12 @@ def default_categories():
     Category.objects.create(name='cat 1', designation="categorie N°1")
     Category.objects.create(name='cat 2', designation="categorie N°2")
     Category.objects.create(name='cat 3', designation="categorie N°3")
+
+
+def default_customize():
+    CustomField.objects.create(modelname='invoice.Article', name='couleur', kind=4, args="{'list':['---','noir','blanc','rouge','bleu','jaune']}")
+    CustomField.objects.create(modelname='invoice.Article', name='taille', kind=1, args="{'min':0,'max':100}")
+    CustomField.objects.create(modelname='contacts.AbstractContact', name='truc', kind=0, args="{'multi':False}")
 
 
 class InvoiceTest(LucteriosTest):
