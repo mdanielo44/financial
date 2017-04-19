@@ -470,7 +470,7 @@ class CostAccounting(LucteriosModel):
 
     @classmethod
     def get_default_fields(cls):
-        return ['name', 'description', 'year', (_('total revenue'), 'total_revenue'), (_('total expense'), 'total_expense'), 'status', 'is_default']
+        return ['name', 'description', 'year', (_('total revenue'), 'total_revenue'), (_('total expense'), 'total_expense'), (_('result'), 'total_result'), 'status', 'is_default']
 
     @classmethod
     def get_edit_fields(cls):
@@ -489,6 +489,10 @@ class CostAccounting(LucteriosModel):
 
     def get_total_expense(self):
         return get_amount_sum(EntryLineAccount.objects.filter(account__type_of_account=4, entry__costaccounting=self).aggregate(Sum('amount')))
+
+    @property
+    def total_result(self):
+        return format_devise(self.get_total_revenue() - self.get_total_expense(), 5)
 
     def close(self):
         self.check_before_close()
@@ -1406,5 +1410,6 @@ def accounting_checkparam():
     Parameter.check_and_create(name='accounting-system', typeparam=0, title=_("accounting-system"), args="{'Multi':False}", value='')
     Parameter.check_and_create(name='accounting-sizecode', typeparam=1, title=_("accounting-sizecode"), args="{'Min':3, 'Max':50}", value='3')
     check_accountingcost()
+
 
 pre_save.connect(pre_save_datadb)
