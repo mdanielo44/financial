@@ -37,7 +37,7 @@ from lucterios.CORE.views import ParamEdit, ObjectImport
 from lucterios.CORE.models import Parameter
 
 from diacamma.accounting.tools import correct_accounting_code
-from diacamma.invoice.models import Vat, Article, Category
+from diacamma.invoice.models import Vat, Article, Category, StorageArea
 from diacamma.accounting.system import accounting_system_ident
 from lucterios.contacts.models import CustomField
 
@@ -71,7 +71,29 @@ class InvoiceConf(XferListEditor):
         self.fill_grid(0, CustomField, "custom_field", CustomField.get_filter(Article))
         grid_custom = self.get_components('custom_field')
         grid_custom.delete_header('model_title')
+        self.new_tab(_('Storage area'))
+        self.fill_grid(self.get_max_row(), StorageArea, 'storagearea', StorageArea.objects.all())
         self.new_tab(_('VAT'))
+
+
+@ActionsManage.affect_grid(TITLE_ADD, "images/add.png")
+@ActionsManage.affect_grid(TITLE_MODIFY, "images/edit.png", unique=SELECT_SINGLE)
+@MenuManage.describ('invoice.add_vat')
+class StorageAreaAddModify(XferAddEditor):
+    icon = "invoice_conf.png"
+    model = StorageArea
+    field_id = 'storagearea'
+    caption_add = _("Add storage area")
+    caption_modify = _("Modify storage area")
+
+
+@ActionsManage.affect_grid(TITLE_DELETE, "images/delete.png", unique=SELECT_MULTI)
+@MenuManage.describ('invoice.delete_vat')
+class StorageAreaDel(XferDelete):
+    icon = "invoice_conf.png"
+    model = StorageArea
+    field_id = 'storagearea'
+    caption = _("Delete storage area")
 
 
 @ActionsManage.affect_grid(TITLE_ADD, "images/add.png")

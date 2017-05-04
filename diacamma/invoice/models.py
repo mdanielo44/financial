@@ -102,6 +102,33 @@ class Category(LucteriosModel):
         default_permissions = []
 
 
+class StorageArea(LucteriosModel):
+    is_simple_gui = True
+
+    name = models.CharField(_('name'), max_length=50)
+    designation = models.TextField(_('designation'))
+
+    def __str__(self):
+        return six.text_type(self.name)
+
+    @classmethod
+    def get_default_fields(cls):
+        return ["name", "designation"]
+
+    @classmethod
+    def get_edit_fields(cls):
+        return ["name", "designation"]
+
+    @classmethod
+    def get_show_fields(cls):
+        return ["name", "designation"]
+
+    class Meta(object):
+        verbose_name = _('Storage area')
+        verbose_name_plural = _('Storage areas')
+        default_permissions = []
+
+
 class ArticleCustomField(LucteriosModel):
     is_simple_gui = True
 

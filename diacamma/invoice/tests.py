@@ -41,7 +41,8 @@ from diacamma.accounting.views_entries import EntryAccountList
 from diacamma.invoice.test_tools import default_articles, InvoiceTest, \
     default_categories, default_customize
 from diacamma.invoice.views_conf import InvoiceConf, VatAddModify, VatDel, \
-    CategoryAddModify, CategoryDel, ArticleImport
+    CategoryAddModify, CategoryDel, ArticleImport, StorageAreaDel,\
+    StorageAreaAddModify
 from diacamma.invoice.views import ArticleList, ArticleAddModify, ArticleDel, \
     BillList, BillAddModify, BillShow, DetailAddModify, DetailDel, BillTransition, BillDel, BillFromQuotation, \
     BillStatistic, BillStatisticPrint, BillPrint, BillMultiPay, ArticleShow
@@ -63,8 +64,8 @@ class ConfigTest(LucteriosTest):
         self.factory.xfer = InvoiceConf()
         self.call('/diacamma.invoice/invoiceConf', {}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'invoiceConf')
-        self.assert_count_equal('COMPONENTS/TAB', 4)
-        self.assert_count_equal('COMPONENTS/*', 2 + 4 + 6 + 2 + 2 + 2)
+        self.assert_count_equal('COMPONENTS/TAB', 5)
+        self.assert_count_equal('COMPONENTS/*', 2 + 5 + 6 + 2 + 2 + 2 + 2)
 
         self.assert_count_equal('COMPONENTS/GRID[@name="vat"]/HEADER', 3)
         self.assert_xml_equal('COMPONENTS/GRID[@name="vat"]/HEADER[@name="name"]', "nom")
@@ -102,8 +103,8 @@ class ConfigTest(LucteriosTest):
         self.factory.xfer = InvoiceConf()
         self.call('/diacamma.invoice/invoiceConf', {}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'invoiceConf')
-        self.assert_count_equal('COMPONENTS/TAB', 4)
-        self.assert_count_equal('COMPONENTS/*', 2 + 4 + 6 + 2 + 2 + 2)
+        self.assert_count_equal('COMPONENTS/TAB', 5)
+        self.assert_count_equal('COMPONENTS/*', 2 + 5 + 6 + 2 + 2 + 2 + 2)
 
         self.assert_count_equal('COMPONENTS/GRID[@name="category"]/HEADER', 2)
         self.assert_xml_equal('COMPONENTS/GRID[@name="category"]/HEADER[@name="name"]', "nom")
@@ -139,8 +140,8 @@ class ConfigTest(LucteriosTest):
         self.factory.xfer = InvoiceConf()
         self.call('/diacamma.invoice/invoiceConf', {}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'invoiceConf')
-        self.assert_count_equal('COMPONENTS/TAB', 4)
-        self.assert_count_equal('COMPONENTS/*', 2 + 4 + 6 + 2 + 2 + 2)
+        self.assert_count_equal('COMPONENTS/TAB', 5)
+        self.assert_count_equal('COMPONENTS/*', 2 + 5 + 6 + 2 + 2 + 2 + 2)
 
         self.assert_count_equal('COMPONENTS/GRID[@name="custom_field"]/HEADER', 2)
         self.assert_xml_equal('COMPONENTS/GRID[@name="custom_field"]/HEADER[@name="name"]', "nom")
@@ -150,6 +151,42 @@ class ConfigTest(LucteriosTest):
         self.assert_xml_equal('COMPONENTS/GRID[@name="custom_field"]/RECORD[1]/VALUE[@name="kind_txt"]', 'Sélection (---,noir,blanc,rouge,bleu,jaune)')
         self.assert_xml_equal('COMPONENTS/GRID[@name="custom_field"]/RECORD[2]/VALUE[@name="name"]', 'taille')
         self.assert_xml_equal('COMPONENTS/GRID[@name="custom_field"]/RECORD[2]/VALUE[@name="kind_txt"]', 'Entier [0;100]')
+
+    def test_storagearea(self):
+        self.factory.xfer = InvoiceConf()
+        self.call('/diacamma.invoice/invoiceConf', {}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'invoiceConf')
+        self.assert_count_equal('COMPONENTS/TAB', 5)
+        self.assert_count_equal('COMPONENTS/*', 2 + 5 + 6 + 2 + 2 + 2 + 2)
+
+        self.assert_count_equal('COMPONENTS/GRID[@name="storagearea"]/HEADER', 2)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="storagearea"]/HEADER[@name="name"]', "nom")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="storagearea"]/HEADER[@name="designation"]', "désignation")
+        self.assert_count_equal('COMPONENTS/GRID[@name="v"]/RECORD', 0)
+
+        self.factory.xfer = StorageAreaAddModify()
+        self.call('/diacamma.invoice/storageAreaAddModify', {}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'storageAreaAddModify')
+        self.assert_count_equal('COMPONENTS/*', 3)
+
+        self.factory.xfer = StorageAreaAddModify()
+        self.call('/diacamma.invoice/storageAreaAddModify',
+                  {'name': 'my category', 'designation': "bla bla bla", 'SAVE': 'YES'}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'storageAreaAddModify')
+
+        self.factory.xfer = InvoiceConf()
+        self.call('/diacamma.invoice/invoiceConf', {}, False)
+        self.assert_count_equal('COMPONENTS/GRID[@name="storagearea"]/RECORD', 1)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="storagearea"]/RECORD[1]/VALUE[@name="name"]', 'my category')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="storagearea"]/RECORD[1]/VALUE[@name="designation"]', 'bla bla bla')
+
+        self.factory.xfer = StorageAreaDel()
+        self.call('/diacamma.invoice/storageAreaDel', {'storagearea': 1, 'CONFIRME': 'YES'}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'storageAreaDel')
+
+        self.factory.xfer = InvoiceConf()
+        self.call('/diacamma.invoice/invoiceConf', {}, False)
+        self.assert_count_equal('COMPONENTS/GRID[@name="storagearea"]/RECORD', 0)
 
     def test_article(self):
         self.factory.xfer = ArticleList()

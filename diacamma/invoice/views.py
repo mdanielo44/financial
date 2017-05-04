@@ -53,7 +53,7 @@ from diacamma.payoff.views import PayoffAddModify
 from diacamma.payoff.models import Payoff
 from django.db.models.query import QuerySet
 
-MenuManage.add_sub("invoice", "financial", "diacamma.invoice/images/invoice.png", _("invoice"), _("Manage of billing"), 20)
+MenuManage.add_sub("invoice", None, "diacamma.invoice/images/invoice.png", _("invoice"), _("Manage of billing"), 45)
 
 
 def _add_bill_filter(xfer, row, with_third=False):
