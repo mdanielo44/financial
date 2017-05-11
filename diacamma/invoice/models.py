@@ -254,6 +254,12 @@ class Article(LucteriosModel, CustomizeObject):
     def ref_price(self):
         return "%s [%s]" % (self.reference, self.price_txt)
 
+    def get_designation(self):
+        val = self.designation
+        for cf_name, cf_model in CustomField.get_fields(self.__class__):
+            val += "{[br/]} - {[u]}%s{[/u]}: {[i]}%s{[/i]}" % (cf_model.name, get_value_converted(getattr(self, cf_name), True))
+        return val
+
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         self.sell_account = correct_accounting_code(self.sell_account)
         return LucteriosModel.save(self, force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields)

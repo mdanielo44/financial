@@ -304,7 +304,7 @@ class DetailAddModify(XferAddEditor):
     def fillresponse(self):
         if self.getparam('CHANGE_ART') is not None:
             if self.item.article is not None:
-                self.item.designation = self.item.article.designation
+                self.item.designation = self.item.article.get_designation()
                 self.item.price = self.item.article.price
                 self.item.unit = self.item.article.unit
         XferAddEditor.fillresponse(self)

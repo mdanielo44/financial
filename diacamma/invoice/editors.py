@@ -157,6 +157,7 @@ class DetailEditor(LucteriosEditor):
         sel_third.description = _('provider')
         sel_ref = xfer.get_components("reference")
         sel_ref.set_value(filter_ref)
+        sel_ref.set_needed(False)
         sel_ref.set_action(xfer.request, xfer.get_action('', ''), modal=FORMTYPE_REFRESH, close=CLOSE_NO, params={'CHANGE_ART': 'YES'})
         if (filter_thirdid != 0) or (filter_ref != ''):
             sel_art.set_needed(True)
@@ -169,6 +170,7 @@ class DetailEditor(LucteriosEditor):
         currency_decimal = Params.getvalue("accounting-devise-prec")
         xfer.get_components('price').prec = currency_decimal
         xfer.get_components('reduce').prec = currency_decimal
+        xfer.get_components('designation').with_hypertext = True
 
         has_filter = False
         cat_list = Category.objects.all()

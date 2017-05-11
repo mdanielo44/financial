@@ -35,10 +35,9 @@ from diacamma.invoice.models import Bill
 MenuManage.add_sub("storage", "invoice", "diacamma.invoice/images/invoice.png", _("Storage"), _("Manage of storage"), 10)
 
 
-@MenuManage.describ('invoice.change_bill', FORMTYPE_NOMODAL, 'storage', _('Management of bill list'))
-class BillList(XferListEditor):
+@MenuManage.describ('invoice.change_bill', FORMTYPE_NOMODAL, 'storage', _('Management of storage sheet list'))
+class StorageSheetList(XferListEditor):
     icon = "bill.png"
     model = Bill
     field_id = 'bill'
-    caption = _("Bill")
-
+    caption = _("Storage sheet")
