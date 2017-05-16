@@ -27,7 +27,7 @@ from re import match
 from datetime import date
 
 from django.db import models
-from django.db.models.aggregates import Max
+from django.db.models.aggregates import Max, Sum
 from django.db.models.functions import Concat
 from django.db.models import Q, Value
 from django.core.exceptions import ObjectDoesNotExist
@@ -170,6 +170,8 @@ class Article(LucteriosModel, CustomizeObject):
         fields = ["reference", "designation", (_('price'), "price_txt"), 'unit', "isdisabled", 'sell_account', "stockable"]
         if len(Category.objects.all()) > 0:
             fields.append('categories')
+        if len(StorageDetail.objects.filter(storagesheet__status=1)) > 0:
+            fields.append((_('quantities'), 'stockage_total'))
         return fields
 
     @classmethod
@@ -259,6 +261,48 @@ class Article(LucteriosModel, CustomizeObject):
         for cf_name, cf_model in CustomField.get_fields(self.__class__):
             val += "{[br/]} - {[u]}%s{[/u]}: {[i]}%s{[/i]}" % (cf_model.name, get_value_converted(getattr(self, cf_name), True))
         return val
+
+    def get_stockage_values(self):
+        stock = {}
+        total_qty = 0
+        for val in self.storagedetail_set.filter(storagesheet__status=1).values('storagesheet__storagearea').annotate(data_sum=Sum('quantity')):
+            if abs(val['data_sum']) > 0.001:
+                if not val['storagesheet__storagearea'] in stock.keys():
+                    stock[val['storagesheet__storagearea']] = [six.text_type(StorageArea.objects.get(id=val['storagesheet__storagearea'])), 0]
+                stock[val['storagesheet__storagearea']][1] += val['data_sum']
+                total_qty += val['data_sum']
+        stock_list = []
+        if len(stock) > 0:
+            total_amount = 0
+            for key in sorted(list(stock.keys())):
+                sum_amount = 0
+                nb_qty = 0
+                for det_item in self.storagedetail_set.filter(storagesheet__status=1, storagesheet__sheet_type=0, storagesheet__storagearea_id=key).order_by('-storagesheet__date'):
+                    if (nb_qty + det_item.quantity) < stock[key][1]:
+                        sum_amount += det_item.price * det_item.quantity
+                        nb_qty += det_item.quantity
+                    else:
+                        sum_amount += det_item.price * (stock[key][1] - nb_qty)
+                        break
+                stock_list.append((int(key), stock[key][0], stock[key][1], sum_amount))
+                total_amount += sum_amount
+            stock_list.append((0, _('Total'), total_qty, total_amount))
+        return stock_list
+
+    def has_sufficiently(self, storagearea_id, quantity):
+        if self.stockable != 0:
+            for val in self.get_stockage_values():
+                if val[0] == storagearea_id:
+                    if quantity > val[2]:
+                        return False
+        return True
+
+    @property
+    def stockage_total(self):
+        for val in self.get_stockage_values():
+            if val[0] == 0:
+                return val[2]
+        return None
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         self.sell_account = correct_accounting_code(self.sell_account)
@@ -476,11 +520,13 @@ class Bill(Supporting):
             info.append(six.text_type(_("no detail")))
         else:
             for detail in details:
+                if (detail.article_id is not None) and not detail.article.has_sufficiently(detail.storagearea_id, detail.quantity):
+                    info.append(_("Article %s is not sufficiently stocked") % six.text_type(detail.article))
+            for detail in details:
                 if detail.article is not None:
                     detail_code = detail.article.sell_account
                 else:
-                    detail_code = Params.getvalue(
-                        "invoice-default-sell-account")
+                    detail_code = Params.getvalue("invoice-default-sell-account")
                 detail_account = None
                 if match(current_system_account().get_revenue_mask(), detail_code) is not None:
                     try:
@@ -489,8 +535,7 @@ class Bill(Supporting):
                     except LucteriosException:
                         break
                 if detail_account is None:
-                    info.append(
-                        six.text_type(_("article has code account unknown!")))
+                    info.append(six.text_type(_("article has code account unknown!")))
                     break
         try:
             info.extend(self.check_date(self.date.isoformat()))
@@ -502,6 +547,24 @@ class Bill(Supporting):
         if self.status != 0:
             return _('"%s" cannot be deleted!') % six.text_type(self)
         return ''
+
+    def generate_storage(self):
+        if self.bill_type == 2:
+            sheet_type = 0
+        else:
+            sheet_type = 1
+        old_area = 0
+        last_sheet = None
+        for detail in self.detail_set.filter(storagearea__isnull=False).order_by('storagearea'):
+            if old_area != detail.storagearea_id:
+                old_area = detail.storagearea_id
+                if last_sheet is not None:
+                    last_sheet.valid()
+                last_sheet = StorageSheet.objects.create(sheet_type=sheet_type, storagearea_id=old_area, date=self.date, comment=six.text_type(self), status=0)
+            if last_sheet is not None:
+                StorageDetail.objects.create(storagesheet=last_sheet, article=detail.article, quantity=abs(detail.quantity))
+        if last_sheet is not None:
+            last_sheet.valid()
 
     def generate_entry(self):
         if self.bill_type == 2:
@@ -573,6 +636,7 @@ class Bill(Supporting):
         self.status = 1
         if self.bill_type != 0:
             self.generate_entry()
+            self.generate_storage()
         self.save()
         Signal.call_signal("change_bill", 'valid', self, None)
 
@@ -738,6 +802,7 @@ class Detail(LucteriosModel):
         MinValueValidator(0.0), MaxValueValidator(9999999.999)])
     vta_rate = models.DecimalField(_('vta rate'), max_digits=6, decimal_places=4, default=0.0, validators=[
         MinValueValidator(0.0), MaxValueValidator(1.0)])
+    storagearea = models.ForeignKey(StorageArea, verbose_name=_('storage area'), null=True, default=None, db_index=True, on_delete=models.PROTECT)
 
     def __init__(self, *args, **kwargs):
         LucteriosModel.__init__(self, *args, **kwargs)
@@ -768,15 +833,15 @@ class Detail(LucteriosModel):
 
     @classmethod
     def get_default_fields(cls):
-        return ["article", "designation", (_('price'), "price_txt"), "unit", "quantity", (_('reduce'), "reduce_txt"), (_('total'), 'total')]
+        return ["article", "designation", (_('price'), "price_txt"), "unit", "quantity", "storagearea", (_('reduce'), "reduce_txt"), (_('total'), 'total')]
 
     @classmethod
     def get_edit_fields(cls):
-        return ["article", "designation", ("price", "reduce"), ("quantity", "unit")]
+        return ["article", "designation", ("price", "reduce"), ("quantity", "unit"), "storagearea"]
 
     @classmethod
     def get_show_fields(cls):
-        return ["article", "designation", (_('price'), "price_txt"), "unit", "quantity", (_('reduce'), "reduce_txt")]
+        return ["article", "designation", (_('price'), "price_txt"), "unit", "quantity", (_('reduce'), "reduce_txt"), "storagearea"]
 
     @classmethod
     def create_for_bill(cls, bill, article, qty=1, reduce=0.0):
@@ -874,6 +939,127 @@ class Detail(LucteriosModel):
     class Meta(object):
         verbose_name = _('detail')
         verbose_name_plural = _('details')
+        default_permissions = []
+
+
+class StorageSheet(LucteriosModel):
+    is_simple_gui = True
+
+    sheet_type = models.IntegerField(verbose_name=_('sheet type'),
+                                     choices=((0, _('stock receipt')), (1, _('stock exit'))), null=False, default=0, db_index=True)
+    date = models.DateField(verbose_name=_('date'), null=False)
+    storagearea = models.ForeignKey(StorageArea, verbose_name=_('storage area'), null=False, db_index=True, on_delete=models.PROTECT)
+    comment = models.TextField(_('comment'))
+    status = FSMIntegerField(verbose_name=_('status'),
+                             choices=((0, _('building')), (1, _('valid'))), null=False, default=0, db_index=True)
+
+    provider = models.ForeignKey(Third, verbose_name=_('provider'), null=True, default=None, on_delete=models.PROTECT)
+    bill_reference = models.CharField(_('bill reference'), blank=True, max_length=50)
+    bill_date = models.DateField(verbose_name=_('bill date'), null=True)
+
+    def __str__(self):
+        sheettype = get_value_if_choices(self.sheet_type, self.get_field_by_name('sheet_type'))
+        sheetstatus = get_value_if_choices(self.status, self.get_field_by_name('status'))
+        return "%s:%s [%s]" % (six.text_type(self.date), sheettype, sheetstatus)
+
+    @classmethod
+    def get_default_fields(cls):
+        return ["sheet_type", "status", "date", "storagearea", "comment"]
+
+    @classmethod
+    def get_edit_fields(cls):
+        return [("sheet_type", ), ("date", "storagearea"), ("provider", "bill_date"), ("bill_reference"), ("comment", )]
+
+    @classmethod
+    def get_show_fields(cls):
+        return [("sheet_type", "status"), ("date", "storagearea"), ("provider", "bill_date"), ("bill_reference"), ("comment", ), ("storagedetail_set", )]
+
+    @property
+    def provider_query(self):
+        thirdfilter = Q(accountthird__code__regex=current_system_account().get_provider_mask())
+        return Third.objects.filter(thirdfilter)
+
+    def can_delete(self):
+        if self.status != 0:
+            return _('"%s" cannot be deleted!') % six.text_type(self)
+        return ''
+
+    def get_info_state(self):
+        info = []
+        if self.sheet_type == 1:
+            for detail in self.storagedetail_set.all():
+                if not detail.article.has_sufficiently(self.storagearea_id, detail.quantity):
+                    info.append(_("Article %s is not sufficiently stocked") % six.text_type(detail.article))
+        return "{[br/]}".join(info)
+
+    @transition(field=status, source=0, target=1, conditions=[lambda item:item.get_info_state() == ''])
+    def valid(self):
+        if self.sheet_type == 1:
+            for detail in self.storagedetail_set.all():
+                detail.quantity = -1 * abs(detail.quantity)
+                detail.save()
+
+    class Meta(object):
+        verbose_name = _('storage sheet')
+        verbose_name_plural = _('storage sheets')
+        ordering = ['-date', 'status']
+
+
+class StorageDetail(LucteriosModel):
+    is_simple_gui = True
+
+    storagesheet = models.ForeignKey(StorageSheet, verbose_name=_('storage sheet'), null=False, db_index=True, on_delete=models.CASCADE)
+    article = models.ForeignKey(Article, verbose_name=_('article'), null=False, db_index=True, on_delete=models.PROTECT)
+    price = models.DecimalField(verbose_name=_('buying price'), max_digits=10, decimal_places=3, default=0.0,
+                                validators=[MinValueValidator(0.0), MaxValueValidator(9999999.999)])
+    quantity = models.DecimalField(verbose_name=_('quantity'), max_digits=10, decimal_places=2, default=1.0,
+                                   validators=[MinValueValidator(0.0), MaxValueValidator(9999999.99)])
+
+    def __str__(self):
+        return "%s %d" % (six.text_type(self.article), self.quantity)
+
+    @classmethod
+    def get_default_fields(cls):
+        return ["article", (_('buying price'), "price_txt"), (_('quantity'), "quantity_txt")]
+
+    @classmethod
+    def get_edit_fields(cls):
+        return ["article", "price", "quantity"]
+
+    @classmethod
+    def get_show_fields(cls):
+        return ["article", (_('buying price'), "price_txt"), (_('quantity'), "quantity_txt")]
+
+    @property
+    def price_txt(self):
+        return format_devise(self.price, 5)
+
+    @property
+    def quantity_txt(self):
+        return abs(self.quantity)
+
+    def set_context(self, xfer):
+        self.filter_thirdid = xfer.getparam('third', 0)
+        self.filter_ref = xfer.getparam('reference', '')
+        self.filter_cat = xfer.getparam('cat_filter', ())
+
+    @property
+    def article_query(self):
+        artfilter = Q(isdisabled=False)
+        artfilter &= Q(stockable__in=(1, 2))
+        if self.filter_thirdid != 0:
+            artfilter &= Q(provider__third_id=self.filter_thirdid)
+        if self.filter_ref != '':
+            artfilter &= Q(provider__reference__icontains=self.filter_ref)
+        items = Article.objects.filter(artfilter)
+        if len(self.filter_cat) > 0:
+            for cat_item in Category.objects.filter(id__in=self.filter_cat):
+                items = items.filter(categories__in=[cat_item])
+        return items
+
+    class Meta(object):
+        verbose_name = _('storage detail')
+        verbose_name_plural = _('storage details')
         default_permissions = []
 
 
