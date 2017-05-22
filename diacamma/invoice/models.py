@@ -293,8 +293,9 @@ class Article(LucteriosModel, CustomizeObject):
         if self.stockable != 0:
             for val in self.get_stockage_values():
                 if val[0] == storagearea_id:
-                    if quantity > val[2]:
-                        return False
+                    if (quantity - val[2]) < 0.001:
+                        return True
+            return False
         return True
 
     @property

@@ -275,7 +275,7 @@ class ConfigTest(LucteriosTest):
 
     def test_article_filter(self):
         default_categories()
-        default_articles()
+        default_articles(with_storage=True)
         self.factory.xfer = ArticleList()
         self.call('/diacamma.invoice/articleList', {}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'articleList')
@@ -747,13 +747,13 @@ class BillTest(InvoiceTest):
         self.call('/diacamma.invoice/detailAddModify', {'bill': 1}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'detailAddModify')
         self.assert_count_equal('COMPONENTS/*', 12)
-        self.assert_count_equal('COMPONENTS/SELECT[@name="article"]/CASE', 4)
+        self.assert_count_equal('COMPONENTS/SELECT[@name="article"]/CASE', 5)
 
         self.factory.xfer = DetailAddModify()
         self.call('/diacamma.invoice/detailAddModify', {'bill': 1, 'third': 2}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'detailAddModify')
         self.assert_count_equal('COMPONENTS/*', 12)
-        self.assert_count_equal('COMPONENTS/SELECT[@name="article"]/CASE', 1)
+        self.assert_count_equal('COMPONENTS/SELECT[@name="article"]/CASE', 2)
 
         self.factory.xfer = DetailAddModify()
         self.call('/diacamma.invoice/detailAddModify', {'bill': 1, 'reference': '34'}, False)

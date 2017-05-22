@@ -29,13 +29,14 @@ from lucterios.framework.test import LucteriosTest
 from diacamma.accounting.models import FiscalYear
 from diacamma.accounting.test_tools import create_account, default_costaccounting
 
-from diacamma.invoice.models import Article, Vat, Category, Provider
+from diacamma.invoice.models import Article, Vat, Category, Provider,\
+    StorageArea, StorageSheet, StorageDetail
 from diacamma.invoice.views import BillTransition, DetailAddModify, BillAddModify
 from diacamma.payoff.views import SupportingThirdValid
 from lucterios.contacts.models import CustomField
 
 
-def default_articles(with_provider=False):
+def default_articles(with_provider=False, with_storage=False):
     default_costaccounting()
 
     create_account(['709'], 3, FiscalYear.get_current())
@@ -43,13 +44,13 @@ def default_articles(with_provider=False):
     vat1 = Vat.objects.create(name="5%", rate=5.0, isactif=True)
     vat2 = Vat.objects.create(name="20%", rate=20.0, isactif=True)
     art1 = Article.objects.create(reference='ABC1', designation="Article 01",
-                                  price="12.34", unit="kg", isdisabled=False, sell_account="701", vat=None, stockable=1)
+                                  price="12.34", unit="kg", isdisabled=False, sell_account="701", vat=None, stockable=1 if with_storage else 0)
     art2 = Article.objects.create(reference='ABC2', designation="Article 02",
-                                  price="56.78", unit="l", isdisabled=False, sell_account="707", vat=vat1, stockable=1)
+                                  price="56.78", unit="l", isdisabled=False, sell_account="707", vat=vat1, stockable=1 if with_storage else 0)
     art3 = Article.objects.create(reference='ABC3', designation="Article 03",
-                                  price="324.97", unit="", isdisabled=False, sell_account="601", vat=None, stockable=0)
+                                  price="324.97", unit="", isdisabled=False, sell_account="601" if not with_storage else "701", vat=None, stockable=0)
     art4 = Article.objects.create(reference='ABC4', designation="Article 04",
-                                  price="1.31", unit="", isdisabled=False, sell_account="708", vat=None, stockable=2)
+                                  price="1.31", unit="", isdisabled=False, sell_account="708", vat=None, stockable=2 if with_storage else 0)
     art5 = Article.objects.create(reference='ABC5', designation="Article 05",
                                   price="64.10", unit="m", isdisabled=True, sell_account="701", vat=vat2, stockable=0)
     cat_list = Category.objects.all()
@@ -83,6 +84,25 @@ def default_customize():
     CustomField.objects.create(modelname='invoice.Article', name='couleur', kind=4, args="{'list':['---','noir','blanc','rouge','bleu','jaune']}")
     CustomField.objects.create(modelname='invoice.Article', name='taille', kind=1, args="{'min':0,'max':100}")
     CustomField.objects.create(modelname='contacts.AbstractContact', name='truc', kind=0, args="{'multi':False}")
+
+
+def default_area():
+    StorageArea.objects.create(name='Lieu 1', designation="AAA")
+    StorageArea.objects.create(name='Lieu 2', designation="BBB")
+    StorageArea.objects.create(name='Lieu 3', designation="CCC")
+
+
+def insert_storage():
+    sheet1 = StorageSheet.objects.create(sheet_type=0, date='2014-01-01', storagearea_id=1, comment="A")
+    StorageDetail.objects.create(storagesheet=sheet1, article_id=1, price=5.00, quantity=10.0)
+    StorageDetail.objects.create(storagesheet=sheet1, article_id=2, price=4.00, quantity=15.0)
+    StorageDetail.objects.create(storagesheet=sheet1, article_id=4, price=3.00, quantity=20.0)
+    sheet1.valid()
+    sheet2 = StorageSheet.objects.create(sheet_type=0, date='2014-01-02', storagearea_id=2, comment="B")
+    StorageDetail.objects.create(storagesheet=sheet2, article_id=1, price=4.00, quantity=5.0)
+    StorageDetail.objects.create(storagesheet=sheet2, article_id=2, price=3.00, quantity=10.0)
+    StorageDetail.objects.create(storagesheet=sheet2, article_id=4, price=2.00, quantity=15.0)
+    sheet2.valid()
 
 
 class InvoiceTest(LucteriosTest):
