@@ -170,7 +170,7 @@ class Article(LucteriosModel, CustomizeObject):
         fields = ["reference", "designation", (_('price'), "price_txt"), 'unit', "isdisabled", 'sell_account', "stockable"]
         if len(Category.objects.all()) > 0:
             fields.append('categories')
-        if len(StorageDetail.objects.filter(storagesheet__status=1)) > 0:
+        if len(StorageArea.objects.all()) > 0:
             fields.append((_('quantities'), 'stockage_total'))
         return fields
 
@@ -215,7 +215,7 @@ class Article(LucteriosModel, CustomizeObject):
             fields.append('provider.third.contact')
             fields.append('provider.reference')
         for cf_field in CustomField.get_fields(cls):
-            fields.append(cf_field)
+            fields.append((cf_field[0], cf_field[1].name))
         return fields
 
     @classmethod
@@ -263,28 +263,28 @@ class Article(LucteriosModel, CustomizeObject):
         return val
 
     def get_stockage_values(self):
-        stock = {}
-        total_qty = 0
-        for val in self.storagedetail_set.filter(storagesheet__status=1).values('storagesheet__storagearea').annotate(data_sum=Sum('quantity')):
-            if abs(val['data_sum']) > 0.001:
-                if not val['storagesheet__storagearea'] in stock.keys():
-                    stock[val['storagesheet__storagearea']] = [six.text_type(StorageArea.objects.get(id=val['storagesheet__storagearea'])), 0]
-                stock[val['storagesheet__storagearea']][1] += val['data_sum']
-                total_qty += val['data_sum']
         stock_list = []
-        if len(stock) > 0:
-            total_amount = 0
+        if self.stockable != 0:
+            stock = {}
+            for val in self.storagedetail_set.filter(storagesheet__status=1).values('storagesheet__storagearea').annotate(data_sum=Sum('quantity')):
+                if abs(val['data_sum']) > 0.001:
+                    if not val['storagesheet__storagearea'] in stock.keys():
+                        stock[val['storagesheet__storagearea']] = [six.text_type(StorageArea.objects.get(id=val['storagesheet__storagearea'])), 0.0]
+                    stock[val['storagesheet__storagearea']][1] += float(val['data_sum'])
+            total_amount = 0.0
+            total_qty = 0.0
             for key in sorted(list(stock.keys())):
-                sum_amount = 0
-                nb_qty = 0
+                sum_amount = 0.0
+                nb_qty = 0.0
                 for det_item in self.storagedetail_set.filter(storagesheet__status=1, storagesheet__sheet_type=0, storagesheet__storagearea_id=key).order_by('-storagesheet__date'):
-                    if (nb_qty + det_item.quantity) < stock[key][1]:
-                        sum_amount += det_item.price * det_item.quantity
-                        nb_qty += det_item.quantity
+                    if (nb_qty + float(det_item.quantity)) < stock[key][1]:
+                        sum_amount += float(det_item.price * det_item.quantity)
+                        nb_qty += float(det_item.quantity)
                     else:
-                        sum_amount += det_item.price * (stock[key][1] - nb_qty)
+                        sum_amount += float(det_item.price) * (stock[key][1] - nb_qty)
                         break
                 stock_list.append((int(key), stock[key][0], stock[key][1], sum_amount))
+                total_qty += stock[key][1]
                 total_amount += sum_amount
             stock_list.append((0, _('Total'), total_qty, total_amount))
         return stock_list
@@ -293,7 +293,7 @@ class Article(LucteriosModel, CustomizeObject):
         if self.stockable != 0:
             for val in self.get_stockage_values():
                 if val[0] == storagearea_id:
-                    if (quantity - val[2]) < 0.001:
+                    if (float(quantity) - val[2]) < 0.001:
                         return True
             return False
         return True
@@ -961,7 +961,7 @@ class StorageSheet(LucteriosModel):
     def __str__(self):
         sheettype = get_value_if_choices(self.sheet_type, self.get_field_by_name('sheet_type'))
         sheetstatus = get_value_if_choices(self.status, self.get_field_by_name('status'))
-        return "%s:%s [%s]" % (six.text_type(self.date), sheettype, sheetstatus)
+        return "%s - %s [%s]" % (sheettype, get_value_converted(self.date), sheetstatus)
 
     @classmethod
     def get_default_fields(cls):
@@ -987,10 +987,11 @@ class StorageSheet(LucteriosModel):
 
     def get_info_state(self):
         info = []
-        if self.sheet_type == 1:
-            for detail in self.storagedetail_set.all():
-                if not detail.article.has_sufficiently(self.storagearea_id, detail.quantity):
-                    info.append(_("Article %s is not sufficiently stocked") % six.text_type(detail.article))
+        for detail in self.storagedetail_set.all():
+            if detail.article.stockable == 0:
+                info.append(_("Article %s is not stockable") % six.text_type(detail.article))
+            elif (self.sheet_type == 1) and not detail.article.has_sufficiently(self.storagearea_id, detail.quantity):
+                info.append(_("Article %s is not sufficiently stocked") % six.text_type(detail.article))
         return "{[br/]}".join(info)
 
     @transition(field=status, source=0, target=1, conditions=[lambda item:item.get_info_state() == ''])

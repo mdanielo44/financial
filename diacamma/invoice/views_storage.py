@@ -28,11 +28,16 @@ from django.utils.translation import ugettext_lazy as _
 from django.db.models import Q
 
 from lucterios.framework.tools import MenuManage, FORMTYPE_NOMODAL,\
-    ActionsManage, SELECT_SINGLE, SELECT_MULTI, CLOSE_YES, FORMTYPE_REFRESH, CLOSE_NO
+    ActionsManage, SELECT_SINGLE, SELECT_MULTI, CLOSE_YES, FORMTYPE_REFRESH, CLOSE_NO,\
+    SELECT_NONE
 from lucterios.framework.xferadvance import XferListEditor, XferAddEditor, XferDelete, XferShowEditor, TITLE_ADD, TITLE_MODIFY, TITLE_DELETE, TITLE_EDIT,\
-    XferTransition
+    XferTransition, TITLE_PRINT
 
 from diacamma.invoice.models import StorageSheet, StorageDetail
+from lucterios.CORE.views import ObjectImport
+from lucterios.framework.xfercomponents import XferCompLabelForm
+from django.utils import six
+from lucterios.CORE.xferprint import XferPrintAction
 
 
 MenuManage.add_sub("storage", "invoice", "diacamma.invoice/images/storage.png", _("Storage"), _("Manage of storage"), 10)
@@ -64,8 +69,8 @@ class StorageSheetList(XferListEditor):
             self.filter &= Q(sheet_type=type_filter)
 
 
-@ActionsManage.affect_grid(TITLE_ADD, "images/add.png")
-@ActionsManage.affect_show(TITLE_MODIFY, "images/edit.png", close=CLOSE_YES)
+@ActionsManage.affect_grid(TITLE_ADD, "images/add.png", condition=lambda xfer, gridname='': xfer.getparam('status', -1) != 1)
+@ActionsManage.affect_show(TITLE_MODIFY, "images/edit.png", close=CLOSE_YES, condition=lambda xfer: xfer.item.status == 0)
 @MenuManage.describ('invoice.add_storagesheet')
 class StorageSheetAddModify(XferAddEditor):
     icon = "storagesheet.png"
@@ -84,7 +89,7 @@ class StorageSheetShow(XferShowEditor):
     field_id = 'storagesheet'
 
 
-@ActionsManage.affect_grid(TITLE_DELETE, "images/delete.png", unique=SELECT_MULTI)
+@ActionsManage.affect_grid(TITLE_DELETE, "images/delete.png", unique=SELECT_MULTI, condition=lambda xfer, gridname='': xfer.getparam('status', -1) != 1)
 @MenuManage.describ('invoice.delete_storagesheet')
 class StorageSheetDel(XferDelete):
     icon = "storagesheet.png"
@@ -94,11 +99,23 @@ class StorageSheetDel(XferDelete):
 
 
 @ActionsManage.affect_transition("status")
-@MenuManage.describ('invoice.add_bill')
+@MenuManage.describ('invoice.add_storagesheet')
 class StorageSheetTransition(XferTransition):
     icon = "storagesheet.png"
     model = StorageSheet
     field_id = 'storagesheet'
+
+
+@MenuManage.describ('invoice.change_storagesheet')
+@ActionsManage.affect_show(TITLE_PRINT, "images/print.png", condition=lambda xfer: int(xfer.item.status) == 1)
+@ActionsManage.affect_grid(TITLE_PRINT, "images/print.png", unique=SELECT_SINGLE, condition=lambda xfer, gridname='': xfer.getparam('status', -1) == 1)
+class StorageSheetPrint(XferPrintAction):
+    caption = _("Print storage sheet")
+    icon = "report.png"
+    model = StorageSheet
+    field_id = 'bill'
+    action_class = StorageSheetShow
+    with_text_export = True
 
 
 @ActionsManage.affect_grid(TITLE_ADD, "images/add.png", condition=lambda xfer, gridname='': xfer.item.status == 0)
@@ -119,3 +136,34 @@ class StorageDetailDel(XferDelete):
     model = StorageDetail
     field_id = 'storagedetail'
     caption = _("Delete storage detail")
+
+
+@MenuManage.describ('contacts.add_vat')
+@ActionsManage.affect_grid(_('Import'), "images/up.png", unique=SELECT_NONE, condition=lambda xfer, gridname='': (int(xfer.item.status) == 0) and (int(xfer.item.sheet_type) == 0))
+class StorageDetailImport(ObjectImport):
+    caption = _("Storage detail import")
+    icon = "storagesheet.png"
+    model = StorageDetail
+
+    def get_select_models(self):
+        return StorageDetail.get_select_contact_type(True)
+
+    def _read_csv_and_convert(self):
+        fields_description, csv_readed = ObjectImport._read_csv_and_convert(self)
+        new_csv_readed = []
+        for csv_readed_item in csv_readed:
+            csv_readed_item['storagesheet_id'] = self.getparam("storagesheet", 0)
+            new_csv_readed.append(csv_readed_item)
+        return fields_description, new_csv_readed
+
+    def fillresponse(self, modelname, quotechar="'", delimiter=";", encoding="utf-8", dateformat="%d/%m/%Y", step=0):
+        ObjectImport.fillresponse(self, modelname, quotechar, delimiter, encoding, dateformat, step)
+        if step != 3:
+            self.move(0, 0, 1)
+            self.tab = 0
+            sheet = StorageSheet.objects.get(id=self.getparam("storagesheet", 0))
+            lbl = XferCompLabelForm('sheet')
+            lbl.set_value(six.text_type(sheet))
+            lbl.set_location(1, 0, 2)
+            lbl.description = _('storage sheet')
+            self.add_component(lbl)

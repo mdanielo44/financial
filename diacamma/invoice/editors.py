@@ -275,11 +275,12 @@ class StorageSheetEditor(LucteriosEditor):
             xfer.remove_component("bill_date")
             storagedetail = xfer.get_components("storagedetail")
             storagedetail.delete_header("price_txt")
-        lbl = XferCompLabelForm('info')
-        lbl.set_color('red')
-        lbl.set_location(1, xfer.get_max_row() + 1, 4)
-        lbl.set_value(self.item.get_info_state())
-        xfer.add_component(lbl)
+        if int(self.item.status) == 0:
+            lbl = XferCompLabelForm('info')
+            lbl.set_color('red')
+            lbl.set_location(1, xfer.get_max_row() + 1, 4)
+            lbl.set_value(self.item.get_info_state())
+            xfer.add_component(lbl)
 
 
 class StorageDetailEditor(LucteriosEditor, DetailFilter):
