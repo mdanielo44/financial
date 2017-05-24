@@ -16,8 +16,8 @@ en plus d'un titre et d'un description, d'un status (Ouvert ou Clôturé).
 
 Depuis cette liste, vous obtiendrez également le résultat comptable (les produits diminués des charges) de votre code analytique.
 
-.. image:: costaccount_list.png
-	
+    .. image:: costaccount_list.png
+
 Par défaut, un filtrage vous pemet de ne voir que les code analytique courant. Cliquez dans la coche pour désactiver ce filtre.
 
 Imputation analytique d'une écriture
@@ -25,7 +25,7 @@ Imputation analytique d'une écriture
 
 Si vous avez des codes analytiques ouverts, vous pouvez imputer une écriture sur l'un d'entre eux.
 
-.. image:: costaccount_assign.png
+    .. image:: costaccount_assign.png
 
 Pour cela, éditez votre écriture (validée ou nonà à imputer à votre code analytique, et modifiez son champ avec l'affectation désirée.
 

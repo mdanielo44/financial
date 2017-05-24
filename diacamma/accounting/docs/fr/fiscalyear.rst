@@ -4,7 +4,7 @@ Exercice
 Paramétrages
 ------------
 
-.. image:: parameters.png
+    .. image:: parameters.png
 
 Initialement, vous pouvez définir ici le type de système comptable que
 vous voulez utiliser (ex: Plan comptable générale Français). 
@@ -17,11 +17,11 @@ Création d'un exercice comptable
 
 Pour créer un exercice comptable, rendez vous dans le menu *Administration/Modules (conf.)/Configuration comptable*.
 
-.. image:: fiscalyear_list.png
+    .. image:: fiscalyear_list.png
 
 De là, cliquez sur Ajouter afin de faire apparaître le formulaire vous permettant de renseigner les bornes de l'exercice
 
-.. image:: fiscalyear_create.png
+    .. image:: fiscalyear_create.png
 
 Indiquez la date de début (celle-ci doit étre le lendemain de la date
 de clôture de l'exercice précédent) et la date de fin (au maximum 2 ans
@@ -39,7 +39,7 @@ report à nouveau avant de pouvoir commencer éà saisir des écritures.
 
 Pour ce faire, rendrez-vous dans le menu *Financier/Comptabilité/plan	comptable*
 
-.. image:: account_list.png
+    .. image:: account_list.png
 
 Ici, commencez par créer les comptes de base de votre exercice.
 
@@ -67,7 +67,7 @@ Plaçons nous dans le menu *finance/comptabilité/plan comptable de l'exercice*.
 
 A tout moment au cours d'un exercice vous pouvez être amener à ajouter un nouveau compte dans votre plan.
 
-.. image:: account_new.png
+    .. image:: account_new.png
 
 Référez vous aux codes légaux définis par la réglementation de votre pays pour définir correctement les 3 premiers chiffres.
 Pour les associations dépendant du droit français, vous pourrez trouver des informations sur le site du gouvernement des finances français (http://www.minefe.gouv.fr/themes/entreprises/compta_entreprises/index.htm).
@@ -80,7 +80,7 @@ Vous pouvez consulter un compte précis. Vous pouvez alors voir
 l'ensemble des lignes d'écritures associées à ce compte, ainsi que la
 valeur du compte au début (report à nouveau) et la valeur actuelle.
 
-.. image:: account_edit.png
+    .. image:: account_edit.png
 
 Il vous est aussi possible de supprimer un compte du plan si aucune opération n'y a été réalisée.
 

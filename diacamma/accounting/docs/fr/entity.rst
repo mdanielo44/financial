@@ -8,7 +8,7 @@ Saisie d'une écriture
 
 Plaçons nous dans le menu *Financier/Comptabilité/écritures comptables*.
 
-.. image:: entity_list.png
+    .. image:: entity_list.png
 
 Depuis cet écran, nous avons la possibilité de visualiser les écritures
 précédemment saisies ainsi que d'en ajouter de nouvelles.
@@ -40,7 +40,7 @@ Pour ajouter une ligne d'écriture, saisissez son code comptable
 si vous le connaissez dans la zone d'ajout ou laissez-vous guider par
 l'assistant en cliquant sur le bouton correspondant au type de compte désiré.
 
-.. image:: entity_add.png
+    .. image:: entity_add.png
 
 L'outil ne vous permettra pas de valider votre écriture si elle est déséquilibrée.
 
@@ -54,9 +54,9 @@ Une écriture d'encaissement peut se saisir manuellement comme précédemment ma
 Pour simplifier votre saisie, ré-ouvrez l'écriture d'achat ou de vente dont vous souhaitez saisir le réglement, cliquez sur le bouton "Encaissement": l'application vous propose alors une nouvelle écriture
 partiellement remplie. Il ne vous reste plus qu'é préciser sur quel compte financier (caisse, banque...) vous voulez réaliser cette opération.
 
-Une fois un encaissement validé via ce mécanisme, les deux écritures (celle d'achat ou de vente et celle d'encaissement) sont automatiquement lettrées.
+    .. image:: entity_edit.png
 
-.. image:: entity_edit.png
+Une fois un encaissement validé via ce mécanisme, les deux écritures (celle d'achat ou de vente et celle d'encaissement) sont automatiquement lettrées.
 
 	**Ecriture de report à nouveau**
 
@@ -126,7 +126,7 @@ Recherche d'écriture
 Depuis la liste des écritures, le bouton "Recherche" vous permet
 de définir des critères de recherche d'écritures comptables.
 
-.. image:: entity_search.png
+    .. image:: entity_search.png
 
 En cliquant sur 'Rechercher", l'outil va rechercher dans la base
 toutes les écritures correspondantes à ces critères. Vous pourrez alors

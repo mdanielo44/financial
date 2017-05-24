@@ -10,11 +10,11 @@ Commencez par définir le type de document (devis, facture, reçu ou avoir) que 
 
 Dans cette facture, vous devez préciser le client associé, c'est à dire le tiers comptable imputable de l'opération.
 
-.. image:: bill_edit.png
+    .. image:: bill_edit.png
 
 Ensuite ajoutez ou enlevez autant d'articles que vous le désirez.
 
-.. image:: add_article.png
+    .. image:: add_article.png
 
 Par défaut, vous obtenez la désignation et le prix par défaut de l'article sélectionné, mais l'ensemble est modifiable. Vous pouvez choisir aussi l'article divers: aucune information par défaut n'est alors proposé.
 
