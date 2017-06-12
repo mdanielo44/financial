@@ -29,15 +29,21 @@ from django.db.models import Q
 
 from lucterios.framework.tools import MenuManage, FORMTYPE_NOMODAL,\
     ActionsManage, SELECT_SINGLE, SELECT_MULTI, CLOSE_YES, FORMTYPE_REFRESH, CLOSE_NO,\
-    SELECT_NONE
+    SELECT_NONE, WrapAction
 from lucterios.framework.xferadvance import XferListEditor, XferAddEditor, XferDelete, XferShowEditor, TITLE_ADD, TITLE_MODIFY, TITLE_DELETE, TITLE_EDIT,\
-    XferTransition, TITLE_PRINT
+    XferTransition, TITLE_PRINT, TEXT_TOTAL_NUMBER, TITLE_CLOSE
 
-from diacamma.invoice.models import StorageSheet, StorageDetail
+from diacamma.invoice.models import StorageSheet, StorageDetail, Article,\
+    Category, StorageArea
 from lucterios.CORE.views import ObjectImport
-from lucterios.framework.xfercomponents import XferCompLabelForm
+from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompGrid,\
+    XferCompSelect, XferCompCheckList, GRID_ORDER, XferCompDate,\
+    XferCompDateTime
 from django.utils import six
 from lucterios.CORE.xferprint import XferPrintAction
+from django.db.models.aggregates import Sum
+from diacamma.accounting.tools import format_devise
+from lucterios.framework.xferbasic import NULL_VALUE
 
 
 MenuManage.add_sub("storage", "invoice", "diacamma.invoice/images/storage.png", _("Storage"), _("Manage of storage"), 10)
@@ -118,8 +124,8 @@ class StorageSheetPrint(XferPrintAction):
     with_text_export = True
 
 
-@ActionsManage.affect_grid(TITLE_ADD, "images/add.png", condition=lambda xfer, gridname='': xfer.item.status == 0)
-@ActionsManage.affect_grid(TITLE_MODIFY, "images/edit.png", unique=SELECT_SINGLE, condition=lambda xfer, gridname='': int(xfer.item.status) == 0)
+@ActionsManage.affect_grid(TITLE_ADD, "images/add.png", condition=lambda xfer, gridname='': hasattr(xfer.item, 'status') and (xfer.item.status == 0))
+@ActionsManage.affect_grid(TITLE_MODIFY, "images/edit.png", unique=SELECT_SINGLE, condition=lambda xfer, gridname='': hasattr(xfer.item, 'status') and (int(xfer.item.status) == 0))
 @MenuManage.describ('invoice.add_storagesheet')
 class StorageDetailAddModify(XferAddEditor):
     icon = "storagesheet.png"
@@ -129,7 +135,7 @@ class StorageDetailAddModify(XferAddEditor):
     caption_modify = _("Modify storage detail")
 
 
-@ActionsManage.affect_grid(TITLE_DELETE, "images/delete.png", unique=SELECT_MULTI, condition=lambda xfer, gridname='': int(xfer.item.status) == 0)
+@ActionsManage.affect_grid(TITLE_DELETE, "images/delete.png", unique=SELECT_MULTI, condition=lambda xfer, gridname='': hasattr(xfer.item, 'status') and (int(xfer.item.status) == 0))
 @MenuManage.describ('invoice.delete_storagesheet')
 class StorageDetailDel(XferDelete):
     icon = "storagesheet.png"
@@ -139,7 +145,7 @@ class StorageDetailDel(XferDelete):
 
 
 @MenuManage.describ('contacts.add_vat')
-@ActionsManage.affect_grid(_('Import'), "images/up.png", unique=SELECT_NONE, condition=lambda xfer, gridname='': (int(xfer.item.status) == 0) and (int(xfer.item.sheet_type) == 0))
+@ActionsManage.affect_grid(_('Import'), "images/up.png", unique=SELECT_NONE, condition=lambda xfer, gridname='': hasattr(xfer.item, 'status') and (int(xfer.item.status) == 0) and (int(xfer.item.sheet_type) == 0))
 class StorageDetailImport(ObjectImport):
     caption = _("Storage detail import")
     icon = "storagesheet.png"
@@ -167,3 +173,166 @@ class StorageDetailImport(ObjectImport):
             lbl.set_location(1, 0, 2)
             lbl.description = _('storage sheet')
             self.add_component(lbl)
+
+
+@MenuManage.describ('invoice.change_storagesheet', FORMTYPE_NOMODAL, 'storage', _('Situation of storage'))
+class StorageSituation(XferListEditor):
+    icon = "storagereport.png"
+    model = StorageDetail
+    field_id = 'storagedetail'
+    caption = _("Situation")
+
+    def __init__(self, **kwargs):
+        XferListEditor.__init__(self, **kwargs)
+        self.order_list = None
+
+    def get_items_from_filter(self):
+        items = XferListEditor.get_items_from_filter(self)
+        if len(self.categories_filter) > 0:
+            for cat_item in Category.objects.filter(id__in=self.categories_filter):
+                items = items.filter(article__categories__in=[cat_item])
+        order_txt = self.getparam(GRID_ORDER + self.field_id, '')
+        if order_txt != '':
+            self.order_list = order_txt.split(',')
+            items = items.order_by(*self.order_list)
+        else:
+            self.order_list = None
+        return items.values('article', 'storagesheet__storagearea').annotate(data_sum=Sum('quantity'))
+
+    def fillresponse_header(self):
+        show_storagearea = self.getparam('storagearea', 0)
+        self.categories_filter = self.getparam('cat_filter', ())
+        sel_stock = XferCompSelect('storagearea')
+        sel_stock.set_needed(False)
+        sel_stock.set_select_query(StorageArea.objects.all())
+        sel_stock.set_value(show_storagearea)
+        sel_stock.set_action(self.request, self.get_action(), modal=FORMTYPE_REFRESH, close=CLOSE_NO)
+        sel_stock.set_location(0, 4)
+        sel_stock.description = StorageArea._meta.verbose_name
+        self.add_component(sel_stock)
+        cat_list = Category.objects.all()
+        if len(cat_list) > 0:
+            edt = XferCompCheckList("cat_filter")
+            edt.set_select_query(cat_list)
+            edt.set_value(self.categories_filter)
+            edt.set_location(1, 4)
+            edt.description = _('categories')
+            edt.set_action(self.request, self.get_action(), modal=FORMTYPE_REFRESH, close=CLOSE_NO)
+            self.add_component(edt)
+        self.filter = Q()
+        if show_storagearea != 0:
+            self.filter &= Q(storagesheet__storagearea=show_storagearea)
+
+    def fillresponse_body(self):
+        grid = XferCompGrid(self.field_id)
+        grid.order_list = self.order_list
+        grid.add_header("article", Article._meta.verbose_name, 'str', 1)
+        grid.add_header('storagesheet__storagearea', _('Area'), 'str', 1)
+        grid.add_header('qty', _('Quantity'))
+        grid.add_header('amount', _('Amount'))
+        six.print_(self.items)
+        item_id = 0
+        for item in self.get_items_from_filter():
+            if item['data_sum'] > 0:
+                item_id += 1
+                art = Article.objects.get(id=item['article'])
+                grid.set_value(item_id, "article", six.text_type(art))
+                grid.set_value(item_id, 'storagesheet__storagearea', six.text_type(StorageArea.objects.get(id=item['storagesheet__storagearea'])))
+                grid.set_value(item_id, 'qty', item['data_sum'])
+                grid.set_value(item_id, 'amount', format_devise(art.get_amount_from_area(item['data_sum'], item['storagesheet__storagearea']), 5))
+        grid.set_location(0, self.get_max_row() + 1, 2)
+        grid.set_size(200, 500)
+        self.add_component(grid)
+        self.add_action(StorageSituationPrint.get_action(TITLE_PRINT, "images/print.png"), close=CLOSE_NO)
+        self.add_action(WrapAction(TITLE_CLOSE, 'images/close.png'))
+
+
+@MenuManage.describ('invoice.change_storagesheet')
+class StorageSituationPrint(XferPrintAction):
+    caption = _("Print situation")
+    icon = "report.png"
+    model = StorageSheet
+    field_id = 'storagedetail'
+    action_class = StorageSituation
+    with_text_export = True
+
+
+@MenuManage.describ('invoice.change_storagesheet', FORMTYPE_NOMODAL, 'storage', _('Historic of storage'))
+class StorageHistoric(XferListEditor):
+    icon = "storagereport.png"
+    model = StorageDetail
+    field_id = 'storagedetail'
+    caption = _("Historic")
+
+    def __init__(self, **kwargs):
+        XferListEditor.__init__(self, **kwargs)
+        self.fieldnames = ["article", "storagesheet.date", "storagesheet.storagearea",
+                           (_('buying price'), "price_txt"), 'quantity']
+
+    def get_items_from_filter(self):
+        items = XferListEditor.get_items_from_filter(self)
+        if len(self.categories_filter) > 0:
+            for cat_item in Category.objects.filter(id__in=self.categories_filter):
+                items = items.filter(article__categories__in=[cat_item])
+        return items.order_by('-storagesheet__date')
+
+    def fillresponse_header(self):
+        date_begin = self.getparam('begin_date')
+        date_end = self.getparam('end_date')
+        show_storagearea = self.getparam('storagearea', 0)
+        self.categories_filter = self.getparam('cat_filter', ())
+
+        date_init = XferCompDate("begin_date")
+        date_init.set_needed(False)
+        date_init.set_value(date_begin)
+        date_init.set_location(0, 3)
+        date_init.description = _('begin date')
+        date_init.set_action(self.request, self.get_action(), close=CLOSE_NO, modal=FORMTYPE_REFRESH)
+        self.add_component(date_init)
+        date_finish = XferCompDate("end_date")
+        date_finish.set_needed(False)
+        date_finish.set_value(date_end)
+        date_finish.set_location(1, 3)
+        date_finish.description = _('end date')
+        date_finish.set_action(self.request, self.get_action(), close=CLOSE_NO, modal=FORMTYPE_REFRESH)
+        self.add_component(date_finish)
+
+        sel_stock = XferCompSelect('storagearea')
+        sel_stock.set_needed(False)
+        sel_stock.set_select_query(StorageArea.objects.all())
+        sel_stock.set_value(show_storagearea)
+        sel_stock.set_action(self.request, self.get_action(), modal=FORMTYPE_REFRESH, close=CLOSE_NO)
+        sel_stock.set_location(0, 4)
+        sel_stock.description = StorageArea._meta.verbose_name
+        self.add_component(sel_stock)
+        cat_list = Category.objects.all()
+        if len(cat_list) > 0:
+            edt = XferCompCheckList("cat_filter")
+            edt.set_select_query(cat_list)
+            edt.set_value(self.categories_filter)
+            edt.set_location(1, 4)
+            edt.description = _('categories')
+            edt.set_action(self.request, self.get_action(), modal=FORMTYPE_REFRESH, close=CLOSE_NO)
+            self.add_component(edt)
+        self.filter = Q()
+        if show_storagearea != 0:
+            self.filter &= Q(storagesheet__storagearea=show_storagearea)
+        if (date_begin is not None) and (date_begin != NULL_VALUE):
+            self.filter &= Q(storagesheet__date__gte=date_begin)
+        if (date_end is not None) and (date_end != NULL_VALUE):
+            self.filter &= Q(storagesheet__date__lte=date_end)
+
+    def fillresponse_body(self):
+        XferListEditor.fillresponse_body(self)
+        self.add_action(StorageHistoricPrint.get_action(TITLE_PRINT, "images/print.png"), close=CLOSE_NO)
+        self.add_action(WrapAction(TITLE_CLOSE, 'images/close.png'))
+
+
+@MenuManage.describ('invoice.change_storagesheet')
+class StorageHistoricPrint(XferPrintAction):
+    caption = _("Print historic")
+    icon = "report.png"
+    model = StorageSheet
+    field_id = 'storagedetail'
+    action_class = StorageHistoric
+    with_text_export = True

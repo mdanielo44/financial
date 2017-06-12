@@ -262,6 +262,18 @@ class Article(LucteriosModel, CustomizeObject):
             val += "{[br/]} - {[u]}%s{[/u]}: {[i]}%s{[/i]}" % (cf_model.name, get_value_converted(getattr(self, cf_name), True))
         return val
 
+    def get_amount_from_area(self, currentqty, area):
+        sum_amount = 0.0
+        nb_qty = 0.0
+        for det_item in self.storagedetail_set.filter(storagesheet__status=1, storagesheet__sheet_type=0, storagesheet__storagearea_id=area).order_by('-storagesheet__date'):
+            if (nb_qty + float(det_item.quantity)) < currentqty:
+                sum_amount += float(det_item.price * det_item.quantity)
+                nb_qty += float(det_item.quantity)
+            else:
+                sum_amount += float(det_item.price) * (float(currentqty) - nb_qty)
+                break
+        return sum_amount
+
     def get_stockage_values(self):
         stock_list = []
         if self.stockable != 0:
@@ -274,15 +286,7 @@ class Article(LucteriosModel, CustomizeObject):
             total_amount = 0.0
             total_qty = 0.0
             for key in sorted(list(stock.keys())):
-                sum_amount = 0.0
-                nb_qty = 0.0
-                for det_item in self.storagedetail_set.filter(storagesheet__status=1, storagesheet__sheet_type=0, storagesheet__storagearea_id=key).order_by('-storagesheet__date'):
-                    if (nb_qty + float(det_item.quantity)) < stock[key][1]:
-                        sum_amount += float(det_item.price * det_item.quantity)
-                        nb_qty += float(det_item.quantity)
-                    else:
-                        sum_amount += float(det_item.price) * (stock[key][1] - nb_qty)
-                        break
+                sum_amount = self.get_amount_from_area(stock[key][1], key)
                 stock_list.append((int(key), stock[key][0], stock[key][1], sum_amount))
                 total_qty += stock[key][1]
                 total_amount += sum_amount
@@ -1034,7 +1038,10 @@ class StorageDetail(LucteriosModel):
 
     @property
     def price_txt(self):
-        return format_devise(self.price, 5)
+        if self.quantity > 0:
+            return format_devise(self.price, 5)
+        else:
+            return None
 
     @property
     def quantity_txt(self):
