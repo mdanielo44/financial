@@ -336,7 +336,7 @@ class FiscalYearWorkflowTest(PaymentTest):
                   {'year': '1', 'type_of_account': '-1'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'chartsAccountList')
         self.assert_count_equal('COMPONENTS/*', 9)
-        self.assert_count_equal('ACTIONS/ACTION', 3)
+        self.assert_count_equal('ACTIONS/ACTION', 4)
         self.assert_action_equal('ACTIONS/ACTION[1]', ('Commencer', 'images/ok.png', 'diacamma.accounting', 'fiscalYearBegin', 0, 1, 1))
 
         self.factory.xfer = FiscalYearBegin()
@@ -356,7 +356,7 @@ class FiscalYearWorkflowTest(PaymentTest):
         self.call('/diacamma.accounting/chartsAccountList',
                   {'year': '1', 'type_of_account': '-1'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'chartsAccountList')
-        self.assert_count_equal('ACTIONS/ACTION', 3)
+        self.assert_count_equal('ACTIONS/ACTION', 4)
         self.assert_action_equal('ACTIONS/ACTION[1]', ('Clôture', 'images/ok.png', 'diacamma.accounting', 'fiscalYearClose', 0, 1, 1))
 
     def test_begin_lastyearnovalid(self):
@@ -617,7 +617,7 @@ class FiscalYearWorkflowTest(PaymentTest):
                   {'year': '2', 'type_of_account': '-1'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'chartsAccountList')
         self.assert_count_equal('COMPONENTS/*', 9)
-        self.assert_count_equal('ACTIONS/ACTION', 3)
+        self.assert_count_equal('ACTIONS/ACTION', 4)
         self.assert_count_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD', 9)
         self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[2]/VALUE[@name="code"]', '120')
         self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[2]/VALUE[@name="current_total"]',
@@ -630,4 +630,4 @@ class FiscalYearWorkflowTest(PaymentTest):
         self.call('/diacamma.accounting/chartsAccountList',
                   {'year': '1', 'type_of_account': '-1'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'chartsAccountList')
-        self.assert_count_equal('ACTIONS/ACTION', 2)
+        self.assert_count_equal('ACTIONS/ACTION', 3)
