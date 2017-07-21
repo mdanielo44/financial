@@ -673,6 +673,31 @@ class FiscalYearReportPrint(XferPrintAction):
         return gen
 
 
+@MenuManage.describ('accounting.change_fiscalyear')
+class CostAccountingReportPrint(XferPrintAction):
+    caption = _("Print report cost accounting")
+    icon = "accountingReport.png"
+    model = CostAccounting
+    field_id = 'costaccounting'
+    with_text_export = True
+    tab_change_page = True
+
+    def __init__(self):
+        XferPrintAction.__init__(self)
+        self.action_class = self.__class__.action_class
+        self.caption = self.__class__.caption
+
+    def get_report_generator(self):
+        self.action_class = getattr(sys.modules[self.getparam("modulename", __name__)], self.getparam("classname", ''))
+        gen = XferPrintAction.get_report_generator(self)
+        own_struct = LegalEntity.objects.get(id=1)
+        gen.title = "{[u]}{[b]}%s{[/b]}{[/u]}{[br/]}{[i]}%s{[/i]}{[br/]}{[b]}%s{[/b]}" % (
+            own_struct, self.action_class.caption, formats.date_format(date.today(), "DATE_FORMAT"))
+        gen.page_width = 297
+        gen.page_height = 210
+        return gen
+
+
 class CostAccountingReport(FiscalYearReport):
     icon = "costAccounting.png"
     model = CostAccounting
@@ -719,6 +744,11 @@ class CostAccountingReport(FiscalYearReport):
         self.fill_filterCode()
         self.fill_filterheader()
         self.define_gridheader()
+
+    def fill_buttons(self):
+        self.add_action(CostAccountingReportPrint.get_action(TITLE_PRINT, "images/print.png"),
+                        close=CLOSE_NO, params={'classname': self.__class__.__name__})
+        self.add_action(WrapAction(TITLE_CLOSE, 'images/close.png'))
 
 
 @ActionsManage.affect_grid(_("Report"), 'images/print.png', unique=SELECT_MULTI, modal=FORMTYPE_NOMODAL)

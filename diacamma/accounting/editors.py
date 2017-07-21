@@ -68,8 +68,21 @@ class ThirdEditor(LucteriosEditor):
 class AccountThirdEditor(LucteriosEditor):
 
     def edit(self, xfer):
-        code_ed = xfer.get_components('code')
-        code_ed.mask = current_system_account().get_third_mask()
+        old_account = xfer.get_components("code")
+        try:
+            chart_accouts = FiscalYear.get_current().chartsaccount_set.all().filter(code__regex=current_system_account().get_third_mask())
+            xfer.remove_component("code")
+            sel_code = XferCompSelect("code")
+            sel_code.set_location(old_account.col, old_account.row, old_account.colspan + 1, old_account.rowspan)
+            existed_codes = []
+            for acc_third in xfer.item.third.accountthird_set.all():
+                existed_codes.append(acc_third.code)
+            for item in chart_accouts.exclude(code__in=existed_codes).order_by('code'):
+                sel_code.select_list.append((item.code, six.text_type(item)))
+            sel_code.set_value(self.item.code)
+            xfer.add_component(sel_code)
+        except LucteriosException:
+            old_account.mask = current_system_account().get_third_mask()
         return
 
 
