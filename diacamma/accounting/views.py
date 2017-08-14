@@ -195,6 +195,16 @@ class ThirdAdd(ContactSelection):
     model = Third
 
 
+@ActionsManage.affect_show(TITLE_EDIT, "images/edit.png", condition=lambda xfer: len(Third.get_fields_to_show()) > 0)
+@MenuManage.describ('accounting.add_third')
+class ThirdEdit(XferAddEditor):
+    icon = "thirds.png"
+    model = Third
+    field_id = 'third'
+    caption_modify = _("Modify third")
+    redirect_to_show = ''
+
+
 @ActionsManage.affect_grid(TITLE_EDIT, "images/show.png", unique=SELECT_SINGLE)
 @MenuManage.describ('accounting.change_third')
 class ThirdShow(XferShowEditor):

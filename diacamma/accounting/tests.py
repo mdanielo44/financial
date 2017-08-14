@@ -33,16 +33,18 @@ from lucterios.framework.test import LucteriosTest
 from lucterios.framework.filetools import get_user_dir
 from lucterios.CORE.views import StatusMenu
 
-from diacamma.accounting.views import ThirdList, ThirdAdd, ThirdSave, ThirdShow, AccountThirdAddModify, AccountThirdDel, ThirdListing, ThirdDisable
+from diacamma.accounting.views import ThirdList, ThirdAdd, ThirdSave, ThirdShow, AccountThirdAddModify, AccountThirdDel, ThirdListing, ThirdDisable,\
+    ThirdEdit
 from diacamma.accounting.views_admin import Configuration, JournalAddModify, JournalDel, FiscalYearAddModify, FiscalYearActive, FiscalYearDel
 from diacamma.accounting.views_other import ModelEntryList, ModelEntryAddModify, ModelLineEntryAddModify
 from diacamma.accounting.test_tools import initial_contacts, fill_entries, initial_thirds, create_third, fill_accounts, fill_thirds, default_compta, set_accounting_system, add_models
-from diacamma.accounting.models import FiscalYear
+from diacamma.accounting.models import FiscalYear, Third
 from diacamma.accounting.system import get_accounting_system,\
     accounting_system_ident
 from diacamma.accounting.tools import current_system_account, clear_system_account
 from diacamma.accounting.views_entries import EntryAccountModelSelector
 from lucterios.CORE.parameters import Params
+from lucterios.contacts.models import CustomField
 
 
 class ThirdTest(LucteriosTest):
@@ -180,6 +182,7 @@ class ThirdTest(LucteriosTest):
         self.factory.xfer = ThirdShow()
         self.call('/diacamma.accounting/thirdShow', {"third": 1}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'thirdShow')
+        self.assert_count_equal('ACTIONS/ACTION', 2)
         self.assert_count_equal('COMPONENTS/TAB', 1)
         self.assert_count_equal('COMPONENTS/*', 9 + 4)
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="contact"]', 'Dalton William')
@@ -486,6 +489,51 @@ class ThirdTest(LucteriosTest):
         self.assert_observer('core.custom', 'diacamma.accounting', 'thirdListing')
         self.assert_count_equal('COMPONENTS/GRID[@name="third"]/RECORD', 4)
 
+    def test_with_customize(self):
+        CustomField.objects.create(modelname='accounting.Third', name='categorie', kind=4, args="{'list':['---','petit','moyen','gros']}")
+        CustomField.objects.create(modelname='accounting.Third', name='value', kind=1, args="{'min':0,'max':100}")
+        create_third([3])
+        self.factory.xfer = ThirdShow()
+        self.call('/diacamma.accounting/thirdShow', {"third": 1}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdShow')
+        self.assert_count_equal('ACTIONS/ACTION', 3)
+        self.assert_count_equal('COMPONENTS/TAB', 1)
+        self.assert_count_equal('COMPONENTS/*', 9 + 4 + 2)
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="contact"]', 'Dalton William')
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="status"]', 'Actif')
+        self.assert_count_equal('COMPONENTS/GRID[@name="accountthird"]/HEADER', 2)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="accountthird"]/HEADER[@name="code"]', "code")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="accountthird"]/HEADER[@name="total_txt"]', "total")
+        self.assert_count_equal('COMPONENTS/GRID[@name="accountthird"]/RECORD', 0)
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="total"]', '0.00€')
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="custom_1"]', "---")
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="custom_2"]', "0")
+
+        self.factory.xfer = ThirdEdit()
+        self.call('/diacamma.accounting/thirdEdit', {"third": 1}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdEdit')
+        self.assert_count_equal('COMPONENTS/*', 2 + 2)
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="contact"]', 'Dalton William')
+        self.assert_xml_equal('COMPONENTS/SELECT[@name="custom_1"]', "0")
+        self.assert_count_equal('COMPONENTS/SELECT[@name="custom_1"]/CASE', 4)
+        self.assert_xml_equal('COMPONENTS/FLOAT[@name="custom_2"]', "0")
+
+        self.factory.xfer = ThirdEdit()
+        self.call('/diacamma.accounting/thirdEdit', {"third": 1, 'custom_1': '2', 'custom_2': '27', 'SAVE': 'YES'}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.accounting', 'thirdEdit')
+
+        self.factory.xfer = ThirdShow()
+        self.call('/diacamma.accounting/thirdShow', {"third": 1}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdShow')
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="contact"]', 'Dalton William')
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="custom_1"]', "moyen")
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="custom_2"]', "27")
+
+        my_third = Third.objects.get(id=1)
+        self.assertEqual("moyen", my_third.get_custom_by_name("categorie"))
+        self.assertEqual(27, my_third.get_custom_by_name("value"))
+        self.assertEqual(None, my_third.get_custom_by_name("truc"))
+
 
 class AdminTest(LucteriosTest):
 
@@ -507,8 +555,8 @@ class AdminTest(LucteriosTest):
         self.factory.xfer = Configuration()
         self.call('/diacamma.accounting/configuration', {}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'configuration')
-        self.assert_count_equal('COMPONENTS/TAB', 3)
-        self.assert_count_equal('COMPONENTS/*', 4 + 5 + 2 + 5)
+        self.assert_count_equal('COMPONENTS/TAB', 4)
+        self.assert_count_equal('COMPONENTS/*', 4 + 5 + 2 + 5 + 3)
         self.assert_count_equal('COMPONENTS/GRID[@name="fiscalyear"]/HEADER', 4)
         self.assert_xml_equal('COMPONENTS/GRID[@name="fiscalyear"]/HEADER[@name="begin"]', "début")
         self.assert_xml_equal('COMPONENTS/GRID[@name="fiscalyear"]/HEADER[@name="end"]', "fin")
@@ -530,6 +578,11 @@ class AdminTest(LucteriosTest):
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="accounting-devise"]', '€')
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="accounting-devise-iso"]', 'EUR')
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="accounting-devise-prec"]', '2')
+
+        self.assert_count_equal('COMPONENTS/GRID[@name="custom_field"]/HEADER', 2)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="custom_field"]/HEADER[@name="name"]', "nom")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="custom_field"]/HEADER[@name="kind_txt"]', "type")
+        self.assert_count_equal('COMPONENTS/GRID[@name="custom_field"]/RECORD', 0)
 
     def test_configuration_journal(self):
         self.factory.xfer = JournalAddModify()

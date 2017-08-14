@@ -45,13 +45,29 @@ from lucterios.framework.error import LucteriosException, IMPORTANT, GRAVE
 from lucterios.framework.filetools import read_file, xml_validator, save_file, get_user_path
 from lucterios.framework.signal_and_lock import RecordLocker, Signal
 from lucterios.CORE.models import Parameter
-from lucterios.contacts.models import AbstractContact
+from lucterios.contacts.models import AbstractContact, CustomField,\
+    CustomizeObject
 
 from diacamma.accounting.tools import get_amount_sum, format_devise, current_system_account, currency_round, correct_accounting_code
 
 
-class Third(LucteriosModel):
+class ThirdCustomField(LucteriosModel):
     is_simple_gui = True
+
+    third = models.ForeignKey('Third', verbose_name=_('third'), null=False, on_delete=models.CASCADE)
+    field = models.ForeignKey(CustomField, verbose_name=_('field'), null=False, on_delete=models.CASCADE)
+    value = models.TextField(_('value'), default="")
+
+    class Meta(object):
+        verbose_name = _('custom field value')
+        verbose_name_plural = _('custom field values')
+        default_permissions = []
+
+
+class Third(LucteriosModel, CustomizeObject):
+    is_simple_gui = True
+    CustomFieldClass = ThirdCustomField
+    FieldName = 'third'
 
     contact = models.ForeignKey('contacts.AbstractContact', verbose_name=_('contact'), null=False, on_delete=models.CASCADE)
     status = FSMIntegerField(verbose_name=_('status'), choices=((0, _('Enable')), (1, _('Disable'))))
@@ -69,11 +85,14 @@ class Third(LucteriosModel):
 
     @classmethod
     def get_edit_fields(cls):
-        return []
+        result = []
+        return result
 
     @classmethod
     def get_show_fields(cls):
-        return {'': ['contact'], _('001@AccountThird information'): ["status", "accountthird_set", ((_('total'), 'total'),)]}
+        fields_desc = ["status", "accountthird_set", ((_('total'), 'total'),)]
+        fields_desc.extend(cls.get_fields_to_show())
+        return {'': ['contact'], _('001@AccountThird information'): fields_desc}
 
     @classmethod
     def get_print_fields(cls):
@@ -85,6 +104,8 @@ class Third(LucteriosModel):
         for field_name in AbstractContact.get_search_fields():
             if not isinstance(field_name, tuple):
                 result.append("contact." + field_name)
+        for cf_name, cf_model in CustomField.get_fields(cls):
+            result.append((cf_name, cf_model.get_field(), 'thirdcustomfield__value', Q(thirdcustomfield__field__id=cf_model.id)))
         result.extend(["status", "accountthird_set.code"])
         return result
 

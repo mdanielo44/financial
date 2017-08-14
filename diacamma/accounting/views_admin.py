@@ -36,11 +36,13 @@ from lucterios.CORE.parameters import Params
 from lucterios.CORE.views import ParamEdit
 from lucterios.CORE.models import Parameter
 
-from diacamma.accounting.models import FiscalYear, Journal, AccountThird, ChartsAccount, ModelLineEntry
+from diacamma.accounting.models import FiscalYear, Journal, AccountThird, ChartsAccount, ModelLineEntry,\
+    Third
 from diacamma.accounting.system import accounting_system_list, accounting_system_name
 from diacamma.accounting.tools import clear_system_account, correct_accounting_code,\
     current_system_account
 from django.utils import six
+from lucterios.contacts.models import CustomField
 
 MenuManage.add_sub("financial.conf", "core.extensions", "", _("Financial"), "", 2)
 
@@ -115,6 +117,7 @@ class Configuration(XferListEditor):
     caption = _("Accounting configuration")
 
     def fillresponse_header(self):
+        self.params['basic_model'] = 'accounting.Third'
         self.new_tab(_('Fiscal year list'))
         select_account_system(self)
 
@@ -125,6 +128,10 @@ class Configuration(XferListEditor):
         self.fill_grid(self.get_max_row() + 1, Journal, 'journal', Journal.objects.all())
         self.new_tab(_('Parameters'))
         fill_params(self)
+        self.new_tab(_("Third Custom field"))
+        self.fill_grid(0, CustomField, "custom_field", CustomField.get_filter(Third))
+        grid_custom = self.get_components('custom_field')
+        grid_custom.delete_header('model_title')
 
 
 @MenuManage.describ('accounting.add_fiscalyear')

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-06-12 13:58+0000\n"
+"POT-Creation-Date: 2017-08-14 14:04+0000\n"
 "PO-Revision-Date: 2016-01-14 21:59+0000\n"
 "Last-Translator: b'Paul ARULATEDA <paul531@orange.fr>'\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -23,19 +23,19 @@ msgstr ""
 msgid "Diacamma invoice"
 msgstr "Facturier Diacamma"
 
-#: editors.py:70 views_storage.py:47
+#: editors.py:70 views_storage.py:49
 msgid "Storage"
 msgstr "Stockage"
 
-#: editors.py:72 views_storage.py:228
+#: editors.py:72 views_storage.py:230
 msgid "Area"
 msgstr "Lieu de stockage"
 
-#: editors.py:73 views_storage.py:229
+#: editors.py:73 views_storage.py:231
 msgid "Quantity"
 msgstr "Quantité"
 
-#: editors.py:74 views_storage.py:230
+#: editors.py:74 views_storage.py:232
 msgid "Amount"
 msgstr "Montant"
 
@@ -72,8 +72,8 @@ msgstr "total TVA"
 msgid "provider"
 msgstr "fournisseur"
 
-#: editors.py:200 models.py:163 views.py:362 views_storage.py:217
-#: views_storage.py:294
+#: editors.py:200 models.py:163 views.py:362 views_storage.py:219
+#: views_storage.py:314
 msgid "categories"
 msgstr "catégories"
 
@@ -337,7 +337,6 @@ msgid "bills"
 msgstr "factures"
 
 #: models.py:804 models.py:1021 models.py:1029 models.py:1037
-#: views_storage.py:268
 msgid "quantity"
 msgstr "quantité"
 
@@ -386,7 +385,7 @@ msgstr "date facture"
 msgid "Article %s is not stockable"
 msgstr "L'article %s est en non stockable"
 
-#: models.py:1009 models.py:1017 views_storage.py:172
+#: models.py:1009 models.py:1017 views_storage.py:174
 msgid "storage sheet"
 msgstr "bordereau de stockage"
 
@@ -394,47 +393,47 @@ msgstr "bordereau de stockage"
 msgid "storage sheets"
 msgstr "bordereaux de stockage"
 
-#: models.py:1019 models.py:1029 models.py:1037 views_storage.py:268
+#: models.py:1019 models.py:1029 models.py:1037 views_storage.py:270
 msgid "buying price"
 msgstr "prix d'achat"
 
-#: models.py:1067
+#: models.py:1070
 msgid "storage detail"
 msgstr "détail de stock"
 
-#: models.py:1068
+#: models.py:1071
 msgid "storage details"
 msgstr "détails de stock"
 
-#: models.py:1085
+#: models.py:1088
 msgid "invoice-default-sell-account"
 msgstr "compte de vente par défaut"
 
-#: models.py:1087
+#: models.py:1090
 msgid "invoice-reduce-account"
 msgstr "compte de réduction"
 
-#: models.py:1089
+#: models.py:1092
 msgid "invoice-vatsell-account"
 msgstr "compte de TVA de vente"
 
-#: models.py:1091
+#: models.py:1094
 msgid "invoice-vat-mode"
 msgstr "mode TVA"
 
-#: models.py:1092
+#: models.py:1095
 msgid "invoice-vat-mode.0"
 msgstr "non applicable"
 
-#: models.py:1092
+#: models.py:1095
 msgid "invoice-vat-mode.1"
 msgstr "prix hors taxe"
 
-#: models.py:1092
+#: models.py:1095
 msgid "invoice-vat-mode.2"
 msgstr "prix toutes taxes comprises"
 
-#: models.py:1093
+#: models.py:1096
 msgid "invoice-account-third"
 msgstr "Compte tiers par défault"
 
@@ -771,79 +770,91 @@ msgstr "Définissez les paramètres du facturier."
 msgid "Configuration of vat"
 msgstr "Configurez votre gestion de TVA."
 
-#: views_storage.py:47
+#: views_storage.py:49
 msgid "Manage of storage"
 msgstr "Gestion de stock"
 
-#: views_storage.py:50
+#: views_storage.py:52
 msgid "Management of storage sheet list"
 msgstr "Gestion de bordereaux de stock"
 
-#: views_storage.py:55
+#: views_storage.py:57
 msgid "Storage sheet"
 msgstr "Bordereau de stockage"
 
-#: views_storage.py:83
+#: views_storage.py:85
 msgid "Add storage sheet"
 msgstr "Ajouter un bordereau de stockage"
 
-#: views_storage.py:84
+#: views_storage.py:86
 msgid "Modify storage sheet"
 msgstr "Modifier un bordereau de stock"
 
-#: views_storage.py:90
+#: views_storage.py:92
 msgid "Show storage sheet"
 msgstr "Voir un bordereau de stockage"
 
-#: views_storage.py:102
+#: views_storage.py:104
 msgid "Delete storage sheet"
 msgstr "Supprimer un bordereau de stock"
 
-#: views_storage.py:117
+#: views_storage.py:119
 msgid "Print storage sheet"
 msgstr "Impression d'un bordereau de stockage"
 
-#: views_storage.py:132
+#: views_storage.py:134
 msgid "Add storage detail"
 msgstr "Ajouter un détail"
 
-#: views_storage.py:133
+#: views_storage.py:135
 msgid "Modify storage detail"
 msgstr "Modifier un détail"
 
-#: views_storage.py:142
+#: views_storage.py:144
 msgid "Delete storage detail"
 msgstr "Supprimer un détail"
 
-#: views_storage.py:146
+#: views_storage.py:148
 msgid "Import"
 msgstr "Import"
 
-#: views_storage.py:148
+#: views_storage.py:150
 msgid "Storage detail import"
 msgstr "Import de détail de stock"
 
-#: views_storage.py:176
+#: views_storage.py:178
 msgid "Situation of storage"
 msgstr "Situation de stockage"
 
-#: views_storage.py:181
+#: views_storage.py:183
 msgid "Situation"
 msgstr "Situation"
 
-#: views_storage.py:250
+#: views_storage.py:252
 msgid "Print situation"
 msgstr "Impression de la situation"
 
-#: views_storage.py:258
+#: views_storage.py:260
 msgid "Historic of storage"
 msgstr "Historique de stockage"
 
-#: views_storage.py:263
+#: views_storage.py:265
 msgid "Historic"
 msgstr "Historique"
 
-#: views_storage.py:309
+#: views_storage.py:289
+#, fuzzy
+#| msgid "bill date"
+msgid "begin date"
+msgstr "date facture"
+
+#: views_storage.py:296
+#, fuzzy
+#| msgid "date"
+msgid "end date"
+msgstr "date"
+
+#: views_storage.py:333
 msgid "Print historic"
 msgstr "Impression de l'historique"
 

@@ -43,9 +43,20 @@ from lucterios.CORE.parameters import Params
 
 from diacamma.accounting.models import current_system_account, FiscalYear, EntryLineAccount, EntryAccount, get_amount_sum, Third, CostAccounting
 from lucterios.framework import signal_and_lock
+from lucterios.contacts.models import CustomField
 
 
 class ThirdEditor(LucteriosEditor):
+
+    def edit(self, xfer):
+        xfer.filltab_from_model(1, 1, True, ['contact'])
+        lbl_contact = xfer.get_components('contact')
+        lbl_contact.colspan = 2
+        CustomField.edit_fields(xfer, 1)
+
+    def saving(self, xfer):
+        LucteriosEditor.saving(self, xfer)
+        self.item.set_custom_values(xfer.params)
 
     def show(self, xfer):
         xfer.tab = 0
