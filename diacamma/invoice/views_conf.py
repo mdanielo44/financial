@@ -136,26 +136,6 @@ class CategoryDel(XferDelete):
     caption = _("Delete Category")
 
 
-@ActionsManage.affect_grid(TITLE_ADD, "images/add.png")
-@ActionsManage.affect_grid(TITLE_MODIFY, "images/edit.png", unique=SELECT_SINGLE)
-@MenuManage.describ('invoice.add_vat')
-class CustomFieldAddModify(XferAddEditor):
-    icon = "invoice_conf.png"
-    model = CustomField
-    field_id = 'custom_field'
-    caption_add = _("Add custom field")
-    caption_modify = _("Modify custom field")
-
-
-@ActionsManage.affect_grid(TITLE_DELETE, "images/delete.png", unique=SELECT_MULTI)
-@MenuManage.describ('invoice.delete_vat')
-class CustomFieldDel(XferDelete):
-    icon = "invoice_conf.png"
-    model = CustomField
-    field_id = 'custom_field'
-    caption = _("Delete custom field")
-
-
 @MenuManage.describ('contacts.add_article', FORMTYPE_MODAL, 'financial.conf', _('Tool to import articles from CSV file.'))
 class ArticleImport(ObjectImport):
     caption = _("Article import")

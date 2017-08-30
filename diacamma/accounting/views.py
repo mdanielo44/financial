@@ -202,7 +202,7 @@ class ThirdEdit(XferAddEditor):
     model = Third
     field_id = 'third'
     caption_modify = _("Modify third")
-    redirect_to_show = ''
+    redirect_to_show = False
 
 
 @ActionsManage.affect_grid(TITLE_EDIT, "images/show.png", unique=SELECT_SINGLE)
