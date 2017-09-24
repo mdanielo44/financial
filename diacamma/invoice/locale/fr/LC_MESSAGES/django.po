@@ -91,7 +91,7 @@ msgstr "taux"
 
 #: models.py:64
 msgid "is actif"
-msgstr "actif?"
+msgstr "actif ?"
 
 #: models.py:74 views_conf.py:76 views_conf.py:226
 msgid "VAT"
@@ -158,7 +158,7 @@ msgstr "unité"
 
 #: models.py:157
 msgid "is disabled"
-msgstr "désactivé?"
+msgstr "désactivé ?"
 
 #: models.py:158
 msgid "sell account"
@@ -293,28 +293,28 @@ msgstr "pas de détail"
 #: models.py:529 models.py:998
 #, python-format
 msgid "Article %s is not sufficiently stocked"
-msgstr "L'article %s est en quantité insuffisente"
+msgstr "L'article %s est en quantité insuffisante"
 
 #: models.py:543 models.py:597
 msgid "article has code account unknown!"
-msgstr "au moins un article a un compte inconnu!"
+msgstr "au moins un article a un compte inconnu !"
 
 #: models.py:553 models.py:989
 #, python-format
 msgid "\"%s\" cannot be deleted!"
-msgstr "\"%s\" n'est pas supprimable!"
+msgstr "\"%s\" ne peut pas être supprimé !"
 
 #: models.py:609
 msgid "reduce-account is not defined!"
-msgstr "le compte de réduction n'est pas défini!"
+msgstr "le compte de réduction n'est pas défini !"
 
 #: models.py:621
 msgid "vta-account is not defined!"
-msgstr "le compte de TVA n'est pas défini!"
+msgstr "le compte de TVA n'est pas défini !"
 
 #: models.py:628
 msgid "Error in accounting generator!"
-msgstr "Erreur sur la génération comptable!"
+msgstr "Erreur sur la génération comptable !"
 
 #: models.py:630
 msgid "Validate"
@@ -330,7 +330,7 @@ msgstr "Annuler"
 
 #: models.py:759 models.py:766
 msgid "This item can't be validated!"
-msgstr "Cet élément n'est pas validable!"
+msgstr "Cet élément ne peut pas être validé !"
 
 #: models.py:788
 msgid "bills"
@@ -435,7 +435,7 @@ msgstr "prix toutes taxes comprises"
 
 #: models.py:1096
 msgid "invoice-account-third"
-msgstr "Compte tiers par défault"
+msgstr "Compte tiers par défaut"
 
 #: printmodel/Bill_0001.py:130 printmodel/Bill_0002.py:147
 msgid "Qty"
@@ -455,11 +455,11 @@ msgstr "reste dû"
 
 #: printmodel/Bill_0002.py:31 printmodel/Bill_0002.py:152 views.py:232
 msgid "payoff"
-msgstr "réglement"
+msgstr "règlement"
 
 #: printmodel/Bill_0002.py:153
 msgid "payoffs"
-msgstr "réglements"
+msgstr "règlements"
 
 #: printmodel/Bill_0002.py:155
 msgid "mode"
@@ -475,7 +475,7 @@ msgstr "Gestion de facturation"
 
 #: views.py:65
 msgid "Filtrer by third"
-msgstr "filtrer par tiers"
+msgstr "Filtrer par tiers"
 
 #: views.py:78
 msgid "building+valid"
@@ -483,7 +483,7 @@ msgstr "En construction+validé"
 
 #: views.py:82
 msgid "Filter by type"
-msgstr "filtrer par type"
+msgstr "Filtrer par type"
 
 #: views.py:94
 msgid "Management of bill list"
@@ -520,15 +520,15 @@ msgstr "Valider une facture"
 #: views.py:188
 #, python-format
 msgid "Do you want validate '%s'?"
-msgstr "Voulez-vous valider '%s'?"
+msgstr "Voulez-vous valider '%s' ?"
 
 #: views.py:205
 msgid "Payment of deposit or cash"
-msgstr "Payement d'accompte ou comptant"
+msgstr "Payement d'acompte ou comptant"
 
 #: views.py:235
 msgid "Multi-pay bill"
-msgstr "Multi-réglement"
+msgstr "Multi-règlement"
 
 #: views.py:244
 msgid "=> Bill"
@@ -557,7 +557,7 @@ msgstr "Imprimer une facture"
 
 #: views.py:291
 msgid "No invoice to print!"
-msgstr "Pas de facture à imprimer!"
+msgstr "Pas de facture à imprimer !"
 
 #: views.py:301
 msgid "Add detail"
@@ -573,7 +573,7 @@ msgstr "Supprimer un détail"
 
 #: views.py:322
 msgid "Management of article list"
-msgstr "Gestion de liste d'articles"
+msgstr "Gestion de la liste d'articles"
 
 #: views.py:327 views.py:493
 msgid "Articles"
@@ -597,7 +597,7 @@ msgstr "Recherche"
 
 #: views.py:378
 msgid "Search article"
-msgstr "Recherche un article"
+msgstr "Rechercher un article"
 
 #: views.py:384
 msgid "Show article"
@@ -629,16 +629,16 @@ msgstr "Supprimer un fournisseur"
 
 #: views.py:430
 msgid "Statistic of selling"
-msgstr "Statistique des ventes"
+msgstr "Statistiques des ventes"
 
 #: views.py:435
 msgid "Statistic"
-msgstr "Statistique"
+msgstr "Statistiques"
 
 #: views.py:444
 #, python-format
 msgid "Statistics in date of %s"
-msgstr "Statistique en date du %s"
+msgstr "Statistiques en date du %s"
 
 #: views.py:456
 msgid "customer"
@@ -666,7 +666,7 @@ msgstr "Clients"
 
 #: views.py:501
 msgid "Print statistic"
-msgstr "Impression de statistique"
+msgstr "Impression des statistiques"
 
 #: views.py:515
 msgid "Financial"
@@ -688,7 +688,7 @@ msgstr "Vous avez %d factures sur votre compte"
 
 #: views_conf.py:57
 msgid "Management of parameters and configuration of invoice"
-msgstr "Gestion des paramètres et configuraiton du facturier"
+msgstr "Gestion des paramètres et configuration du facturier"
 
 #: views_conf.py:62
 msgid "Invoice configuration"
@@ -824,7 +824,7 @@ msgstr "Import de détail de stock"
 
 #: views_storage.py:178
 msgid "Situation of storage"
-msgstr "Situation de stockage"
+msgstr "Situation du stockage"
 
 #: views_storage.py:183
 msgid "Situation"
