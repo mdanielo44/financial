@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-08-14 14:04+0000\n"
+"POT-Creation-Date: 2017-09-24 13:21+0000\n"
 "PO-Revision-Date: 2016-01-14 21:59+0000\n"
 "Last-Translator: b'Paul ARULATEDA <paul531@orange.fr>'\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,7 +19,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Translated-Using: django-rosetta 0.7.8\n"
 
-#: __init__.py:41 views_conf.py:223 views_conf.py:226
+#: __init__.py:41 views_conf.py:203 views_conf.py:206
 msgid "Diacamma invoice"
 msgstr "Facturier Diacamma"
 
@@ -93,7 +93,7 @@ msgstr "taux"
 msgid "is actif"
 msgstr "actif ?"
 
-#: models.py:74 views_conf.py:76 views_conf.py:226
+#: models.py:74 views_conf.py:76 views_conf.py:206
 msgid "VAT"
 msgstr "TVA"
 
@@ -196,7 +196,7 @@ msgstr "002@Fournisseur"
 msgid "Total"
 msgstr "Total"
 
-#: models.py:318 views_conf.py:176
+#: models.py:318 views_conf.py:156
 msgid "articles"
 msgstr "articles"
 
@@ -677,7 +677,7 @@ msgstr "Financier"
 msgid "There are %(build)d bills in building and %(valid)d validated"
 msgstr "Il y a %(build)d factures en construction et %(valid)d validées"
 
-#: views.py:536 views.py:569 views_conf.py:181
+#: views.py:536 views.py:569 views_conf.py:161
 msgid "Invoice"
 msgstr "Facturier"
 
@@ -694,7 +694,7 @@ msgstr "Gestion des paramètres et configuration du facturier"
 msgid "Invoice configuration"
 msgstr "Configuration du facturier"
 
-#: views_conf.py:66 views_conf.py:223
+#: views_conf.py:66 views_conf.py:203
 msgid "Parameters"
 msgstr "Paramètres"
 
@@ -738,35 +738,23 @@ msgstr "Modifier une catégorie"
 msgid "Delete Category"
 msgstr "Supprimer une catégorie"
 
-#: views_conf.py:146
-msgid "Add custom field"
-msgstr "Ajout d'un champ personnalisé"
-
-#: views_conf.py:147
-msgid "Modify custom field"
-msgstr "Modifier un champ personnalisé"
-
-#: views_conf.py:156
-msgid "Delete custom field"
-msgstr "Supprimer un champ personnalisé"
-
-#: views_conf.py:159
+#: views_conf.py:139
 msgid "Tool to import articles from CSV file."
 msgstr "Outil d'import d'article depuis un fichier CSV"
 
-#: views_conf.py:161
+#: views_conf.py:141
 msgid "Article import"
 msgstr "Import d'article"
 
-#: views_conf.py:178
+#: views_conf.py:158
 msgid "parameters"
 msgstr "paramètres"
 
-#: views_conf.py:223
+#: views_conf.py:203
 msgid "Configuration of parameters"
 msgstr "Définissez les paramètres du facturier."
 
-#: views_conf.py:226
+#: views_conf.py:206
 msgid "Configuration of vat"
 msgstr "Configurez votre gestion de TVA."
 
@@ -869,3 +857,12 @@ msgstr "Vos factures"
 #: views_summary.py:69
 msgid "Payment"
 msgstr "Paiement"
+
+#~ msgid "Add custom field"
+#~ msgstr "Ajout d'un champ personnalisé"
+
+#~ msgid "Modify custom field"
+#~ msgstr "Modifier un champ personnalisé"
+
+#~ msgid "Delete custom field"
+#~ msgstr "Supprimer un champ personnalisé"

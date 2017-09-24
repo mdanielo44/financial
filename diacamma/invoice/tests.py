@@ -70,7 +70,7 @@ class ConfigTest(LucteriosTest):
         self.assert_count_equal('COMPONENTS/GRID[@name="vat"]/HEADER', 3)
         self.assert_xml_equal('COMPONENTS/GRID[@name="vat"]/HEADER[@name="name"]', "nom")
         self.assert_xml_equal('COMPONENTS/GRID[@name="vat"]/HEADER[@name="rate"]', "taux")
-        self.assert_xml_equal('COMPONENTS/GRID[@name="vat"]/HEADER[@name="isactif"]', "actif?")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="vat"]/HEADER[@name="isactif"]', "actif ?")
         self.assert_count_equal('COMPONENTS/GRID[@name="vat"]/RECORD', 0)
 
         self.factory.xfer = VatAddModify()
@@ -199,7 +199,7 @@ class ConfigTest(LucteriosTest):
         self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/HEADER[@name="designation"]', "désignation")
         self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/HEADER[@name="price_txt"]', "prix")
         self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/HEADER[@name="unit"]', "unité")
-        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/HEADER[@name="isdisabled"]', "désactivé?")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/HEADER[@name="isdisabled"]', "désactivé ?")
         self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/HEADER[@name="sell_account"]', "compte de vente")
         self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/HEADER[@name="stockable"]', "stockable")
         self.assert_count_equal('COMPONENTS/GRID[@name="article"]/RECORD', 0)
@@ -791,7 +791,7 @@ class BillTest(InvoiceTest):
         self.call('/diacamma.invoice/billShow', {'bill': 1}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'billShow')
         self.assert_count_equal('COMPONENTS/GRID[@name="detail"]/RECORD', 1)
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="info"]', "{[font color=\"red\"]}au moins un article a un compte inconnu!{[/font]}")
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="info"]', "{[font color=\"red\"]}au moins un article a un compte inconnu !{[/font]}")
 
         self.factory.xfer = DetailDel()
         self.call('/diacamma.invoice/detailDel',
@@ -805,7 +805,7 @@ class BillTest(InvoiceTest):
         self.call('/diacamma.invoice/billShow', {'bill': 1}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'billShow')
         self.assert_count_equal('COMPONENTS/GRID[@name="detail"]/RECORD', 1)
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="info"]', "{[font color=\"red\"]}au moins un article a un compte inconnu!{[/font]}")
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="info"]', "{[font color=\"red\"]}au moins un article a un compte inconnu !{[/font]}")
 
         self.factory.xfer = DetailDel()
         self.call('/diacamma.invoice/detailDel',
@@ -823,7 +823,7 @@ class BillTest(InvoiceTest):
         self.call('/diacamma.invoice/billShow', {'bill': 1}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'billShow')
         self.assert_count_equal('COMPONENTS/GRID[@name="detail"]/RECORD', 1)
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="info"]', "{[font color=\"red\"]}Ce tiers n'a pas de compte correct!{[/font]}")
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="info"]', "{[font color=\"red\"]}Ce tiers n'a pas de compte correct !{[/font]}")
 
     def check_list_del_archive(self):
         self.factory.xfer = BillList()
@@ -994,7 +994,7 @@ class BillTest(InvoiceTest):
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
         self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', 2)
         self.assert_xml_equal(
-            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit:{[/b]} 0.00€ - {[b]}Charge:{[/b]} 0.00€ = {[b]}Résultat:{[/b]} 0.00€ | {[b]}Trésorie:{[/b]} 0.00€ - {[b]}Validé:{[/b]} 0.00€{[/center]}')
+            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit :{[/b]} 0.00€ - {[b]}Charge :{[/b]} 0.00€ = {[b]}Résultat :{[/b]} 0.00€ | {[b]}Trésorerie :{[/b]} 0.00€ - {[b]}Validé :{[/b]} 0.00€{[/center]}')
 
     def test_add_quotation(self):
         default_articles()
@@ -1197,7 +1197,7 @@ class BillTest(InvoiceTest):
         self.assertTrue('128.02€' in description, description)
         self.assertTrue('4.51€' in description, description)
         self.assert_xml_equal(
-            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit:{[/b]} 123.51€ - {[b]}Charge:{[/b]} 0.00€ = {[b]}Résultat:{[/b]} 123.51€ | {[b]}Trésorie:{[/b]} 0.00€ - {[b]}Validé:{[/b]} 0.00€{[/center]}')
+            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit :{[/b]} 123.51€ - {[b]}Charge :{[/b]} 0.00€ = {[b]}Résultat :{[/b]} 123.51€ | {[b]}Trésorerie :{[/b]} 0.00€ - {[b]}Validé :{[/b]} 0.00€{[/center]}')
 
         self.factory.xfer = BillList()
         self.call('/diacamma.invoice/billList', {}, False)
@@ -1251,7 +1251,7 @@ class BillTest(InvoiceTest):
         self.assertTrue('133.27€' in description, description)
         self.assertTrue('5.25€' in description, description)
         self.assert_xml_equal(
-            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit:{[/b]} 128.02€ - {[b]}Charge:{[/b]} 0.00€ = {[b]}Résultat:{[/b]} 128.02€ | {[b]}Trésorie:{[/b]} 0.00€ - {[b]}Validé:{[/b]} 0.00€{[/center]}')
+            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit :{[/b]} 128.02€ - {[b]}Charge :{[/b]} 0.00€ = {[b]}Résultat :{[/b]} 128.02€ | {[b]}Trésorerie :{[/b]} 0.00€ - {[b]}Validé :{[/b]} 0.00€{[/center]}')
 
         self.factory.xfer = BillList()
         self.call('/diacamma.invoice/billList', {}, False)
@@ -1327,7 +1327,7 @@ class BillTest(InvoiceTest):
             six.text_type(self.get_first_xpath('PRINT').text)).decode("utf-8")
         content_csv = csv_value.split('\n')
         self.assertEqual(len(content_csv), 24, str(content_csv))
-        self.assertEqual(content_csv[1].strip(), '"Impression de statistique"')
+        self.assertEqual(content_csv[1].strip(), '"Impression des statistiques"')
         self.assertEqual(
             content_csv[12].strip(), '"total";"351.22€";"100.00 %";')
         self.assertEqual(
@@ -1350,7 +1350,7 @@ class BillTest(InvoiceTest):
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
         self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', 1)
         self.assert_xml_equal(
-            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit:{[/b]} 100.00€ - {[b]}Charge:{[/b]} 0.00€ = {[b]}Résultat:{[/b]} 100.00€ | {[b]}Trésorie:{[/b]} 0.00€ - {[b]}Validé:{[/b]} 0.00€{[/center]}')
+            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit :{[/b]} 100.00€ - {[b]}Charge :{[/b]} 0.00€ = {[b]}Résultat :{[/b]} 100.00€ | {[b]}Trésorerie :{[/b]} 0.00€ - {[b]}Validé :{[/b]} 0.00€{[/center]}')
 
         self.factory.xfer = BillShow()
         self.call('/diacamma.invoice/billShow', {'bill': bill_id}, False)
@@ -1403,7 +1403,7 @@ class BillTest(InvoiceTest):
         description = self.get_first_xpath('COMPONENTS/GRID[@name="entryaccount"]/RECORD[2]/VALUE[@name="description"]').text
         self.assertTrue('[531] 531' in description, description)
         self.assert_xml_equal(
-            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit:{[/b]} 100.00€ - {[b]}Charge:{[/b]} 0.00€ = {[b]}Résultat:{[/b]} 100.00€ | {[b]}Trésorie:{[/b]} 60.00€ - {[b]}Validé:{[/b]} 0.00€{[/center]}')
+            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit :{[/b]} 100.00€ - {[b]}Charge :{[/b]} 0.00€ = {[b]}Résultat :{[/b]} 100.00€ | {[b]}Trésorerie :{[/b]} 60.00€ - {[b]}Validé :{[/b]} 0.00€{[/center]}')
 
         self.factory.xfer = PayoffAddModify()
         self.call(
@@ -1437,7 +1437,7 @@ class BillTest(InvoiceTest):
         description = self.get_first_xpath('COMPONENTS/GRID[@name="entryaccount"]/RECORD[3]/VALUE[@name="description"]').text
         self.assertTrue('[581] 581' in description, description)
         self.assert_xml_equal(
-            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit:{[/b]} 100.00€ - {[b]}Charge:{[/b]} 0.00€ = {[b]}Résultat:{[/b]} 100.00€ | {[b]}Trésorie:{[/b]} 100.00€ - {[b]}Validé:{[/b]} 0.00€{[/center]}')
+            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit :{[/b]} 100.00€ - {[b]}Charge :{[/b]} 0.00€ = {[b]}Résultat :{[/b]} 100.00€ | {[b]}Trésorerie :{[/b]} 100.00€ - {[b]}Validé :{[/b]} 0.00€{[/center]}')
 
     def test_payoff_avoid(self):
         default_articles()
@@ -1451,7 +1451,7 @@ class BillTest(InvoiceTest):
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
         self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', 1)
         self.assert_xml_equal(
-            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit:{[/b]} -50.00€ - {[b]}Charge:{[/b]} 0.00€ = {[b]}Résultat:{[/b]} -50.00€ | {[b]}Trésorie:{[/b]} 0.00€ - {[b]}Validé:{[/b]} 0.00€{[/center]}')
+            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit :{[/b]} -50.00€ - {[b]}Charge :{[/b]} 0.00€ = {[b]}Résultat :{[/b]} -50.00€ | {[b]}Trésorerie :{[/b]} 0.00€ - {[b]}Validé :{[/b]} 0.00€{[/center]}')
 
         self.factory.xfer = PayoffAddModify()
         self.call(
@@ -1489,7 +1489,7 @@ class BillTest(InvoiceTest):
         description = self.get_first_xpath('COMPONENTS/GRID[@name="entryaccount"]/RECORD[2]/VALUE[@name="description"]').text
         self.assertTrue('[512] 512' in description, description)
         self.assert_xml_equal(
-            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit:{[/b]} -50.00€ - {[b]}Charge:{[/b]} 0.00€ = {[b]}Résultat:{[/b]} -50.00€ | {[b]}Trésorie:{[/b]} -50.00€ - {[b]}Validé:{[/b]} 0.00€{[/center]}')
+            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit :{[/b]} -50.00€ - {[b]}Charge :{[/b]} 0.00€ = {[b]}Résultat :{[/b]} -50.00€ | {[b]}Trésorerie :{[/b]} -50.00€ - {[b]}Validé :{[/b]} 0.00€{[/center]}')
 
         self.factory.xfer = PayoffDel()
         self.call(
@@ -1502,7 +1502,7 @@ class BillTest(InvoiceTest):
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
         self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', 1)
         self.assert_xml_equal(
-            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit:{[/b]} -50.00€ - {[b]}Charge:{[/b]} 0.00€ = {[b]}Résultat:{[/b]} -50.00€ | {[b]}Trésorie:{[/b]} 0.00€ - {[b]}Validé:{[/b]} 0.00€{[/center]}')
+            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit :{[/b]} -50.00€ - {[b]}Charge :{[/b]} 0.00€ = {[b]}Résultat :{[/b]} -50.00€ | {[b]}Trésorerie :{[/b]} 0.00€ - {[b]}Validé :{[/b]} 0.00€{[/center]}')
 
         self.factory.xfer = BillPrint()
         self.call(
@@ -1523,7 +1523,7 @@ class BillTest(InvoiceTest):
         self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[1]/VALUE[@name="link"]', '---')
         self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[2]/VALUE[@name="link"]', '---')
         self.assert_xml_equal("COMPONENTS/LABELFORM[@name='result']",
-                              '{[center]}{[b]}Produit:{[/b]} 150.00€ - {[b]}Charge:{[/b]} 0.00€ = {[b]}Résultat:{[/b]} 150.00€ | {[b]}Trésorie:{[/b]} 0.00€ - {[b]}Validé:{[/b]} 0.00€{[/center]}')
+                              '{[center]}{[b]}Produit :{[/b]} 150.00€ - {[b]}Charge :{[/b]} 0.00€ = {[b]}Résultat :{[/b]} 150.00€ | {[b]}Trésorerie :{[/b]} 0.00€ - {[b]}Validé :{[/b]} 0.00€{[/center]}')
 
         self.factory.xfer = BillMultiPay()
         self.call('/diacamma.invoice/billMultiPay', {'bill': '%s;%s' % (bill_id1, bill_id2)}, False)
@@ -1569,7 +1569,7 @@ class BillTest(InvoiceTest):
         self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[2]/VALUE[@name="link"]', '---')
         self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[3]/VALUE[@name="link"]', '---')
         self.assert_xml_equal("COMPONENTS/LABELFORM[@name='result']",
-                              '{[center]}{[b]}Produit:{[/b]} 150.00€ - {[b]}Charge:{[/b]} 0.00€ = {[b]}Résultat:{[/b]} 150.00€ | {[b]}Trésorie:{[/b]} 100.00€ - {[b]}Validé:{[/b]} 0.00€{[/center]}')
+                              '{[center]}{[b]}Produit :{[/b]} 150.00€ - {[b]}Charge :{[/b]} 0.00€ = {[b]}Résultat :{[/b]} 150.00€ | {[b]}Trésorerie :{[/b]} 100.00€ - {[b]}Validé :{[/b]} 0.00€{[/center]}')
 
     def test_payoff_multi_samethird(self):
         default_articles()
@@ -1586,7 +1586,7 @@ class BillTest(InvoiceTest):
         self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[1]/VALUE[@name="link"]', '---')
         self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[2]/VALUE[@name="link"]', '---')
         self.assert_xml_equal("COMPONENTS/LABELFORM[@name='result']",
-                              '{[center]}{[b]}Produit:{[/b]} 150.00€ - {[b]}Charge:{[/b]} 0.00€ = {[b]}Résultat:{[/b]} 150.00€ | {[b]}Trésorie:{[/b]} 0.00€ - {[b]}Validé:{[/b]} 0.00€{[/center]}')
+                              '{[center]}{[b]}Produit :{[/b]} 150.00€ - {[b]}Charge :{[/b]} 0.00€ = {[b]}Résultat :{[/b]} 150.00€ | {[b]}Trésorerie :{[/b]} 0.00€ - {[b]}Validé :{[/b]} 0.00€{[/center]}')
 
         self.factory.xfer = BillMultiPay()
         self.call('/diacamma.invoice/billMultiPay',
@@ -1633,7 +1633,7 @@ class BillTest(InvoiceTest):
         self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[2]/VALUE[@name="link"]', 'A')
         self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[1]/VALUE[@name="link"]', 'A')
         self.assert_xml_equal("COMPONENTS/LABELFORM[@name='result']",
-                              '{[center]}{[b]}Produit:{[/b]} 150.00€ - {[b]}Charge:{[/b]} 0.00€ = {[b]}Résultat:{[/b]} 150.00€ | {[b]}Trésorie:{[/b]} 150.00€ - {[b]}Validé:{[/b]} 0.00€{[/center]}')
+                              '{[center]}{[b]}Produit :{[/b]} 150.00€ - {[b]}Charge :{[/b]} 0.00€ = {[b]}Résultat :{[/b]} 150.00€ | {[b]}Trésorerie :{[/b]} 150.00€ - {[b]}Validé :{[/b]} 0.00€{[/center]}')
 
     def test_payoff_multi_bydate(self):
         default_articles()
@@ -1650,7 +1650,7 @@ class BillTest(InvoiceTest):
         self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[1]/VALUE[@name="link"]', '---')
         self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[2]/VALUE[@name="link"]', '---')
         self.assert_xml_equal("COMPONENTS/LABELFORM[@name='result']",
-                              '{[center]}{[b]}Produit:{[/b]} 150.00€ - {[b]}Charge:{[/b]} 0.00€ = {[b]}Résultat:{[/b]} 150.00€ | {[b]}Trésorie:{[/b]} 0.00€ - {[b]}Validé:{[/b]} 0.00€{[/center]}')
+                              '{[center]}{[b]}Produit :{[/b]} 150.00€ - {[b]}Charge :{[/b]} 0.00€ = {[b]}Résultat :{[/b]} 150.00€ | {[b]}Trésorerie :{[/b]} 0.00€ - {[b]}Validé :{[/b]} 0.00€{[/center]}')
 
         self.factory.xfer = BillMultiPay()
         self.call('/diacamma.invoice/billMultiPay',
@@ -1697,7 +1697,7 @@ class BillTest(InvoiceTest):
         self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[2]/VALUE[@name="link"]', '---')
         self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[1]/VALUE[@name="link"]', '---')
         self.assert_xml_equal("COMPONENTS/LABELFORM[@name='result']",
-                              '{[center]}{[b]}Produit:{[/b]} 150.00€ - {[b]}Charge:{[/b]} 0.00€ = {[b]}Résultat:{[/b]} 150.00€ | {[b]}Trésorie:{[/b]} 120.00€ - {[b]}Validé:{[/b]} 0.00€{[/center]}')
+                              '{[center]}{[b]}Produit :{[/b]} 150.00€ - {[b]}Charge :{[/b]} 0.00€ = {[b]}Résultat :{[/b]} 150.00€ | {[b]}Trésorerie :{[/b]} 120.00€ - {[b]}Validé :{[/b]} 0.00€{[/center]}')
 
     def test_send_bill(self):
         default_articles()

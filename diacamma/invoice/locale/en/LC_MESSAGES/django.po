@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-08-14 14:04+0000\n"
+"POT-Creation-Date: 2017-09-24 13:21+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: __init__.py:41 views_conf.py:223 views_conf.py:226
+#: __init__.py:41 views_conf.py:203 views_conf.py:206
 msgid "Diacamma invoice"
 msgstr "Diacamma invoice"
 
@@ -91,7 +91,7 @@ msgstr "rate"
 msgid "is actif"
 msgstr "is actif"
 
-#: models.py:74 views_conf.py:76 views_conf.py:226
+#: models.py:74 views_conf.py:76 views_conf.py:206
 msgid "VAT"
 msgstr "VAT"
 
@@ -194,7 +194,7 @@ msgstr "002@Provider"
 msgid "Total"
 msgstr "Total"
 
-#: models.py:318 views_conf.py:176
+#: models.py:318 views_conf.py:156
 msgid "articles"
 msgstr "articles"
 
@@ -675,7 +675,7 @@ msgstr "Financial"
 msgid "There are %(build)d bills in building and %(valid)d validated"
 msgstr "There are %(build)d bills in building and %(valid)d validated"
 
-#: views.py:536 views.py:569 views_conf.py:181
+#: views.py:536 views.py:569 views_conf.py:161
 msgid "Invoice"
 msgstr "Invoice"
 
@@ -692,7 +692,7 @@ msgstr "Management of parameters and configuration of invoice"
 msgid "Invoice configuration"
 msgstr "Invoice configuration"
 
-#: views_conf.py:66 views_conf.py:223
+#: views_conf.py:66 views_conf.py:203
 msgid "Parameters"
 msgstr "Parameters"
 
@@ -736,35 +736,23 @@ msgstr "Modify category"
 msgid "Delete Category"
 msgstr "Delete Category"
 
-#: views_conf.py:146
-msgid "Add custom field"
-msgstr "Add custom field"
-
-#: views_conf.py:147
-msgid "Modify custom field"
-msgstr "Modify custom field"
-
-#: views_conf.py:156
-msgid "Delete custom field"
-msgstr "Delete custom field"
-
-#: views_conf.py:159
+#: views_conf.py:139
 msgid "Tool to import articles from CSV file."
 msgstr "Tool to import articles from CSV file."
 
-#: views_conf.py:161
+#: views_conf.py:141
 msgid "Article import"
 msgstr "Article import"
 
-#: views_conf.py:178
+#: views_conf.py:158
 msgid "parameters"
 msgstr "parameters"
 
-#: views_conf.py:223
+#: views_conf.py:203
 msgid "Configuration of parameters"
 msgstr "Define parameters for invoice"
 
-#: views_conf.py:226
+#: views_conf.py:206
 msgid "Configuration of vat"
 msgstr "Configuration of vat"
 
@@ -867,3 +855,12 @@ msgstr "Your invoices"
 #: views_summary.py:69
 msgid "Payment"
 msgstr "Payment"
+
+#~ msgid "Add custom field"
+#~ msgstr "Add custom field"
+
+#~ msgid "Modify custom field"
+#~ msgstr "Modify custom field"
+
+#~ msgid "Delete custom field"
+#~ msgstr "Delete custom field"

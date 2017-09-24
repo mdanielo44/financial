@@ -58,7 +58,7 @@ class ChartsAccountTest(LucteriosTest):
         self.assert_count_equal('COMPONENTS/GRID[@name="chartsaccount"]/HEADER', 5)
         self.assert_count_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD', 17)
         self.assert_xml_equal(
-            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit:{[/b]} 230.62€ - {[b]}Charge:{[/b]} 348.60€ = {[b]}Résultat:{[/b]} -117.98€ | {[b]}Trésorie:{[/b]} 1050.66€ - {[b]}Validé:{[/b]} 1244.74€{[/center]}')
+            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit :{[/b]} 230.62€ - {[b]}Charge :{[/b]} 348.60€ = {[b]}Résultat :{[/b]} -117.98€ | {[b]}Trésorerie :{[/b]} 1050.66€ - {[b]}Validé :{[/b]} 1244.74€{[/center]}')
 
     def test_asset(self):
         self.factory.xfer = ChartsAccountList()
@@ -226,7 +226,7 @@ class ChartsAccountTest(LucteriosTest):
         self.assert_xml_equal('COMPONENTS/EDIT[@name="code"]', '3015!')
         self.assert_xml_equal('COMPONENTS/EDIT[@name="name"]', None)
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="type_of_account"]', '---')
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="error_code"]', "{[center]}{[font color='red']}Code invalide!{[/font]}{[/center]}")
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="error_code"]', "{[center]}{[font color='red']}Code invalide !{[/font]}{[/center]}")
 
         self.factory.xfer = ChartsAccountAddModify()
         self.call('/diacamma.accounting/chartsAccountAddModify',
@@ -236,7 +236,7 @@ class ChartsAccountTest(LucteriosTest):
         self.assert_xml_equal('COMPONENTS/EDIT[@name="code"]', 'abcd!')
         self.assert_xml_equal('COMPONENTS/EDIT[@name="name"]', None)
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="type_of_account"]', '---')
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="error_code"]', "{[center]}{[font color='red']}Code invalide!{[/font]}{[/center]}")
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="error_code"]', "{[center]}{[font color='red']}Code invalide !{[/font]}{[/center]}")
 
     def test_modify(self):
         self.factory.xfer = ChartsAccountAddModify()
@@ -267,7 +267,7 @@ class ChartsAccountTest(LucteriosTest):
         self.assert_xml_equal('COMPONENTS/EDIT[@name="code"]', '3015!')
         self.assert_xml_equal('COMPONENTS/EDIT[@name="name"]', '707')
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="type_of_account"]', 'Produit')
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="error_code"]', "{[center]}{[font color='red']}Code invalide!{[/font]}{[/center]}")
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="error_code"]', "{[center]}{[font color='red']}Code invalide !{[/font]}{[/center]}")
 
         self.factory.xfer = ChartsAccountAddModify()
         self.call('/diacamma.accounting/chartsAccountAddModify',
@@ -277,7 +277,7 @@ class ChartsAccountTest(LucteriosTest):
         self.assert_xml_equal('COMPONENTS/EDIT[@name="code"]', 'abcd!')
         self.assert_xml_equal('COMPONENTS/EDIT[@name="name"]', '707')
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="type_of_account"]', 'Produit')
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="error_code"]', "{[center]}{[font color='red']}Code invalide!{[/font]}{[/center]}")
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="error_code"]', "{[center]}{[font color='red']}Code invalide !{[/font]}{[/center]}")
 
         self.factory.xfer = ChartsAccountAddModify()
         self.call('/diacamma.accounting/chartsAccountAddModify',
@@ -287,7 +287,7 @@ class ChartsAccountTest(LucteriosTest):
         self.assert_xml_equal('COMPONENTS/EDIT[@name="code"]', '6125!')
         self.assert_xml_equal('COMPONENTS/EDIT[@name="name"]', '707')
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="type_of_account"]', 'Produit')
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="error_code"]', "{[center]}{[font color='red']}Changement non permis!{[/font]}{[/center]}")
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="error_code"]', "{[center]}{[font color='red']}Changement non permis !{[/font]}{[/center]}")
 
     def test_listing(self):
         self.factory.xfer = ChartsAccountListing()
@@ -372,7 +372,7 @@ class FiscalYearWorkflowTest(PaymentTest):
         self.call('/diacamma.accounting/fiscalYearBegin',
                   {'year': '1', 'type_of_account': '-1'}, False)
         self.assert_observer('core.exception', 'diacamma.accounting', 'fiscalYearBegin')
-        self.assert_xml_equal('EXCEPTION/MESSAGE', "Des écritures de report à nouveau ne sont pas validées!")
+        self.assert_xml_equal('EXCEPTION/MESSAGE', "Des écritures de report à nouveau ne sont pas validées !")
 
         new_entry.closed()
 
@@ -453,7 +453,7 @@ class FiscalYearWorkflowTest(PaymentTest):
         self.call('/diacamma.accounting/chartsAccountImportFiscalYear',
                   {'CONFIRME': 'YES', 'year': '1', 'type_of_account': '-1'}, False)
         self.assert_observer('core.exception', 'diacamma.accounting', 'chartsAccountImportFiscalYear')
-        self.assert_xml_equal('EXCEPTION/MESSAGE', "Cet exercice n'a pas d'exercice précédent!")
+        self.assert_xml_equal('EXCEPTION/MESSAGE', "Cet exercice n'a pas d'exercice précédent !")
 
         self.factory.xfer = ChartsAccountList()
         self.call('/diacamma.accounting/chartsAccountList', {'year': '1', 'type_of_account': '-1'}, False)
@@ -498,7 +498,7 @@ class FiscalYearWorkflowTest(PaymentTest):
         self.call('/diacamma.accounting/fiscalYearImport',
                   {'year': '1', 'type_of_account': '-1'}, False)
         self.assert_observer('core.exception', 'diacamma.accounting', 'fiscalYearImport')
-        self.assert_xml_equal('EXCEPTION/MESSAGE', "Cet exercice n'est pas 'en cours'!")
+        self.assert_xml_equal('EXCEPTION/MESSAGE', "Cet exercice n'est pas 'en cours' !")
 
         self.factory.xfer = FiscalYearBegin()
         self.call('/diacamma.accounting/fiscalYearBegin', {'CONFIRME': 'YES', 'year': '1', 'type_of_account': '-1'}, False)
@@ -521,7 +521,7 @@ class FiscalYearWorkflowTest(PaymentTest):
         self.call('/diacamma.accounting/fiscalYearImport',
                   {'year': '1', 'type_of_account': '-1'}, False)
         self.assert_observer('core.exception', 'diacamma.accounting', 'fiscalYearImport')
-        self.assert_xml_equal('EXCEPTION/MESSAGE', "Cet exercice a des écritures non-validées et pas d'exercice suivant!")
+        self.assert_xml_equal('EXCEPTION/MESSAGE', "Cet exercice a des écritures non-validées et pas d'exercice suivant !")
 
         FiscalYear.objects.create(begin='2016-01-01', end='2016-12-31', status=0,
                                   last_fiscalyear=FiscalYear.objects.get(id=1))
@@ -532,7 +532,7 @@ class FiscalYearWorkflowTest(PaymentTest):
         self.assert_observer('core.custom', 'diacamma.accounting', 'fiscalYearClose')
         text_value = self.get_first_xpath("COMPONENTS/LABELFORM[@name='info']").text
 
-        self.assertTrue('Voulez-vous cloturer cet exercice?' in text_value, text_value)
+        self.assertTrue('Voulez-vous cloturer cet exercice ?' in text_value, text_value)
         self.assertTrue('4 écritures ne sont pas validées' in text_value, text_value)
 
         self.factory.xfer = EntryAccountList()
@@ -541,7 +541,7 @@ class FiscalYearWorkflowTest(PaymentTest):
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
         self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', 11)
         self.assert_xml_equal(
-            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit:{[/b]} 230.62€ - {[b]}Charge:{[/b]} 348.60€ = {[b]}Résultat:{[/b]} -117.98€ | {[b]}Trésorie:{[/b]} 1050.66€ - {[b]}Validé:{[/b]} 1244.74€{[/center]}')
+            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit :{[/b]} 230.62€ - {[b]}Charge :{[/b]} 348.60€ = {[b]}Résultat :{[/b]} -117.98€ | {[b]}Trésorerie :{[/b]} 1050.66€ - {[b]}Validé :{[/b]} 1244.74€{[/center]}')
 
         self.factory.xfer = EntryAccountList()
         self.call('/diacamma.accounting/entryAccountList',
@@ -549,7 +549,7 @@ class FiscalYearWorkflowTest(PaymentTest):
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
         self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', 0)
         self.assert_xml_equal(
-            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit:{[/b]} 0.00€ - {[b]}Charge:{[/b]} 0.00€ = {[b]}Résultat:{[/b]} 0.00€ | {[b]}Trésorie:{[/b]} 0.00€ - {[b]}Validé:{[/b]} 0.00€{[/center]}')
+            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit :{[/b]} 0.00€ - {[b]}Charge :{[/b]} 0.00€ = {[b]}Résultat :{[/b]} 0.00€ | {[b]}Trésorerie :{[/b]} 0.00€ - {[b]}Validé :{[/b]} 0.00€{[/center]}')
 
         self.factory.xfer = FiscalYearClose()
         self.call('/diacamma.accounting/fiscalYearClose',
@@ -564,7 +564,7 @@ class FiscalYearWorkflowTest(PaymentTest):
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
         self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', 9)
         self.assert_xml_equal(
-            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit:{[/b]} 196.61€ - {[b]}Charge:{[/b]} 76.28€ = {[b]}Résultat:{[/b]} 120.33€ | {[b]}Trésorie:{[/b]} 1244.74€ - {[b]}Validé:{[/b]} 1244.74€{[/center]}')
+            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit :{[/b]} 196.61€ - {[b]}Charge :{[/b]} 76.28€ = {[b]}Résultat :{[/b]} 120.33€ | {[b]}Trésorerie :{[/b]} 1244.74€ - {[b]}Validé :{[/b]} 1244.74€{[/center]}')
 
         self.factory.xfer = EntryAccountList()
         self.call('/diacamma.accounting/entryAccountList',
@@ -572,7 +572,7 @@ class FiscalYearWorkflowTest(PaymentTest):
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
         self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', 4)
         self.assert_xml_equal(
-            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit:{[/b]} 34.01€ - {[b]}Charge:{[/b]} 272.32€ = {[b]}Résultat:{[/b]} -238.31€ | {[b]}Trésorie:{[/b]} -194.08€ - {[b]}Validé:{[/b]} 0.00€{[/center]}')
+            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit :{[/b]} 34.01€ - {[b]}Charge :{[/b]} 272.32€ = {[b]}Résultat :{[/b]} -238.31€ | {[b]}Trésorerie :{[/b]} -194.08€ - {[b]}Validé :{[/b]} 0.00€{[/center]}')
 
         self.factory.xfer = ChartsAccountList()
         self.call('/diacamma.accounting/chartsAccountList',
@@ -618,7 +618,7 @@ class FiscalYearWorkflowTest(PaymentTest):
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
         self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', 6)
         self.assert_xml_equal(
-            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit:{[/b]} 34.01€ - {[b]}Charge:{[/b]} 272.32€ = {[b]}Résultat:{[/b]} -238.31€ | {[b]}Trésorie:{[/b]} 1050.66€ - {[b]}Validé:{[/b]} 1244.74€{[/center]}')
+            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit :{[/b]} 34.01€ - {[b]}Charge :{[/b]} 272.32€ = {[b]}Résultat :{[/b]} -238.31€ | {[b]}Trésorerie :{[/b]} 1050.66€ - {[b]}Validé :{[/b]} 1244.74€{[/center]}')
 
         self.factory.xfer = ChartsAccountList()
         self.call('/diacamma.accounting/chartsAccountList',

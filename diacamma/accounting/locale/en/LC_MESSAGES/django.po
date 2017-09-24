@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-08-14 14:04+0000\n"
+"POT-Creation-Date: 2017-09-24 13:21+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -317,8 +317,8 @@ msgstr "The cost accounting \"%s\" is include in a model of entry!"
 msgid "This cost accounting have entry with another year!"
 msgstr "This cost accounting have entry with another year!"
 
-#: models.py:556 models.py:766 models.py:1187 models.py:1315 views_budget.py:46
-#: views_budget.py:258
+#: models.py:556 models.py:766 models.py:1187 models.py:1315
+#: views_budget.py:46 views_budget.py:258
 msgid "cost accounting"
 msgstr "cost accounting"
 

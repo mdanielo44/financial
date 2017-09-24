@@ -279,7 +279,7 @@ class ThirdTest(LucteriosTest):
         self.factory.xfer = AccountThirdDel()
         self.call('/diacamma.accounting/accountThirdDel', {"accountthird": 5}, False)
         self.assert_observer('core.exception', 'diacamma.accounting', 'accountThirdDel')
-        self.assert_xml_equal('EXCEPTION/MESSAGE', "Ce compte n'est pas soldé!")
+        self.assert_xml_equal('EXCEPTION/MESSAGE', "Ce compte n'est pas soldé !")
 
         self.factory.xfer = AccountThirdDel()
         self.call('/diacamma.accounting/accountThirdDel', {"accountthird": 6}, False)
@@ -547,7 +547,7 @@ class AdminTest(LucteriosTest):
         self.call('/CORE/statusMenu', {}, False)
         self.assert_observer('core.custom', 'CORE', 'statusMenu')
         self.assert_xml_equal("COMPONENTS/LABELFORM[@name='accountingtitle']", "{[center]}{[u]}{[b]}Comptabilité{[/b]}{[/u]}{[/center]}")
-        self.assert_xml_equal("COMPONENTS/LABELFORM[@name='accounting_error']", "{[center]}Pas d'exercice défini!{[/center]}")
+        self.assert_xml_equal("COMPONENTS/LABELFORM[@name='accounting_error']", "{[center]}Pas d'exercice défini !{[/center]}")
         self.assert_action_equal("COMPONENTS/BUTTON[@name='accounting_conf']/ACTIONS/ACTION",
                                  ("conf.", None, 'diacamma.accounting', 'configuration', 0, 1, 1))
 
@@ -612,7 +612,7 @@ class AdminTest(LucteriosTest):
         self.factory.xfer = JournalDel()
         self.call('/diacamma.accounting/journalAddModify', {'journal': '2'}, False)
         self.assert_observer('core.exception', 'diacamma.accounting', 'journalAddModify')
-        self.assert_xml_equal('EXCEPTION/MESSAGE', 'journal réservé!')
+        self.assert_xml_equal('EXCEPTION/MESSAGE', 'journal réservé !')
 
         self.factory.xfer = JournalDel()
         self.call('/diacamma.accounting/journalAddModify', {'CONFIRME': 'YES', 'journal': '6'}, False)
@@ -632,7 +632,7 @@ class AdminTest(LucteriosTest):
         self.factory.xfer = FiscalYearAddModify()
         self.call('/diacamma.accounting/fiscalYearAddModify', {}, False)
         self.assert_observer('core.exception', 'diacamma.accounting', 'fiscalYearAddModify')
-        self.assert_xml_equal('EXCEPTION/MESSAGE', "Système comptable non défini!")
+        self.assert_xml_equal('EXCEPTION/MESSAGE', "Système comptable non défini !")
 
         set_accounting_system()
 
@@ -697,7 +697,7 @@ class AdminTest(LucteriosTest):
         self.factory.xfer = FiscalYearAddModify()
         self.call('/diacamma.accounting/fiscalYearAddModify', {'fiscalyear': '1'}, False)
         self.assert_observer('core.exception', 'diacamma.accounting', 'fiscalYearAddModify')
-        self.assert_xml_equal('EXCEPTION/MESSAGE', "Cet exercice n'est pas le dernier!")
+        self.assert_xml_equal('EXCEPTION/MESSAGE', "Cet exercice n'est pas le dernier !")
 
         self.factory.xfer = FiscalYearAddModify()
         self.call('/diacamma.accounting/fiscalYearAddModify', {'fiscalyear': '2'}, False)
@@ -728,13 +728,13 @@ class AdminTest(LucteriosTest):
         self.call(
             '/diacamma.accounting/fiscalYearDel', {'fiscalyear': '1'}, False)
         self.assert_observer('core.exception', 'diacamma.accounting', 'fiscalYearDel')
-        self.assert_xml_equal('EXCEPTION/MESSAGE', "Cet exercice n'est pas le dernier!")
+        self.assert_xml_equal('EXCEPTION/MESSAGE', "Cet exercice n'est pas le dernier !")
 
         self.factory.xfer = FiscalYearDel()
         self.call(
             '/diacamma.accounting/fiscalYearDel', {'fiscalyear': '2'}, False)
         self.assert_observer('core.exception', 'diacamma.accounting', 'fiscalYearDel')
-        self.assert_xml_equal('EXCEPTION/MESSAGE', "Cet exercice n'est pas le dernier!")
+        self.assert_xml_equal('EXCEPTION/MESSAGE', "Cet exercice n'est pas le dernier !")
 
         self.factory.xfer = FiscalYearDel()
         self.call('/diacamma.accounting/fiscalYearDel', {'CONFIRME': 'YES', 'fiscalyear': '3'}, False)
@@ -753,7 +753,7 @@ class AdminTest(LucteriosTest):
         self.factory.xfer = FiscalYearDel()
         self.call('/diacamma.accounting/fiscalYearDel', {'fiscalyear': '1'}, False)
         self.assert_observer('core.exception', 'diacamma.accounting', 'fiscalYearDel')
-        self.assert_xml_equal('EXCEPTION/MESSAGE', "Cet exercice est terminé!")
+        self.assert_xml_equal('EXCEPTION/MESSAGE', "Cet exercice est terminé !")
 
     def test_system_accounting(self):
         clear_system_account()

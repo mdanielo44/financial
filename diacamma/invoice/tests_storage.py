@@ -256,7 +256,7 @@ class StorageTest(InvoiceTest):
         self.assert_xml_equal('COMPONENTS/GRID[@name="storagedetail"]/RECORD[2]/VALUE[@name="article"]', "ABC4")
         self.assert_xml_equal('COMPONENTS/GRID[@name="storagedetail"]/RECORD[2]/VALUE[@name="quantity_txt"]', "6.00")
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="info"]',
-                              "{[font color=\"red\"]}L'article ABC1 est en quantité insuffisente{[br/]}L'article ABC4 est en quantité insuffisente{[/font]}")
+                              "{[font color=\"red\"]}L'article ABC1 est en quantité insuffisante{[br/]}L'article ABC4 est en quantité insuffisante{[/font]}")
 
         self.factory.xfer = ArticleShow()
         self.call('/diacamma.invoice/articleShow', {'article': '1'}, False)
@@ -419,7 +419,7 @@ class StorageTest(InvoiceTest):
         self.assert_observer('core.custom', 'diacamma.invoice', 'billShow')
         self.assert_count_equal('COMPONENTS/GRID[@name="detail"]/RECORD', 3)
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="info"]',
-                              "{[font color=\"red\"]}L'article ABC1 est en quantité insuffisente{[br/]}L'article ABC2 est en quantité insuffisente{[/font]}")
+                              "{[font color=\"red\"]}L'article ABC1 est en quantité insuffisante{[br/]}L'article ABC2 est en quantité insuffisante{[/font]}")
 
         self.factory.xfer = ArticleShow()
         self.call('/diacamma.invoice/articleShow', {'article': '1'}, False)
