@@ -50,6 +50,7 @@ from diacamma.payoff.models import Payoff, Supporting, PaymentMethod, BankTransa
 from diacamma.accounting.models import Third
 from lucterios.CORE.models import PrintModel
 from lucterios.CORE.parameters import Params
+from django.http.response import HttpResponseRedirect
 
 
 @ActionsManage.affect_grid(TITLE_ADD, "images/add.png", condition=lambda xfer, gridname='': xfer.item.get_max_payoff() > 0.001)
@@ -272,6 +273,33 @@ def get_html_payment(absolute_uri, lang, supporting):
 
 
 @MenuManage.describ('')
+class CheckPaymentPaypal(XferContainerAbstract):
+    caption = _("Payment")
+    icon = "payments.png"
+
+    def get_post(self, request, *args, **kwargs):
+        try:
+            self._initialize(request, *args, **kwargs)
+            payid = self.getparam("payid", 0)
+            payment_meth_list = PaymentMethod.objects.filter(paytype=2)
+            payment_meth = payment_meth_list[0]
+            support = Supporting.objects.get(id=payid).get_final_child()
+            paypal_url = getattr(settings, 'DIACAMMA_PAYOFF_PAYPAL_URL', 'https://www.paypal.com/cgi-bin/webscr')
+            paypal_dict = payment_meth.get_paypal_dict(self.request.META.get('HTTP_REFERER', self.request.build_absolute_uri()), self.language, support)
+            return HttpResponseRedirect("%s?%s" % (paypal_url, paypal_dict))
+        except:
+            logging.getLogger('diacamma.payoff').exception("CheckPaymentPaypal")
+            from django.shortcuts import render_to_response
+            dictionary = {}
+            dictionary['title'] = six.text_type(settings.APPLIS_NAME)
+            dictionary['subtitle'] = settings.APPLIS_SUBTITLE()
+            dictionary['applogo'] = settings.APPLIS_LOGO
+            dictionary['content1'] = _("It is not possible to pay-off this item with PayPal !")
+            dictionary['content2'] = _("This item is deleted, payed or disabled.")
+            return render_to_response('info.html', context=dictionary)
+
+
+@MenuManage.describ('')
 class ValidationPaymentPaypal(XferContainerAbstract):
     observer_name = 'PayPal'
     caption = 'ValidationPaymentPaypal'
@@ -293,8 +321,7 @@ class ValidationPaymentPaypal(XferContainerAbstract):
         try:
             for key, value in self.request.POST.items():
                 fields += "&%s=%s" % (key, quote_plus(value))
-            res = post(paypal_url, data=fields.encode(),
-                       headers={"Content-Type": "application/x-www-form-urlencoded", 'Content-Length': six.text_type(len(fields))})
+            res = post(paypal_url, data=fields.encode(), headers={"Content-Type": "application/x-www-form-urlencoded", 'Content-Length': six.text_type(len(fields))})
             return res.text
         except:
             logging.getLogger('diacamma.payoff').warning(paypal_url)
@@ -304,8 +331,7 @@ class ValidationPaymentPaypal(XferContainerAbstract):
     def fillresponse(self):
         try:
             self.item.contains = ""
-            self.item.payer = self.getparam(
-                'first_name', '') + " " + self.getparam('last_name', '')
+            self.item.payer = self.getparam('first_name', '') + " " + self.getparam('last_name', '')
             self.item.amount = self.getparam('mc_gross', 0.0)
             try:
                 payoff_date = datetime.strptime(self.getparam("payment_date", '').replace('PDT', 'GMT'), '%H:%M:%S %b %d, %Y %Z')

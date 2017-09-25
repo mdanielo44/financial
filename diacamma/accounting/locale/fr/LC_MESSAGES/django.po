@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-09-24 13:21+0000\n"
+"POT-Creation-Date: 2017-09-25 20:57+0000\n"
 "PO-Revision-Date: 2016-01-11 23:01+0000\n"
 "Last-Translator: b'Paul ARULATEDA <paul531@orange.fr>'\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -55,28 +55,28 @@ msgstr "Écritures associées"
 msgid "Add a entry line"
 msgstr "Ajouter une ligne d'écriture"
 
-#: editors.py:343 editors.py:349 models.py:57 models.py:162 models.py:170
+#: editors.py:344 editors.py:350 models.py:57 models.py:162 models.py:170
 #: models.py:1002 models.py:1240
 msgid "third"
 msgstr "tiers"
 
-#: editors.py:361 models.py:214 models.py:996 models.py:1016 models.py:1020
+#: editors.py:362 models.py:214 models.py:996 models.py:1016 models.py:1020
 #: models.py:1026 models.py:1031 models.py:1035 models.py:1316
 #: printmodel/EntryLineAccount_0001.py:44 printmodel/Third_0001.py:39
 msgid "account"
 msgstr "compte"
 
-#: editors.py:395 models.py:1000
+#: editors.py:396 models.py:1000
 msgid "reference"
 msgstr "référence"
 
-#: editors.py:417 models.py:1016 models.py:1021 models.py:1026 models.py:1031
+#: editors.py:418 models.py:1016 models.py:1021 models.py:1026 models.py:1031
 #: models.py:1035 models.py:1245 printmodel/EntryLineAccount_0001.py:44
 #: views_reports.py:546 views_reports.py:603
 msgid "debit"
 msgstr "débit"
 
-#: editors.py:423 models.py:1016 models.py:1021 models.py:1026 models.py:1031
+#: editors.py:424 models.py:1016 models.py:1021 models.py:1026 models.py:1031
 #: models.py:1035 models.py:1245 printmodel/EntryLineAccount_0001.py:44
 #: views_reports.py:547 views_reports.py:604
 msgid "credit"

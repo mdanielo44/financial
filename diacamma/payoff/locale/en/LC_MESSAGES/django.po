@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-09-24 13:21+0000\n"
+"POT-Creation-Date: 2017-09-25 20:57+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -40,6 +40,10 @@ msgstr "by date"
 #: editors.py:154
 msgid "repartition mode"
 msgstr "repartition mode"
+
+#: info.html:5 info.html:115
+msgid "Information"
+msgstr "Information"
 
 #: models.py:67
 msgid "third"
@@ -93,11 +97,11 @@ msgstr "bank account"
 msgid "bank accounts"
 msgstr "bank accounts"
 
-#: models.py:248 models.py:466 models.py:729 views_deposit.py:148
+#: models.py:248 models.py:466 models.py:761 views_deposit.py:148
 msgid "date"
 msgstr "date"
 
-#: models.py:249 models.py:540 models.py:733 views_deposit.py:147
+#: models.py:249 models.py:540 models.py:765 views_deposit.py:147
 msgid "amount"
 msgstr "amount"
 
@@ -129,7 +133,7 @@ msgstr "other"
 msgid "levy"
 msgstr "levy"
 
-#: models.py:253 models.py:732 views_deposit.py:146
+#: models.py:253 models.py:764 views_deposit.py:146
 msgid "payer"
 msgstr "payer"
 
@@ -149,7 +153,7 @@ msgstr "value"
 msgid "an entry associated to this payoff is closed!"
 msgstr "an entry associated to this payoff is closed!"
 
-#: models.py:310 models.py:431 models.py:763
+#: models.py:310 models.py:431 models.py:795
 #, python-format
 msgid "payoff for %s"
 msgstr "payoff for %s"
@@ -158,7 +162,7 @@ msgstr "payoff for %s"
 msgid "account is not defined!"
 msgstr "account is not defined!"
 
-#: models.py:433 models.py:765
+#: models.py:433 models.py:797
 #, python-format
 msgid "payoff for %d multi-pay"
 msgstr "payoff for %d multi-pay"
@@ -171,7 +175,7 @@ msgstr "payoff"
 msgid "payoffs"
 msgstr "payoffs"
 
-#: models.py:462 models.py:730
+#: models.py:462 models.py:762
 msgid "status"
 msgstr "status"
 
@@ -244,67 +248,75 @@ msgstr "data"
 msgid "parameters"
 msgstr "parameters"
 
-#: models.py:624 models.py:666
+#: models.py:624 models.py:668
 msgid "IBAN"
 msgstr "IBAN"
 
-#: models.py:624 models.py:669
+#: models.py:624 models.py:671
 msgid "BIC"
 msgstr "BIC"
 
-#: models.py:626 models.py:677
+#: models.py:626 models.py:682
 msgid "payable to"
 msgstr "payable to"
 
-#: models.py:626 models.py:681
+#: models.py:626 models.py:686
 msgid "address"
 msgstr "address"
 
-#: models.py:628
+#: models.py:629
 msgid "Paypal account"
 msgstr "Paypal account"
 
-#: models.py:720
+#: models.py:629
+msgid "With control"
+msgstr "With control"
+
+#: models.py:699
+msgid "This item can't be validated!"
+msgstr "This item can't be validated!"
+
+#: models.py:752
 msgid "payment method"
 msgstr "payment method"
 
-#: models.py:721
+#: models.py:753
 msgid "payment methods"
 msgstr "payment methods"
 
-#: models.py:731
+#: models.py:763
 msgid "failure"
 msgstr "failure"
 
-#: models.py:731
+#: models.py:763
 msgid "success"
 msgstr "success"
 
-#: models.py:735
+#: models.py:767
 msgid "contains"
 msgstr "contains"
 
-#: models.py:746
+#: models.py:778
 msgid "bank transaction"
 msgstr "bank transaction"
 
-#: models.py:747
+#: models.py:779
 msgid "bank transactions"
 msgstr "bank transactions"
 
-#: models.py:788
+#: models.py:820
 msgid "payoff-bankcharges-account"
 msgstr "bank charges account"
 
-#: models.py:789
+#: models.py:821
 msgid "payoff-cash-account"
 msgstr "cash account"
 
-#: models.py:790
+#: models.py:822
 msgid "payoff-email-message"
 msgstr "default email message"
 
-#: models.py:790
+#: models.py:822
 #, python-format
 msgid ""
 "%(name)s\n"
@@ -319,65 +331,73 @@ msgstr ""
 "\n"
 "Regards"
 
-#: views.py:62
+#: views.py:63
 msgid "Add payoff"
 msgstr "Add payoff"
 
-#: views.py:63
+#: views.py:64
 msgid "Modify payoff"
 msgstr "Modify payoff"
 
-#: views.py:93
+#: views.py:94
 msgid "Delete payoff"
 msgstr "Delete payoff"
 
-#: views.py:96
+#: views.py:97
 msgid "change"
 msgstr "change"
 
-#: views.py:102 views.py:147
+#: views.py:103 views.py:148
 msgid "Select third"
 msgstr "Select third"
 
-#: views.py:119
+#: views.py:120
 msgid "Filtrer by contact"
 msgstr "Filtrer by contact"
 
-#: views.py:135 views_deposit.py:161
+#: views.py:136 views_deposit.py:161
 msgid "select"
 msgstr "select"
 
-#: views.py:160
+#: views.py:161
 msgid "Send"
 msgstr "Send"
 
-#: views.py:163
+#: views.py:164
 msgid "Send by email"
 msgstr "Send by email"
 
-#: views.py:181
+#: views.py:182
 msgid "subject"
 msgstr "subject"
 
-#: views.py:185
+#: views.py:186
 msgid "message"
 msgstr "message"
 
-#: views.py:202
+#: views.py:203
 msgid "add payment methods in email"
 msgstr "add payment methods in email"
 
-#: views.py:216 views.py:219
+#: views.py:217 views.py:220
 msgid "Payment"
 msgstr "Payment"
 
-#: views.py:230
+#: views.py:231
 msgid "No payment for this document."
 msgstr "No payment for this document."
 
-#: views.py:243 views.py:262
+#: views.py:244 views.py:263
 msgid "Payement methods"
 msgstr "Payement methods"
+
+#: views.py:294
+msgid "It is not possible to pay-off this item with PayPal !"
+msgstr "It is not possible to pay-off this item with PayPal !"
+
+#: views.py:295
+msgid "This item is deleted, payed or disabled."
+msgstr "This item is deleted, payed or disabled."
 
 #: views_conf.py:33
 msgid "Management of parameters and configuration of payoff"

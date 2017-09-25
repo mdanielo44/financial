@@ -773,7 +773,10 @@ class Bill(Supporting):
         return currency_round(self.get_tax_sum() * self.get_total_rest_topay() / self.get_total_incltax())
 
     def get_payable_without_tax(self):
-        return self.get_total_rest_topay() - self.get_tax()
+        if (self.bill_type == 2) or (self.status != 1):
+            return 0
+        else:
+            return self.get_total_rest_topay() - self.get_tax()
 
     def payoff_have_payment(self):
         return (self.bill_type != 2) and (self.status == 1) and (self.get_total_rest_topay() > 0.001)

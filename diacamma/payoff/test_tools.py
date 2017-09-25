@@ -66,7 +66,7 @@ def default_paymentmethod():
 
 
 class PaymentTest(LucteriosTest):
-    
+
     server_port = 9100
 
     def check_account(self, year_id, code, value, name=""):

@@ -29,7 +29,7 @@ from django.utils import six
 
 from lucterios.framework.editors import LucteriosEditor
 from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompButton, \
-    XferCompEdit, XferCompMemo, XferCompSelect
+    XferCompEdit, XferCompMemo, XferCompSelect, XferCompCheck
 from lucterios.CORE.parameters import Params
 from lucterios.framework.tools import ActionsManage, CLOSE_NO, FORMTYPE_REFRESH, FORMTYPE_MODAL, WrapAction
 from lucterios.framework.error import LucteriosException, IMPORTANT
@@ -234,6 +234,8 @@ class PaymentMethodEditor(LucteriosEditor):
                 edt = XferCompEdit('item_%d' % fieldid)
             elif fieldtype == 1:
                 edt = XferCompMemo('item_%d' % fieldid)
+            elif fieldtype == 2:
+                edt = XferCompCheck('item_%d' % fieldid)
             edt.set_value(items[fieldid - 1])
             edt.set_location(1, row)
             edt.description = fieldtitle

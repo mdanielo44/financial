@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-09-24 13:21+0000\n"
+"POT-Creation-Date: 2017-09-25 20:57+0000\n"
 "PO-Revision-Date: 2016-01-14 21:59+0000\n"
 "Last-Translator: b'Paul ARULATEDA <paul531@orange.fr>'\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -68,7 +68,7 @@ msgstr "total TTC"
 msgid "VTA sum"
 msgstr "total TVA"
 
-#: editors.py:173 models.py:961
+#: editors.py:173 models.py:964
 msgid "provider"
 msgstr "fournisseur"
 
@@ -101,7 +101,7 @@ msgstr "TVA"
 msgid "VATs"
 msgstr "TVAs"
 
-#: models.py:82 models.py:109 models.py:151 models.py:799
+#: models.py:82 models.py:109 models.py:151 models.py:802
 #: printmodel/Bill_0001.py:128 printmodel/Bill_0002.py:145
 msgid "designation"
 msgstr "désignation"
@@ -122,7 +122,7 @@ msgstr "Lieu de stockage"
 msgid "Storage areas"
 msgstr "Lieux de stockage"
 
-#: models.py:135 models.py:317 models.py:325 models.py:798 models.py:1018
+#: models.py:135 models.py:317 models.py:325 models.py:801 models.py:1021
 #: printmodel/Bill_0001.py:127 printmodel/Bill_0002.py:144 views.py:472
 msgid "article"
 msgstr "article"
@@ -147,12 +147,12 @@ msgstr "valeurs de champ personnalisé"
 msgid "reference"
 msgstr "référence"
 
-#: models.py:152 models.py:170 models.py:800 models.py:841 models.py:849
+#: models.py:152 models.py:170 models.py:803 models.py:844 models.py:852
 #: printmodel/Bill_0001.py:129 printmodel/Bill_0002.py:146
 msgid "price"
 msgstr "prix"
 
-#: models.py:155 models.py:803
+#: models.py:155 models.py:806
 msgid "unit"
 msgstr "unité"
 
@@ -224,7 +224,7 @@ msgstr "type de facture"
 msgid "quotation"
 msgstr "devis"
 
-#: models.py:361 models.py:787 models.py:796 printmodel/Bill_0001.py:31
+#: models.py:361 models.py:790 models.py:799 printmodel/Bill_0001.py:31
 msgid "bill"
 msgstr "facture"
 
@@ -240,23 +240,23 @@ msgstr "reçu"
 msgid "numeros"
 msgstr "numéro"
 
-#: models.py:363 models.py:955 printmodel/Bill_0002.py:154
+#: models.py:363 models.py:958 printmodel/Bill_0002.py:154
 msgid "date"
 msgstr "date"
 
-#: models.py:364 models.py:957
+#: models.py:364 models.py:960
 msgid "comment"
 msgstr "commentaire"
 
-#: models.py:365 models.py:958
+#: models.py:365 models.py:961
 msgid "status"
 msgstr "status"
 
-#: models.py:366 models.py:959
+#: models.py:366 models.py:962
 msgid "building"
 msgstr "en construction"
 
-#: models.py:366 models.py:959
+#: models.py:366 models.py:962
 msgid "valid"
 msgstr "validé"
 
@@ -277,7 +277,7 @@ msgid "cost accounting"
 msgstr "compte analytique"
 
 #: models.py:383 models.py:392 models.py:413 models.py:421 models.py:717
-#: models.py:751 models.py:841
+#: models.py:751 models.py:844
 msgid "total"
 msgstr "total"
 
@@ -290,7 +290,7 @@ msgstr "TVA %s %%"
 msgid "no detail"
 msgstr "pas de détail"
 
-#: models.py:529 models.py:998
+#: models.py:529 models.py:1001
 #, python-format
 msgid "Article %s is not sufficiently stocked"
 msgstr "L'article %s est en quantité insuffisante"
@@ -299,7 +299,7 @@ msgstr "L'article %s est en quantité insuffisante"
 msgid "article has code account unknown!"
 msgstr "au moins un article a un compte inconnu !"
 
-#: models.py:553 models.py:989
+#: models.py:553 models.py:992
 #, python-format
 msgid "\"%s\" cannot be deleted!"
 msgstr "\"%s\" ne peut pas être supprimé !"
@@ -332,108 +332,108 @@ msgstr "Annuler"
 msgid "This item can't be validated!"
 msgstr "Cet élément ne peut pas être validé !"
 
-#: models.py:788
+#: models.py:791
 msgid "bills"
 msgstr "factures"
 
-#: models.py:804 models.py:1021 models.py:1029 models.py:1037
+#: models.py:807 models.py:1024 models.py:1032 models.py:1040
 msgid "quantity"
 msgstr "quantité"
 
-#: models.py:806 models.py:841 models.py:849
+#: models.py:809 models.py:844 models.py:852
 msgid "reduce"
 msgstr "réduction"
 
-#: models.py:808
+#: models.py:811
 msgid "vta rate"
 msgstr "taux de TVA"
 
-#: models.py:810 models.py:956
+#: models.py:813 models.py:959
 msgid "storage area"
 msgstr "lieu de stockage"
 
-#: models.py:945
+#: models.py:948
 msgid "detail"
 msgstr "détail"
 
-#: models.py:946
+#: models.py:949
 msgid "details"
 msgstr "détails"
 
-#: models.py:953
+#: models.py:956
 msgid "sheet type"
 msgstr "type de bordereau"
 
-#: models.py:954
+#: models.py:957
 msgid "stock receipt"
 msgstr "réception de stock"
 
-#: models.py:954
+#: models.py:957
 msgid "stock exit"
 msgstr "sortie de stock"
 
-#: models.py:962
+#: models.py:965
 msgid "bill reference"
 msgstr "référence facture"
 
-#: models.py:963
+#: models.py:966
 msgid "bill date"
 msgstr "date facture"
 
-#: models.py:996
+#: models.py:999
 #, python-format
 msgid "Article %s is not stockable"
 msgstr "L'article %s est en non stockable"
 
-#: models.py:1009 models.py:1017 views_storage.py:174
+#: models.py:1012 models.py:1020 views_storage.py:174
 msgid "storage sheet"
 msgstr "bordereau de stockage"
 
-#: models.py:1010
+#: models.py:1013
 msgid "storage sheets"
 msgstr "bordereaux de stockage"
 
-#: models.py:1019 models.py:1029 models.py:1037 views_storage.py:270
+#: models.py:1022 models.py:1032 models.py:1040 views_storage.py:270
 msgid "buying price"
 msgstr "prix d'achat"
 
-#: models.py:1070
+#: models.py:1073
 msgid "storage detail"
 msgstr "détail de stock"
 
-#: models.py:1071
+#: models.py:1074
 msgid "storage details"
 msgstr "détails de stock"
 
-#: models.py:1088
+#: models.py:1091
 msgid "invoice-default-sell-account"
 msgstr "compte de vente par défaut"
 
-#: models.py:1090
+#: models.py:1093
 msgid "invoice-reduce-account"
 msgstr "compte de réduction"
 
-#: models.py:1092
+#: models.py:1095
 msgid "invoice-vatsell-account"
 msgstr "compte de TVA de vente"
 
-#: models.py:1094
+#: models.py:1097
 msgid "invoice-vat-mode"
 msgstr "mode TVA"
 
-#: models.py:1095
+#: models.py:1098
 msgid "invoice-vat-mode.0"
 msgstr "non applicable"
 
-#: models.py:1095
+#: models.py:1098
 msgid "invoice-vat-mode.1"
 msgstr "prix hors taxe"
 
-#: models.py:1095
+#: models.py:1098
 msgid "invoice-vat-mode.2"
 msgstr "prix toutes taxes comprises"
 
-#: models.py:1096
+#: models.py:1099
 msgid "invoice-account-third"
 msgstr "Compte tiers par défaut"
 
