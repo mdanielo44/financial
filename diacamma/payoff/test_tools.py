@@ -66,6 +66,8 @@ def default_paymentmethod():
 
 
 class PaymentTest(LucteriosTest):
+    
+    server_port = 9100
 
     def check_account(self, year_id, code, value, name=""):
         try:
@@ -142,71 +144,46 @@ class PaymentTest(LucteriosTest):
 
         self.factory.xfer = BankTransactionList()
         self.call('/diacamma.payoff/bankTransactionList', {}, False)
-        self.assert_observer(
-            'core.custom', 'diacamma.payoff', 'bankTransactionList')
-        self.assert_count_equal(
-            'COMPONENTS/GRID[@name="banktransaction"]/RECORD', 0)
-        self.assert_count_equal(
-            'COMPONENTS/GRID[@name="banktransaction"]/HEADER', 4)
-        setattr(
-            settings, "DIACAMMA_PAYOFF_PAYPAL_URL", "http://localhost:9100")
-        httpd = TestHTTPServer(('localhost', 9100))
+        self.assert_observer('core.custom', 'diacamma.payoff', 'bankTransactionList')
+        self.assert_count_equal('COMPONENTS/GRID[@name="banktransaction"]/RECORD', 0)
+        self.assert_count_equal('COMPONENTS/GRID[@name="banktransaction"]/HEADER', 4)
+        setattr(settings, "DIACAMMA_PAYOFF_PAYPAL_URL", "http://localhost:%d" % self.server_port)
+        httpd = TestHTTPServer(('localhost', self.server_port))
         httpd.start()
         try:
-            self.factory.xfer = ValidationPaymentPaypal()
-            self.call('/diacamma.payoff/validationPaymentPaypal',
-                      paypal_validation_fields, False)
-            self.assert_observer(
-                'PayPal', 'diacamma.payoff', 'validationPaymentPaypal')
+            self.call('/diacamma.payoff/validationPaymentPaypal', paypal_validation_fields, True)
+            self.assert_observer('PayPal', 'diacamma.payoff', 'validationPaymentPaypal')
         finally:
             httpd.shutdown()
-
         self.factory.xfer = BankTransactionShow()
-        self.call('/diacamma.payoff/bankTransactionShow',
-                  {'banktransaction': 1}, False)
-        self.assert_observer(
-            'core.custom', 'diacamma.payoff', 'bankTransactionShow')
-        self.assert_xml_equal(
-            'COMPONENTS/LABELFORM[@name="date"]', "3 avril 2015 20:52")
-        contains = self.get_first_xpath(
-            'COMPONENTS/LABELFORM[@name="contains"]').text
+        self.call('/diacamma.payoff/bankTransactionShow', {'banktransaction': 1}, False)
+        self.assert_observer('core.custom', 'diacamma.payoff', 'bankTransactionShow')
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="date"]', "3 avril 2015 20:52")
+        contains = self.get_first_xpath('COMPONENTS/LABELFORM[@name="contains"]').text
         if success:
-            self.assertEqual(
-                len(contains), 1101 + len(title) + len("%.2f" % amount), contains)
+            self.assertEqual(len(contains), 1101 + len(title) + len("%.2f" % amount), contains)
         self.assertTrue("item_name = %s" % title in contains, contains)
         self.assertTrue("custom = %d" % itemid in contains, contains)
         self.assertTrue("business = monney@truc.org" in contains, contains)
         if success:
-            self.assert_xml_equal(
-                'COMPONENTS/LABELFORM[@name="status"]', "succès")
+            self.assert_xml_equal('COMPONENTS/LABELFORM[@name="status"]', "succès")
         else:
-            self.assert_xml_equal(
-                'COMPONENTS/LABELFORM[@name="status"]', "échec")
-        self.assert_xml_equal(
-            'COMPONENTS/LABELFORM[@name="payer"]', "test buyer")
-        self.assert_xml_equal(
-            'COMPONENTS/LABELFORM[@name="amount"]', "%.3f" % amount)
+            self.assert_xml_equal('COMPONENTS/LABELFORM[@name="status"]', "échec")
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="payer"]', "test buyer")
+        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="amount"]', "%.3f" % amount)
 
         self.factory.xfer = BankTransactionList()
         self.call('/diacamma.payoff/bankTransactionList', {}, False)
-        self.assert_observer(
-            'core.custom', 'diacamma.payoff', 'bankTransactionList')
-        self.assert_count_equal(
-            'COMPONENTS/GRID[@name="banktransaction"]/RECORD', 1)
-        self.assert_count_equal(
-            'COMPONENTS/GRID[@name="banktransaction"]/HEADER', 4)
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="banktransaction"]/RECORD[1]/VALUE[@name="date"]', '3 avril 2015 20:52')
+        self.assert_observer('core.custom', 'diacamma.payoff', 'bankTransactionList')
+        self.assert_count_equal('COMPONENTS/GRID[@name="banktransaction"]/RECORD', 1)
+        self.assert_count_equal('COMPONENTS/GRID[@name="banktransaction"]/HEADER', 4)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="banktransaction"]/RECORD[1]/VALUE[@name="date"]', '3 avril 2015 20:52')
         if success:
-            self.assert_xml_equal(
-                'COMPONENTS/GRID[@name="banktransaction"]/RECORD[1]/VALUE[@name="status"]', six.text_type('succès'))
+            self.assert_xml_equal('COMPONENTS/GRID[@name="banktransaction"]/RECORD[1]/VALUE[@name="status"]', six.text_type('succès'))
         else:
-            self.assert_xml_equal(
-                'COMPONENTS/GRID[@name="banktransaction"]/RECORD[1]/VALUE[@name="status"]', six.text_type('échec'))
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="banktransaction"]/RECORD[1]/VALUE[@name="payer"]', 'test buyer')
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="banktransaction"]/RECORD[1]/VALUE[@name="amount"]', "%.3f" % amount)
+            self.assert_xml_equal('COMPONENTS/GRID[@name="banktransaction"]/RECORD[1]/VALUE[@name="status"]', six.text_type('échec'))
+        self.assert_xml_equal('COMPONENTS/GRID[@name="banktransaction"]/RECORD[1]/VALUE[@name="payer"]', 'test buyer')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="banktransaction"]/RECORD[1]/VALUE[@name="amount"]', "%.3f" % amount)
 
 
 class TestHTTPServer(HTTPServer, BaseHTTPRequestHandler, Thread):

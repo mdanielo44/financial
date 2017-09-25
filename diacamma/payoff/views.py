@@ -308,13 +308,12 @@ class ValidationPaymentPaypal(XferContainerAbstract):
                 'first_name', '') + " " + self.getparam('last_name', '')
             self.item.amount = self.getparam('mc_gross', 0.0)
             try:
-                self.item.date = datetime.strptime(
-                    self.getparam("payment_date", '').replace('PDT', 'GMT'), '%H:%M:%S %b %d, %Y %Z')
-                self.item.date += timedelta(hours=7)
+                payoff_date = datetime.strptime(self.getparam("payment_date", '').replace('PDT', 'GMT'), '%H:%M:%S %b %d, %Y %Z')
+                payoff_date += timedelta(hours=7)
+                self.item.date = timezone.make_aware(payoff_date)
             except:
                 self.item.date = timezone.now()
-            self.item.contains += "{[newline]}".join(
-                ["%s = %s" % item for item in self.request.POST.items()])
+            self.item.contains += "{[newline]}".join(["%s = %s" % item for item in self.request.POST.items()])
             conf_res = self.confirm_paypal()
             if conf_res == 'VERIFIED':
                 bank_account = None
