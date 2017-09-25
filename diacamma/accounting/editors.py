@@ -331,23 +331,24 @@ def edit_third_for_line(xfer, column, row, account_code, current_third, vertical
     for third in Third.objects.filter(accountthird__code=account_code):
         sel_thirds.append((third.id, six.text_type(third)))
     sel_thirds = sorted(sel_thirds, key=lambda third_item: third_item[1])
-    sel_thirds.insert(0, (0, '---'))
-    cb_third = XferCompSelect('third')
-    cb_third.set_select(sel_thirds)
-    if current_third is None:
-        cb_third.set_value(xfer.getparam('third', 0))
-    else:
-        cb_third.set_value(xfer.getparam('third', current_third.id))
-    if vertical:
-        lbl = XferCompLabelForm('thirdlbl')
-        lbl.set_value_as_name(_('third'))
-        lbl.set_location(column, row, 2)
-        xfer.add_component(lbl)
-        cb_third.set_location(column, row + 1, 2)
-    else:
-        cb_third.set_location(column, row)
-        cb_third.description = _('third')
-    xfer.add_component(cb_third)
+    if len(sel_thirds) > 0:
+        sel_thirds.insert(0, (0, '---'))
+        cb_third = XferCompSelect('third')
+        cb_third.set_select(sel_thirds)
+        if current_third is None:
+            cb_third.set_value(xfer.getparam('third', 0))
+        else:
+            cb_third.set_value(xfer.getparam('third', current_third.id))
+        if vertical:
+            lbl = XferCompLabelForm('thirdlbl')
+            lbl.set_value_as_name(_('third'))
+            lbl.set_location(column, row, 2)
+            xfer.add_component(lbl)
+            cb_third.set_location(column, row + 1, 2)
+        else:
+            cb_third.set_location(column, row)
+            cb_third.description = _('third')
+        xfer.add_component(cb_third)
 
 
 class EntryLineAccountEditor(LucteriosEditor):
