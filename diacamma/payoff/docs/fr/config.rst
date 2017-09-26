@@ -23,7 +23,9 @@ Actuellement, 3 moyens de paiement sont pris en compte par *Diacamma*
 Pour chacun d'entre eux, vous devez préciser les paramètres relatifs.
 
 C'est moyen de paiement peuvent être utilisé pour vos débiteurs afin de régler par un de ses moyens ce qu'ils vous doivent.
-Dans le cas de PayPal, si votre *Diacamma* est accessible par internet, le logiciel peux être notifié directement du paiement et ajouter un réglement correspondant.
+
+Dans le cas de PayPal, si votre *Diacamma* est accessible par internet, le logiciel peux être notifié directement du paiement et ajouter un réglement correspondant directement dans votre logiciel.
+Il est conseillé, dans ce cas, de cocher le champ *avec contrôle*: le lien de paiement présenter dans un courriel redirigera alors en premier sur votre *Diacamma* afin de vérifier que cet élément financier est toujours d'actualité. 
 
 Paramètres
 ----------

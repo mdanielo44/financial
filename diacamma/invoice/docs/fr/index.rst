@@ -11,6 +11,7 @@ Sommaire:
 
    articles.rst
    create_bill.rst
+   stock.rst
    configuration.rst
 
 

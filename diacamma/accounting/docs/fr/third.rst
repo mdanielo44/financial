@@ -39,3 +39,9 @@ l'exercice liées à ce tiers. Vous trouverez également un résumé des
 débits et crédits permettant en un seul regard de savoir s'il reste des
 dettes impayées. Avec d'autres modules financiers, vous pourrez
 également consulter des opérations liées.
+
+Configuration
+-------------
+
+Depuis le menu *Administration/Modules (conf.)/Configuration comptable* vous avez la possibilité d'ajouter à tout tiers des champs personnalisés.
+Le mécanisme est similaire à ce que vous pouvez trouver dans la configuration des contacts.

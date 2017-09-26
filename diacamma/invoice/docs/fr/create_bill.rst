@@ -18,6 +18,9 @@ Ensuite ajoutez ou enlevez autant d'articles que vous le désirez.
 
 Par défaut, vous obtenez la désignation et le prix par défaut de l'article sélectionné, mais l'ensemble est modifiable. Vous pouvez choisir aussi l'article divers: aucune information par défaut n'est alors proposé.
 
+Si l'article a été défini comme *stockable*, vous devrez en plus préciser depuis quel lieu de stockage il sera sortie.
+Il n'est bien sur pas possible de vendre plus d'article stockable que l'on possède dans le stock.  
+
 Changement d'état
 -----------------
 
@@ -34,6 +37,9 @@ Un devis validé peut facilement être transformé en facture dans le cas de son
 Une fois qu'une facture (ou un avoir) est considéré comme terminée (c'est à dire réglée ou définie comme pertes et profits), vous pouvez définir son état à «fini».
 
 Depuis une facture « fini », il vous est possible de créer un avoir correspondant à l'état « en cours ». Cette fonctionnalité vous sera utile si vous êtes amené à rembourser un client d'un bien ou un service précédemment facturé.
+
+Si une facture contiens des articles *stockable*, un bordereau de sortie est automatiquement générer pour correspondre à cette vente.
+La situation du stock est alors mise à jour automatiquement.
 
 Impression
 ----------
