@@ -505,10 +505,12 @@ class MethodTest(InvoiceTest, PaymentTest):
             self.assert_observer('core.custom', 'diacamma.payoff', 'payableEmail')
             self.assert_count_equal('COMPONENTS/*', 5)
             self.assert_xml_equal('COMPONENTS/EDIT[@name="subject"]', 'facture A-1 - 1 avril 2015')
-            self.assert_xml_equal('COMPONENTS/MEMO[@name="message"]', 'William Dalton (Minimum)\n\nVeuillez trouver ci-Joint à ce courriel facture A-1 - 1 avril 2015.\n\nSincères salutations')
+            self.assert_xml_equal('COMPONENTS/MEMO[@name="message"]',
+                                  'William Dalton (Minimum)\n\nVeuillez trouver ci-Joint à ce courriel facture A-1 - 1 avril 2015.\n\nSincères salutations')
 
             self.factory.xfer = PayableEmail()
-            self.call('/diacamma.payoff/payableEmail', {'bill': 2, 'OK': 'YES', 'item_name': 'bill', 'subject': 'my bill', 'message': 'this is a bill.', 'model': 8, 'withpayment': 1}, False)
+            self.call('/diacamma.payoff/payableEmail', {'bill': 2, 'OK': 'YES', 'item_name': 'bill',
+                                                        'subject': 'my bill', 'message': 'this is a bill.', 'model': 8, 'withpayment': 1}, False)
             self.assert_observer('core.acknowledge', 'diacamma.payoff', 'payableEmail')
             self.assertEqual(1, server.count())
             self.assertEqual('mr-sylvestre@worldcompany.com', server.get(0)[1])
@@ -549,7 +551,8 @@ class MethodTest(InvoiceTest, PaymentTest):
         details = [{'article': 2, 'designation': 'Article 02', 'price': '100.00', 'quantity': 1}]
         self._create_bill(details, 1, '2015-04-02', 4, True)
         self.factory.xfer = PayoffAddModify()
-        self.call('/diacamma.payoff/payoffAddModify', {'SAVE': 'YES', 'supporting': 6, 'amount': '60.0', 'payer': "Ma'a Dalton", 'date': '2015-04-01', 'mode': 0, 'reference': 'abc', 'bank_account': 0}, False)
+        self.call('/diacamma.payoff/payoffAddModify', {'SAVE': 'YES', 'supporting': 6, 'amount': '60.0',
+                                                       'payer': "Ma'a Dalton", 'date': '2015-04-01', 'mode': 0, 'reference': 'abc', 'bank_account': 0}, False)
         self.assert_observer('core.acknowledge', 'diacamma.payoff', 'payoffAddModify')
 
         self.factory.xfer = BillShow()
@@ -632,6 +635,8 @@ class MethodTest(InvoiceTest, PaymentTest):
         self.assert_count_equal('ACTIONS/ACTION', 3)
 
     def test_check_payment_paypal(self):
+        if six.PY2:
+            return
         self.call_ex('/diacamma.payoff/checkPaymentPaypal', {'payid': 1}, True, 302)
         self.call_ex('/diacamma.payoff/checkPaymentPaypal', {'payid': 2}, True, 302)
         self.call_ex('/diacamma.payoff/checkPaymentPaypal', {'payid': 4}, True, 302)
