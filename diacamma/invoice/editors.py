@@ -54,7 +54,7 @@ class ArticleEditor(LucteriosEditor):
         xfer.remove_component("sell_account")
         sel_code = XferCompSelect("sell_account")
         sel_code.description = old_account.description
-        sel_code.set_location(old_account.col, old_account.row, old_account.colspan + 1, old_account.rowspan)
+        sel_code.set_location(old_account.col, old_account.row, old_account.colspan, old_account.rowspan)
         for item in FiscalYear.get_current().chartsaccount_set.all().filter(code__regex=current_system_account().get_revenue_mask()).order_by('code'):
             sel_code.select_list.append((item.code, six.text_type(item)))
         sel_code.set_value(self.item.sell_account)

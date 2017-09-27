@@ -38,6 +38,4 @@ Si vous êtes soumis à la TVA, l'édition de la facture change un peu
 
 En plus de préciser si les articles sont en montant HT ou TTC, vous avez en bas de l'écran le total de la facture hors-taxe, taxes comprises ainsi que le montant total des taxes.
 
-.. image:: bill_vat.png
-
 De plus, dans l'impression de la facture, un sous-détail des taxes apparait par taux de TVA.
