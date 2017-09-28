@@ -695,7 +695,7 @@ class PaymentMethod(LucteriosModel):
             from urllib.parse import quote_plus
         except:
             from urllib import quote_plus
-        if abs(supporting.get_payable_without_tax())<0.0001:
+        if abs(supporting.get_payable_without_tax()) < 0.0001:
             raise LucteriosException(IMPORTANT, _("This item can't be validated!"))
         abs_url = absolute_uri.split('/')
         items = self.get_items()
@@ -817,7 +817,10 @@ def check_payoff_accounting():
 
 @Signal.decorate('checkparam')
 def payoff_checkparam():
-    Parameter.check_and_create(name='payoff-bankcharges-account', typeparam=0, title=_("payoff-bankcharges-account"), args="{'Multi':False}", value='', meta='("accounting","ChartsAccount", Q(type_of_account=4) & Q(year__is_actif=True), "code", False)')
-    Parameter.check_and_create(name='payoff-cash-account', typeparam=0, title=_("payoff-cash-account"), args="{'Multi':False}", value='', meta='("accounting","ChartsAccount","import diacamma.accounting.tools;django.db.models.Q(code__regex=diacamma.accounting.tools.current_system_account().get_cash_mask()) & django.db.models.Q(year__is_actif=True)", "code", True)')
-    Parameter.check_and_create(name='payoff-email-message', typeparam=0, title=_("payoff-email-message"), args="{'Multi':True}", value=_('%(name)s\n\nJoint in this email %(doc)s.\n\nRegards'))
+    Parameter.check_and_create(name='payoff-bankcharges-account', typeparam=0, title=_("payoff-bankcharges-account"),
+                               args="{'Multi':False}", value='', meta='("accounting","ChartsAccount", Q(type_of_account=4) & Q(year__is_actif=True), "code", False)')
+    Parameter.check_and_create(name='payoff-cash-account', typeparam=0, title=_("payoff-cash-account"),
+                               args="{'Multi':False}", value='', meta='("accounting","ChartsAccount","import diacamma.accounting.tools;django.db.models.Q(code__regex=diacamma.accounting.tools.current_system_account().get_cash_mask()) & django.db.models.Q(year__is_actif=True)", "code", True)')
+    Parameter.check_and_create(name='payoff-email-message', typeparam=0, title=_("payoff-email-message"),
+                               args="{'Multi':True}", value=_('%(name)s\n\nJoint in this email %(doc)s.\n\nRegards'))
     check_payoff_accounting()
