@@ -574,13 +574,10 @@ class Bill(Supporting):
             is_bill = -1
         else:
             is_bill = 1
-        third_account = self.get_third_account(
-            current_system_account().get_customer_mask(), self.fiscal_year)
-        self.entry = EntryAccount.objects.create(
-            year=self.fiscal_year, date_value=self.date, designation=self.__str__(),
-            journal=Journal.objects.get(id=3), costaccounting=self.cost_accounting)
-        EntryLineAccount.objects.create(
-            account=third_account, amount=is_bill * self.get_total_incltax(), third=self.third, entry=self.entry)
+        third_account = self.get_third_account(current_system_account().get_customer_mask(), self.fiscal_year)
+        self.entry = EntryAccount.objects.create(year=self.fiscal_year, date_value=self.date, designation=self.__str__(),
+                                                 journal=Journal.objects.get(id=3), costaccounting=self.cost_accounting)
+        EntryLineAccount.objects.create(account=third_account, amount=is_bill * self.get_total_incltax(), third=self.third, entry=self.entry)
         remise_total = 0
         detail_list = {}
         for detail in self.detail_set.all():
@@ -591,37 +588,35 @@ class Bill(Supporting):
             detail_account = ChartsAccount.get_account(
                 detail_code, self.fiscal_year)
             if detail_account is None:
-                raise LucteriosException(
-                    IMPORTANT, _("article has code account unknown!"))
+                raise LucteriosException(IMPORTANT, _("article has code account unknown!"))
             if detail_account.id not in detail_list.keys():
                 detail_list[detail_account.id] = [detail_account, 0]
-            detail_list[detail_account.id][
-                1] += detail.get_total_excltax() + detail.get_reduce_excltax()
+            detail_list[detail_account.id][1] += detail.get_total_excltax() + detail.get_reduce_excltax()
             remise_total += detail.get_reduce_excltax()
         if remise_total > 0.001:
             remise_code = Params.getvalue("invoice-reduce-account")
             remise_account = ChartsAccount.get_account(
                 remise_code, self.fiscal_year)
             if remise_account is None:
-                raise LucteriosException(
-                    IMPORTANT, _("reduce-account is not defined!"))
+                raise LucteriosException(IMPORTANT, _("reduce-account is not defined!"))
             EntryLineAccount.objects.create(
                 account=remise_account, amount=-1 * is_bill * remise_total, entry=self.entry)
         for detail_item in detail_list.values():
-            EntryLineAccount.objects.create(
-                account=detail_item[0], amount=is_bill * detail_item[1], entry=self.entry)
-        vat_val = {}
-        for detail in self.detail_set.all():
-            if (detail.article is not None) and (detail.article.vat is not None):
-                vat_account = ChartsAccount.get_account(detail.article.vat.account, self.fiscal_year)
-                if vat_account is None:
-                    raise LucteriosException(IMPORTANT, _("vta-account is not defined!"))
-                if vat_account not in vat_val.keys():
-                    vat_val[vat_account] = 0.0
-                vat_val[vat_account] += detail.get_vta()
-        for vataccount, vatamount in vat_val.items():
-            if vatamount > 0.001:
-                EntryLineAccount.objects.create(account=vataccount, amount=is_bill * vatamount, entry=self.entry)
+            EntryLineAccount.objects.create(account=detail_item[0], amount=is_bill * detail_item[1], entry=self.entry)
+        if Params.getvalue("invoice-vat-mode") != 0:
+            vat_val = {}
+            for detail in self.detail_set.all():
+                if (detail.article is not None) and (detail.article.vat is not None):
+                    vataccount = detail.article.vat.account
+                    if vataccount not in vat_val.keys():
+                        vat_val[vataccount] = 0.0
+                    vat_val[vataccount] += detail.get_vta()
+            for vataccount, vatamount in vat_val.items():
+                if vatamount > 0.001:
+                    vat_account = ChartsAccount.get_account(vataccount, self.fiscal_year)
+                    if vat_account is None:
+                        raise LucteriosException(IMPORTANT, _("vta-account is not defined!"))
+                    EntryLineAccount.objects.create(account=vat_account, amount=is_bill * vatamount, entry=self.entry)
         no_change, debit_rest, credit_rest = self.entry.serial_control(self.entry.get_serial())
         if not no_change or (abs(debit_rest) > 0.001) or (abs(credit_rest) > 0.001):
             raise LucteriosException(GRAVE, _("Error in accounting generator!") + "{[br/]} no_change=%s debit_rest=%.3f credit_rest=%.3f" % (no_change, debit_rest, credit_rest))
