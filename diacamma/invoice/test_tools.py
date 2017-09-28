@@ -41,8 +41,8 @@ def default_articles(with_provider=False, with_storage=False):
 
     create_account(['709'], 3, FiscalYear.get_current())
     create_account(['4455'], 1, FiscalYear.get_current())
-    vat1 = Vat.objects.create(name="5%", rate=5.0, isactif=True)
-    vat2 = Vat.objects.create(name="20%", rate=20.0, isactif=True)
+    vat1 = Vat.objects.create(name="5%", rate=5.0, account='4455', isactif=True)
+    vat2 = Vat.objects.create(name="20%", rate=20.0, account='4455', isactif=True)
     art1 = Article.objects.create(reference='ABC1', designation="Article 01",
                                   price="12.34", unit="kg", isdisabled=False, sell_account="701", vat=None, stockable=1 if with_storage else 0)
     art2 = Article.objects.create(reference='ABC2', designation="Article 02",

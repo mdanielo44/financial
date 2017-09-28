@@ -65,22 +65,23 @@ class ConfigTest(LucteriosTest):
         self.call('/diacamma.invoice/invoiceConf', {}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'invoiceConf')
         self.assert_count_equal('COMPONENTS/TAB', 5)
-        self.assert_count_equal('COMPONENTS/*', 2 + 5 + 6 + 2 + 2 + 2 + 2)
+        self.assert_count_equal('COMPONENTS/*', 2 + 5 + 5 + 2 + 2 + 2 + 2)
 
-        self.assert_count_equal('COMPONENTS/GRID[@name="vat"]/HEADER', 3)
+        self.assert_count_equal('COMPONENTS/GRID[@name="vat"]/HEADER', 4)
         self.assert_xml_equal('COMPONENTS/GRID[@name="vat"]/HEADER[@name="name"]', "nom")
         self.assert_xml_equal('COMPONENTS/GRID[@name="vat"]/HEADER[@name="rate"]', "taux")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="vat"]/HEADER[@name="account"]', "compte de TVA")
         self.assert_xml_equal('COMPONENTS/GRID[@name="vat"]/HEADER[@name="isactif"]', "actif ?")
         self.assert_count_equal('COMPONENTS/GRID[@name="vat"]/RECORD', 0)
 
         self.factory.xfer = VatAddModify()
         self.call('/diacamma.invoice/vatAddModify', {}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'vatAddModify')
-        self.assert_count_equal('COMPONENTS/*', 4)
+        self.assert_count_equal('COMPONENTS/*', 5)
 
         self.factory.xfer = VatAddModify()
         self.call('/diacamma.invoice/vatAddModify',
-                  {'name': 'my vat', 'rate': '11.57', 'isactif': 1, 'SAVE': 'YES'}, False)
+                  {'name': 'my vat', 'rate': '11.57', 'account': '4455', 'isactif': 1, 'SAVE': 'YES'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.invoice', 'vatAddModify')
 
         self.factory.xfer = InvoiceConf()
@@ -88,11 +89,11 @@ class ConfigTest(LucteriosTest):
         self.assert_count_equal('COMPONENTS/GRID[@name="vat"]/RECORD', 1)
         self.assert_xml_equal('COMPONENTS/GRID[@name="vat"]/RECORD[1]/VALUE[@name="name"]', 'my vat')
         self.assert_xml_equal('COMPONENTS/GRID[@name="vat"]/RECORD[1]/VALUE[@name="rate"]', '11.57')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="vat"]/RECORD[1]/VALUE[@name="account"]', '4455')
         self.assert_xml_equal('COMPONENTS/GRID[@name="vat"]/RECORD[1]/VALUE[@name="isactif"]', '1')
 
         self.factory.xfer = VatDel()
-        self.call(
-            '/diacamma.invoice/vatDel', {'vat': 1, 'CONFIRME': 'YES'}, False)
+        self.call('/diacamma.invoice/vatDel', {'vat': 1, 'CONFIRME': 'YES'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.invoice', 'vatDel')
 
         self.factory.xfer = InvoiceConf()
@@ -104,7 +105,7 @@ class ConfigTest(LucteriosTest):
         self.call('/diacamma.invoice/invoiceConf', {}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'invoiceConf')
         self.assert_count_equal('COMPONENTS/TAB', 5)
-        self.assert_count_equal('COMPONENTS/*', 2 + 5 + 6 + 2 + 2 + 2 + 2)
+        self.assert_count_equal('COMPONENTS/*', 2 + 5 + 5 + 2 + 2 + 2 + 2)
 
         self.assert_count_equal('COMPONENTS/GRID[@name="category"]/HEADER', 2)
         self.assert_xml_equal('COMPONENTS/GRID[@name="category"]/HEADER[@name="name"]', "nom")
@@ -141,7 +142,7 @@ class ConfigTest(LucteriosTest):
         self.call('/diacamma.invoice/invoiceConf', {}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'invoiceConf')
         self.assert_count_equal('COMPONENTS/TAB', 5)
-        self.assert_count_equal('COMPONENTS/*', 2 + 5 + 6 + 2 + 2 + 2 + 2)
+        self.assert_count_equal('COMPONENTS/*', 2 + 5 + 5 + 2 + 2 + 2 + 2)
 
         self.assert_count_equal('COMPONENTS/GRID[@name="custom_field"]/HEADER', 2)
         self.assert_xml_equal('COMPONENTS/GRID[@name="custom_field"]/HEADER[@name="name"]', "nom")
@@ -157,7 +158,7 @@ class ConfigTest(LucteriosTest):
         self.call('/diacamma.invoice/invoiceConf', {}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'invoiceConf')
         self.assert_count_equal('COMPONENTS/TAB', 5)
-        self.assert_count_equal('COMPONENTS/*', 2 + 5 + 6 + 2 + 2 + 2 + 2)
+        self.assert_count_equal('COMPONENTS/*', 2 + 5 + 5 + 2 + 2 + 2 + 2)
 
         self.assert_count_equal('COMPONENTS/GRID[@name="storagearea"]/HEADER', 2)
         self.assert_xml_equal('COMPONENTS/GRID[@name="storagearea"]/HEADER[@name="name"]', "nom")

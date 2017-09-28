@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-09-25 20:57+0000\n"
+"POT-Creation-Date: 2017-09-28 09:57+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -379,7 +379,7 @@ msgstr "message"
 msgid "add payment methods in email"
 msgstr "add payment methods in email"
 
-#: views.py:217 views.py:220
+#: views.py:217 views.py:220 views.py:277
 msgid "Payment"
 msgstr "Payment"
 
@@ -391,11 +391,11 @@ msgstr "No payment for this document."
 msgid "Payement methods"
 msgstr "Payement methods"
 
-#: views.py:294
+#: views.py:297
 msgid "It is not possible to pay-off this item with PayPal !"
 msgstr "It is not possible to pay-off this item with PayPal !"
 
-#: views.py:295
+#: views.py:298
 msgid "This item is deleted, payed or disabled."
 msgstr "This item is deleted, payed or disabled."
 

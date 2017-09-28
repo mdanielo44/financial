@@ -57,18 +57,16 @@ class Vat(LucteriosModel):
 
     name = models.CharField(_('name'), max_length=20)
     rate = models.DecimalField(_('rate'), max_digits=6, decimal_places=2,
-                               default=10.0,
-                               validators=[MinValueValidator(0.0),
-                                           MaxValueValidator(100.0)])
-    isactif = models.BooleanField(
-        verbose_name=_('is actif'), default=True)
+                               default=10.0, validators=[MinValueValidator(0.0), MaxValueValidator(100.0)])
+    isactif = models.BooleanField(verbose_name=_('is actif'), default=True)
+    account = models.CharField(_('vat account'), max_length=50, default='4455')
 
     def __str__(self):
         return six.text_type(self.name)
 
     @classmethod
     def get_default_fields(cls):
-        return ["name", "rate", "isactif"]
+        return ["name", "rate", "account", "isactif"]
 
     class Meta(object):
         verbose_name = _('VAT')
@@ -612,20 +610,21 @@ class Bill(Supporting):
         for detail_item in detail_list.values():
             EntryLineAccount.objects.create(
                 account=detail_item[0], amount=is_bill * detail_item[1], entry=self.entry)
-        if self.get_vta_sum() > 0.001:
-            vta_code = Params.getvalue("invoice-vatsell-account")
-            vta_account = ChartsAccount.get_account(
-                vta_code, self.fiscal_year)
-            if vta_account is None:
-                raise LucteriosException(
-                    IMPORTANT, _("vta-account is not defined!"))
-            EntryLineAccount.objects.create(
-                account=vta_account, amount=is_bill * self.get_vta_sum(), entry=self.entry)
-        no_change, debit_rest, credit_rest = self.entry.serial_control(
-            self.entry.get_serial())
+        vat_val = {}
+        for detail in self.detail_set.all():
+            if (detail.article is not None) and (detail.article.vat is not None):
+                vat_account = ChartsAccount.get_account(detail.article.vat.account, self.fiscal_year)
+                if vat_account is None:
+                    raise LucteriosException(IMPORTANT, _("vta-account is not defined!"))
+                if vat_account not in vat_val.keys():
+                    vat_val[vat_account] = 0.0
+                vat_val[vat_account] += detail.get_vta()
+        for vataccount, vatamount in vat_val.items():
+            if vatamount > 0.001:
+                EntryLineAccount.objects.create(account=vataccount, amount=is_bill * vatamount, entry=self.entry)
+        no_change, debit_rest, credit_rest = self.entry.serial_control(self.entry.get_serial())
         if not no_change or (abs(debit_rest) > 0.001) or (abs(credit_rest) > 0.001):
-            raise LucteriosException(
-                GRAVE, _("Error in accounting generator!") + "{[br/]} no_change=%s debit_rest=%.3f credit_rest=%.3f" % (no_change, debit_rest, credit_rest))
+            raise LucteriosException(GRAVE, _("Error in accounting generator!") + "{[br/]} no_change=%s debit_rest=%.3f credit_rest=%.3f" % (no_change, debit_rest, credit_rest))
 
     transitionname__valid = _("Validate")
 
@@ -1092,8 +1091,6 @@ def invoice_checkparam():
                                args="{'Multi':False}", value='', meta='("accounting","ChartsAccount", Q(type_of_account=3) & Q(year__is_actif=True), "code", True)')
     Parameter.check_and_create(name='invoice-reduce-account', typeparam=0, title=_("invoice-reduce-account"),
                                args="{'Multi':False}", value='', meta='("accounting","ChartsAccount", Q(type_of_account=3) & Q(year__is_actif=True), "code", True)')
-    Parameter.check_and_create(name='invoice-vatsell-account', typeparam=0, title=_("invoice-vatsell-account"),
-                               args="{'Multi':False}", value='', meta='("accounting","ChartsAccount", Q(type_of_account=4) & Q(year__is_actif=True), "code", False)')
     Parameter.check_and_create(name='invoice-vat-mode', typeparam=4, title=_("invoice-vat-mode"),
                                args="{'Enum':3}", value='0', param_titles=(_("invoice-vat-mode.0"), _("invoice-vat-mode.1"), _("invoice-vat-mode.2")))
     Parameter.check_and_create(name="invoice-account-third", typeparam=0, title=_("invoice-account-third"),

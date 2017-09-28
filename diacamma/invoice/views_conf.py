@@ -45,7 +45,7 @@ from lucterios.contacts.models import CustomField
 def fill_params(xfer, param_lists=None, is_mini=False):
     if param_lists is None:
         param_lists = ['invoice-vat-mode', 'invoice-default-sell-account',
-                       'invoice-vatsell-account', 'invoice-reduce-account', 'invoice-account-third']
+                       'invoice-reduce-account', 'invoice-account-third']
     Params.fill(xfer, param_lists, 1, xfer.get_max_row() + 1)
     btn = XferCompButton('editparam')
     btn.set_is_mini(is_mini)
@@ -147,25 +147,24 @@ class ArticleImport(ObjectImport):
 
 @signal_and_lock.Signal.decorate('compte_no_found')
 def comptenofound_invoice(known_codes, accompt_returned):
-    article_unknown = Article.objects.filter(
-        isdisabled=False).exclude(sell_account__in=known_codes).values_list('sell_account', flat=True).distinct()
-    param_unknown = Parameter.objects.filter(name__in=('invoice-default-sell-account', 'invoice-vatsell-account',
-                                                       'invoice-reduce-account')).exclude(value__in=known_codes).values_list('value', flat=True).distinct()
+    article_unknown = Article.objects.filter(isdisabled=False).exclude(sell_account__in=known_codes).values_list('sell_account', flat=True).distinct()
+    vat_unknown = Vat.objects.filter(isactif=True).exclude(account__in=known_codes).values_list('account', flat=True).distinct()
+    param_unknown = Parameter.objects.filter(name__in=('invoice-default-sell-account', 'invoice-reduce-account')).exclude(value__in=known_codes).values_list('value', flat=True).distinct()
     comptenofound = ""
     if (len(article_unknown) > 0):
         comptenofound = _("articles") + ":" + ",".join(article_unknown) + " "
+    if (len(vat_unknown) > 0):
+        comptenofound += _("VAT") + ":" + ",".join(vat_unknown)
     if (len(param_unknown) > 0):
         comptenofound += _("parameters") + ":" + ",".join(param_unknown)
     if comptenofound != "":
-        accompt_returned.append(
-            "- {[i]}{[u]}%s{[/u]}: %s{[/i]}" % (_('Invoice'), comptenofound))
+        accompt_returned.append("- {[i]}{[u]}%s{[/u]}: %s{[/i]}" % (_('Invoice'), comptenofound))
     return True
 
 
 @signal_and_lock.Signal.decorate('param_change')
 def paramchange_invoice(params):
-    invoice_params = ['invoice-default-sell-account', 'invoice-vatsell-account',
-                      'invoice-reduce-account', 'invoice-account-third']
+    invoice_params = ['invoice-default-sell-account', 'invoice-reduce-account', 'invoice-account-third']
     if 'accounting-sizecode' in params:
         for param_item in invoice_params:
             Parameter.change_value(param_item, correct_accounting_code(Params.getvalue(param_item)))
@@ -184,12 +183,10 @@ def paramchange_invoice(params):
         if system_ident == "french":
             Parameter.change_value('invoice-default-sell-account', correct_accounting_code('706'))
             Parameter.change_value('invoice-reduce-account', correct_accounting_code('709'))
-            Parameter.change_value('invoice-vatsell-account', correct_accounting_code('4455'))
             Parameter.change_value("invoice-account-third", correct_accounting_code('411'))
         elif system_ident == "belgium":
             Parameter.change_value('invoice-default-sell-account', correct_accounting_code('700'))
             Parameter.change_value('invoice-reduce-account', correct_accounting_code('708'))
-            Parameter.change_value('invoice-vatsell-account', correct_accounting_code('451'))
             Parameter.change_value("invoice-account-third", correct_accounting_code('400'))
     Params.clear()
 
@@ -204,6 +201,6 @@ def conf_wizard_invoice(wizard_ident, xfer):
         fill_params(xfer, ['invoice-default-sell-account', 'invoice-reduce-account', 'invoice-account-third'], True)
     elif (xfer is not None) and (wizard_ident == "invoice_vat"):
         xfer.add_title(_("Diacamma invoice"), _('VAT'), _('Configuration of vat'))
-        fill_params(xfer, ['invoice-vat-mode', 'invoice-vatsell-account'], True)
+        fill_params(xfer, ['invoice-vat-mode'], True)
         xfer.fill_grid(10, Vat, 'vat', Vat.objects.all())
         xfer.get_components("vat").colspan = 4
