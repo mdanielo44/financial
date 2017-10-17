@@ -1377,7 +1377,7 @@ class Budget(LucteriosModel):
         return total_revenue - total_expense
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
-        if self.cost_accounting is not None:
+        if (self.cost_accounting is not None) and (self.cost_accounting.year_id is not None):
             self.year = self.cost_accounting.year
         if six.text_type(self.id)[0] == 'C':
             value = self.amount

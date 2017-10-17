@@ -57,7 +57,7 @@ class Vat(LucteriosModel):
 
     name = models.CharField(_('name'), max_length=20)
     rate = models.DecimalField(_('rate'), max_digits=6, decimal_places=2,
-                               default=10.0, validators=[MinValueValidator(0.0), MaxValueValidator(100.0)])
+                               default=10.0, validators=[MinValueValidator(0.0), MaxValueValidator(99.9)])
     isactif = models.BooleanField(verbose_name=_('is actif'), default=True)
     account = models.CharField(_('vat account'), max_length=50, default='4455')
 
@@ -703,13 +703,13 @@ class Bill(Supporting):
                     costumers[bill.third_id] += bill.get_total_excltax()
                     total_cust += bill.get_total_excltax()
             for cust_id in costumers.keys():
-                cust_list.append((six.text_type(Third.objects.get(id=cust_id)),
-                                  format_devise(costumers[cust_id], 5),
-                                  "%.2f %%" % (100 * costumers[cust_id] / total_cust), costumers[cust_id]))
-            cust_list.sort(
-                key=lambda cust_item: (-1 * cust_item[3], cust_item[0]))
-            cust_list.append(("{[b]}%s{[/b]}" % _('total'), "{[b]}%s{[/b]}" % format_devise(total_cust, 5),
-                              "{[b]}%.2f %%{[/b]}" % 100, total_cust))
+                try:
+                    ratio = "%.2f %%" % (100 * costumers[cust_id] / total_cust)
+                except ZeroDivisionError:
+                    ratio = "---"
+                cust_list.append((six.text_type(Third.objects.get(id=cust_id)), format_devise(costumers[cust_id], 5), ratio, costumers[cust_id]))
+            cust_list.sort(key=lambda cust_item: (-1 * cust_item[3], cust_item[0]))
+            cust_list.append(("{[b]}%s{[/b]}" % _('total'), "{[b]}%s{[/b]}" % format_devise(total_cust, 5), "{[b]}%.2f %%{[/b]}" % 100, total_cust))
         return cust_list
 
     def get_statistics_article(self):
@@ -735,16 +735,15 @@ class Bill(Supporting):
                 else:
                     art_text = six.text_type(Article.objects.get(id=art_id))
                 if abs(articles[art_id][1]) > 0.0001:
-                    art_list.append((art_text,
-                                     format_devise(articles[art_id][0], 5),
-                                     "%.2f" % articles[art_id][1],
-                                     format_devise(
-                                         articles[art_id][0] / articles[art_id][1], 5),
-                                     "%.2f %%" % (100 * articles[art_id][0] / total_art), articles[art_id][0]))
+                    try:
+                        ratio = "%.2f %%" % (100 * articles[art_id][0] / total_art)
+                    except ZeroDivisionError:
+                        ratio = "---"
+                    art_list.append((art_text, format_devise(articles[art_id][0], 5), "%.2f" % articles[art_id][1],
+                                     format_devise(articles[art_id][0] / articles[art_id][1], 5), ratio, articles[art_id][0]))
             art_list.sort(key=lambda art_item: art_item[5], reverse=True)
             art_list.append(("{[b]}%s{[/b]}" % _('total'), "{[b]}%s{[/b]}" % format_devise(total_art, 5),
-                             "{[b]}---{[/b]}", "{[b]}---{[/b]}",
-                             "{[b]}%.2f %%{[/b]}" % 100, total_art))
+                             "{[b]}---{[/b]}", "{[b]}---{[/b]}", "{[b]}%.2f %%{[/b]}" % 100, total_art))
         return art_list
 
     def support_validated(self, validate_date):
@@ -756,15 +755,17 @@ class Bill(Supporting):
             new_bill.date = validate_date
             new_bill.save()
             if (new_bill is None) or (new_bill.get_info_state() != ''):
-                raise LucteriosException(
-                    IMPORTANT, _("This item can't be validated!"))
+                raise LucteriosException(IMPORTANT, _("This item can't be validated!"))
             new_bill.valid()
         else:
             new_bill = self
         return new_bill
 
     def get_tax(self):
-        return currency_round(self.get_tax_sum() * self.get_total_rest_topay() / self.get_total_incltax())
+        try:
+            return currency_round(self.get_tax_sum() * self.get_total_rest_topay() / self.get_total_incltax())
+        except ZeroDivisionError:
+            return None
 
     def get_payable_without_tax(self):
         if (self.bill_type == 2) or (self.status != 1):
@@ -874,7 +875,11 @@ class Detail(LucteriosModel):
     @property
     def reduce_txt(self):
         if self.reduce > 0.0001:
-            return "%s(%.2f%%)" % (format_devise(self.get_reduce(), 5), 100 * self.get_reduce() / (self.get_price() * float(self.quantity)))
+            try:
+                red_ratio = "(%.2f%%)" % (100 * self.get_reduce() / (self.get_price() * float(self.quantity)),)
+            except ZeroDivisionError:
+                red_ratio = ''
+            return "%s%s" % (format_devise(self.get_reduce(), 5), red_ratio)
         else:
             return None
 

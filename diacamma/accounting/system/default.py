@@ -222,12 +222,14 @@ class DefaultSystemAccounting(object):
     def _create_report_third(self, year):
         from diacamma.accounting.models import EntryAccount
         last_entry_account = list(year.last_fiscalyear.entryaccount_set.filter(journal__id=5).order_by('num'))[-1]
-        end_desig = _("Retained earnings - Third party debt")
-        new_entry = EntryAccount.objects.create(year=year, journal_id=1, designation=end_desig, date_value=year.begin)
-        for entry_line in last_entry_account.entrylineaccount_set.all():
-            if re.match(self.get_general_mask(), entry_line.account.code):
-                new_entry.add_entry_line(-1 * entry_line.amount, entry_line.account.code, entry_line.account.name, entry_line.third)
-        new_entry.closed()
+        _no_change, debit_rest, credit_rest = last_entry_account.serial_control(last_entry_account.get_serial())
+        if abs(debit_rest - credit_rest) < 0.0001:
+            end_desig = _("Retained earnings - Third party debt")
+            new_entry = EntryAccount.objects.create(year=year, journal_id=1, designation=end_desig, date_value=year.begin)
+            for entry_line in last_entry_account.entrylineaccount_set.all():
+                if re.match(self.get_general_mask(), entry_line.account.code):
+                    new_entry.add_entry_line(-1 * entry_line.amount, entry_line.account.code, entry_line.account.name, entry_line.third)
+            new_entry.closed()
 
     def import_lastyear(self, year, import_result):
         self._create_report_lastyearresult(year, import_result)
