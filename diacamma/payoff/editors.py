@@ -210,7 +210,7 @@ class DepositSlipEditor(LucteriosEditor):
         xfer.add_component(lbl)
         depositdetail = xfer.get_components("depositdetail")
         depositdetail.col = 1
-        depositdetail.colspan = 4
+        depositdetail.colspan = 2
         depositdetail.description = ''
 
 

@@ -122,7 +122,7 @@ class DefaultSystemAccounting(object):
     def _create_profit_entry(self, year, profit_account):
         from diacamma.accounting.models import Journal, EntryAccount, EntryLineAccount, ChartsAccount
         from django.db.models import Q
-        paym_journ = Journal.objects.get(id=1)
+        paym_journ = Journal.objects.get(id=5)
         paym_desig = _('Affect of profit/deficit')
         new_entry = EntryAccount.objects.create(year=year, journal=paym_journ, designation=paym_desig, date_value=year.begin)
         query = Q(account__code__startswith=self.NEGATIF_ACCOUNT) | Q(account__code__startswith=self.POSITIF_ACCOUNT)
