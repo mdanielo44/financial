@@ -284,6 +284,7 @@ class EntryAccountEditor(LucteriosEditor):
         entry_line.editor.edit_line(xfer, 0, last_row + 2, debit_rest, credit_rest)
         if entry_line.has_account:
             btn = XferCompButton('entrybtn')
+            btn.is_default = True
             btn.set_location(3, last_row + 5)
             btn.set_action(xfer.request, ActionsManage.get_action_url(
                 'accounting.EntryLineAccount', 'Add', xfer), close=CLOSE_YES)
