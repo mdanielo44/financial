@@ -256,7 +256,7 @@ class ConfigTest(LucteriosTest):
         self.factory.xfer = ArticleAddModify()
         self.call('/diacamma.invoice/articleAddModify', {}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'articleAddModify')
-        self.assert_count_equal('COMPONENTS/*', 19)
+        self.assert_count_equal('COMPONENTS/*', 12)
 
         self.factory.xfer = ArticleAddModify()
         self.call('/diacamma.invoice/articleAddModify',
