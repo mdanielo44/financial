@@ -635,8 +635,6 @@ class MethodTest(InvoiceTest, PaymentTest):
         self.assert_count_equal('ACTIONS/ACTION', 3)
 
     def test_check_payment_paypal(self):
-        if six.PY2:
-            return
         self.call_ex('/diacamma.payoff/checkPaymentPaypal', {'payid': 1}, True, 302)
         self.call_ex('/diacamma.payoff/checkPaymentPaypal', {'payid': 2}, True, 302)
         self.call_ex('/diacamma.payoff/checkPaymentPaypal', {'payid': 4}, True, 302)

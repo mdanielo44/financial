@@ -517,8 +517,6 @@ class StorageTest(InvoiceTest):
         self.assert_count_equal('COMPONENTS/GRID[@name="storagesheet"]/RECORD', 2)
 
     def test_import(self):
-        if six.PY2:
-            return
         self.factory.xfer = ArticleList()
         self.call('/diacamma.invoice/articleList', {}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'articleList')

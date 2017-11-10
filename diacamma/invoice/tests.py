@@ -326,8 +326,6 @@ class ConfigTest(LucteriosTest):
         self.assert_count_equal('COMPONENTS/GRID[@name="article"]/RECORD', 1)
 
     def test_article_import1(self):
-        if six.PY2:
-            return
         initial_thirds()
         default_categories()
         csv_content = """'num','comment','prix','unité','compte','stock?','categorie','fournisseur','ref'
@@ -466,8 +464,6 @@ class ConfigTest(LucteriosTest):
         self.assert_xml_equal('COMPONENTS/GRID[@name="provider"]/RECORD[2]/VALUE[@name="reference"]', "654321")
 
     def test_article_import2(self):
-        if six.PY2:
-            return
         initial_thirds()
         default_categories()
         csv_content = """'num','comment','prix','unité','compte','stock?','categorie','fournisseur','ref'
@@ -541,8 +537,6 @@ class ConfigTest(LucteriosTest):
 
     def test_article_import3(self):
         default_customize()
-        if six.PY2:
-            return
         csv_content = """'num','comment','prix','unité','compte','stock?','categorie','fournisseur','ref','color','size'
 'A123','article N°1','12.45','Kg','701','stockable','cat 2','Avrel','POIYT','---','10'
 'B234','article N°2','23.56','L','701','stockable','cat 3','','','noir','25'
