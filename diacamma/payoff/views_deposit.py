@@ -81,7 +81,6 @@ class DepositSlipShow(XferShowEditor):
 
     def __init__(self, **kwargs):
         XferContainerCustom.__init__(self, **kwargs)
-        # self.is_simple_gui = False
 
 
 @ActionsManage.affect_grid(TITLE_DELETE, "images/delete.png", unique=SELECT_MULTI)

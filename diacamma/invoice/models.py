@@ -53,8 +53,6 @@ from lucterios.contacts.models import CustomField, CustomizeObject
 
 
 class Vat(LucteriosModel):
-    is_simple_gui = True
-
     name = models.CharField(_('name'), max_length=20)
     rate = models.DecimalField(_('rate'), max_digits=6, decimal_places=2,
                                default=10.0, validators=[MinValueValidator(0.0), MaxValueValidator(99.9)])
@@ -74,8 +72,6 @@ class Vat(LucteriosModel):
 
 
 class Category(LucteriosModel):
-    is_simple_gui = True
-
     name = models.CharField(_('name'), max_length=50)
     designation = models.TextField(_('designation'))
 
@@ -101,8 +97,6 @@ class Category(LucteriosModel):
 
 
 class StorageArea(LucteriosModel):
-    is_simple_gui = True
-
     name = models.CharField(_('name'), max_length=50)
     designation = models.TextField(_('designation'))
 
@@ -128,8 +122,6 @@ class StorageArea(LucteriosModel):
 
 
 class ArticleCustomField(LucteriosModel):
-    is_simple_gui = True
-
     article = models.ForeignKey('Article', verbose_name=_('article'), null=False, on_delete=models.CASCADE)
     field = models.ForeignKey(CustomField, verbose_name=_('field'), null=False, on_delete=models.CASCADE)
     value = models.TextField(_('value'), default="")
@@ -141,7 +133,6 @@ class ArticleCustomField(LucteriosModel):
 
 
 class Article(LucteriosModel, CustomizeObject):
-    is_simple_gui = True
     CustomFieldClass = ArticleCustomField
     FieldName = 'article'
 
@@ -318,8 +309,6 @@ class Article(LucteriosModel, CustomizeObject):
 
 
 class Provider(LucteriosModel):
-    is_simple_gui = True
-
     article = models.ForeignKey(Article, verbose_name=_('article'), null=False, on_delete=models.CASCADE)
     third = models.ForeignKey(Third, verbose_name=_('third'), null=False, on_delete=models.PROTECT)
     reference = models.CharField(_('reference'), max_length=50)
@@ -351,8 +340,6 @@ class Provider(LucteriosModel):
 
 
 class Bill(Supporting):
-    is_simple_gui = True
-
     fiscal_year = models.ForeignKey(
         FiscalYear, verbose_name=_('fiscal year'), null=True, default=None, db_index=True, on_delete=models.PROTECT)
     bill_type = models.IntegerField(verbose_name=_('bill type'),
@@ -788,8 +775,6 @@ class Bill(Supporting):
 
 
 class Detail(LucteriosModel):
-    is_simple_gui = True
-
     bill = models.ForeignKey(
         Bill, verbose_name=_('bill'), null=False, db_index=True, on_delete=models.CASCADE)
     article = models.ForeignKey(
@@ -950,8 +935,6 @@ class Detail(LucteriosModel):
 
 
 class StorageSheet(LucteriosModel):
-    is_simple_gui = True
-
     sheet_type = models.IntegerField(verbose_name=_('sheet type'),
                                      choices=((0, _('stock receipt')), (1, _('stock exit'))), null=False, default=0, db_index=True)
     date = models.DateField(verbose_name=_('date'), null=False)
@@ -1014,8 +997,6 @@ class StorageSheet(LucteriosModel):
 
 
 class StorageDetail(LucteriosModel):
-    is_simple_gui = True
-
     storagesheet = models.ForeignKey(StorageSheet, verbose_name=_('storage sheet'), null=False, db_index=True, on_delete=models.CASCADE)
     article = models.ForeignKey(Article, verbose_name=_('article'), null=False, db_index=True, on_delete=models.PROTECT)
     price = models.DecimalField(verbose_name=_('buying price'), max_digits=10, decimal_places=3, default=0.0,

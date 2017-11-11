@@ -61,8 +61,6 @@ def remove_accent(text, replace_space=False):
 
 
 class Supporting(LucteriosModel):
-    is_simple_gui = True
-
     third = models.ForeignKey(
         Third, verbose_name=_('third'), null=True, default=None, db_index=True, on_delete=models.PROTECT)
     is_revenu = models.BooleanField(verbose_name=_('is revenu'), default=True)
@@ -217,8 +215,6 @@ class Supporting(LucteriosModel):
 
 
 class BankAccount(LucteriosModel):
-    is_simple_gui = True
-
     designation = models.TextField(_('designation'), null=False)
     reference = models.CharField(_('reference'), max_length=200, null=False)
     account_code = models.CharField(
@@ -241,8 +237,6 @@ class BankAccount(LucteriosModel):
 
 
 class Payoff(LucteriosModel):
-    is_simple_gui = True
-
     supporting = models.ForeignKey(
         Supporting, verbose_name=_('supporting'), null=False, db_index=True, on_delete=models.CASCADE)
     date = models.DateField(verbose_name=_('date'), null=False)
@@ -457,8 +451,6 @@ class Payoff(LucteriosModel):
 
 
 class DepositSlip(LucteriosModel):
-    is_simple_gui = True
-
     status = FSMIntegerField(verbose_name=_('status'), choices=(
         (0, _('building')), (1, _('closed')), (2, _('valid'))), null=False, default=0, db_index=True)
     bank_account = models.ForeignKey(BankAccount, verbose_name=_(
@@ -528,8 +520,6 @@ class DepositSlip(LucteriosModel):
 
 
 class DepositDetail(LucteriosModel):
-    is_simple_gui = True
-
     deposit = models.ForeignKey(
         DepositSlip, verbose_name=_('deposit'), null=True, default=None, db_index=True, on_delete=models.CASCADE)
     payoff = models.ForeignKey(
@@ -602,8 +592,6 @@ class DepositDetail(LucteriosModel):
 
 
 class PaymentMethod(LucteriosModel):
-    is_simple_gui = True
-
     paytype = models.IntegerField(verbose_name=_('type'),
                                   choices=((0, _('transfer')), (1, _('cheque')), (2, _('PayPal'))), null=False, default=0, db_index=True)
     bank_account = models.ForeignKey(BankAccount,
@@ -756,8 +744,6 @@ class PaymentMethod(LucteriosModel):
 
 
 class BankTransaction(LucteriosModel):
-    is_simple_gui = True
-
     date = models.DateTimeField(verbose_name=_('date'), null=False)
     status = models.IntegerField(verbose_name=_('status'), choices=(
         (0, _('failure')), (1, _('success'))), null=False, default=0, db_index=True)
