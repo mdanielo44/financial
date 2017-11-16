@@ -783,7 +783,7 @@ class EntryAccount(LucteriosModel):
     def description(self):
         res = self.designation
         res += "{[br/]}"
-        res += "{[table]}"
+        res += "{[table style='min-width:200px;']}"
         for line in self.entrylineaccount_set.all():
             res += "{[tr]}"
             res += "{[td]}%s{[/td]}" % line.entry_account
