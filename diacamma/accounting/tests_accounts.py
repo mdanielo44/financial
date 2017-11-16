@@ -54,7 +54,7 @@ class ChartsAccountTest(LucteriosTest):
         self.call('/diacamma.accounting/chartsAccountList',
                   {'year': '1', 'type_of_account': '-1'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'chartsAccountList')
-        self.assert_count_equal('COMPONENTS/*', 9)
+        self.assert_count_equal('COMPONENTS/*', 8)
         self.assert_count_equal('COMPONENTS/GRID[@name="chartsaccount"]/HEADER', 5)
         self.assert_count_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD', 17)
         self.assert_xml_equal(
@@ -65,7 +65,7 @@ class ChartsAccountTest(LucteriosTest):
         self.call('/diacamma.accounting/chartsAccountList',
                   {'year': '1', 'type_of_account': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'chartsAccountList')
-        self.assert_count_equal('COMPONENTS/*', 9)
+        self.assert_count_equal('COMPONENTS/*', 8)
         self.assert_count_equal('COMPONENTS/GRID[@name="chartsaccount"]/HEADER', 5)
         self.assert_count_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD', 3)
         self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[1]/VALUE[@name="code"]', '411')
@@ -89,7 +89,7 @@ class ChartsAccountTest(LucteriosTest):
         self.call('/diacamma.accounting/chartsAccountList',
                   {'year': '1', 'type_of_account': '1'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'chartsAccountList')
-        self.assert_count_equal('COMPONENTS/*', 9)
+        self.assert_count_equal('COMPONENTS/*', 8)
         self.assert_count_equal('COMPONENTS/GRID[@name="chartsaccount"]/HEADER', 5)
         self.assert_count_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD', 1)
         self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[1]/VALUE[@name="code"]', '401')
@@ -103,7 +103,7 @@ class ChartsAccountTest(LucteriosTest):
         self.call('/diacamma.accounting/chartsAccountList',
                   {'year': '1', 'type_of_account': '2'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'chartsAccountList')
-        self.assert_count_equal('COMPONENTS/*', 9)
+        self.assert_count_equal('COMPONENTS/*', 8)
         self.assert_count_equal('COMPONENTS/GRID[@name="chartsaccount"]/HEADER', 5)
         self.assert_count_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD', 5)
         self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[1]/VALUE[@name="code"]', '106')
@@ -117,7 +117,7 @@ class ChartsAccountTest(LucteriosTest):
         self.call('/diacamma.accounting/chartsAccountList',
                   {'year': '1', 'type_of_account': '3'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'chartsAccountList')
-        self.assert_count_equal('COMPONENTS/*', 9)
+        self.assert_count_equal('COMPONENTS/*', 8)
         self.assert_count_equal('COMPONENTS/GRID[@name="chartsaccount"]/HEADER', 5)
         self.assert_count_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD', 3)
         self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[3]/VALUE[@name="code"]', '707')
@@ -131,7 +131,7 @@ class ChartsAccountTest(LucteriosTest):
         self.call('/diacamma.accounting/chartsAccountList',
                   {'year': '1', 'type_of_account': '4'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'chartsAccountList')
-        self.assert_count_equal('COMPONENTS/*', 9)
+        self.assert_count_equal('COMPONENTS/*', 8)
         self.assert_count_equal('COMPONENTS/GRID[@name="chartsaccount"]/HEADER', 5)
         self.assert_count_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD', 5)
         self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[1]/VALUE[@name="code"]', '601')
@@ -150,7 +150,7 @@ class ChartsAccountTest(LucteriosTest):
         self.call('/diacamma.accounting/chartsAccountList',
                   {'year': '1', 'type_of_account': '5'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'chartsAccountList')
-        self.assert_count_equal('COMPONENTS/*', 9)
+        self.assert_count_equal('COMPONENTS/*', 8)
         self.assert_count_equal('COMPONENTS/GRID[@name="chartsaccount"]/HEADER', 5)
         self.assert_count_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD', 0)
 
@@ -338,7 +338,7 @@ class FiscalYearWorkflowTest(PaymentTest):
         self.call('/diacamma.accounting/chartsAccountList',
                   {'year': '1', 'type_of_account': '-1'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'chartsAccountList')
-        self.assert_count_equal('COMPONENTS/*', 9)
+        self.assert_count_equal('COMPONENTS/*', 8)
         self.assert_count_equal('ACTIONS/ACTION', 4)
         self.assert_action_equal('ACTIONS/ACTION[1]', ('Commencer', 'images/ok.png', 'diacamma.accounting', 'fiscalYearBegin', 0, 1, 1))
 
@@ -580,7 +580,7 @@ class FiscalYearWorkflowTest(PaymentTest):
         self.call('/diacamma.accounting/chartsAccountList',
                   {'year': '1', 'type_of_account': '-1'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'chartsAccountList')
-        self.assert_count_equal('COMPONENTS/*', 9)
+        self.assert_count_equal('COMPONENTS/*', 8)
         self.assert_count_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD', 17)
         self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[4]/VALUE[@name="code"]', '120')
         self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[4]/VALUE[@name="current_total"]',
@@ -626,7 +626,7 @@ class FiscalYearWorkflowTest(PaymentTest):
         self.call('/diacamma.accounting/chartsAccountList',
                   {'year': '2', 'type_of_account': '-1'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'chartsAccountList')
-        self.assert_count_equal('COMPONENTS/*', 9)
+        self.assert_count_equal('COMPONENTS/*', 8)
         self.assert_count_equal('ACTIONS/ACTION', 4)
         self.assert_count_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD', 9)
         self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[2]/VALUE[@name="code"]', '120')

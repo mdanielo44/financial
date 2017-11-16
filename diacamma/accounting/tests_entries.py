@@ -56,7 +56,7 @@ class EntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryAccountList', {}, False)
         self.assert_observer(
             'core.custom', 'diacamma.accounting', 'entryAccountList')
-        self.assert_count_equal('COMPONENTS/*', 8)
+        self.assert_count_equal('COMPONENTS/*', 7)
         self.assert_xml_equal("COMPONENTS/SELECT[@name='year']", '1')
         self.assert_count_equal("COMPONENTS/SELECT[@name='year']/CASE", 1)
         self.assert_xml_equal("COMPONENTS/SELECT[@name='journal']", '4')
@@ -330,7 +330,7 @@ class EntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryAccountList',
                   {'year': '1', 'journal': '2', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
-        self.assert_count_equal('COMPONENTS/*', 8)
+        self.assert_count_equal('COMPONENTS/*', 7)
         self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/HEADER', 6)
         self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', 1)
         self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[1]/VALUE[@name="num"]', '---')
@@ -366,7 +366,7 @@ class EntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryAccountList',
                   {'year': '1', 'journal': '2', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
-        self.assert_count_equal('COMPONENTS/*', 8)
+        self.assert_count_equal('COMPONENTS/*', 7)
         self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/HEADER', 6)
         self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', 1)
         self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[1]/VALUE[@name="num"]', '1')
@@ -531,7 +531,7 @@ class EntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryAccountList',
                   {'year': '1', 'journal': '-1', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
-        self.assert_count_equal('COMPONENTS/*', 8)
+        self.assert_count_equal('COMPONENTS/*', 7)
         self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/HEADER', 6)
         self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', 2)
 
@@ -597,7 +597,7 @@ class EntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryAccountList',
                   {'year': '1', 'journal': '-1', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
-        self.assert_count_equal('COMPONENTS/*', 8)
+        self.assert_count_equal('COMPONENTS/*', 7)
         self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/HEADER', 6)
         self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', 1)
         self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[1]/VALUE[@name="num"]', '---')
@@ -633,7 +633,7 @@ class EntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryAccountList',
                   {'year': '1', 'journal': '-1', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
-        self.assert_count_equal('COMPONENTS/*', 8)
+        self.assert_count_equal('COMPONENTS/*', 7)
         self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/HEADER', 6)
         self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', 2)
         self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[1]/VALUE[@name="num"]', '---')
@@ -667,7 +667,7 @@ class EntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryAccountList',
                   {'year': '1', 'journal': '-1', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
-        self.assert_count_equal('COMPONENTS/*', 8)
+        self.assert_count_equal('COMPONENTS/*', 7)
         self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/HEADER', 6)
         self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', 2)
         self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[1]/VALUE[@name="link"]', 'A')
@@ -681,7 +681,7 @@ class EntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryAccountList',
                   {'year': '1', 'journal': '-1', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
-        self.assert_count_equal('COMPONENTS/*', 8)
+        self.assert_count_equal('COMPONENTS/*', 7)
         self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/HEADER', 6)
         self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', 2)
         self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[1]/VALUE[@name="link"]', '---')
@@ -754,7 +754,7 @@ class EntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryAccountList',
                   {'year': '1', 'journal': '-1', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
-        self.assert_count_equal('COMPONENTS/*', 8)
+        self.assert_count_equal('COMPONENTS/*', 7)
         self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/HEADER', 6)
         self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', 2)
         self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[1]/VALUE[@name="link"]', 'A')
@@ -781,7 +781,7 @@ class EntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryAccountList',
                   {'year': '1', 'journal': '-1', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
-        self.assert_count_equal('COMPONENTS/*', 8)
+        self.assert_count_equal('COMPONENTS/*', 7)
         self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/HEADER', 6)
         self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', 1)
         self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[1]/VALUE[@name="num"]', '1')

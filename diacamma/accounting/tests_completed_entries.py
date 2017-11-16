@@ -62,7 +62,7 @@ class CompletedEntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryAccountList',
                   {'year': '1', 'journal': journal, 'filter': filterlist}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
-        self.assert_count_equal('COMPONENTS/*', 8)
+        self.assert_count_equal('COMPONENTS/*', 7)
         self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/HEADER', 6)
         self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', nb_line)
 
@@ -299,7 +299,7 @@ class CompletedEntryTest(LucteriosTest):
         self.factory.xfer = CostAccountingList()
         self.call('/diacamma.accounting/costAccountingList', {'status': 0}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'costAccountingList')
-        self.assert_count_equal('COMPONENTS/*', 6)
+        self.assert_count_equal('COMPONENTS/*', 5)
         self.assert_count_equal('COMPONENTS/GRID[@name="costaccounting"]/HEADER', 8)
         self.assert_count_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD', 1)
         self.assert_xml_equal('COMPONENTS/GRID[@name="costaccounting"]/RECORD[1]/VALUE[@name="name"]', 'open')

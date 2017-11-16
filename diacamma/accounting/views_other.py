@@ -47,7 +47,6 @@ class CostAccountingList(XferListEditor):
         XferListEditor.fillresponse(self)
         self.get_components('title').colspan += 1
         self.get_components('costaccounting').colspan += 1
-        self.get_components('nb_costaccounting').colspan += 1
 
 
 @ActionsManage.affect_grid(_("Default"), "", unique=SELECT_SINGLE, condition=lambda xfer, gridname='': xfer.getparam('status', 0) != 1)
