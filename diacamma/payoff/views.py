@@ -287,7 +287,7 @@ class CheckPaymentPaypal(XferContainerAbstract):
             paypal_url = getattr(settings, 'DIACAMMA_PAYOFF_PAYPAL_URL', 'https://www.paypal.com/cgi-bin/webscr')
             paypal_dict = payment_meth.get_paypal_dict(self.request.META.get('HTTP_REFERER', self.request.build_absolute_uri()), self.language, support)
             return HttpResponseRedirect("%s?%s" % (paypal_url, paypal_dict))
-        except:
+        except Exception:
             logging.getLogger('diacamma.payoff').exception("CheckPaymentPaypal")
             from django.shortcuts import render_to_response
             dictionary = {}
@@ -313,7 +313,7 @@ class ValidationPaymentPaypal(XferContainerAbstract):
     def confirm_paypal(self):
         try:
             from urllib.parse import quote_plus
-        except:
+        except Exception:
             from urllib import quote_plus
         from requests import post
         paypal_url = getattr(settings, 'DIACAMMA_PAYOFF_PAYPAL_URL', 'https://www.paypal.com/cgi-bin/webscr')
@@ -337,9 +337,11 @@ class ValidationPaymentPaypal(XferContainerAbstract):
                 payoff_date = datetime.strptime(self.getparam("payment_date", '').replace('PDT', 'GMT'), '%H:%M:%S %b %d, %Y %Z')
                 payoff_date += timedelta(hours=7)
                 self.item.date = timezone.make_aware(payoff_date)
-            except:
+            except Exception:
                 self.item.date = timezone.now()
-            self.item.contains += "{[newline]}".join(["%s = %s" % item for item in self.request.POST.items()])
+            param_list = dict(self.request.POST)
+            del param_list['FORMAT']
+            self.item.contains += "{[newline]}".join(["%s = %s" % (itemkey, itemvalue[0]) for (itemkey, itemvalue) in param_list.items()])
             conf_res = self.confirm_paypal()
             if conf_res == 'VERIFIED':
                 bank_account = None
