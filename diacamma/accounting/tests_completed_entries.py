@@ -249,7 +249,7 @@ class CompletedEntryTest(LucteriosTest):
         self.call('/diacamma.accounting/entryAccountSearch',
                   {'year': '1', 'journal': '-1', 'filter': '0', 'CRITERIA': 'year||8||1//entrylineaccount_set.account.code||6||7'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountSearch')
-        self.assert_count_equal('COMPONENTS/*', 23)
+        self.assert_count_equal('COMPONENTS/*', 22)
         self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/HEADER', 6)
         self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', 3)
 
