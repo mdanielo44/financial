@@ -250,6 +250,55 @@ class EntryTest(LucteriosTest):
         self.assert_count_equal('ACTIONS/ACTION', 2)
         self.assert_attrib_equal("ACTIONS/ACTION[1]", "id", "diacamma.accounting/entryAccountValidate")
 
+    def test_add_line_payoff(self):
+        self.factory.xfer = EntryAccountEdit()
+        self.call('/diacamma.accounting/entryAccountEdit', {'SAVE': 'YES', 'year': '1', 'journal': '3',
+                                                            'date_value': '2015-02-13', 'designation': 'un plein cadie'}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountEdit')
+
+        self.factory.xfer = EntryAccountEdit()
+        self.call('/diacamma.accounting/entryAccountEdit',
+                  {'year': '1', 'journal': '3', 'entryaccount': '1', 'serial_entry': "-1|4|0|152.340000|None|", 'num_cpt_txt': '5'}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountEdit')
+        self.assert_count_equal('COMPONENTS/*', 17)
+
+        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD', 1)
+        self.assert_xml_equal("COMPONENTS/EDIT[@name='num_cpt_txt']", '5')
+        self.assert_xml_equal("COMPONENTS/SELECT[@name='num_cpt']", '2')
+        self.assert_count_equal("COMPONENTS/SELECT[@name='num_cpt']/CASE", 2)
+        self.assert_xml_equal("COMPONENTS/FLOAT[@name='debit_val']", '152.34')
+        self.assert_xml_equal("COMPONENTS/FLOAT[@name='credit_val']", '0.00')
+        self.assert_xml_equal("COMPONENTS/EDIT[@name='reference']", None)
+        self.assert_count_equal('ACTIONS/ACTION', 2)
+
+        self.factory.xfer = EntryLineAccountAdd()
+        self.call('/diacamma.accounting/entryLineAccountAdd', {'year': '1', 'journal': '3', 'entryaccount': '1', 'serial_entry': "-1|4|0|152.340000|None|",
+                                                               'num_cpt_txt': '5', 'num_cpt': '3', 'debit_val': '152.34', 'credit_val': '0.0', 'reference': 'aaabbb'}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryLineAccountAdd')
+        self.assert_count_equal("CONTEXT/*", 3)
+        self.assert_xml_equal("CONTEXT/PARAM[@name='entryaccount']", "1")
+        self.assert_xml_equal("CONTEXT/PARAM[@name='year']", "1")
+        self.assert_xml_equal("CONTEXT/PARAM[@name='journal']", "3")
+
+        self.factory.xfer = EntryAccountEdit()
+        self.call('/diacamma.accounting/entryAccountEdit',
+                  {'year': '1', 'journal': '2', 'entryaccount': '1', 'serial_entry': "-1|4|0|152.340000|None|\n-2|3|0|152.340000|aaabbb|"}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountEdit')
+        self.assert_count_equal('COMPONENTS/*', 16)
+
+        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD', 2)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="entry_account"]', '[401] 401')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="debit"]', '{[font color="green"]}{[/font]}')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="credit"]', '{[font color="green"]}152.34€{[/font]}')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="reference"]', '---')
+
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[2]/VALUE[@name="entry_account"]', '[531] 531')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[2]/VALUE[@name="debit"]', '{[font color="blue"]}152.34€{[/font]}')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[2]/VALUE[@name="credit"]', '{[font color="green"]}{[/font]}')
+        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[2]/VALUE[@name="reference"]', 'aaabbb')
+        self.assert_count_equal('ACTIONS/ACTION', 2)
+        self.assert_attrib_equal("ACTIONS/ACTION[1]", "id", "diacamma.accounting/entryAccountValidate")
+
     def test_change_line_third(self):
         self.factory.xfer = EntryAccountEdit()
         self.call('/diacamma.accounting/entryAccountEdit', {'SAVE': 'YES', 'year': '1', 'journal': '2',
@@ -315,6 +364,40 @@ class EntryTest(LucteriosTest):
         self.assert_attrib_equal("ACTIONS/ACTION[1]", "id", "diacamma.accounting/entryLineAccountAdd")
         self.assert_count_equal("ACTIONS/ACTION[1]/PARAM", 1)
         self.assert_xml_equal("ACTIONS/ACTION[1]/PARAM[@name='num_cpt']", '4')
+
+    def test_change_line_payoff(self):
+        self.factory.xfer = EntryAccountEdit()
+        self.call('/diacamma.accounting/entryAccountEdit', {'SAVE': 'YES', 'year': '1', 'journal': '3',
+                                                            'date_value': '2015-02-13', 'designation': 'un plein cadie'}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountEdit')
+
+        self.factory.xfer = EntryLineAccountEdit()
+        self.call('/diacamma.accounting/entryLineAccountEdit', {'year': '1', 'journal': '3', 'entryaccount': '1', 'reference': '',
+                                                                'serial_entry': "-1|4|0|152.340000|None|\n-2|3|0|152.340000|aaabbb|", 'entrylineaccount_serial': '-2'}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'entryLineAccountEdit')
+        self.assert_count_equal('COMPONENTS/*', 5)
+
+        self.assert_xml_equal("COMPONENTS/LABELFORM[@name='account']", '[531] 531')
+        self.assert_xml_equal("COMPONENTS/FLOAT[@name='debit_val']", '152.34')
+        self.assert_xml_equal("COMPONENTS/FLOAT[@name='credit_val']", '0.00')
+        self.assert_xml_equal("COMPONENTS/EDIT[@name='reference']", 'aaabbb')
+        self.assert_attrib_equal("ACTIONS/ACTION[1]", "id", "diacamma.accounting/entryLineAccountAdd")
+        self.assert_count_equal("ACTIONS/ACTION[1]/PARAM", 1)
+        self.assert_xml_equal("ACTIONS/ACTION[1]/PARAM[@name='num_cpt']", '3')
+
+        self.factory.xfer = EntryLineAccountAdd()
+        self.call('/diacamma.accounting/entryLineAccountAdd', {'year': '1', 'journal': '3', 'entryaccount': '1',
+                                                               'serial_entry': "-1|4|0|152.340000|None|\n-2|3|0|152.340000|aaabbb|", 'debit_val': '152.34',
+                                                               'credit_val': '0.0', 'entrylineaccount_serial': '-2', 'reference': 'ccdd', 'num_cpt': '3'}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryLineAccountAdd')
+        self.assert_count_equal("CONTEXT/*", 3)
+        self.assert_xml_equal("CONTEXT/PARAM[@name='entryaccount']", "1")
+        self.assert_xml_equal("CONTEXT/PARAM[@name='year']", "1")
+        self.assert_xml_equal("CONTEXT/PARAM[@name='journal']", "3")
+        self.assert_attrib_equal("ACTION", "id", "diacamma.accounting/entryAccountEdit")
+        self.assert_count_equal("ACTION/PARAM", 1)
+        serial_value = self.get_first_xpath("ACTION/PARAM[@name='serial_entry']").text
+        self.assertEqual(serial_value[-21:], "|3|0|152.340000|ccdd|")
 
     def test_valid_entry(self):
         self.factory.xfer = EntryAccountEdit()

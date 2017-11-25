@@ -36,7 +36,8 @@ from django.utils.module_loading import import_module
 from django.utils import six
 from django_fsm import FSMIntegerField, transition
 
-from lucterios.framework.models import LucteriosModel, get_value_converted
+from lucterios.framework.models import LucteriosModel, get_value_converted,\
+    get_value_if_choices
 from lucterios.framework.error import LucteriosException, IMPORTANT
 from lucterios.framework.printgenerators import ReportingGenerator
 from lucterios.framework.signal_and_lock import Signal
@@ -326,11 +327,12 @@ class Payoff(LucteriosModel):
         if (fee_code != '') and (float(self.bank_fee) > 0.001):
             fee_account = ChartsAccount.get_account(fee_code, fiscal_year)
             if fee_account is not None:
-                EntryLineAccount.objects.create(account=fee_account,
-                                                amount=-1 * is_revenu * float(self.bank_fee), entry=new_entry)
+                EntryLineAccount.objects.create(account=fee_account, amount=-1 * is_revenu * float(self.bank_fee), entry=new_entry)
                 amount_to_bank -= float(self.bank_fee)
-        EntryLineAccount.objects.create(account=bank_account,
-                                        amount=-1 * is_revenu * amount_to_bank, entry=new_entry)
+        info = ""
+        if self.reference != '':
+            info = "%s : %s" % (get_value_if_choices(self.mode, self._meta.get_field('mode')), self.reference)
+        EntryLineAccount.objects.create(account=bank_account, amount=-1 * is_revenu * amount_to_bank, entry=new_entry, reference=info)
         return new_entry
 
     def save(self, force_insert=False, force_update=False, using=None,

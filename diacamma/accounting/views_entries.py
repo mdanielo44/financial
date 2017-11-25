@@ -458,6 +458,8 @@ class EntryLineAccountEdit(XferContainerCustom):
     caption = _("Modify entry line of account")
 
     def fillresponse(self, entryaccount, entrylineaccount_serial=0, serial_entry=''):
+        if 'reference' in self.params.keys():
+            del self.params['reference']
         entry = EntryAccount.objects.get(id=entryaccount)
         for line in entry.get_entrylineaccounts(serial_entry):
             if line.id == entrylineaccount_serial:
@@ -467,8 +469,6 @@ class EntryLineAccountEdit(XferContainerCustom):
         img.set_location(0, 0, 1, 6)
         self.add_component(img)
         self.fill_from_model(1, 1, True, ['account'])
-        cmp_account = self.get_components('account')
-        cmp_account.colspan = 2
         self.item.editor.edit_creditdebit_for_line(self, 1, 2)
         self.item.editor.edit_extra_for_line(self, 1, 4, False)
         self.add_action(EntryLineAccountAdd.get_action(TITLE_OK, 'images/ok.png'), params={"num_cpt": self.item.account.id})

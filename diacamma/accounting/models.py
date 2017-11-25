@@ -1095,16 +1095,12 @@ class EntryLineAccount(LucteriosModel):
     def add_serial(cls, num_cpt, debit_val, credit_val, thirdid=0, reference=None):
         import time
         new_entry_line = cls()
-        new_entry_line.id = -1 * \
-            int(time.time() *
-                60)
-        new_entry_line.account = ChartsAccount.objects.get(
-            id=num_cpt)
+        new_entry_line.id = -1 * int(time.time() * 60)
+        new_entry_line.account = ChartsAccount.objects.get(id=num_cpt)
         if thirdid == 0:
             new_entry_line.third = None
         else:
-            new_entry_line.third = Third.objects.get(
-                id=thirdid)
+            new_entry_line.third = Third.objects.get(id=thirdid)
         new_entry_line.set_montant(debit_val, credit_val)
         if reference == "None":
             new_entry_line.reference = None

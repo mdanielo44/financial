@@ -1335,17 +1335,14 @@ class BillTest(InvoiceTest):
 
     def test_payoff_bill(self):
         default_articles()
-        details = [
-            {'article': 0, 'designation': 'article 0', 'price': '100.00', 'quantity': 1}]
+        details = [{'article': 0, 'designation': 'article 0', 'price': '100.00', 'quantity': 1}]
         bill_id = self._create_bill(details, 1, '2015-04-01', 6, True)  # 59.50
 
         self.factory.xfer = EntryAccountList()
-        self.call('/diacamma.accounting/entryAccountList',
-                  {'year': '1', 'journal': '-1', 'filter': '0'}, False)
+        self.call('/diacamma.accounting/entryAccountList', {'year': '1', 'journal': '-1', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
         self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', 1)
-        self.assert_xml_equal(
-            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit :{[/b]} 100.00€ - {[b]}Charge :{[/b]} 0.00€ = {[b]}Résultat :{[/b]} 100.00€ | {[b]}Trésorerie :{[/b]} 0.00€ - {[b]}Validé :{[/b]} 0.00€{[/center]}')
+        self.assert_xml_equal("COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit :{[/b]} 100.00€ - {[b]}Charge :{[/b]} 0.00€ = {[b]}Résultat :{[/b]} 100.00€ | {[b]}Trésorerie :{[/b]} 0.00€ - {[b]}Validé :{[/b]} 0.00€{[/center]}')
 
         self.factory.xfer = BillShow()
         self.call('/diacamma.invoice/billShow', {'bill': bill_id}, False)
@@ -1359,18 +1356,15 @@ class BillTest(InvoiceTest):
         self.assert_count_equal('COMPONENTS/GRID[@name="payoff"]/ACTIONS/ACTION', 3)
 
         self.factory.xfer = PayoffAddModify()
-        self.call(
-            '/diacamma.payoff/payoffAddModify', {'supporting': bill_id}, False)
+        self.call('/diacamma.payoff/payoffAddModify', {'supporting': bill_id}, False)
         self.assert_observer('core.custom', 'diacamma.payoff', 'payoffAddModify')
         self.assert_count_equal('COMPONENTS/*', 7)
         self.assert_xml_equal('COMPONENTS/FLOAT[@name="amount"]', "100.00")
-        self.assert_attrib_equal(
-            'COMPONENTS/FLOAT[@name="amount"]', 'max', "100.0")
+        self.assert_attrib_equal('COMPONENTS/FLOAT[@name="amount"]', 'max', "100.0")
         self.assert_xml_equal('COMPONENTS/EDIT[@name="payer"]', "Dalton Jack")
 
         self.factory.xfer = PayoffAddModify()
-        self.call(
-            '/diacamma.payoff/payoffAddModify', {'SAVE': 'YES', 'supporting': bill_id, 'amount': '60.0', 'payer': "Ma'a Dalton", 'date': '2015-04-03', 'mode': 0, 'reference': 'abc', 'bank_account': 0}, False)
+        self.call('/diacamma.payoff/payoffAddModify', {'SAVE': 'YES', 'supporting': bill_id, 'amount': '60.0', 'payer': "Ma'a Dalton", 'date': '2015-04-03', 'mode': 0, 'reference': 'abc', 'bank_account': 0}, False)
         self.assert_observer('core.acknowledge', 'diacamma.payoff', 'payoffAddModify')
 
         self.factory.xfer = BillShow()
@@ -1397,20 +1391,16 @@ class BillTest(InvoiceTest):
         self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', 2)
         description = self.get_first_xpath('COMPONENTS/GRID[@name="entryaccount"]/RECORD[2]/VALUE[@name="description"]').text
         self.assertTrue('[531] 531' in description, description)
-        self.assert_xml_equal(
-            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit :{[/b]} 100.00€ - {[b]}Charge :{[/b]} 0.00€ = {[b]}Résultat :{[/b]} 100.00€ | {[b]}Trésorerie :{[/b]} 60.00€ - {[b]}Validé :{[/b]} 0.00€{[/center]}')
+        self.assert_xml_equal("COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit :{[/b]} 100.00€ - {[b]}Charge :{[/b]} 0.00€ = {[b]}Résultat :{[/b]} 100.00€ | {[b]}Trésorerie :{[/b]} 60.00€ - {[b]}Validé :{[/b]} 0.00€{[/center]}')
 
         self.factory.xfer = PayoffAddModify()
-        self.call(
-            '/diacamma.payoff/payoffAddModify', {'supporting': bill_id}, False)
+        self.call('/diacamma.payoff/payoffAddModify', {'supporting': bill_id}, False)
         self.assert_observer('core.custom', 'diacamma.payoff', 'payoffAddModify')
         self.assert_xml_equal('COMPONENTS/FLOAT[@name="amount"]', "40.00")
-        self.assert_attrib_equal(
-            'COMPONENTS/FLOAT[@name="amount"]', 'max', "40.0")
+        self.assert_attrib_equal('COMPONENTS/FLOAT[@name="amount"]', 'max', "40.0")
 
         self.factory.xfer = PayoffAddModify()
-        self.call(
-            '/diacamma.payoff/payoffAddModify', {'SAVE': 'YES', 'supporting': bill_id, 'amount': '40.0', 'payer': "Dalton Jack", 'date': '2015-04-04', 'mode': 2, 'reference': 'efg', 'bank_account': 2}, False)
+        self.call('/diacamma.payoff/payoffAddModify', {'SAVE': 'YES', 'supporting': bill_id, 'amount': '40.0', 'payer': "Dalton Jack", 'date': '2015-04-04', 'mode': 2, 'reference': 'efg', 'bank_account': 2}, False)
         self.assert_observer('core.acknowledge', 'diacamma.payoff', 'payoffAddModify')
 
         self.factory.xfer = BillShow()
@@ -1425,14 +1415,12 @@ class BillTest(InvoiceTest):
         self.assert_count_equal('COMPONENTS/GRID[@name="payoff"]/ACTIONS/ACTION', 2)
 
         self.factory.xfer = EntryAccountList()
-        self.call('/diacamma.accounting/entryAccountList',
-                  {'year': '1', 'journal': '-1', 'filter': '0'}, False)
+        self.call('/diacamma.accounting/entryAccountList', {'year': '1', 'journal': '-1', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
         self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', 3)
         description = self.get_first_xpath('COMPONENTS/GRID[@name="entryaccount"]/RECORD[3]/VALUE[@name="description"]').text
         self.assertTrue('[581] 581' in description, description)
-        self.assert_xml_equal(
-            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit :{[/b]} 100.00€ - {[b]}Charge :{[/b]} 0.00€ = {[b]}Résultat :{[/b]} 100.00€ | {[b]}Trésorerie :{[/b]} 100.00€ - {[b]}Validé :{[/b]} 0.00€{[/center]}')
+        self.assert_xml_equal("COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit :{[/b]} 100.00€ - {[b]}Charge :{[/b]} 0.00€ = {[b]}Résultat :{[/b]} 100.00€ | {[b]}Trésorerie :{[/b]} 100.00€ - {[b]}Validé :{[/b]} 0.00€{[/center]}')
 
     def test_payoff_avoid(self):
         default_articles()

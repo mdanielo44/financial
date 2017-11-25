@@ -381,8 +381,7 @@ class EntryLineAccountEditor(LucteriosEditor):
         if current_account is not None:
             sel.set_value(current_account.id)
             self.item.account = current_account
-            self.item.set_montant(
-                float(xfer.getparam('debit_val', 0.0)), float(xfer.getparam('credit_val', 0.0)))
+            self.item.set_montant(float(xfer.getparam('debit_val', 0.0)), float(xfer.getparam('credit_val', 0.0)))
             if abs(self.item.amount) < 0.0001:
                 self.item.set_montant(debit_rest, credit_rest)
         xfer.add_component(sel)
@@ -393,19 +392,19 @@ class EntryLineAccountEditor(LucteriosEditor):
             if self.item.has_account and self.item.account.is_third:
                 edit_third_for_line(xfer, column, row, self.item.account.code, self.item.third, vertical)
             else:
-                lbl = XferCompLabelForm('referencelbl')
-                lbl.set_value_as_name(_('reference'))
                 edt = XferCompEdit('reference')
                 reference = xfer.getparam('reference', self.item.reference)
                 if reference is not None:
                     edt.set_value(reference)
                 if vertical:
                     edt.set_location(column, row + 1, 2)
+                    lbl = XferCompLabelForm('referencelbl')
+                    lbl.set_value_as_name(_('reference'))
                     lbl.set_location(column, row)
+                    xfer.add_component(lbl)
                 else:
-                    edt.set_location(column + 2, row)
-                    lbl.set_location(column, row, 2)
-                xfer.add_component(lbl)
+                    edt.set_location(column, row)
+                    edt.description = _('reference')
                 xfer.add_component(edt)
         except ObjectDoesNotExist:
             pass

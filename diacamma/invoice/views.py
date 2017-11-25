@@ -52,6 +52,8 @@ from diacamma.accounting.models import FiscalYear, Third
 from diacamma.payoff.views import PayoffAddModify
 from diacamma.payoff.models import Payoff
 from django.db.models.query import QuerySet
+from diacamma.accounting.views import get_main_third
+from diacamma.accounting.tools import current_system_account
 
 MenuManage.add_sub("invoice", None, "diacamma.invoice/images/invoice.png", _("invoice"), _("Manage of billing"), 45)
 
@@ -506,21 +508,6 @@ class BillStatisticPrint(XferPrintAction):
     with_text_export = True
 
 
-@signal_and_lock.Signal.decorate('show_contact')
-def show_contact_invoice(contact, xfer):
-    if WrapAction.is_permission(xfer.request, 'invoice.change_bill'):
-        third = Third.objects.filter(contact_id=contact.id)
-        if len(third) == 1:
-            third = third[0]
-            xfer.new_tab(_("Financial"))
-            nb_build = len(Bill.objects.filter(third=third, status=0))
-            nb_valid = len(Bill.objects.filter(third=third, status=1))
-            lab = XferCompLabelForm('invoiceinfo')
-            lab.set_value_as_header(_("There are %(build)d bills in building and %(valid)d validated") % {'build': nb_build, 'valid': nb_valid})
-            lab.set_location(0, 5, 2)
-            xfer.add_component(lab)
-
-
 @signal_and_lock.Signal.decorate('summary')
 def summary_invoice(xfer):
     is_right = WrapAction.is_permission(xfer.request, 'invoice.change_bill')
@@ -577,3 +564,20 @@ def thirdaddon_invoice(item, xfer):
             xfer.add_component(bill_grid)
         except LucteriosException:
             pass
+
+
+@signal_and_lock.Signal.decorate('show_contact')
+def show_contact_invoice(contact, xfer):
+    if WrapAction.is_permission(xfer.request, 'invoice.change_bill'):
+        third = get_main_third(contact)
+        if third is not None:
+            accounts = third.accountthird_set.filter(Q(code__regex=current_system_account().get_customer_mask()))
+            if len(accounts) > 0:
+                xfer.new_tab(_("Financial"))
+                nb_build = len(Bill.objects.filter(third=third, status=0))
+                nb_valid = len(Bill.objects.filter(third=third, status=1))
+                lab = XferCompLabelForm('invoiceinfo')
+                lab.set_value_as_header(_("There are %(build)d bills in building and %(valid)d validated") % {'build': nb_build, 'valid': nb_valid})
+                lab.set_location(0, 5, 2)
+                xfer.add_component(lab)
+                thirdaddon_invoice(third, xfer)

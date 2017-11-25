@@ -337,20 +337,26 @@ def comptenofound_accounting(known_codes, accompt_returned):
     return True
 
 
+def get_main_third(contact):
+    main_third = None
+    thirds = Third.objects.filter(contact_id=contact.get_ref_contact().id)
+    if len(thirds) > 1:
+        main_third = thirds[0]
+        alias_third = []
+        for third in thirds:
+            if third.id != main_third.id:
+                alias_third.append(third)
+
+        main_third.merge_objects(alias_third)
+    elif len(thirds) == 1:
+        main_third = thirds[0]
+    return main_third
+
+
 @signal_and_lock.Signal.decorate('show_contact')
 def show_contact_accounting(contact, xfer):
     if WrapAction.is_permission(xfer.request, 'accounting.change_entryaccount'):
-        main_third = None
-        thirds = Third.objects.filter(contact_id=contact.id)
-        if len(thirds) > 1:
-            main_third = thirds[0]
-            alias_third = []
-            for third in thirds:
-                if third.id != main_third.id:
-                    alias_third.append(third)
-            main_third.merge_objects(alias_third)
-        elif len(thirds) == 1:
-            main_third = thirds[0]
+        main_third = get_main_third(contact)
         if main_third is not None:
             xfer.new_tab(_("Financial"))
             xfer.item = main_third
