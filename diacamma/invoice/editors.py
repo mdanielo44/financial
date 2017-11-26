@@ -102,6 +102,9 @@ class ArticleEditor(LucteriosEditor):
             grid.set_model(self.item.storagedetail_set.filter(storagesheet__status=1).order_by('-storagesheet__date'),
                            ['storagesheet.date', 'storagesheet.comment', 'quantity'], xfer)
             xfer.add_component(grid)
+        else:
+            xfer.remove_component('provider')
+            xfer.del_tab(_('002@Provider'))
 
 
 class BillEditor(SupportingEditor):

@@ -217,7 +217,7 @@ class BillTransition(XferTransition):
 
     def fill_confirm(self, transition, trans):
         withpayoff = self.getparam('withpayoff', True)
-        if (transition != 'valid') or (self.item.bill_type == 0):
+        if (transition != 'valid') or (self.item.bill_type == 0) or abs(self.item.get_total_rest_topay()) < 0.0001:
             XferTransition.fill_confirm(self, transition, trans)
             if transition == 'cancel':
                 if self.trans_result is not None:

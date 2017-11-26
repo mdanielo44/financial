@@ -59,7 +59,7 @@ class StorageTest(InvoiceTest):
         self.factory.xfer = ArticleShow()
         self.call('/diacamma.invoice/articleShow', {'article': '3'}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'articleShow')
-        self.assert_count_equal('COMPONENTS/*', 12)
+        self.assert_count_equal('COMPONENTS/*', 10)
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="reference"]', "ABC3")
 
         self.factory.xfer = ArticleShow()
@@ -185,7 +185,7 @@ class StorageTest(InvoiceTest):
         self.factory.xfer = ArticleShow()
         self.call('/diacamma.invoice/articleShow', {'article': '3'}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'articleShow')
-        self.assert_count_equal('COMPONENTS/*', 12)
+        self.assert_count_equal('COMPONENTS/*', 10)
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="reference"]', "ABC3")
 
         self.factory.xfer = ArticleShow()
@@ -364,7 +364,7 @@ class StorageTest(InvoiceTest):
         self.factory.xfer = ArticleShow()
         self.call('/diacamma.invoice/articleShow', {'article': '3'}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'articleShow')
-        self.assert_count_equal('COMPONENTS/*', 12)
+        self.assert_count_equal('COMPONENTS/*', 10)
         self.assert_xml_equal('COMPONENTS/LABELFORM[@name="reference"]', "ABC3")
 
         self.factory.xfer = ArticleShow()

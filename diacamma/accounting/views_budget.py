@@ -127,8 +127,12 @@ class BudgetPrint(XferPrintAction):
     action_class = BudgetList
 
 
-@ActionsManage.affect_grid(TITLE_MODIFY, "images/edit.png", unique=SELECT_SINGLE, condition=lambda xfer, gridname='': not xfer.getparam('readonly', False))
-@ActionsManage.affect_list(TITLE_ADD, "images/add.png", condition=lambda item: not item.getparam('readonly', False))
+def condition_changebudget(xfer, gridname=''):
+    return not xfer.getparam('readonly', False)
+
+
+@ActionsManage.affect_grid(TITLE_MODIFY, "images/edit.png", unique=SELECT_SINGLE, condition=condition_changebudget)
+@ActionsManage.affect_list(TITLE_ADD, "images/add.png", condition=condition_changebudget)
 @MenuManage.describ('accounting.add_budget')
 class BudgetAddModify(XferAddEditor):
     icon = "account.png"
@@ -176,7 +180,7 @@ class BudgetAddModify(XferAddEditor):
         XferAddEditor._search_model(self)
 
 
-@ActionsManage.affect_grid(TITLE_DELETE, "images/delete.png", unique=SELECT_SINGLE, condition=lambda xfer, gridname='': not xfer.getparam('readonly', False))
+@ActionsManage.affect_grid(TITLE_DELETE, "images/delete.png", unique=SELECT_SINGLE, condition=condition_changebudget)
 @MenuManage.describ('accounting.change_budget')
 class BudgetDel(XferDelete):
     icon = "account.png"

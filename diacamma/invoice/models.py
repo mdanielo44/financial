@@ -564,7 +564,8 @@ class Bill(Supporting):
         third_account = self.get_third_account(current_system_account().get_customer_mask(), self.fiscal_year)
         self.entry = EntryAccount.objects.create(year=self.fiscal_year, date_value=self.date, designation=self.__str__(),
                                                  journal=Journal.objects.get(id=3), costaccounting=self.cost_accounting)
-        EntryLineAccount.objects.create(account=third_account, amount=is_bill * self.get_total_incltax(), third=self.third, entry=self.entry)
+        if abs(self.get_total_incltax()) > 0.0001:
+            EntryLineAccount.objects.create(account=third_account, amount=is_bill * self.get_total_incltax(), third=self.third, entry=self.entry)
         remise_total = 0
         detail_list = {}
         for detail in self.detail_set.all():
@@ -586,10 +587,10 @@ class Bill(Supporting):
                 remise_code, self.fiscal_year)
             if remise_account is None:
                 raise LucteriosException(IMPORTANT, _("reduce-account is not defined!"))
-            EntryLineAccount.objects.create(
-                account=remise_account, amount=-1 * is_bill * remise_total, entry=self.entry)
+            EntryLineAccount.objects.create(account=remise_account, amount=-1 * is_bill * remise_total, entry=self.entry)
         for detail_item in detail_list.values():
-            EntryLineAccount.objects.create(account=detail_item[0], amount=is_bill * detail_item[1], entry=self.entry)
+            if abs(detail_item[1]) > 0.0001:
+                EntryLineAccount.objects.create(account=detail_item[0], amount=is_bill * detail_item[1], entry=self.entry)
         if Params.getvalue("invoice-vat-mode") != 0:
             vat_val = {}
             for detail in self.detail_set.all():
