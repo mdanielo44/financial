@@ -68,6 +68,7 @@ class CostAccountingClose(XferContainerAcknowledge):
     model = CostAccounting
     field_id = 'costaccounting'
     caption = _("Close")
+    readonly = True
 
     def fillresponse(self):
         if self.item.status == 0:

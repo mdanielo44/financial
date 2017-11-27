@@ -606,7 +606,11 @@ class Bill(Supporting):
                         raise LucteriosException(IMPORTANT, _("vta-account is not defined!"))
                     EntryLineAccount.objects.create(account=vat_account, amount=is_bill * vatamount, entry=self.entry)
         no_change, debit_rest, credit_rest = self.entry.serial_control(self.entry.get_serial())
-        if not no_change or (abs(debit_rest) > 0.001) or (abs(credit_rest) > 0.001):
+        if not no_change and (len(self.entry.entrylineaccount_set.all()) == 0):
+            entry_empty = self.entry
+            self.entry = None
+            entry_empty.delete()
+        elif not no_change or (abs(debit_rest) > 0.001) or (abs(credit_rest) > 0.001):
             raise LucteriosException(GRAVE, _("Error in accounting generator!") + "{[br/]} no_change=%s debit_rest=%.3f credit_rest=%.3f" % (no_change, debit_rest, credit_rest))
 
     transitionname__valid = _("Validate")
