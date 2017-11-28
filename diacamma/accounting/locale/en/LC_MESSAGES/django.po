@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-11-25 11:25+0000\n"
+"POT-Creation-Date: 2017-11-28 10:58+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -211,12 +211,12 @@ msgstr "Fiscal year finished!"
 #, python-format
 msgid ""
 "{[b]}Revenue:{[/b]} %(revenue)s - {[b]}Expense:{[/b]} %(expense)s = {[b]}"
-"Result:{[/b]} %(result)s | {[b]}Cash:{[/b]} %(cash)s - {[b]}Closed:{[/b]} "
-"%(closed)s"
+"Result:{[/b]} %(result)s{[br/]}{[b]}Cash:{[/b]} %(cash)s - {[b]}Closed:{[/"
+"b]} %(closed)s"
 msgstr ""
 "{[b]}Revenue:{[/b]} %(revenue)s - {[b]}Expense:{[/b]} %(expense)s = {[b]}"
-"Result:{[/b]} %(result)s | {[b]}Cash:{[/b]} %(cash)s - {[b]}Closed:{[/b]} "
-"%(closed)s"
+"Result:{[/b]} %(result)s{[br/]}{[b]}Cash:{[/b]} %(cash)s - {[b]}Closed:{[/"
+"b]} %(closed)s"
 
 #: models.py:309 models.py:322
 msgid "This fiscal year has not a last fiscal year!"
@@ -252,7 +252,7 @@ msgid "This fiscal year is not 'in running'!"
 msgstr "This fiscal year is not 'in running'!"
 
 #: models.py:459 models.py:471 models.py:557 models.py:738 models.py:1285
-#: views_budget.py:38 views_budget.py:249
+#: views_budget.py:38 views_budget.py:253
 msgid "fiscal year"
 msgstr "fiscal year"
 
@@ -287,7 +287,7 @@ msgstr "last cost accounting"
 msgid "This cost accounting is closed!"
 msgstr "This cost accounting is closed!"
 
-#: models.py:480 views_other.py:75 views_other.py:95
+#: models.py:480 views_other.py:76 views_other.py:96
 msgid "This cost accounting is protected by other modules!"
 msgstr "This cost accounting is protected by other modules!"
 
@@ -318,7 +318,7 @@ msgid "This cost accounting have entry with another year!"
 msgstr "This cost accounting have entry with another year!"
 
 #: models.py:547 models.py:749 models.py:1162 models.py:1286 views_budget.py:46
-#: views_budget.py:258
+#: views_budget.py:262
 msgid "cost accounting"
 msgstr "cost accounting"
 
@@ -468,7 +468,7 @@ msgstr "entry lines of account"
 msgid "Model of entry"
 msgstr "Model of entry"
 
-#: models.py:1204 views_other.py:113
+#: models.py:1204 views_other.py:114
 msgid "Models of entry"
 msgstr "Models of entry"
 
@@ -897,33 +897,33 @@ msgstr "result (deficit)"
 msgid "Print previsionnal budget"
 msgstr "Print previsionnal budget"
 
-#: views_budget.py:137
+#: views_budget.py:141
 msgid "Add budget line"
 msgstr "Add budget line"
 
-#: views_budget.py:138
+#: views_budget.py:142
 msgid "Modify budget line"
 msgstr "Modify budget line"
 
-#: views_budget.py:185
+#: views_budget.py:189
 msgid "Delete Budget line"
 msgstr "Delete Budget line"
 
-#: views_budget.py:204 views_budget.py:210 views_budget.py:296
-#: views_budget.py:302 views_reports.py:453 views_reports.py:459
+#: views_budget.py:208 views_budget.py:214 views_budget.py:300
+#: views_budget.py:306 views_reports.py:453 views_reports.py:459
 #: views_reports.py:719 views_reports.py:725
 msgid "Budget"
 msgstr "Budget"
 
-#: views_budget.py:217
+#: views_budget.py:221
 msgid "Import"
 msgstr "Import"
 
-#: views_budget.py:223
+#: views_budget.py:227
 msgid "Import budget"
 msgstr "Import budget"
 
-#: views_budget.py:261
+#: views_budget.py:265
 msgid ""
 "All budget lines will be delete and income statement of select item will be "
 "import as new budget."
@@ -1087,51 +1087,51 @@ msgstr "Default"
 msgid "Close"
 msgstr "Close"
 
-#: views_other.py:77
+#: views_other.py:78
 msgid "Do you want to close this cost accounting?"
 msgstr "Do you want to close this cost accounting?"
 
-#: views_other.py:88
+#: views_other.py:89
 msgid "Add cost accounting"
 msgstr "Add cost accounting"
 
-#: views_other.py:89
+#: views_other.py:90
 msgid "Modify cost accounting"
 msgstr "Modify cost accounting"
 
-#: views_other.py:105
+#: views_other.py:106
 msgid "Delete cost accounting"
 msgstr "Delete cost accounting"
 
-#: views_other.py:108
+#: views_other.py:109
 msgid "Edition of entry model"
 msgstr "Edition of entry model"
 
-#: views_other.py:123
+#: views_other.py:124
 msgid "Add model of entry"
 msgstr "Add model of entry"
 
-#: views_other.py:124
+#: views_other.py:125
 msgid "Modify model of entry"
 msgstr "Modify model of entry"
 
-#: views_other.py:133
+#: views_other.py:134
 msgid "Show Model of entry"
 msgstr "Show Model of entry"
 
-#: views_other.py:142
+#: views_other.py:143
 msgid "Delete Model of entry"
 msgstr "Delete Model of entry"
 
-#: views_other.py:152
+#: views_other.py:153
 msgid "Add model line  of entry"
 msgstr "Add model line  of entry"
 
-#: views_other.py:153
+#: views_other.py:154
 msgid "Modify model line  of entry"
 msgstr "Modify model line  of entry"
 
-#: views_other.py:162
+#: views_other.py:163
 msgid "Delete Model line  of entry"
 msgstr "Delete Model line  of entry"
 

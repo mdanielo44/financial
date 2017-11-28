@@ -157,10 +157,10 @@ class CompletedEntryTest(LucteriosTest):
         self.assertTrue('12.34€' in description, description)
 
     def _check_result(self):
-        return self.assert_xml_equal("COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit :{[/b]} 230.62€ - {[b]}Charge :{[/b]} 348.60€ = {[b]}Résultat :{[/b]} -117.98€ | {[b]}Trésorerie :{[/b]} 1050.66€ - {[b]}Validé :{[/b]} 1244.74€{[/center]}')
+        return self.assert_xml_equal("COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit :{[/b]} 230.62€ - {[b]}Charge :{[/b]} 348.60€ = {[b]}Résultat :{[/b]} -117.98€{[br/]}{[b]}Trésorerie :{[/b]} 1050.66€ - {[b]}Validé :{[/b]} 1244.74€{[/center]}')
 
     def _check_result_with_filter(self):
-        return self.assert_xml_equal("COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit :{[/b]} 34.01€ - {[b]}Charge :{[/b]} 0.00€ = {[b]}Résultat :{[/b]} 34.01€ | {[b]}Trésorerie :{[/b]} 70.64€ - {[b]}Validé :{[/b]} 70.64€{[/center]}')
+        return self.assert_xml_equal("COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit :{[/b]} 34.01€ - {[b]}Charge :{[/b]} 0.00€ = {[b]}Résultat :{[/b]} 34.01€{[br/]}{[b]}Trésorerie :{[/b]} 70.64€ - {[b]}Validé :{[/b]} 70.64€{[/center]}')
 
     def test_all(self):
         self._goto_entrylineaccountlist(-1, 0, 11)
@@ -185,7 +185,7 @@ class CompletedEntryTest(LucteriosTest):
         self.assert_xml_equal("COMPONENTS/LABELFORM[@name='accounting_year']",
                               "{[center]}Exercice du 1 janvier 2015 au 31 décembre 2015 [en création]{[/center]}")
         self.assert_xml_equal("COMPONENTS/LABELFORM[@name='accounting_result']",
-                              '{[center]}{[b]}Produit :{[/b]} 230.62€ - {[b]}Charge :{[/b]} 348.60€ = {[b]}Résultat :{[/b]} -117.98€ | {[b]}Trésorerie :{[/b]} 1050.66€ - {[b]}Validé :{[/b]} 1244.74€{[/center]}')
+                              '{[center]}{[b]}Produit :{[/b]} 230.62€ - {[b]}Charge :{[/b]} 348.60€ = {[b]}Résultat :{[/b]} -117.98€{[br/]}{[b]}Trésorerie :{[/b]} 1050.66€ - {[b]}Validé :{[/b]} 1244.74€{[/center]}')
         self.assert_xml_equal("COMPONENTS/LABELFORM[@name='accountingtitle']", "{[center]}{[u]}{[b]}Comptabilité{[/b]}{[/u]}{[/center]}")
 
     def test_listing(self):

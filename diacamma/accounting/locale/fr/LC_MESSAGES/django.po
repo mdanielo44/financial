@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-11-25 11:25+0000\n"
+"POT-Creation-Date: 2017-11-28 10:58+0000\n"
 "PO-Revision-Date: 2016-01-11 23:01+0000\n"
 "Last-Translator: b'Paul ARULATEDA <paul531@orange.fr>'\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -213,11 +213,11 @@ msgstr "Cet exercice est terminé !"
 #, python-format
 msgid ""
 "{[b]}Revenue:{[/b]} %(revenue)s - {[b]}Expense:{[/b]} %(expense)s = {[b]}"
-"Result:{[/b]} %(result)s | {[b]}Cash:{[/b]} %(cash)s - {[b]}Closed:{[/b]} "
-"%(closed)s"
+"Result:{[/b]} %(result)s{[br/]}{[b]}Cash:{[/b]} %(cash)s - {[b]}Closed:{[/"
+"b]} %(closed)s"
 msgstr ""
 "{[b]}Produit :{[/b]} %(revenue)s - {[b]}Charge :{[/b]} %(expense)s = {[b]}"
-"Résultat :{[/b]} %(result)s | {[b]}Trésorerie :{[/b]} %(cash)s - {[b]}"
+"Résultat :{[/b]} %(result)s{[br/]}{[b]}Trésorerie :{[/b]} %(cash)s - {[b]}"
 "Validé :{[/b]} %(closed)s"
 
 #: models.py:309 models.py:322
@@ -254,7 +254,7 @@ msgid "This fiscal year is not 'in running'!"
 msgstr "Cet exercice n'est pas 'en cours' !"
 
 #: models.py:459 models.py:471 models.py:557 models.py:738 models.py:1285
-#: views_budget.py:38 views_budget.py:249
+#: views_budget.py:38 views_budget.py:253
 msgid "fiscal year"
 msgstr "exercice"
 
@@ -289,7 +289,7 @@ msgstr "Précédent analytique"
 msgid "This cost accounting is closed!"
 msgstr "Cette comptabilité analytique est clôturée !"
 
-#: models.py:480 views_other.py:75 views_other.py:95
+#: models.py:480 views_other.py:76 views_other.py:96
 msgid "This cost accounting is protected by other modules!"
 msgstr "Cette comptabilité analytique est protégée par un autre module !"
 
@@ -320,7 +320,7 @@ msgid "This cost accounting have entry with another year!"
 msgstr "Cette comptabilité analytique a des écritures d'un autre exercice !"
 
 #: models.py:547 models.py:749 models.py:1162 models.py:1286 views_budget.py:46
-#: views_budget.py:258
+#: views_budget.py:262
 msgid "cost accounting"
 msgstr "comptabilité analytique"
 
@@ -470,7 +470,7 @@ msgstr "lignes d'écriture"
 msgid "Model of entry"
 msgstr "Modèle d'écriture"
 
-#: models.py:1204 views_other.py:113
+#: models.py:1204 views_other.py:114
 msgid "Models of entry"
 msgstr "Modèles d'écriture"
 
@@ -899,33 +899,33 @@ msgstr "résultat (déficit)"
 msgid "Print previsionnal budget"
 msgstr "Impression du budget prévisionnel"
 
-#: views_budget.py:137
+#: views_budget.py:141
 msgid "Add budget line"
 msgstr "Ajouter une ligne de budget"
 
-#: views_budget.py:138
+#: views_budget.py:142
 msgid "Modify budget line"
 msgstr "Modifier une ligne de budget"
 
-#: views_budget.py:185
+#: views_budget.py:189
 msgid "Delete Budget line"
 msgstr "Suprimer une ligne de budget"
 
-#: views_budget.py:204 views_budget.py:210 views_budget.py:296
-#: views_budget.py:302 views_reports.py:453 views_reports.py:459
+#: views_budget.py:208 views_budget.py:214 views_budget.py:300
+#: views_budget.py:306 views_reports.py:453 views_reports.py:459
 #: views_reports.py:719 views_reports.py:725
 msgid "Budget"
 msgstr "Budget"
 
-#: views_budget.py:217
+#: views_budget.py:221
 msgid "Import"
 msgstr "Importer"
 
-#: views_budget.py:223
+#: views_budget.py:227
 msgid "Import budget"
 msgstr "Import de budget"
 
-#: views_budget.py:261
+#: views_budget.py:265
 msgid ""
 "All budget lines will be delete and income statement of select item will be "
 "import as new budget."
@@ -1089,51 +1089,51 @@ msgstr "Défaut"
 msgid "Close"
 msgstr "Fermer"
 
-#: views_other.py:77
+#: views_other.py:78
 msgid "Do you want to close this cost accounting?"
 msgstr "Voulez-vous clôturer cette comptabilité analytique ?"
 
-#: views_other.py:88
+#: views_other.py:89
 msgid "Add cost accounting"
 msgstr "Ajouter une comptabilité analytique"
 
-#: views_other.py:89
+#: views_other.py:90
 msgid "Modify cost accounting"
 msgstr "Modifier une comptabilité analytique"
 
-#: views_other.py:105
+#: views_other.py:106
 msgid "Delete cost accounting"
 msgstr "Supprimer une comptabilité analytique"
 
-#: views_other.py:108
+#: views_other.py:109
 msgid "Edition of entry model"
 msgstr "Édition des modèles d'écriture"
 
-#: views_other.py:123
+#: views_other.py:124
 msgid "Add model of entry"
 msgstr "Ajouter un modèle d'écriture"
 
-#: views_other.py:124
+#: views_other.py:125
 msgid "Modify model of entry"
 msgstr "Modifier un modèle d'écriture"
 
-#: views_other.py:133
+#: views_other.py:134
 msgid "Show Model of entry"
 msgstr "Voir un modèle d'écriture"
 
-#: views_other.py:142
+#: views_other.py:143
 msgid "Delete Model of entry"
 msgstr "Supprimer un modèle d'écriture"
 
-#: views_other.py:152
+#: views_other.py:153
 msgid "Add model line  of entry"
 msgstr "Ajouter une ligne de modèle"
 
-#: views_other.py:153
+#: views_other.py:154
 msgid "Modify model line  of entry"
 msgstr "Modifier une ligne de modèle"
 
-#: views_other.py:162
+#: views_other.py:163
 msgid "Delete Model line  of entry"
 msgstr "Supprimer une ligne de modèle"
 

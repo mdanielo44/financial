@@ -66,7 +66,7 @@ class EntryTest(LucteriosTest):
         self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/HEADER', 6)
         self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', 0)
         self.assert_xml_equal(
-            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit :{[/b]} 0.00€ - {[b]}Charge :{[/b]} 0.00€ = {[b]}Résultat :{[/b]} 0.00€ | {[b]}Trésorerie :{[/b]} 0.00€ - {[b]}Validé :{[/b]} 0.00€{[/center]}')
+            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit :{[/b]} 0.00€ - {[b]}Charge :{[/b]} 0.00€ = {[b]}Résultat :{[/b]} 0.00€{[br/]}{[b]}Trésorerie :{[/b]} 0.00€ - {[b]}Validé :{[/b]} 0.00€{[/center]}')
 
     def test_add_entry(self):
         self.factory.xfer = EntryAccountEdit()
@@ -426,7 +426,7 @@ class EntryTest(LucteriosTest):
         self.assertTrue('[401 Luke Lucky]' in description, description)
         self.assertTrue('152.34€' in description, description)
         self.assert_xml_equal(
-            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit :{[/b]} 0.00€ - {[b]}Charge :{[/b]} 152.34€ = {[b]}Résultat :{[/b]} -152.34€ | {[b]}Trésorerie :{[/b]} 0.00€ - {[b]}Validé :{[/b]} 0.00€{[/center]}')
+            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit :{[/b]} 0.00€ - {[b]}Charge :{[/b]} 152.34€ = {[b]}Résultat :{[/b]} -152.34€{[br/]}{[b]}Trésorerie :{[/b]} 0.00€ - {[b]}Validé :{[/b]} 0.00€{[/center]}')
 
         self.factory.xfer = EntryAccountOpenFromLine()
         self.call('/diacamma.accounting/entryAccountOpenFromLine',
@@ -463,7 +463,7 @@ class EntryTest(LucteriosTest):
         self.assertTrue('[401 Luke Lucky]' in description, description)
         self.assertTrue('152.34€' in description, description)
         self.assert_xml_equal(
-            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit :{[/b]} 0.00€ - {[b]}Charge :{[/b]} 152.34€ = {[b]}Résultat :{[/b]} -152.34€ | {[b]}Trésorerie :{[/b]} 0.00€ - {[b]}Validé :{[/b]} 0.00€{[/center]}')
+            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit :{[/b]} 0.00€ - {[b]}Charge :{[/b]} 152.34€ = {[b]}Résultat :{[/b]} -152.34€{[br/]}{[b]}Trésorerie :{[/b]} 0.00€ - {[b]}Validé :{[/b]} 0.00€{[/center]}')
 
         self.factory.xfer = EntryAccountOpenFromLine()
         self.call('/diacamma.accounting/entryAccountOpenFromLine',
@@ -638,7 +638,7 @@ class EntryTest(LucteriosTest):
         self.assertTrue('[401 Luke Lucky]' in description, description)
         self.assertTrue('152.34€' in description, description)
         self.assert_xml_equal(
-            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit :{[/b]} 0.00€ - {[b]}Charge :{[/b]} 152.34€ = {[b]}Résultat :{[/b]} -152.34€ | {[b]}Trésorerie :{[/b]} -152.34€ - {[b]}Validé :{[/b]} 0.00€{[/center]}')
+            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit :{[/b]} 0.00€ - {[b]}Charge :{[/b]} 152.34€ = {[b]}Résultat :{[/b]} -152.34€{[br/]}{[b]}Trésorerie :{[/b]} -152.34€ - {[b]}Validé :{[/b]} 0.00€{[/center]}')
 
     def test_valid_payment_canceled(self):
         self.factory.xfer = EntryAccountEdit()
@@ -740,7 +740,7 @@ class EntryTest(LucteriosTest):
         self.assertTrue('364.91€' in description, description)
         self.assertTrue('BP N°987654' in description, description)
         self.assert_xml_equal(
-            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit :{[/b]} 364.91€ - {[b]}Charge :{[/b]} 0.00€ = {[b]}Résultat :{[/b]} 364.91€ | {[b]}Trésorerie :{[/b]} 364.91€ - {[b]}Validé :{[/b]} 0.00€{[/center]}')
+            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit :{[/b]} 364.91€ - {[b]}Charge :{[/b]} 0.00€ = {[b]}Résultat :{[/b]} 364.91€{[br/]}{[b]}Trésorerie :{[/b]} 364.91€ - {[b]}Validé :{[/b]} 0.00€{[/center]}')
 
         self.factory.xfer = EntryAccountLink()
         self.call('/diacamma.accounting/entryAccountValidate',
@@ -876,7 +876,7 @@ class EntryTest(LucteriosTest):
         self.assertTrue('[411 Dalton William]' in description, description)
         self.assertTrue('364.91€' in description, description)
         self.assert_xml_equal(
-            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit :{[/b]} 0.00€ - {[b]}Charge :{[/b]} 0.00€ = {[b]}Résultat :{[/b]} 0.00€ | {[b]}Trésorerie :{[/b]} 364.91€ - {[b]}Validé :{[/b]} 364.91€{[/center]}')
+            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit :{[/b]} 0.00€ - {[b]}Charge :{[/b]} 0.00€ = {[b]}Résultat :{[/b]} 0.00€{[br/]}{[b]}Trésorerie :{[/b]} 364.91€ - {[b]}Validé :{[/b]} 364.91€{[/center]}')
 
         self.factory.xfer = EntryAccountDel()
         self.call('/diacamma.accounting/entryAccountDel',
