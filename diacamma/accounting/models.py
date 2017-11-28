@@ -294,7 +294,7 @@ class FiscalYear(LucteriosModel):
         value['cash'] = format_devise(self.total_cash, 5)
         value['closed'] = format_devise(self.total_cash_close, 5)
         res_text = _(
-            '{[b]}Revenue:{[/b]} %(revenue)s - {[b]}Expense:{[/b]} %(expense)s = {[b]}Result:{[/b]} %(result)s | {[b]}Cash:{[/b]} %(cash)s - {[b]}Closed:{[/b]} %(closed)s')
+            '{[b]}Revenue:{[/b]} %(revenue)s - {[b]}Expense:{[/b]} %(expense)s = {[b]}Result:{[/b]} %(result)s{[br/]}{[b]}Cash:{[/b]} %(cash)s - {[b]}Closed:{[/b]} %(closed)s')
         return res_text % value
 
     @property
