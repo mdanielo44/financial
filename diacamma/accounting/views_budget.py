@@ -88,17 +88,13 @@ class BudgetList(XferListEditor):
         self.add_component(lbl)
         lbl = XferCompLabelForm('title_rev')
         lbl.set_value_as_headername(_("Revenue"))
-        lbl.set_location(2, row_id, 2)
+        lbl.set_location(0, row_id+2, 2)
         self.add_component(lbl)
 
-        row_id = self.get_max_row()
         revenue_filter = Q(code__regex=current_system_account().get_revenue_mask()) | (Q(code__regex=current_system_account().get_annexe_mask()) & Q(amount__gte=0))
-        self.fill_grid(row_id, self.model, 'budget_revenue', self.model.objects.filter(self.filter & revenue_filter))
-        self.move_components('budget_revenue', 2, 0)
+        self.fill_grid(row_id+3, self.model, 'budget_revenue', self.model.objects.filter(self.filter & revenue_filter))
         expense_filter = Q(code__regex=current_system_account().get_expence_mask()) | (Q(code__regex=current_system_account().get_annexe_mask()) & Q(amount__lt=0))
-        self.fill_grid(row_id, self.model, 'budget_expense', self.model.objects.filter(self.filter & expense_filter))
-        self.remove_component('nb_budget_expense')
-        self.remove_component('nb_budget_revenue')
+        self.fill_grid(row_id+1, self.model, 'budget_expense', self.model.objects.filter(self.filter & expense_filter))
 
         resultat_budget = Budget.get_total(self.getparam('year'), self.getparam('cost_accounting'))
         if abs(resultat_budget) > 0.0001:
