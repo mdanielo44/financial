@@ -110,6 +110,9 @@ class ArticleEditor(LucteriosEditor):
 class BillEditor(SupportingEditor):
 
     def edit(self, xfer):
+        if xfer.item.id is None:
+            xfer.item.status = 0
+            xfer.params['status'] = 0
         xfer.move(0, 0, 2)
         xfer.fill_from_model(1, 0, True, ["third"])
         comp_comment = xfer.get_components('comment')

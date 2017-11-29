@@ -580,4 +580,5 @@ def show_contact_invoice(contact, xfer):
                 lab.set_value_as_header(_("There are %(build)d bills in building and %(valid)d validated") % {'build': nb_build, 'valid': nb_valid})
                 lab.set_location(0, 5, 2)
                 xfer.add_component(lab)
+                xfer.params['third'] = third.id
                 thirdaddon_invoice(third, xfer)
