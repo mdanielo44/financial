@@ -30,14 +30,13 @@ from django.db import models
 from django.db.models.aggregates import Max, Sum
 from django.db.models.functions import Concat
 from django.db.models import Q, Value
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.utils.translation import ugettext_lazy as _
 from django.utils import six
 from django_fsm import FSMIntegerField, transition
 
-from lucterios.framework.models import LucteriosModel, get_value_if_choices, \
-    get_value_converted
+from lucterios.framework.models import LucteriosModel, get_value_if_choices, get_value_converted, get_obj_contains
 from lucterios.framework.error import LucteriosException, IMPORTANT, GRAVE
 from lucterios.framework.signal_and_lock import Signal
 from lucterios.CORE.models import Parameter
@@ -233,9 +232,12 @@ class Article(LucteriosModel, CustomizeObject):
                     if len(thirds) > 0:
                         Provider.objects.get_or_create(article=new_item, third=thirds[0], reference=reference)
             return new_item
-        except:
+        except ValidationError:
+            logging.getLogger('lucterios.framwork').exception("import_data")
+            raise LucteriosException(GRAVE, "Data error in this line:<br/> %s" % "<br/>".join(get_obj_contains(new_item)))
+        except Exception:
             logging.getLogger('diacamma.invoice').exception("import_data")
-            return None
+            raise
 
     @property
     def price_txt(self):

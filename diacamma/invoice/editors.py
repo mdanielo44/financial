@@ -268,6 +268,9 @@ class DetailEditor(LucteriosEditor, DetailFilter):
 class StorageSheetEditor(LucteriosEditor):
 
     def edit(self, xfer):
+        if xfer.item.id is None:
+            xfer.item.status = 0
+            xfer.params['status'] = 0
         sel_type = xfer.get_components("sheet_type")
         sel_type.set_action(xfer.request, xfer.get_action('', ''), modal=FORMTYPE_REFRESH, close=CLOSE_NO)
         if int(self.item.sheet_type) == 1:
