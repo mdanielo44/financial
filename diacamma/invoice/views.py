@@ -53,6 +53,7 @@ from diacamma.payoff.models import Payoff
 from django.db.models.query import QuerySet
 from diacamma.accounting.views import get_main_third
 from diacamma.accounting.tools import current_system_account
+from lucterios.CORE.models import PrintModel
 
 MenuManage.add_sub("invoice", None, "diacamma.invoice/images/invoice.png", _("invoice"), _("Manage of billing"), 45)
 
@@ -187,43 +188,12 @@ class BillTransition(XferTransition):
         dlg.add_component(icon)
         lbl = XferCompLabelForm('lb_title')
         lbl.set_value_as_infocenter(_("Do you want validate '%s'?") % self.item)
-        lbl.set_location(1, 1, 4)
+        lbl.set_location(1, 1, 2)
         dlg.add_component(lbl)
-        if (self.item.bill_type != 2) and can_send_email(dlg):
-            check_payoff = XferCompCheck('sendemail')
-            check_payoff.set_value(sendemail)
-            check_payoff.set_location(1, 2)
-            check_payoff.java_script = """
-    var type=current.getValue();
-    parent.get('subject').setEnabled(type);
-    parent.get('message').setEnabled(type);
-    parent.get('model').setEnabled(type);
-    """
-            check_payoff.description = _("Send email with PDF")
-            dlg.add_component(check_payoff)
-            edt = XferCompEdit('subject')
-            edt.set_value(six.text_type(self.item))
-            edt.set_location(1, 3)
-            edt.description = _('subject')
-            dlg.add_component(edt)
-            contact = self.item.third.contact.get_final_child()
-            memo = XferCompMemo('message')
-            memo.description = _('message')
-            memo.set_value(Params.getvalue('payoff-email-message') % {'name': contact.get_presentation(), 'doc': self.item.get_docname()})
-            memo.with_hypertext = True
-            memo.set_size(130, 450)
-            memo.set_location(1, 4)
-            dlg.add_component(memo)
-            selectors = PrintModel.get_print_selector(2, self.item.__class__)[0]
-            sel = XferCompSelect('model')
-            sel.set_select(selectors[2])
-            sel.set_location(1, 5)
-            sel.description = selectors[1]
-            dlg.add_component(sel)
         if (self.item.bill_type != 0) and (abs(self.item.get_total_rest_topay()) > 0.0001):
             check_payoff = XferCompCheck('withpayoff')
             check_payoff.set_value(withpayoff)
-            check_payoff.set_location(1, 6)
+            check_payoff.set_location(1, 2)
             check_payoff.java_script = """
     var type=current.getValue();
     parent.get('date_payoff').setEnabled(type);
@@ -238,11 +208,43 @@ class BillTransition(XferTransition):
             check_payoff.description = _("Payment of deposit or cash")
             dlg.add_component(check_payoff)
             dlg.item.supporting = self.item
-            dlg.fill_from_model(2, 7, False)
+            dlg.fill_from_model(2, 3, False)
             if dlg.get_components("bank_fee") is not None:
                 check_payoff.java_script += "parent.get('bank_fee').setEnabled(type);\n"
             dlg.get_components("date").name = "date_payoff"
             dlg.get_components("mode").set_action(self.request, self.get_action(), close=CLOSE_NO, modal=FORMTYPE_REFRESH)
+        if (self.item.bill_type != 2) and can_send_email(dlg):
+            row = dlg.get_max_row()
+            check_payoff = XferCompCheck('sendemail')
+            check_payoff.set_value(sendemail)
+            check_payoff.set_location(1, row + 1)
+            check_payoff.java_script = """
+    var type=current.getValue();
+    parent.get('subject').setEnabled(type);
+    parent.get('message').setEnabled(type);
+    parent.get('model').setEnabled(type);
+    """
+            check_payoff.description = _("Send email with PDF")
+            dlg.add_component(check_payoff)
+            edt = XferCompEdit('subject')
+            edt.set_value(six.text_type(self.item))
+            edt.set_location(2, row + 2)
+            edt.description = _('subject')
+            dlg.add_component(edt)
+            contact = self.item.third.contact.get_final_child()
+            memo = XferCompMemo('message')
+            memo.description = _('message')
+            memo.set_value(Params.getvalue('payoff-email-message') % {'name': contact.get_presentation(), 'doc': self.item.get_docname()})
+            memo.with_hypertext = True
+            memo.set_size(130, 450)
+            memo.set_location(2, row + 3)
+            dlg.add_component(memo)
+            selectors = PrintModel.get_print_selector(2, self.item.__class__)[0]
+            sel = XferCompSelect('model')
+            sel.set_select(selectors[2])
+            sel.set_location(2, row + 4)
+            sel.description = selectors[1]
+            dlg.add_component(sel)
         dlg.add_action(self.get_action(TITLE_OK, 'images/ok.png'), params={"CONFIRME": "YES"})
         dlg.add_action(WrapAction(TITLE_CANCEL, 'images/cancel.png'))
 
