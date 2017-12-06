@@ -34,8 +34,7 @@ from lucterios.framework.xferadvance import XferListEditor, XferShowEditor, TITL
     XferTransition
 from lucterios.framework.xferadvance import XferAddEditor
 from lucterios.framework.xferadvance import XferDelete
-from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompSelect, XferCompHeader, XferCompImage, XferCompGrid, XferCompCheck,\
-    XferCompEdit, XferCompCheckList
+from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompSelect, XferCompHeader, XferCompImage, XferCompGrid, XferCompCheck, XferCompEdit, XferCompCheckList, XferCompMemo
 from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage, FORMTYPE_MODAL, CLOSE_YES, SELECT_SINGLE, FORMTYPE_REFRESH, CLOSE_NO, SELECT_MULTI, WrapAction
 from lucterios.framework.xfergraphic import XferContainerAcknowledge, XferContainerCustom
 from lucterios.framework.error import LucteriosException, IMPORTANT
@@ -215,12 +214,12 @@ class BillTransition(XferTransition):
             memo.set_size(130, 450)
             memo.set_location(1, 4)
             dlg.add_component(memo)
-            selectors = PrintModel.get_print_selector(2, self.item.__class__)[0] 
+            selectors = PrintModel.get_print_selector(2, self.item.__class__)[0]
             sel = XferCompSelect('model')
             sel.set_select(selectors[2])
             sel.set_location(1, 5)
             sel.description = selectors[1]
-            dlg.add_component(sel) 
+            dlg.add_component(sel)
         if (self.item.bill_type != 0) and (abs(self.item.get_total_rest_topay()) > 0.0001):
             check_payoff = XferCompCheck('withpayoff')
             check_payoff.set_value(withpayoff)
