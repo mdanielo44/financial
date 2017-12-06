@@ -166,7 +166,7 @@ class PayableEmail(XferContainerAcknowledge):
     model = Supporting
     field_id = 'supporting'
 
-    def fillresponse(self, item_name='', subject='', message='', model=0, withpayment=False):
+    def fillresponse(self, item_name='', subject='', message='', model=0):
         if item_name != '':
             self.item = Supporting.objects.get(id=self.getparam(item_name, 0))
         self.item = self.item.get_final_child()
@@ -184,31 +184,23 @@ class PayableEmail(XferContainerAcknowledge):
             contact = self.item.third.contact.get_final_child()
             memo = XferCompMemo('message')
             memo.description = _('message')
-            memo.set_value(Params.getvalue('payoff-email-message') % {
-                'name': contact.get_presentation(), 'doc': self.item.get_docname()})
+            memo.set_value(Params.getvalue('payoff-email-message') % {'name': contact.get_presentation(), 'doc': self.item.get_docname()})
             memo.with_hypertext = True
             memo.set_size(130, 450)
             memo.set_location(1, 2)
             dlg.add_component(memo)
-            selectors = PrintModel.get_print_selector(
-                2, self.item.__class__)[0]
+            selectors = PrintModel.get_print_selector(2, self.item.__class__)[0]
             sel = XferCompSelect('model')
             sel.set_select(selectors[2])
             sel.set_location(1, 3)
             sel.description = selectors[1]
             dlg.add_component(sel)
-            if self.item.payoff_have_payment() and (len(PaymentMethod.objects.all()) > 0):
-                sel = XferCompCheck('withpayment')
-                sel.set_value(True)
-                sel.description = _('add payment methods in email')
-                sel.set_location(1, 4)
-                dlg.add_component(sel)
             dlg.add_action(self.get_action(TITLE_OK, 'images/ok.png'), params={"OK": "YES"})
             dlg.add_action(WrapAction(TITLE_CANCEL, 'images/cancel.png'))
         else:
             html_message = "<html>"
             html_message += message.replace('{[newline]}', '<br/>\n').replace('{[', '<').replace(']}', '>')
-            if self.item.payoff_have_payment() and withpayment:
+            if self.item.payoff_have_payment() and (len(PaymentMethod.objects.all()) > 0):
                 html_message += get_html_payment(self.request.META.get('HTTP_REFERER', self.request.build_absolute_uri()), self.language, self.item)
             html_message += "</html>"
             self.item.send_email(subject, html_message, model)

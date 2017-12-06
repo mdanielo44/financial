@@ -503,14 +503,14 @@ class MethodTest(InvoiceTest, PaymentTest):
             self.factory.xfer = PayableEmail()
             self.call('/diacamma.payoff/payableEmail', {'item_name': 'bill', 'bill': 2}, False)
             self.assert_observer('core.custom', 'diacamma.payoff', 'payableEmail')
-            self.assert_count_equal('COMPONENTS/*', 5)
+            self.assert_count_equal('COMPONENTS/*', 4)
             self.assert_xml_equal('COMPONENTS/EDIT[@name="subject"]', 'facture A-1 - 1 avril 2015')
             self.assert_xml_equal('COMPONENTS/MEMO[@name="message"]',
                                   'William Dalton (Minimum)\n\nVeuillez trouver ci-Joint à ce courriel facture A-1 - 1 avril 2015.\n\nSincères salutations')
 
             self.factory.xfer = PayableEmail()
             self.call('/diacamma.payoff/payableEmail', {'bill': 2, 'OK': 'YES', 'item_name': 'bill',
-                                                        'subject': 'my bill', 'message': 'this is a bill.', 'model': 8, 'withpayment': 1}, False)
+                                                        'subject': 'my bill', 'message': 'this is a bill.', 'model': 8}, False)
             self.assert_observer('core.acknowledge', 'diacamma.payoff', 'payableEmail')
             self.assertEqual(1, server.count())
             self.assertEqual('mr-sylvestre@worldcompany.com', server.get(0)[1])

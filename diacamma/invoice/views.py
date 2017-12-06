@@ -49,7 +49,7 @@ from lucterios.contacts.models import Individual, LegalEntity
 
 from diacamma.invoice.models import Article, Bill, Detail, Category, Provider
 from diacamma.accounting.models import FiscalYear, Third
-from diacamma.payoff.views import PayoffAddModify
+from diacamma.payoff.views import PayoffAddModify, PayableEmail, can_send_email
 from diacamma.payoff.models import Payoff
 from django.db.models.query import QuerySet
 from diacamma.accounting.views import get_main_third
@@ -179,7 +179,7 @@ class BillTransition(XferTransition):
     model = Bill
     field_id = 'bill'
 
-    def fill_dlg_payoff(self, withpayoff):
+    def fill_dlg_payoff(self, withpayoff, sendemail):
         dlg = self.create_custom(Payoff)
         dlg.caption = _("Valid bill")
         icon = XferCompImage('img')
@@ -190,10 +190,42 @@ class BillTransition(XferTransition):
         lbl.set_value_as_infocenter(_("Do you want validate '%s'?") % self.item)
         lbl.set_location(1, 1, 4)
         dlg.add_component(lbl)
-        check_payoff = XferCompCheck('withpayoff')
-        check_payoff.set_value(withpayoff)
-        check_payoff.set_location(1, 2)
-        check_payoff.java_script = """
+        if (self.item.bill_type != 2) and can_send_email(dlg):
+            check_payoff = XferCompCheck('sendemail')
+            check_payoff.set_value(sendemail)
+            check_payoff.set_location(1, 2)
+            check_payoff.java_script = """
+    var type=current.getValue();
+    parent.get('subject').setEnabled(type);
+    parent.get('message').setEnabled(type);
+    parent.get('model').setEnabled(type);
+    """
+            check_payoff.description = _("Send email with PDF")
+            dlg.add_component(check_payoff)
+            edt = XferCompEdit('subject')
+            edt.set_value(six.text_type(self.item))
+            edt.set_location(1, 3)
+            edt.description = _('subject')
+            dlg.add_component(edt)
+            contact = self.item.third.contact.get_final_child()
+            memo = XferCompMemo('message')
+            memo.description = _('message')
+            memo.set_value(Params.getvalue('payoff-email-message') % {'name': contact.get_presentation(), 'doc': self.item.get_docname()})
+            memo.with_hypertext = True
+            memo.set_size(130, 450)
+            memo.set_location(1, 4)
+            dlg.add_component(memo)
+            selectors = PrintModel.get_print_selector(2, self.item.__class__)[0] 
+            sel = XferCompSelect('model')
+            sel.set_select(selectors[2])
+            sel.set_location(1, 5)
+            sel.description = selectors[1]
+            dlg.add_component(sel) 
+        if (self.item.bill_type != 0) and (abs(self.item.get_total_rest_topay()) > 0.0001):
+            check_payoff = XferCompCheck('withpayoff')
+            check_payoff.set_value(withpayoff)
+            check_payoff.set_location(1, 6)
+            check_payoff.java_script = """
     var type=current.getValue();
     parent.get('date_payoff').setEnabled(type);
     parent.get('amount').setEnabled(type);
@@ -204,31 +236,34 @@ class BillTransition(XferTransition):
         parent.get('bank_account').setEnabled(type);
     }
     """
-        check_payoff.description = _("Payment of deposit or cash")
-        dlg.add_component(check_payoff)
-        dlg.item.supporting = self.item
-        dlg.fill_from_model(2, 3, False)
-        if dlg.get_components("bank_fee") is not None:
-            check_payoff.java_script += "parent.get('bank_fee').setEnabled(type);\n"
-        dlg.get_components("date").name = "date_payoff"
-        dlg.get_components("mode").set_action(self.request, self.get_action(), close=CLOSE_NO, modal=FORMTYPE_REFRESH)
+            check_payoff.description = _("Payment of deposit or cash")
+            dlg.add_component(check_payoff)
+            dlg.item.supporting = self.item
+            dlg.fill_from_model(2, 7, False)
+            if dlg.get_components("bank_fee") is not None:
+                check_payoff.java_script += "parent.get('bank_fee').setEnabled(type);\n"
+            dlg.get_components("date").name = "date_payoff"
+            dlg.get_components("mode").set_action(self.request, self.get_action(), close=CLOSE_NO, modal=FORMTYPE_REFRESH)
         dlg.add_action(self.get_action(TITLE_OK, 'images/ok.png'), params={"CONFIRME": "YES"})
         dlg.add_action(WrapAction(TITLE_CANCEL, 'images/cancel.png'))
 
     def fill_confirm(self, transition, trans):
-        withpayoff = self.getparam('withpayoff', True)
-        if (transition != 'valid') or (self.item.bill_type == 0) or abs(self.item.get_total_rest_topay()) < 0.0001:
+        withpayoff = self.getparam('withpayoff', False)
+        sendemail = self.getparam('sendemail', False)
+        if transition != 'valid':
             XferTransition.fill_confirm(self, transition, trans)
             if transition == 'cancel':
                 if self.trans_result is not None:
                     self.redirect_action(ActionsManage.get_action_url('invoice.Bill', 'Show', self), params={self.field_id: self.trans_result})
         elif self.getparam("CONFIRME") is None:
-            self.fill_dlg_payoff(withpayoff)
+            self.fill_dlg_payoff(withpayoff, sendemail)
         else:
-            XferTransition.fill_confirm(self, transition, trans)
             if (self.item.bill_type != 0) and withpayoff:
                 Payoff.multi_save((self.item.id,), self.getparam('amount', 0.0), self.getparam('mode', 0), self.getparam('payer'),
                                   self.getparam('reference'), self.getparam('bank_account', 0), self.getparam('date_payoff'), repartition=0)
+            XferTransition.fill_confirm(self, transition, trans)
+            if sendemail:
+                self.redirect_action(PayableEmail.get_action("", ""), params={"item_name": self.field_id, "OK": "YES"})
 
 
 @ActionsManage.affect_grid(_('payoff'), '', close=CLOSE_NO, unique=SELECT_MULTI, condition=lambda xfer, gridname='': xfer.getparam('status_filter', -1) == 1)
