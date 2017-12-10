@@ -16,7 +16,7 @@ from lucterios.framework.tools import FORMTYPE_NOMODAL, CLOSE_YES, CLOSE_NO, FOR
 from lucterios.framework.tools import ActionsManage, MenuManage, WrapAction
 from lucterios.CORE.xferprint import XferPrintAction
 
-from diacamma.payoff.models import DepositSlip, DepositDetail, BankTransaction
+from diacamma.payoff.models import DepositSlip, DepositDetail, BankTransaction, PaymentMethod
 from diacamma.accounting.models import FiscalYear
 
 
@@ -187,7 +187,14 @@ class DepositDetailDel(XferDelete):
     caption = _("Delete deposit detail")
 
 
-@MenuManage.describ('payoff.change_banktransaction', FORMTYPE_NOMODAL, 'financial', _('show bank transactions'))
+def right_banktransaction(request):
+    if BankTransactionShow.get_action().check_permission(request):
+        return len(PaymentMethod.objects.exclude(paytype__in=(0, 1))) > 0
+    else:
+        return False
+
+
+@MenuManage.describ(right_banktransaction, FORMTYPE_NOMODAL, 'financial', _('show bank transactions'))
 class BankTransactionList(XferListEditor):
     icon = "transfer.png"
     model = BankTransaction

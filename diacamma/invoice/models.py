@@ -536,7 +536,7 @@ class Bill(Supporting):
         return "{[br/]}".join(info)
 
     def can_delete(self):
-        if self.status != 0:
+        if self.status > 0:
             return _('"%s" cannot be deleted!') % six.text_type(self)
         return ''
 
@@ -977,7 +977,7 @@ class StorageSheet(LucteriosModel):
         return Third.objects.filter(thirdfilter)
 
     def can_delete(self):
-        if self.status != 0:
+        if self.status > 0:
             return _('"%s" cannot be deleted!') % six.text_type(self)
         return ''
 

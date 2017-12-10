@@ -25,31 +25,33 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import unicode_literals
 
 from django.utils.translation import ugettext_lazy as _
+from django.utils import six
+from django.db.models.aggregates import Sum
 from django.db.models import Q
 
-from lucterios.framework.tools import MenuManage, FORMTYPE_NOMODAL,\
-    ActionsManage, SELECT_SINGLE, SELECT_MULTI, CLOSE_YES, FORMTYPE_REFRESH, CLOSE_NO,\
-    SELECT_NONE, WrapAction
-from lucterios.framework.xferadvance import XferListEditor, XferAddEditor, XferDelete, XferShowEditor, TITLE_ADD, TITLE_MODIFY, TITLE_DELETE, TITLE_EDIT,\
-    XferTransition, TITLE_PRINT, TEXT_TOTAL_NUMBER, TITLE_CLOSE
+from lucterios.framework.tools import MenuManage, FORMTYPE_NOMODAL, ActionsManage, SELECT_SINGLE, SELECT_MULTI, CLOSE_YES, FORMTYPE_REFRESH, CLOSE_NO, SELECT_NONE, WrapAction
+from lucterios.framework.xferadvance import XferListEditor, XferAddEditor, XferDelete, XferShowEditor, TITLE_ADD, TITLE_MODIFY, TITLE_DELETE, TITLE_EDIT, XferTransition, TITLE_PRINT, TITLE_CLOSE
 
-from diacamma.invoice.models import StorageSheet, StorageDetail, Article,\
-    Category, StorageArea
-from lucterios.CORE.views import ObjectImport
-from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompGrid,\
-    XferCompSelect, XferCompCheckList, GRID_ORDER, XferCompDate,\
-    XferCompDateTime
-from django.utils import six
 from lucterios.CORE.xferprint import XferPrintAction
-from django.db.models.aggregates import Sum
-from diacamma.accounting.tools import format_devise
+from lucterios.CORE.views import ObjectImport
+from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompGrid, XferCompSelect, XferCompCheckList, GRID_ORDER, XferCompDate
 from lucterios.framework.xferbasic import NULL_VALUE
+
+from diacamma.accounting.tools import format_devise
+from diacamma.invoice.models import StorageSheet, StorageDetail, Article, Category, StorageArea
 
 
 MenuManage.add_sub("storage", "invoice", "diacamma.invoice/images/storage.png", _("Storage"), _("Manage of storage"), 10)
 
 
-@MenuManage.describ('invoice.change_storagesheet', FORMTYPE_NOMODAL, 'storage', _('Management of storage sheet list'))
+def right_to_storage(request):
+    if StorageSheetShow.get_action().check_permission(request):
+        return len(StorageArea.objects.all()) > 0
+    else:
+        return False
+
+
+@MenuManage.describ(right_to_storage, FORMTYPE_NOMODAL, 'storage', _('Management of storage sheet list'))
 class StorageSheetList(XferListEditor):
     icon = "storagesheet.png"
     model = StorageSheet
@@ -175,7 +177,7 @@ class StorageDetailImport(ObjectImport):
             self.add_component(lbl)
 
 
-@MenuManage.describ('invoice.change_storagesheet', FORMTYPE_NOMODAL, 'storage', _('Situation of storage'))
+@MenuManage.describ(right_to_storage, FORMTYPE_NOMODAL, 'storage', _('Situation of storage'))
 class StorageSituation(XferListEditor):
     icon = "storagereport.png"
     model = StorageDetail
@@ -257,7 +259,7 @@ class StorageSituationPrint(XferPrintAction):
     with_text_export = True
 
 
-@MenuManage.describ('invoice.change_storagesheet', FORMTYPE_NOMODAL, 'storage', _('Historic of storage'))
+@MenuManage.describ(right_to_storage, FORMTYPE_NOMODAL, 'storage', _('Historic of storage'))
 class StorageHistoric(XferListEditor):
     icon = "storagereport.png"
     model = StorageDetail

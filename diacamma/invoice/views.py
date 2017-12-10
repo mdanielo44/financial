@@ -544,44 +544,67 @@ class BillStatisticPrint(XferPrintAction):
     with_text_export = True
 
 
+@signal_and_lock.Signal.decorate('situation')
+def situation_invoice(xfer):
+    if not hasattr(xfer, 'add_component'):
+        contacts = []
+        if not xfer.user.is_anonymous():
+            for contact in Individual.objects.filter(user=xfer.user):
+                contacts.append(contact.id)
+            for contact in LegalEntity.objects.filter(responsability__individual__user=xfer.user):
+                contacts.append(contact.id)
+        return len(contacts) > 0
+    else:
+        contacts = []
+        if not xfer.request.user.is_anonymous():
+            for contact in Individual.objects.filter(user=xfer.request.user):
+                contacts.append(contact.id)
+            for contact in LegalEntity.objects.filter(responsability__individual__user=xfer.request.user):
+                contacts.append(contact.id)
+        if len(contacts) > 0:
+            row = xfer.get_max_row() + 1
+            lab = XferCompLabelForm('invoicetitle')
+            lab.set_value_as_infocenter(_("Invoice"))
+            lab.set_location(0, row, 4)
+            xfer.add_component(lab)
+            nb_build = len(Bill.objects.filter(third__contact_id__in=contacts))
+            lab = XferCompLabelForm('invoicecurrent')
+            lab.set_value_as_header(_("You are %d bills") % nb_build)
+            lab.set_location(0, row + 1, 4)
+            xfer.add_component(lab)
+            lab = XferCompLabelForm('invoicesep')
+            lab.set_value_as_infocenter("{[hr/]}")
+            lab.set_location(0, row + 2, 4)
+            xfer.add_component(lab)
+            return True
+        else:
+            return False
+
+
 @signal_and_lock.Signal.decorate('summary')
 def summary_invoice(xfer):
-    is_right = WrapAction.is_permission(xfer.request, 'invoice.change_bill')
-    contacts = []
-    if not xfer.request.user.is_anonymous():
-        for contact in Individual.objects.filter(user=xfer.request.user):
-            contacts.append(contact.id)
-        for contact in LegalEntity.objects.filter(responsability__individual__user=xfer.request.user):
-            contacts.append(contact.id)
-    if is_right or (len(contacts) > 0):
-        row = xfer.get_max_row() + 1
-        lab = XferCompLabelForm('invoicetitle')
-        lab.set_value_as_infocenter(_("Invoice"))
-        lab.set_location(0, row, 4)
-        xfer.add_component(lab)
-    if len(contacts) > 0:
-        nb_build = len(Bill.objects.filter(third__contact_id__in=contacts))
-        row = xfer.get_max_row() + 1
-        lab = XferCompLabelForm('invoicecurrent')
-        lab.set_value_as_header(_("You are %d bills") % nb_build)
-        lab.set_location(0, row, 4)
-        xfer.add_component(lab)
-    if is_right:
-        row = xfer.get_max_row() + 1
-        nb_build = len(Bill.objects.filter(status=0))
-        nb_valid = len(Bill.objects.filter(status=1))
-        lab = XferCompLabelForm('invoiceinfo')
-        lab.set_value_as_header(_("There are %(build)d bills in building and %(valid)d validated") % {'build': nb_build, 'valid': nb_valid})
-        lab.set_location(0, row + 1, 4)
-        xfer.add_component(lab)
-    if is_right or (len(contacts) > 0):
-        lab = XferCompLabelForm('invoicesep')
-        lab.set_value_as_infocenter("{[hr/]}")
-        lab.set_location(0, row + 2, 4)
-        xfer.add_component(lab)
-        return True
+    if not hasattr(xfer, 'add_component'):
+        return WrapAction.is_permission(xfer, 'invoice.change_bill')
     else:
-        return False
+        if WrapAction.is_permission(xfer.request, 'invoice.change_bill'):
+            row = xfer.get_max_row() + 1
+            lab = XferCompLabelForm('invoicetitle')
+            lab.set_value_as_infocenter(_("Invoice"))
+            lab.set_location(0, row, 4)
+            xfer.add_component(lab)
+            nb_build = len(Bill.objects.filter(status=0))
+            nb_valid = len(Bill.objects.filter(status=1))
+            lab = XferCompLabelForm('invoiceinfo')
+            lab.set_value_as_header(_("There are %(build)d bills in building and %(valid)d validated") % {'build': nb_build, 'valid': nb_valid})
+            lab.set_location(0, row + 1, 4)
+            xfer.add_component(lab)
+            lab = XferCompLabelForm('invoicesep')
+            lab.set_value_as_infocenter("{[hr/]}")
+            lab.set_location(0, row + 2, 4)
+            xfer.add_component(lab)
+            return True
+        else:
+            return False
 
 
 @signal_and_lock.Signal.decorate('third_addon')

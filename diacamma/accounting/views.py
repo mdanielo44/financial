@@ -283,7 +283,9 @@ class AccountThirdDel(XferDelete):
 
 @signal_and_lock.Signal.decorate('summary')
 def summary_accounting(xfer):
-    if WrapAction.is_permission(xfer.request, 'accounting.change_chartsaccount'):
+    if not hasattr(xfer, 'add_component'):
+        return WrapAction.is_permission(xfer, 'accounting.change_chartsaccount')
+    elif WrapAction.is_permission(xfer.request, 'accounting.change_chartsaccount'):
         row = xfer.get_max_row() + 1
         lab = XferCompLabelForm('accountingtitle')
         lab.set_value_as_infocenter(_("Bookkeeping"))
