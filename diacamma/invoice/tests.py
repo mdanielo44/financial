@@ -329,12 +329,12 @@ class ConfigTest(LucteriosTest):
         initial_thirds()
         default_categories()
         csv_content = """'num','comment','prix','unité','compte','stock?','categorie','fournisseur','ref'
-'A123','article N°1','12.45','Kg','701','stockable','cat 2','Dalton Avrel','POIYT'
-'B234','article N°2','23.56','L','701','stockable','cat 3','',''
+'A123','article N°1','','Kg','701','stockable','cat 2','Dalton Avrel','POIYT'
+'B234','article N°2','23,56','L','701','stockable','cat 3','',''
 'C345','article N°3','45.74','','702','non stockable','cat 1','Dalton Avrel','MLKJH'
-'D456','article N°4','56.89','m','701','stockable & non vendable','','Maximum','987654'
+'D456','article N°4','56,89','m','701','stockable & non vendable','','Maximum','987654'
 'A123','article N°1','13.57','Kg','701','stockable','cat 3','',''
-'A123','article N°1','16.95','Kg','701','stockable','','Maximum','654321'
+'A123','article N°1','16,95','Kg','701','stockable','','Maximum','654321'
 """
 
         self.factory.xfer = ArticleList()
@@ -467,7 +467,7 @@ class ConfigTest(LucteriosTest):
         initial_thirds()
         default_categories()
         csv_content = """'num','comment','prix','unité','compte','stock?','categorie','fournisseur','ref'
-'A123','article N°1','12.45','Kg','701','stockable','cat 2','Avrel','POIYT'
+'A123','article N°1','ssdqs','Kg','701','stockable','cat 2','Avrel','POIYT'
 'B234','article N°2','23.56','L','701','stockable','cat 3','',''
 'C345','article N°3','45.74','','702','non stockable','cat 1','Avrel','MLKJH'
 'D456','article N°4','56.89','m','701','stockable & non vendable','','Maximum','987654'

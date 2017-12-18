@@ -95,7 +95,8 @@ class ArticleEditor(LucteriosEditor):
                 grid.set_value(area_id, 'area', valformat % area)
                 grid.set_value(area_id, 'qty', valformat % qty)
                 grid.set_value(area_id, 'amount', valformat % format_devise(amount, 5))
-                grid.set_value(area_id, 'mean', valformat % format_devise(amount / qty, 5))
+                if abs(qty) > 0.001:
+                    grid.set_value(area_id, 'mean', valformat % format_devise(amount / qty, 5))
             xfer.add_component(grid)
 
             grid = XferCompGrid('moving')
