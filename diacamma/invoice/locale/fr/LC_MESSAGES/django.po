@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-12-18 15:38+0000\n"
+"POT-Creation-Date: 2017-12-18 17:39+0000\n"
 "PO-Revision-Date: 2016-01-14 21:59+0000\n"
 "Last-Translator: b'Paul ARULATEDA <paul531@orange.fr>'\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -47,45 +47,45 @@ msgstr "Prix moyen"
 msgid "quantities"
 msgstr "quantités"
 
-#: editors.py:103
+#: editors.py:104
 msgid "moving"
 msgstr "mouvement"
 
-#: editors.py:109 models.py:181
+#: editors.py:110 models.py:181
 msgid "002@Provider"
 msgstr "002@Fournisseur"
 
-#: editors.py:156
+#: editors.py:157
 msgid "price excl. taxes"
 msgstr "prix HT"
 
-#: editors.py:158 editors.py:165 printmodel/Bill_0001.py:134 views.py:132
+#: editors.py:159 editors.py:166 printmodel/Bill_0001.py:134 views.py:132
 msgid "total excl. taxes"
 msgstr "total HT"
 
-#: editors.py:161
+#: editors.py:162
 msgid "price incl. taxes"
 msgstr "prix TTC"
 
-#: editors.py:163 editors.py:166 models.py:408 printmodel/Bill_0001.py:135
+#: editors.py:164 editors.py:167 models.py:408 printmodel/Bill_0001.py:135
 #: views.py:135
 msgid "total incl. taxes"
 msgstr "total TTC"
 
-#: editors.py:166 models.py:408
+#: editors.py:167 models.py:408
 msgid "VTA sum"
 msgstr "total TVA"
 
-#: editors.py:196 models.py:953
+#: editors.py:197 models.py:953
 msgid "provider"
 msgstr "fournisseur"
 
-#: editors.py:223 models.py:151 views.py:400 views_storage.py:221
+#: editors.py:224 models.py:151 views.py:400 views_storage.py:221
 #: views_storage.py:316
 msgid "categories"
 msgstr "catégories"
 
-#: editors.py:326
+#: editors.py:327
 msgid "max quantity"
 msgstr "quantité max."
 
