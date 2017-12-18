@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-11-28 10:58+0000\n"
+"POT-Creation-Date: 2017-12-18 15:38+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -137,7 +137,7 @@ msgid "Disable"
 msgstr "Disable"
 
 #: models.py:81 models.py:90 models.py:179 models.py:1170 models.py:1178
-#: printmodel/Third_0001.py:39 views.py:363 views_reports.py:324
+#: printmodel/Third_0001.py:39 views.py:365 views_reports.py:324
 #: views_reports.py:330 views_reports.py:552
 msgid "total"
 msgstr "total"
@@ -158,7 +158,7 @@ msgstr "Enabled"
 msgid "third has not correct account"
 msgstr "Third has not a correct account!"
 
-#: models.py:160 views.py:331
+#: models.py:160 views.py:333
 msgid "thirds"
 msgstr "thirds"
 
@@ -252,7 +252,7 @@ msgid "This fiscal year is not 'in running'!"
 msgstr "This fiscal year is not 'in running'!"
 
 #: models.py:459 models.py:471 models.py:557 models.py:738 models.py:1285
-#: views_budget.py:38 views_budget.py:253
+#: views_budget.py:38 views_budget.py:254
 msgid "fiscal year"
 msgstr "fiscal year"
 
@@ -318,7 +318,7 @@ msgid "This cost accounting have entry with another year!"
 msgstr "This cost accounting have entry with another year!"
 
 #: models.py:547 models.py:749 models.py:1162 models.py:1286 views_budget.py:46
-#: views_budget.py:262
+#: views_budget.py:263
 msgid "cost accounting"
 msgstr "cost accounting"
 
@@ -342,11 +342,11 @@ msgstr "Liability"
 msgid "Equity"
 msgstr "Equity"
 
-#: models.py:560 views_budget.py:90 views_reports.py:457
+#: models.py:560 views_budget.py:96 views_reports.py:457
 msgid "Revenue"
 msgstr "Revenue"
 
-#: models.py:560 views_budget.py:86 views_reports.py:451
+#: models.py:560 views_budget.py:87 views_reports.py:451
 msgid "Expense"
 msgstr "Expense"
 
@@ -444,7 +444,7 @@ msgstr "This kind of entry is not allowed for this journal!"
 msgid "payment of %s"
 msgstr "payment of %s"
 
-#: models.py:970 views.py:382
+#: models.py:970 views.py:384
 msgid "entry of account"
 msgstr "entry of account"
 
@@ -530,7 +530,7 @@ msgstr "Credit"
 msgid "Debit"
 msgstr "Debit"
 
-#: views.py:53 views.py:361 views_admin.py:47
+#: views.py:53 views.py:363 views_admin.py:47
 msgid "Financial"
 msgstr "Financial"
 
@@ -638,35 +638,35 @@ msgstr "Modify account"
 msgid "Delete account"
 msgstr "Delete account"
 
-#: views.py:289 views_accounts.py:47
+#: views.py:291 views_accounts.py:47
 msgid "Bookkeeping"
 msgstr "Bookkeeping"
 
-#: views.py:310
+#: views.py:312
 msgid "conf."
 msgstr "conf."
 
-#: views.py:333
+#: views.py:335
 msgid "models"
 msgstr "models"
 
-#: views.py:336
+#: views.py:338
 msgid "Accounting"
 msgstr "Accounting"
 
-#: views.py:384
+#: views.py:386
 msgid "Accounts filter"
 msgstr "Accounts filter"
 
-#: views.py:388
+#: views.py:390
 msgid "All entries of current fiscal year"
 msgstr "All entries of current fiscal year"
 
-#: views.py:389
+#: views.py:391
 msgid "Only no-closed entries of current fiscal year"
 msgstr "Only no-closed entries of current fiscal year"
 
-#: views.py:389
+#: views.py:391
 msgid "All entries for all fiscal year"
 msgstr "All entries for all fiscal year"
 
@@ -885,45 +885,45 @@ msgstr "Manage your accounting journals"
 msgid "Prévisionnal budget"
 msgstr "Prévisionnal budget"
 
-#: views_budget.py:108 views_reports.py:262 views_reports.py:266
+#: views_budget.py:109 views_reports.py:262 views_reports.py:266
 msgid "result (profit)"
 msgstr "result (profit)"
 
-#: views_budget.py:110 views_reports.py:263 views_reports.py:265
+#: views_budget.py:111 views_reports.py:263 views_reports.py:265
 msgid "result (deficit)"
 msgstr "result (deficit)"
 
-#: views_budget.py:125
+#: views_budget.py:126
 msgid "Print previsionnal budget"
 msgstr "Print previsionnal budget"
 
-#: views_budget.py:141
+#: views_budget.py:142
 msgid "Add budget line"
 msgstr "Add budget line"
 
-#: views_budget.py:142
+#: views_budget.py:143
 msgid "Modify budget line"
 msgstr "Modify budget line"
 
-#: views_budget.py:189
+#: views_budget.py:190
 msgid "Delete Budget line"
 msgstr "Delete Budget line"
 
-#: views_budget.py:208 views_budget.py:214 views_budget.py:300
-#: views_budget.py:306 views_reports.py:453 views_reports.py:459
+#: views_budget.py:209 views_budget.py:215 views_budget.py:301
+#: views_budget.py:307 views_reports.py:453 views_reports.py:459
 #: views_reports.py:719 views_reports.py:725
 msgid "Budget"
 msgstr "Budget"
 
-#: views_budget.py:221
+#: views_budget.py:222
 msgid "Import"
 msgstr "Import"
 
-#: views_budget.py:227
+#: views_budget.py:228
 msgid "Import budget"
 msgstr "Import budget"
 
-#: views_budget.py:265
+#: views_budget.py:266
 msgid ""
 "All budget lines will be delete and income statement of select item will be "
 "import as new budget."
