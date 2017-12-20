@@ -200,7 +200,7 @@ class Article(LucteriosModel, CustomizeObject):
         if len(Category.objects.all()) > 0:
             fields.append('categories')
         if len(Provider().third_query) > 0:
-            fields.append('provider.third.contact')
+            fields.append(('provider.third.contact', _('provider')))
             fields.append('provider.reference')
         for cf_field in CustomField.get_fields(cls):
             fields.append((cf_field[0], cf_field[1].name))
@@ -313,7 +313,7 @@ class Article(LucteriosModel, CustomizeObject):
 class Provider(LucteriosModel):
     article = models.ForeignKey(Article, verbose_name=_('article'), null=False, on_delete=models.CASCADE)
     third = models.ForeignKey(Third, verbose_name=_('third'), null=False, on_delete=models.PROTECT)
-    reference = models.CharField(_('reference'), max_length=50)
+    reference = models.CharField(_('ref. provider'), max_length=50)
 
     @property
     def third_query(self):
@@ -808,6 +808,7 @@ class Detail(LucteriosModel):
         self.filter_thirdid = xfer.getparam('third', 0)
         self.filter_ref = xfer.getparam('reference', '')
         self.filter_cat = xfer.getparam('cat_filter', ())
+        self.filter_lib = xfer.getparam('ref_filter', '')
 
     @property
     def article_query(self):
@@ -817,6 +818,8 @@ class Detail(LucteriosModel):
             artfilter &= Q(provider__third_id=self.filter_thirdid)
         if self.filter_ref != '':
             artfilter &= Q(provider__reference__icontains=self.filter_ref)
+        if self.filter_lib != '':
+            artfilter &= Q(reference__icontains=self.filter_lib) | Q(designation__icontains=self.filter_lib)
         items = Article.objects.filter(artfilter)
         if len(self.filter_cat) > 0:
             for cat_item in Category.objects.filter(id__in=self.filter_cat):

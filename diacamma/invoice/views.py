@@ -378,7 +378,9 @@ class ArticleList(XferListEditor):
     def fillresponse_header(self):
         show_filter = self.getparam('show_filter', 0)
         show_stockable = self.getparam('stockable', -1)
+        ref_filter = self.getparam('ref_filter', '')
         self.categories_filter = self.getparam('cat_filter', ())
+
         edt = XferCompSelect("show_filter")
         edt.set_select([(0, _('Only activate')), (1, _('All'))])
         edt.set_value(show_filter)
@@ -386,21 +388,32 @@ class ArticleList(XferListEditor):
         edt.description = _('Show articles')
         edt.set_action(self.request, self.get_action(), modal=FORMTYPE_REFRESH, close=CLOSE_NO)
         self.add_component(edt)
-        self.fill_from_model(0, 4, False, ['stockable'])
+
+        edt = XferCompEdit("ref_filter")
+        edt.set_value(ref_filter)
+        edt.set_location(0, 4)
+        edt.description = _('ref./designation')
+        edt.set_action(self.request, self.get_action(), modal=FORMTYPE_REFRESH, close=CLOSE_NO)
+        self.add_component(edt)
+
+        self.fill_from_model(0, 5, False, ['stockable'])
         sel_stock = self.get_components('stockable')
         sel_stock.select_list.insert(0, (-1, '---'))
         sel_stock.set_value(show_stockable)
         sel_stock.set_action(self.request, self.get_action(), modal=FORMTYPE_REFRESH, close=CLOSE_NO)
+
         cat_list = Category.objects.all()
         if len(cat_list) > 0:
             edt = XferCompCheckList("cat_filter")
             edt.set_select_query(cat_list)
             edt.set_value(self.categories_filter)
-            edt.set_location(1, 4)
+            edt.set_location(1, 4, 1, 2)
             edt.description = _('categories')
             edt.set_action(self.request, self.get_action(), modal=FORMTYPE_REFRESH, close=CLOSE_NO)
             self.add_component(edt)
         self.filter = Q()
+        if ref_filter != '':
+            self.filter &= Q(reference__icontains=ref_filter) | Q(designation__icontains=ref_filter)
         if show_filter == 0:
             self.filter &= Q(isdisabled=False)
         if show_stockable != -1:

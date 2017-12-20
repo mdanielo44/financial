@@ -34,7 +34,8 @@ from lucterios.framework.xferadvance import XferListEditor, XferAddEditor, XferD
 
 from lucterios.CORE.xferprint import XferPrintAction
 from lucterios.CORE.views import ObjectImport
-from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompGrid, XferCompSelect, XferCompCheckList, GRID_ORDER, XferCompDate
+from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompGrid, XferCompSelect, XferCompCheckList, GRID_ORDER, XferCompDate,\
+    XferCompEdit
 from lucterios.framework.xferbasic import NULL_VALUE
 
 from diacamma.accounting.tools import format_devise
@@ -204,6 +205,7 @@ class StorageSituation(XferListEditor):
     def fillresponse_header(self):
         show_storagearea = self.getparam('storagearea', 0)
         self.categories_filter = self.getparam('cat_filter', ())
+        ref_filter = self.getparam('ref_filter', '')
         sel_stock = XferCompSelect('storagearea')
         sel_stock.set_needed(False)
         sel_stock.set_select_query(StorageArea.objects.all())
@@ -212,16 +214,26 @@ class StorageSituation(XferListEditor):
         sel_stock.set_location(0, 4)
         sel_stock.description = StorageArea._meta.verbose_name
         self.add_component(sel_stock)
+
+        edt = XferCompEdit("ref_filter")
+        edt.set_value(ref_filter)
+        edt.set_location(0, 5)
+        edt.description = _('ref./designation')
+        edt.set_action(self.request, self.get_action(), modal=FORMTYPE_REFRESH, close=CLOSE_NO)
+        self.add_component(edt)
+
         cat_list = Category.objects.all()
         if len(cat_list) > 0:
             edt = XferCompCheckList("cat_filter")
             edt.set_select_query(cat_list)
             edt.set_value(self.categories_filter)
-            edt.set_location(1, 4)
+            edt.set_location(1, 4, 0, 2)
             edt.description = _('categories')
             edt.set_action(self.request, self.get_action(), modal=FORMTYPE_REFRESH, close=CLOSE_NO)
             self.add_component(edt)
-        self.filter = Q()
+        self.filter = Q(storagesheet__status=1)
+        if ref_filter != '':
+            self.filter &= Q(article__reference__icontains=ref_filter) | Q(article__designation__icontains=ref_filter)
         if show_storagearea != 0:
             self.filter &= Q(storagesheet__storagearea=show_storagearea)
 
@@ -229,19 +241,27 @@ class StorageSituation(XferListEditor):
         grid = XferCompGrid(self.field_id)
         grid.order_list = self.order_list
         grid.add_header("article", Article._meta.verbose_name, 'str', 1)
+        grid.add_header("designation", _('designation'), 1)
         grid.add_header('storagesheet__storagearea', _('Area'), 'str', 1)
         grid.add_header('qty', _('Quantity'))
         grid.add_header('amount', _('Amount'))
+        grid.add_header('mean', _('Mean price'))
         six.print_(self.items)
         item_id = 0
         for item in self.get_items_from_filter():
             if item['data_sum'] > 0:
                 item_id += 1
+                area_id = item['storagesheet__storagearea']
                 art = Article.objects.get(id=item['article'])
+                qty = float(item['data_sum'])
+                amount = float(art.get_amount_from_area(qty, area_id))
                 grid.set_value(item_id, "article", six.text_type(art))
-                grid.set_value(item_id, 'storagesheet__storagearea', six.text_type(StorageArea.objects.get(id=item['storagesheet__storagearea'])))
-                grid.set_value(item_id, 'qty', item['data_sum'])
-                grid.set_value(item_id, 'amount', format_devise(art.get_amount_from_area(item['data_sum'], item['storagesheet__storagearea']), 5))
+                grid.set_value(item_id, "designation", six.text_type(art.designation))
+                grid.set_value(item_id, 'storagesheet__storagearea', six.text_type(StorageArea.objects.get(id=area_id)))
+                grid.set_value(item_id, 'qty', qty)
+                grid.set_value(item_id, 'amount', format_devise(amount, 5))
+                if abs(qty) > 0.0001:
+                    grid.set_value(item_id, 'mean', format_devise(amount / qty, 5))
         grid.set_location(0, self.get_max_row() + 1, 2)
         grid.set_size(200, 500)
         self.add_component(grid)
@@ -268,7 +288,7 @@ class StorageHistoric(XferListEditor):
 
     def __init__(self, **kwargs):
         XferListEditor.__init__(self, **kwargs)
-        self.fieldnames = ["article", "storagesheet.date", "storagesheet.storagearea",
+        self.fieldnames = ["article", "article.designation", "storagesheet.date", "storagesheet.storagearea",
                            (_('buying price'), "price_txt"), 'quantity']
 
     def get_items_from_filter(self):
@@ -279,10 +299,11 @@ class StorageHistoric(XferListEditor):
         return items.order_by('-storagesheet__date')
 
     def fillresponse_header(self):
-        date_begin = self.getparam('begin_date')
-        date_end = self.getparam('end_date')
+        date_begin = self.getparam('begin_date', 'NULL')
+        date_end = self.getparam('end_date', 'NULL')
         show_storagearea = self.getparam('storagearea', 0)
         self.categories_filter = self.getparam('cat_filter', ())
+        ref_filter = self.getparam('ref_filter', '')
 
         date_init = XferCompDate("begin_date")
         date_init.set_needed(False)
@@ -307,12 +328,20 @@ class StorageHistoric(XferListEditor):
         sel_stock.set_location(0, 4)
         sel_stock.description = StorageArea._meta.verbose_name
         self.add_component(sel_stock)
+
+        edt = XferCompEdit("ref_filter")
+        edt.set_value(ref_filter)
+        edt.set_location(0, 5)
+        edt.description = _('ref./designation')
+        edt.set_action(self.request, self.get_action(), modal=FORMTYPE_REFRESH, close=CLOSE_NO)
+        self.add_component(edt)
+
         cat_list = Category.objects.all()
         if len(cat_list) > 0:
             edt = XferCompCheckList("cat_filter")
             edt.set_select_query(cat_list)
             edt.set_value(self.categories_filter)
-            edt.set_location(1, 4)
+            edt.set_location(1, 4, 0, 2)
             edt.description = _('categories')
             edt.set_action(self.request, self.get_action(), modal=FORMTYPE_REFRESH, close=CLOSE_NO)
             self.add_component(edt)
@@ -323,6 +352,8 @@ class StorageHistoric(XferListEditor):
             self.filter &= Q(storagesheet__date__gte=date_begin)
         if (date_end is not None) and (date_end != NULL_VALUE):
             self.filter &= Q(storagesheet__date__lte=date_end)
+        if ref_filter != '':
+            self.filter &= Q(article__reference__icontains=ref_filter) | Q(article__designation__icontains=ref_filter)
 
     def fillresponse_body(self):
         XferListEditor.fillresponse_body(self)

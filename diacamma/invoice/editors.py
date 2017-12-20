@@ -30,7 +30,7 @@ from django.db.models import Q
 
 from lucterios.framework.editors import LucteriosEditor
 from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompHeader, XferCompSelect, XferCompCheckList,\
-    XferCompGrid, XferCompButton
+    XferCompGrid, XferCompButton, XferCompEdit
 from lucterios.framework.tools import CLOSE_NO, FORMTYPE_REFRESH, ActionsManage,\
     FORMTYPE_MODAL
 from lucterios.framework.models import get_value_if_choices
@@ -226,9 +226,17 @@ class DetailFilter(object):
             xfer.add_component(edt)
             if len(filter_cat) > 0:
                 sel_art.set_needed(True)
+            ref_filter = xfer.getparam('ref_filter', '')
+            edt = XferCompEdit("ref_filter")
+            edt.set_value(ref_filter)
+            edt.set_location(sel_art.col, init_row + 1, 2)
+            edt.description = _('ref./designation')
+            edt.set_action(xfer.request, xfer.get_action(), modal=FORMTYPE_REFRESH, close=CLOSE_NO, params={'CHANGE_ART': 'YES'})
+            xfer.add_component(edt)
             has_filter = True
+
         if len(Provider.objects.all()) > 0:
-            self._add_provider_filter(xfer, sel_art, init_row + 1)
+            self._add_provider_filter(xfer, sel_art, init_row + 2)
             has_filter = True
         if has_filter:
             lbl = XferCompLabelForm('sep_filter')

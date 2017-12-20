@@ -528,7 +528,7 @@ class StorageTest(InvoiceTest):
         self.factory.xfer = ArticleList()
         self.call('/diacamma.invoice/articleList', {}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'articleList')
-        self.assert_count_equal('COMPONENTS/*', 5)
+        self.assert_count_equal('COMPONENTS/*', 6)
         self.assert_count_equal('COMPONENTS/GRID[@name="article"]/HEADER', 8)
         self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/HEADER[@name="reference"]', "référence")
         self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/HEADER[@name="stockage_total"]', "quantités")
@@ -546,6 +546,7 @@ class StorageTest(InvoiceTest):
 'ABC1','1.11','10.00'
 'ABC2','2,22','5.00'
 'ABC3','3.33','25,00'
+'XYZ0','6.66','88.00'
 'ABC4','4,44','20.00'
 'ABC5','5.55','15.00'
 """
@@ -563,7 +564,7 @@ class StorageTest(InvoiceTest):
         self.assert_count_equal('COMPONENTS/SELECT[@name="fld_price"]/CASE', 3)
         self.assert_count_equal('COMPONENTS/SELECT[@name="fld_quantity"]/CASE', 3)
         self.assert_count_equal('COMPONENTS/GRID[@name="CSV"]/HEADER', 3)
-        self.assert_count_equal('COMPONENTS/GRID[@name="CSV"]/RECORD', 5)
+        self.assert_count_equal('COMPONENTS/GRID[@name="CSV"]/RECORD', 6)
         self.assert_count_equal('COMPONENTS/GRID[@name="CSV"]/ACTIONS', 0)
         self.assert_count_equal('ACTIONS/ACTION', 3)
         self.assert_action_equal('ACTIONS/ACTION[1]', (six.text_type(
@@ -578,7 +579,7 @@ class StorageTest(InvoiceTest):
         self.assert_observer('core.custom', 'diacamma.invoice', 'storageDetailImport')
         self.assert_count_equal('COMPONENTS/*', 5)
         self.assert_count_equal('COMPONENTS/GRID[@name="CSV"]/HEADER', 3)
-        self.assert_count_equal('COMPONENTS/GRID[@name="CSV"]/RECORD', 5)
+        self.assert_count_equal('COMPONENTS/GRID[@name="CSV"]/RECORD', 6)
         self.assert_count_equal('COMPONENTS/GRID[@name="CSV"]/ACTIONS', 0)
         self.assert_count_equal('ACTIONS/ACTION', 3)
         self.assert_action_equal('ACTIONS/ACTION[2]', (six.text_type(
@@ -628,7 +629,7 @@ class StorageTest(InvoiceTest):
         self.factory.xfer = ArticleList()
         self.call('/diacamma.invoice/articleList', {}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'articleList')
-        self.assert_count_equal('COMPONENTS/*', 5)
+        self.assert_count_equal('COMPONENTS/*', 6)
         self.assert_count_equal('COMPONENTS/GRID[@name="article"]/RECORD', 4)
         self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[1]/VALUE[@name="reference"]', "ABC1")
         self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[1]/VALUE[@name="stockage_total"]', "10.0")
