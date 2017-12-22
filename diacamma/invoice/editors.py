@@ -206,6 +206,7 @@ class DetailFilter(object):
         init_row = sel_art.row
         xfer.move(sel_art.tab, 0, 10)
         sel_art.set_action(xfer.request, xfer.get_action('', ''), modal=FORMTYPE_REFRESH, close=CLOSE_NO, params={'CHANGE_ART': 'YES'})
+
         btn = XferCompButton('show_art')
         btn.set_is_mini(True)
         btn.set_location(sel_art.col + sel_art.colspan, sel_art.row)
@@ -263,6 +264,10 @@ class DetailEditor(LucteriosEditor, DetailFilter):
 
         sel_art = xfer.get_components("article")
         DetailFilter.edit_filter(self, xfer, sel_art)
+
+        if self.item.article_id is None:
+            xfer.remove_component("show_art")
+
         if (self.item.article_id is None) or (self.item.article.stockable == 0):
             xfer.remove_component("storagearea")
             xfer.params['storagearea'] = 0

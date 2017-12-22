@@ -1044,6 +1044,7 @@ class StorageDetail(LucteriosModel):
         self.filter_thirdid = xfer.getparam('third', 0)
         self.filter_ref = xfer.getparam('reference', '')
         self.filter_cat = xfer.getparam('cat_filter', ())
+        self.filter_lib = xfer.getparam('ref_filter', '')
 
     @property
     def article_query(self):
@@ -1053,6 +1054,8 @@ class StorageDetail(LucteriosModel):
             artfilter &= Q(provider__third_id=self.filter_thirdid)
         if self.filter_ref != '':
             artfilter &= Q(provider__reference__icontains=self.filter_ref)
+        if self.filter_lib != '':
+            artfilter &= Q(reference__icontains=self.filter_lib) | Q(designation__icontains=self.filter_lib)
         items = Article.objects.filter(artfilter)
         if len(self.filter_cat) > 0:
             for cat_item in Category.objects.filter(id__in=self.filter_cat):

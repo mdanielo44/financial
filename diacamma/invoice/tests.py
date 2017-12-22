@@ -686,7 +686,7 @@ class BillTest(InvoiceTest):
         self.factory.xfer = DetailAddModify()
         self.call('/diacamma.invoice/detailAddModify', {'bill': 1}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'detailAddModify')
-        self.assert_count_equal('COMPONENTS/*', 8)
+        self.assert_count_equal('COMPONENTS/*', 7)
 
         self.factory.xfer = DetailAddModify()
         self.call('/diacamma.invoice/detailAddModify',
@@ -741,25 +741,25 @@ class BillTest(InvoiceTest):
         self.factory.xfer = DetailAddModify()
         self.call('/diacamma.invoice/detailAddModify', {'bill': 1}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'detailAddModify')
-        self.assert_count_equal('COMPONENTS/*', 13)
+        self.assert_count_equal('COMPONENTS/*', 12)
         self.assert_count_equal('COMPONENTS/SELECT[@name="article"]/CASE', 5)
 
         self.factory.xfer = DetailAddModify()
         self.call('/diacamma.invoice/detailAddModify', {'bill': 1, 'third': 2}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'detailAddModify')
-        self.assert_count_equal('COMPONENTS/*', 13)
+        self.assert_count_equal('COMPONENTS/*', 12)
         self.assert_count_equal('COMPONENTS/SELECT[@name="article"]/CASE', 2)
 
         self.factory.xfer = DetailAddModify()
         self.call('/diacamma.invoice/detailAddModify', {'bill': 1, 'reference': '34'}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'detailAddModify')
-        self.assert_count_equal('COMPONENTS/*', 13)
+        self.assert_count_equal('COMPONENTS/*', 12)
         self.assert_count_equal('COMPONENTS/SELECT[@name="article"]/CASE', 2)
 
         self.factory.xfer = DetailAddModify()
         self.call('/diacamma.invoice/detailAddModify', {'bill': 1, 'cat_filter': '2;3'}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'detailAddModify')
-        self.assert_count_equal('COMPONENTS/*', 13)
+        self.assert_count_equal('COMPONENTS/*', 12)
         self.assert_count_equal('COMPONENTS/SELECT[@name="article"]/CASE', 1)
 
     def test_add_bill_bad(self):

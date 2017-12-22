@@ -397,7 +397,7 @@ class StorageTest(InvoiceTest):
         self.factory.xfer = DetailAddModify()
         self.call('/diacamma.invoice/detailAddModify', {'bill': 1}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'detailAddModify')
-        self.assert_count_equal('COMPONENTS/*', 8)
+        self.assert_count_equal('COMPONENTS/*', 7)
         self.assert_count_equal('COMPONENTS/SELECT[@name="article"]/CASE', 4)
 
         self.factory.xfer = DetailAddModify()
