@@ -54,6 +54,7 @@ from django.db.models.query import QuerySet
 from diacamma.accounting.views import get_main_third
 from diacamma.accounting.tools import current_system_account
 from lucterios.CORE.models import PrintModel
+from lucterios.CORE.views import ObjectMerge
 
 MenuManage.add_sub("invoice", None, "diacamma.invoice/images/invoice.png", _("invoice"), _("Manage of billing"), 45)
 
@@ -418,15 +419,21 @@ class ArticleList(XferListEditor):
             self.filter &= Q(isdisabled=False)
         if show_stockable != -1:
             self.filter &= Q(stockable=show_stockable)
+        self.add_action(ArticleSearch.get_action(_("Search"), "diacamma.invoice/images/article.png"), modal=FORMTYPE_NOMODAL, close=CLOSE_YES)
 
 
-@ActionsManage.affect_list(_("Search"), "diacamma.invoice/images/article.png", close=CLOSE_YES)
 @MenuManage.describ('accounting.change_article')
 class ArticleSearch(XferSavedCriteriaSearchEditor):
     icon = "article.png"
     model = Article
     field_id = 'article'
     caption = _("Search article")
+
+    def fillresponse(self):
+        XferSavedCriteriaSearchEditor.fillresponse(self)
+        if WrapAction.is_permission(self.request, 'invoice.add_article'):
+            self.get_components(self.field_id).add_action(self.request, ObjectMerge.get_action(_("Merge"), "images/clone.png"),
+                                                          close=CLOSE_NO, unique=SELECT_MULTI, params={'modelname': self.model.get_long_name(), 'field_id': self.field_id})
 
 
 @ActionsManage.affect_grid(TITLE_EDIT, "images/show.png", unique=SELECT_SINGLE)

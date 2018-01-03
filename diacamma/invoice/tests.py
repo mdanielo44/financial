@@ -45,11 +45,13 @@ from diacamma.invoice.views_conf import InvoiceConf, VatAddModify, VatDel, \
     StorageAreaAddModify
 from diacamma.invoice.views import ArticleList, ArticleAddModify, ArticleDel, \
     BillList, BillAddModify, BillShow, DetailAddModify, DetailDel, BillTransition, BillDel, BillFromQuotation, \
-    BillStatistic, BillStatisticPrint, BillPrint, BillMultiPay, ArticleShow
+    BillStatistic, BillStatisticPrint, BillPrint, BillMultiPay, ArticleShow,\
+    ArticleSearch
 from diacamma.payoff.views import PayoffAddModify, PayoffDel, SupportingThird, \
     SupportingThirdValid, PayableEmail
 from diacamma.payoff.test_tools import default_bankaccount
 from lucterios.mailing.tests import configSMTP, TestReceiver, decode_b64
+from lucterios.CORE.views import ObjectMerge
 
 
 class ConfigTest(LucteriosTest):
@@ -204,6 +206,7 @@ class ConfigTest(LucteriosTest):
         self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/HEADER[@name="sell_account"]', "compte de vente")
         self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/HEADER[@name="stockable"]', "stockable")
         self.assert_count_equal('COMPONENTS/GRID[@name="article"]/RECORD', 0)
+        self.assert_count_equal('COMPONENTS/GRID[@name="article"]/ACTIONS/ACTION', 3)
 
         self.factory.xfer = ArticleAddModify()
         self.call('/diacamma.invoice/articleAddModify', {}, False)
@@ -273,6 +276,52 @@ class ConfigTest(LucteriosTest):
         self.assert_observer('core.custom', 'diacamma.invoice', 'articleList')
         self.assert_count_equal('COMPONENTS/GRID[@name="article"]/RECORD', 1)
         self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[1]/VALUE[@name="categories"]', "cat 2{[br/]}cat 3")
+
+    def test_article_merge(self):
+        default_categories()
+        default_articles(with_storage=True)
+
+        self.factory.xfer = ArticleSearch()
+        self.call('/diacamma.invoice/articleSearch', {}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'articleSearch')
+        self.assert_count_equal('COMPONENTS/GRID[@name="article"]/RECORD', 5)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[1]/VALUE[@name="reference"]', "ABC1")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[2]/VALUE[@name="reference"]', "ABC2")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[3]/VALUE[@name="reference"]', "ABC3")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[4]/VALUE[@name="reference"]', "ABC4")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[5]/VALUE[@name="reference"]', "ABC5")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[1]/VALUE[@name="categories"]', "cat 1")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[2]/VALUE[@name="categories"]', "cat 2")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[3]/VALUE[@name="categories"]', "cat 2{[br/]}cat 3")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[4]/VALUE[@name="categories"]', "cat 3")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[5]/VALUE[@name="categories"]', "cat 1{[br/]}cat 2{[br/]}cat 3")
+        self.assert_count_equal('COMPONENTS/GRID[@name="article"]/ACTIONS/ACTION', 4)
+        self.assert_action_equal('COMPONENTS/GRID[@name="article"]/ACTIONS/ACTION[4]', ('Fusion', 'images/clone.png', 'CORE', 'objectMerge', 0, 1, 2,
+                                                                                        {'modelname': 'invoice.Article', 'field_id': 'article'}))
+
+        self.factory.xfer = ObjectMerge()
+        self.call('/CORE/objectMerge', {'modelname': 'invoice.Article', 'field_id': 'article', 'article': '1;3;5'}, False)
+        self.assert_observer('core.custom', 'CORE', 'objectMerge')
+        self.assert_count_equal('COMPONENTS/GRID[@name="mrg_object"]/RECORD', 3)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="mrg_object"]/RECORD[1]/VALUE[@name="value"]', "ABC1")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="mrg_object"]/RECORD[2]/VALUE[@name="value"]', "ABC3")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="mrg_object"]/RECORD[3]/VALUE[@name="value"]', "ABC5")
+
+        self.factory.xfer = ObjectMerge()
+        self.call('/CORE/objectMerge', {'modelname': 'invoice.Article', 'field_id': 'article', 'article': '1;3;5', 'CONFIRME': 'YES', 'mrg_object': '3'}, False)
+        self.assert_observer('core.acknowledge', 'CORE', 'objectMerge')
+        self.assert_action_equal('ACTION', ('Editer', 'images/show.png', 'diacamma.invoice', 'articleShow', 1, 1, 1, {'article': '3'}))
+
+        self.factory.xfer = ArticleSearch()
+        self.call('/diacamma.invoice/articleSearch', {}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'articleSearch')
+        self.assert_count_equal('COMPONENTS/GRID[@name="article"]/RECORD', 3)
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[1]/VALUE[@name="reference"]', "ABC2")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[2]/VALUE[@name="reference"]', "ABC3")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[3]/VALUE[@name="reference"]', "ABC4")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[1]/VALUE[@name="categories"]', "cat 2")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[2]/VALUE[@name="categories"]', "cat 1{[br/]}cat 2{[br/]}cat 3")
+        self.assert_xml_equal('COMPONENTS/GRID[@name="article"]/RECORD[3]/VALUE[@name="categories"]', "cat 3")
 
     def test_article_filter(self):
         default_categories()

@@ -153,6 +153,16 @@ class Article(LucteriosModel, CustomizeObject):
     def __str__(self):
         return six.text_type(self.reference)
 
+    def get_text_value(self):
+        text_value = self.designation.split('{[br/]}')[0]
+        if len(text_value) > 50:
+            text_value = text_value[:47] + '...'
+        stock_txt = ''
+        stockage_values = self.get_stockage_values()
+        if len(stockage_values) > 0:
+            stock_txt = '(%s%s)' % (stockage_values[-1][2], self.unit)
+        return "%s | %s %s" % (self.reference, text_value, stock_txt)
+
     @classmethod
     def get_default_fields(cls):
         fields = ["reference", "designation", (_('price'), "price_txt"), 'unit', "isdisabled", 'sell_account', "stockable"]
