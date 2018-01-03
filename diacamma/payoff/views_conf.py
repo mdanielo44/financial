@@ -90,15 +90,13 @@ class PaymentMethodDelete(XferDelete):
 
 @signal_and_lock.Signal.decorate('compte_no_found')
 def comptenofound_payoff(known_codes, accompt_returned):
-    bank_unknown = BankAccount.objects.exclude(
-        account_code__in=known_codes).values_list('account_code', flat=True).distinct()
-    param_unknown = Parameter.objects.filter(name__in=(
-        'payoff-cash-account', 'payoff-bankcharges-account')).exclude(value__in=known_codes).values_list('value', flat=True).distinct()
+    bank_unknown = BankAccount.objects.exclude(account_code__in=known_codes).values_list('account_code', flat=True)
+    param_unknown = Parameter.objects.filter(name__in=('payoff-cash-account', 'payoff-bankcharges-account')).exclude(value__in=known_codes).values_list('value', flat=True)
     comptenofound = ""
     if (len(bank_unknown) > 0):
-        comptenofound = _("bank account") + ":" + ",".join(bank_unknown) + " "
+        comptenofound = _("bank account") + ":" + ",".join(set(bank_unknown)) + " "
     if (len(param_unknown) > 0):
-        comptenofound += _("parameters") + ":" + ",".join(param_unknown)
+        comptenofound += _("parameters") + ":" + ",".join(set(param_unknown))
     if comptenofound != "":
         accompt_returned.append(
             "- {[i]}{[u]}%s{[/u]}: %s{[/i]}" % (_('Payoff'), comptenofound))

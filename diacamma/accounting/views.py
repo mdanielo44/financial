@@ -324,18 +324,15 @@ def summary_accounting(xfer):
 
 @signal_and_lock.Signal.decorate('compte_no_found')
 def comptenofound_accounting(known_codes, accompt_returned):
-    third_unknown = AccountThird.objects.filter(
-        third__status=0).exclude(code__in=known_codes).values_list('code', flat=True).distinct()
-    model_unknown = ModelLineEntry.objects.exclude(
-        code__in=known_codes).values_list('code', flat=True).distinct()
+    third_unknown = AccountThird.objects.filter(third__status=0).exclude(code__in=known_codes).values_list('code', flat=True)
+    model_unknown = ModelLineEntry.objects.exclude(code__in=known_codes).values_list('code', flat=True)
     comptenofound = ""
     if (len(third_unknown) > 0):
-        comptenofound = _("thirds") + ":" + ",".join(third_unknown) + " "
+        comptenofound = _("thirds") + ":" + ",".join(set(third_unknown)) + " "
     if (len(model_unknown) > 0):
-        comptenofound += _("models") + ":" + ",".join(model_unknown)
+        comptenofound += _("models") + ":" + ",".join(set(model_unknown))
     if comptenofound != "":
-        accompt_returned.append(
-            "- {[i]}{[u]}%s{[/u]}: %s{[/i]}" % (_('Accounting'), comptenofound))
+        accompt_returned.append("- {[i]}{[u]}%s{[/u]}: %s{[/i]}" % (_('Accounting'), comptenofound))
     return True
 
 
