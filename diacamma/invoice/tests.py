@@ -1684,9 +1684,9 @@ class BillTest(InvoiceTest):
 
     def test_send_bill(self):
         default_articles()
-        configSMTP('localhost', 1025)
+        configSMTP('localhost', 2025)
         server = TestReceiver()
-        server.start(1025)
+        server.start(2025)
         try:
             self.assertEqual(0, server.count())
             details = [

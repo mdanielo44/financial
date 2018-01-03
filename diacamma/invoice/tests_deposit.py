@@ -491,9 +491,9 @@ class MethodTest(InvoiceTest, PaymentTest):
         self.check_payment(2, 'facture A-1 - 1 avril 2015')
 
     def test_send_bill(self):
-        configSMTP('localhost', 1025)
+        configSMTP('localhost', 2025)
         server = TestReceiver()
-        server.start(1025)
+        server.start(2025)
         try:
             self.factory.xfer = ResponsabilityModify()
             self.call('/lucterios.contacts/responsabilityModify', {'legal_entity': '7', 'individual': '3', "SAVE": "YES"}, False)

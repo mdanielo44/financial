@@ -26,8 +26,11 @@ from __future__ import unicode_literals
 from datetime import datetime, timedelta
 import logging
 
+from django.http.response import HttpResponseRedirect
 from django.utils.translation import ugettext_lazy as _
-from django.db.models import Q
+from django.db.models.functions import Concat
+from django.db.models.query import QuerySet
+from django.db.models import Q, Value
 from django.conf import settings
 from django.utils import six, timezone
 
@@ -42,7 +45,7 @@ from lucterios.framework.tools import ActionsManage, MenuManage, \
 from lucterios.framework.xfergraphic import XferContainerAcknowledge, \
     XferContainerCustom
 from lucterios.framework.xfercomponents import XferCompLabelForm, \
-    XferCompEdit, XferCompImage, XferCompMemo, XferCompSelect, XferCompCheck
+    XferCompEdit, XferCompImage, XferCompMemo, XferCompSelect
 from lucterios.framework.error import LucteriosException, MINOR, IMPORTANT
 from lucterios.framework.models import get_value_if_choices
 
@@ -50,7 +53,6 @@ from diacamma.payoff.models import Payoff, Supporting, PaymentMethod, BankTransa
 from diacamma.accounting.models import Third
 from lucterios.CORE.models import PrintModel
 from lucterios.CORE.parameters import Params
-from django.http.response import HttpResponseRedirect
 
 
 @ActionsManage.affect_grid(TITLE_ADD, "images/add.png", condition=lambda xfer, gridname='': xfer.item.get_max_payoff() > 0.001)
@@ -109,6 +111,24 @@ class SupportingThird(XferListEditor):
         self.action_list = []
         self.code_mask = ''
 
+    def get_items_from_filter(self):
+        items = self.model.objects.annotate(completename=Concat('contact__individual__lastname', Value(' '), 'contact__individual__firstname')).filter(self.filter)
+        sort_third = self.getparam('GRID_ORDER%third', '')
+        sort_thirdbis = self.getparam('GRID_ORDER%third+', '')
+        self.params['GRID_ORDER%third'] = ""
+        if sort_third != '':
+            if sort_thirdbis.startswith('-'):
+                sort_thirdbis = "+"
+            else:
+                sort_thirdbis = "-"
+            self.params['GRID_ORDER%third+'] = sort_thirdbis
+        items = sorted(items, key=lambda t: six.text_type(t).lower(), reverse=sort_thirdbis.startswith('-'))
+        if self.getparam('show_filter', 0) == 2:
+            items = [item for item in items if abs(item.get_total()) > 0.0001]
+        res = QuerySet(model=Third)
+        res._result_cache = items
+        return res
+
     def fillresponse_header(self):
         if 'status_filter' in self.params:
             del self.params['status_filter']
@@ -123,10 +143,8 @@ class SupportingThird(XferListEditor):
         if self.code_mask != '':
             self.filter &= Q(accountthird__code__regex=self.code_mask)
         if contact_filter != "":
-            q_legalentity = Q(
-                contact__legalentity__name__icontains=contact_filter)
-            q_individual = (Q(contact__individual__firstname__icontains=contact_filter) | Q(
-                contact__individual__lastname__icontains=contact_filter))
+            q_legalentity = Q(contact__legalentity__name__icontains=contact_filter)
+            q_individual = (Q(contact__individual__firstname__icontains=contact_filter) | Q(contact__individual__lastname__icontains=contact_filter))
             self.filter &= (q_legalentity | q_individual)
 
     def fillresponse(self, code_mask=''):
