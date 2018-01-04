@@ -51,269 +51,256 @@ class ChartsAccountTest(LucteriosTest):
 
     def test_all(self):
         self.factory.xfer = ChartsAccountList()
-        self.call('/diacamma.accounting/chartsAccountList',
-                  {'year': '1', 'type_of_account': '-1'}, False)
+        self.calljson('/diacamma.accounting/chartsAccountList',
+                      {'year': '1', 'type_of_account': '-1'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'chartsAccountList')
-        self.assert_count_equal('COMPONENTS/*', 8)
-        self.assert_count_equal('COMPONENTS/GRID[@name="chartsaccount"]/HEADER', 5)
-        self.assert_count_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD', 17)
-        self.assert_xml_equal(
-            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit :{[/b]} 230.62€ - {[b]}Charge :{[/b]} 348.60€ = {[b]}Résultat :{[/b]} -117.98€{[br/]}{[b]}Trésorerie :{[/b]} 1050.66€ - {[b]}Validé :{[/b]} 1244.74€{[/center]}')
+        self.assert_count_equal('', 8)
+        self.assert_grid_equal('chartsaccount', {"code": "code", "name": "nom", "last_year_total": "total de l'exercice précédent", "current_total": "total exercice", "current_validated": "total validé"}, 17)  # nb=5
+        self.assert_json_equal('LABELFORM', 'result', '{[center]}{[b]}Produit :{[/b]} 230.62€ - {[b]}Charge :{[/b]} 348.60€ = {[b]}Résultat :{[/b]} -117.98€{[br/]}{[b]}Trésorerie :{[/b]} 1050.66€ - {[b]}Validé :{[/b]} 1244.74€{[/center]}')
 
     def test_asset(self):
         self.factory.xfer = ChartsAccountList()
-        self.call('/diacamma.accounting/chartsAccountList',
-                  {'year': '1', 'type_of_account': '0'}, False)
+        self.calljson('/diacamma.accounting/chartsAccountList',
+                      {'year': '1', 'type_of_account': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'chartsAccountList')
-        self.assert_count_equal('COMPONENTS/*', 8)
-        self.assert_count_equal('COMPONENTS/GRID[@name="chartsaccount"]/HEADER', 5)
-        self.assert_count_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD', 3)
-        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[1]/VALUE[@name="code"]', '411')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[1]/VALUE[@name="name"]', '411')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[1]/VALUE[@name="last_year_total"]', '{[font color="green"]}Crédit: 0.00€{[/font]}')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[1]/VALUE[@name="current_total"]', '{[font color="blue"]}Débit: 159.98€{[/font]}')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[1]/VALUE[@name="current_validated"]', '{[font color="blue"]}Débit: 125.97€{[/font]}')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[2]/VALUE[@name="code"]', '512')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[2]/VALUE[@name="name"]', '512')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[2]/VALUE[@name="last_year_total"]', '{[font color="blue"]}Débit: 1135.93€{[/font]}')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[2]/VALUE[@name="current_total"]', '{[font color="blue"]}Débit: 1130.29€{[/font]}')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[2]/VALUE[@name="current_validated"]', '{[font color="blue"]}Débit: 1130.29€{[/font]}')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[3]/VALUE[@name="code"]', '531')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[3]/VALUE[@name="name"]', '531')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[3]/VALUE[@name="last_year_total"]', '{[font color="blue"]}Débit: 114.45€{[/font]}')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[3]/VALUE[@name="current_total"]', '{[font color="green"]}Crédit: 79.63€{[/font]}')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[3]/VALUE[@name="current_validated"]', '{[font color="blue"]}Débit: 114.45€{[/font]}')
+        self.assert_count_equal('', 8)
+        self.assert_count_equal('chartsaccount', 3)
+        self.assert_json_equal('', 'chartsaccount/@0/code', '411')
+        self.assert_json_equal('', 'chartsaccount/@0/name', '411')
+        self.assert_json_equal('', 'chartsaccount/@0/last_year_total', '{[font color="green"]}Crédit: 0.00€{[/font]}')
+        self.assert_json_equal('', 'chartsaccount/@0/current_total', '{[font color="blue"]}Débit: 159.98€{[/font]}')
+        self.assert_json_equal('', 'chartsaccount/@0/current_validated', '{[font color="blue"]}Débit: 125.97€{[/font]}')
+        self.assert_json_equal('', 'chartsaccount/@1/code', '512')
+        self.assert_json_equal('', 'chartsaccount/@1/name', '512')
+        self.assert_json_equal('', 'chartsaccount/@1/last_year_total', '{[font color="blue"]}Débit: 1135.93€{[/font]}')
+        self.assert_json_equal('', 'chartsaccount/@1/current_total', '{[font color="blue"]}Débit: 1130.29€{[/font]}')
+        self.assert_json_equal('', 'chartsaccount/@1/current_validated', '{[font color="blue"]}Débit: 1130.29€{[/font]}')
+        self.assert_json_equal('', 'chartsaccount/@2/code', '531')
+        self.assert_json_equal('', 'chartsaccount/@2/name', '531')
+        self.assert_json_equal('', 'chartsaccount/@2/last_year_total', '{[font color="blue"]}Débit: 114.45€{[/font]}')
+        self.assert_json_equal('', 'chartsaccount/@2/current_total', '{[font color="green"]}Crédit: 79.63€{[/font]}')
+        self.assert_json_equal('', 'chartsaccount/@2/current_validated', '{[font color="blue"]}Débit: 114.45€{[/font]}')
 
     def test_liability(self):
         self.factory.xfer = ChartsAccountList()
-        self.call('/diacamma.accounting/chartsAccountList',
-                  {'year': '1', 'type_of_account': '1'}, False)
+        self.calljson('/diacamma.accounting/chartsAccountList',
+                      {'year': '1', 'type_of_account': '1'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'chartsAccountList')
-        self.assert_count_equal('COMPONENTS/*', 8)
-        self.assert_count_equal('COMPONENTS/GRID[@name="chartsaccount"]/HEADER', 5)
-        self.assert_count_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD', 1)
-        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[1]/VALUE[@name="code"]', '401')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[1]/VALUE[@name="name"]', '401')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[1]/VALUE[@name="last_year_total"]', '{[font color="green"]}Crédit: 0.00€{[/font]}')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[1]/VALUE[@name="current_total"]', '{[font color="green"]}Crédit: 78.24€{[/font]}')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[1]/VALUE[@name="current_validated"]', '{[font color="green"]}Crédit: 0.00€{[/font]}')
+        self.assert_count_equal('', 8)
+        self.assert_count_equal('chartsaccount', 1)
+        self.assert_json_equal('', 'chartsaccount/@0/code', '401')
+        self.assert_json_equal('', 'chartsaccount/@0/name', '401')
+        self.assert_json_equal('', 'chartsaccount/@0/last_year_total', '{[font color="green"]}Crédit: 0.00€{[/font]}')
+        self.assert_json_equal('', 'chartsaccount/@0/current_total', '{[font color="green"]}Crédit: 78.24€{[/font]}')
+        self.assert_json_equal('', 'chartsaccount/@0/current_validated', '{[font color="green"]}Crédit: 0.00€{[/font]}')
 
     def test_equity(self):
         self.factory.xfer = ChartsAccountList()
-        self.call('/diacamma.accounting/chartsAccountList',
-                  {'year': '1', 'type_of_account': '2'}, False)
+        self.calljson('/diacamma.accounting/chartsAccountList',
+                      {'year': '1', 'type_of_account': '2'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'chartsAccountList')
-        self.assert_count_equal('COMPONENTS/*', 8)
-        self.assert_count_equal('COMPONENTS/GRID[@name="chartsaccount"]/HEADER', 5)
-        self.assert_count_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD', 5)
-        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[1]/VALUE[@name="code"]', '106')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[1]/VALUE[@name="name"]', '106')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[1]/VALUE[@name="last_year_total"]', '{[font color="green"]}Crédit: 1250.38€{[/font]}')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[1]/VALUE[@name="current_total"]', '{[font color="green"]}Crédit: 1250.38€{[/font]}')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[1]/VALUE[@name="current_validated"]', '{[font color="green"]}Crédit: 1250.38€{[/font]}')
+        self.assert_count_equal('', 8)
+        self.assert_count_equal('chartsaccount', 5)
+        self.assert_json_equal('', 'chartsaccount/@0/code', '106')
+        self.assert_json_equal('', 'chartsaccount/@0/name', '106')
+        self.assert_json_equal('', 'chartsaccount/@0/last_year_total', '{[font color="green"]}Crédit: 1250.38€{[/font]}')
+        self.assert_json_equal('', 'chartsaccount/@0/current_total', '{[font color="green"]}Crédit: 1250.38€{[/font]}')
+        self.assert_json_equal('', 'chartsaccount/@0/current_validated', '{[font color="green"]}Crédit: 1250.38€{[/font]}')
 
     def test_revenue(self):
         self.factory.xfer = ChartsAccountList()
-        self.call('/diacamma.accounting/chartsAccountList',
-                  {'year': '1', 'type_of_account': '3'}, False)
+        self.calljson('/diacamma.accounting/chartsAccountList',
+                      {'year': '1', 'type_of_account': '3'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'chartsAccountList')
-        self.assert_count_equal('COMPONENTS/*', 8)
-        self.assert_count_equal('COMPONENTS/GRID[@name="chartsaccount"]/HEADER', 5)
-        self.assert_count_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD', 3)
-        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[3]/VALUE[@name="code"]', '707')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[3]/VALUE[@name="name"]', '707')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[3]/VALUE[@name="last_year_total"]', '{[font color="green"]}Crédit: 0.00€{[/font]}')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[3]/VALUE[@name="current_total"]', '{[font color="green"]}Crédit: 230.62€{[/font]}')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[3]/VALUE[@name="current_validated"]', '{[font color="green"]}Crédit: 196.61€{[/font]}')
+        self.assert_count_equal('', 8)
+        self.assert_count_equal('chartsaccount', 3)
+        self.assert_json_equal('', 'chartsaccount/@2/code', '707')
+        self.assert_json_equal('', 'chartsaccount/@2/name', '707')
+        self.assert_json_equal('', 'chartsaccount/@2/last_year_total', '{[font color="green"]}Crédit: 0.00€{[/font]}')
+        self.assert_json_equal('', 'chartsaccount/@2/current_total', '{[font color="green"]}Crédit: 230.62€{[/font]}')
+        self.assert_json_equal('', 'chartsaccount/@2/current_validated', '{[font color="green"]}Crédit: 196.61€{[/font]}')
 
     def test_expense(self):
         self.factory.xfer = ChartsAccountList()
-        self.call('/diacamma.accounting/chartsAccountList',
-                  {'year': '1', 'type_of_account': '4'}, False)
+        self.calljson('/diacamma.accounting/chartsAccountList',
+                      {'year': '1', 'type_of_account': '4'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'chartsAccountList')
-        self.assert_count_equal('COMPONENTS/*', 8)
-        self.assert_count_equal('COMPONENTS/GRID[@name="chartsaccount"]/HEADER', 5)
-        self.assert_count_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD', 5)
-        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[1]/VALUE[@name="code"]', '601')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[1]/VALUE[@name="name"]', '601')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[1]/VALUE[@name="last_year_total"]', '{[font color="green"]}Crédit: 0.00€{[/font]}')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[1]/VALUE[@name="current_total"]', '{[font color="blue"]}Débit: 78.24€{[/font]}')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[1]/VALUE[@name="current_validated"]', '{[font color="green"]}Crédit: 0.00€{[/font]}')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[2]/VALUE[@name="code"]', '602')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[2]/VALUE[@name="name"]', '602')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[2]/VALUE[@name="last_year_total"]', '{[font color="green"]}Crédit: 0.00€{[/font]}')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[2]/VALUE[@name="current_total"]', '{[font color="blue"]}Débit: 63.94€{[/font]}')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[2]/VALUE[@name="current_validated"]', '{[font color="blue"]}Débit: 63.94€{[/font]}')
+        self.assert_count_equal('', 8)
+        self.assert_count_equal('chartsaccount', 5)
+        self.assert_json_equal('', 'chartsaccount/@0/code', '601')
+        self.assert_json_equal('', 'chartsaccount/@0/name', '601')
+        self.assert_json_equal('', 'chartsaccount/@0/last_year_total', '{[font color="green"]}Crédit: 0.00€{[/font]}')
+        self.assert_json_equal('', 'chartsaccount/@0/current_total', '{[font color="blue"]}Débit: 78.24€{[/font]}')
+        self.assert_json_equal('', 'chartsaccount/@0/current_validated', '{[font color="green"]}Crédit: 0.00€{[/font]}')
+        self.assert_json_equal('', 'chartsaccount/@1/code', '602')
+        self.assert_json_equal('', 'chartsaccount/@1/name', '602')
+        self.assert_json_equal('', 'chartsaccount/@1/last_year_total', '{[font color="green"]}Crédit: 0.00€{[/font]}')
+        self.assert_json_equal('', 'chartsaccount/@1/current_total', '{[font color="blue"]}Débit: 63.94€{[/font]}')
+        self.assert_json_equal('', 'chartsaccount/@1/current_validated', '{[font color="blue"]}Débit: 63.94€{[/font]}')
 
     def test_contraaccounts(self):
         self.factory.xfer = ChartsAccountList()
-        self.call('/diacamma.accounting/chartsAccountList',
-                  {'year': '1', 'type_of_account': '5'}, False)
+        self.calljson('/diacamma.accounting/chartsAccountList',
+                      {'year': '1', 'type_of_account': '5'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'chartsAccountList')
-        self.assert_count_equal('COMPONENTS/*', 8)
-        self.assert_count_equal('COMPONENTS/GRID[@name="chartsaccount"]/HEADER', 5)
-        self.assert_count_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD', 0)
+        self.assert_count_equal('', 8)
+        self.assert_count_equal('chartsaccount', 0)
 
     def test_show(self):
         self.factory.xfer = ChartsAccountShow()
-        self.call('/diacamma.accounting/chartsAccountShow',
-                  {'year': '1', 'type_of_account': '-1', 'chartsaccount': '10'}, False)
+        self.calljson('/diacamma.accounting/chartsAccountShow',
+                      {'year': '1', 'type_of_account': '-1', 'chartsaccount': '10'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'chartsAccountShow')
-        self.assert_count_equal('COMPONENTS/*', 5)
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="code"]', '707')
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="name"]', '707')
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="type_of_account"]', 'Produit')
-        self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/HEADER', 6)
-        self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', 3)
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[1]/VALUE[@name="num"]', '4')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[1]/VALUE[@name="date_value"]', '21 février 2015')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[1]/VALUE[@name="link"]', 'E')
-        description = self.get_first_xpath('COMPONENTS/GRID[@name="entryaccount"]/RECORD[1]/VALUE[@name="description"]').text
+        self.assert_count_equal('', 5)
+        self.assert_json_equal('LABELFORM', 'code', '707')
+        self.assert_json_equal('LABELFORM', 'name', '707')
+        self.assert_json_equal('LABELFORM', 'type_of_account', 'Produit')
+        self.assert_grid_equal('entryaccount', {"num": "N°", "date_entry": "date d'écriture", "date_value": "date de pièce", "description": "description", "link": "lettrage", "costaccounting": "comptabilité analytique"}, 3)  # nb=6
+        self.assert_json_equal('', 'entryaccount/@0/num', '4')
+        self.assert_json_equal('', 'entryaccount/@0/date_value', '2015-02-21')
+        self.assert_json_equal('', 'entryaccount/@0/link', 'E')
+        description = self.json_data['entryaccount'][0]['description']
         self.assertTrue('vente 1' in description, description)
         self.assertTrue('70.64€' in description, description)
 
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[2]/VALUE[@name="num"]', '6')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[2]/VALUE[@name="date_value"]', '21 février 2015')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[2]/VALUE[@name="link"]', '---')
-        description = self.get_first_xpath('COMPONENTS/GRID[@name="entryaccount"]/RECORD[2]/VALUE[@name="description"]').text
+        self.assert_json_equal('', 'entryaccount/@1/num', '6')
+        self.assert_json_equal('', 'entryaccount/@1/date_value', '2015-02-21')
+        self.assert_json_equal('', 'entryaccount/@1/link', '---')
+        description = self.json_data['entryaccount'][1]['description']
         self.assertTrue('vente 2' in description, description)
         self.assertTrue('125.97€' in description, description)
 
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[3]/VALUE[@name="num"]', '---')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[3]/VALUE[@name="date_value"]', '24 février 2015')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[3]/VALUE[@name="link"]', '---')
-        description = self.get_first_xpath('COMPONENTS/GRID[@name="entryaccount"]/RECORD[3]/VALUE[@name="description"]').text
+        self.assert_json_equal('', 'entryaccount/@2/num', '---')
+        self.assert_json_equal('', 'entryaccount/@2/date_value', '2015-02-24')
+        self.assert_json_equal('', 'entryaccount/@2/link', '---')
+        description = self.json_data['entryaccount'][2]['description']
         self.assertTrue('vente 3' in description, description)
         self.assertTrue('34.01€' in description, description)
 
     def test_delete(self):
         self.factory.xfer = ChartsAccountDel()
-        self.call('/diacamma.accounting/chartsAccountDel',
-                  {'CONFIRME': 'YES', 'year': '1', 'type_of_account': '5', 'chartsaccount': '10'}, False)
+        self.calljson('/diacamma.accounting/chartsAccountDel',
+                      {'CONFIRME': 'YES', 'year': '1', 'type_of_account': '5', 'chartsaccount': '10'}, False)
         self.assert_observer('core.exception', 'diacamma.accounting', 'chartsAccountDel')
-        self.assert_xml_equal('EXCEPTION/MESSAGE', "Impossible de supprimer cet enregistrement: il est associé avec d'autres sous-enregistrements")
+        self.assert_json_equal('', 'message', "Impossible de supprimer cet enregistrement: il est associé avec d'autres sous-enregistrements")
         self.factory.xfer = ChartsAccountDel()
-        self.call('/diacamma.accounting/chartsAccountDel',
-                  {'CONFIRME': 'YES', 'year': '1', 'type_of_account': '5', 'chartsaccount': '9'}, False)
+        self.calljson('/diacamma.accounting/chartsAccountDel',
+                      {'CONFIRME': 'YES', 'year': '1', 'type_of_account': '5', 'chartsaccount': '9'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'chartsAccountDel')
 
     def test_add(self):
         self.factory.xfer = ChartsAccountAddModify()
-        self.call('/diacamma.accounting/chartsAccountAddModify',
-                  {'year': '1', 'type_of_account': '-1'}, False)
+        self.calljson('/diacamma.accounting/chartsAccountAddModify',
+                      {'year': '1', 'type_of_account': '-1'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'chartsAccountAddModify')
-        self.assert_count_equal('COMPONENTS/*', 5)
-        self.assert_xml_equal('COMPONENTS/EDIT[@name="code"]', None)
-        self.assert_xml_equal('COMPONENTS/EDIT[@name="name"]', None)
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="type_of_account"]', '---')
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="error_code"]', "{[center]}{[font color='red']}{[/font]}{[/center]}")
+        self.assert_count_equal('', 5)
+        self.assert_json_equal('EDIT', 'code', '')
+        self.assert_json_equal('EDIT', 'name', '')
+        self.assert_json_equal('LABELFORM', 'type_of_account', '---')
+        self.assert_json_equal('LABELFORM', 'error_code', "{[center]}{[font color='red']}{[/font]}{[/center]}")
 
         self.factory.xfer = ChartsAccountAddModify()
-        self.call('/diacamma.accounting/chartsAccountAddModify',
-                  {'year': '1', 'type_of_account': '-1', 'code': '2301'}, False)
+        self.calljson('/diacamma.accounting/chartsAccountAddModify',
+                      {'year': '1', 'type_of_account': '-1', 'code': '2301'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'chartsAccountAddModify')
-        self.assert_count_equal('COMPONENTS/*', 5)
-        self.assert_xml_equal('COMPONENTS/EDIT[@name="code"]', '2301')
-        self.assert_xml_equal('COMPONENTS/EDIT[@name="name"]', 'Immobilisations en cours')
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="type_of_account"]', 'Actif')
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="error_code"]', "{[center]}{[font color='red']}{[/font]}{[/center]}")
+        self.assert_count_equal('', 5)
+        self.assert_json_equal('EDIT', 'code', '2301')
+        self.assert_json_equal('EDIT', 'name', 'Immobilisations en cours')
+        self.assert_json_equal('LABELFORM', 'type_of_account', 'Actif')
+        self.assert_json_equal('LABELFORM', 'error_code', "{[center]}{[font color='red']}{[/font]}{[/center]}")
 
         self.factory.xfer = ChartsAccountAddModify()
-        self.call('/diacamma.accounting/chartsAccountAddModify',
-                  {'year': '1', 'type_of_account': '-1', 'code': '3015'}, False)
+        self.calljson('/diacamma.accounting/chartsAccountAddModify',
+                      {'year': '1', 'type_of_account': '-1', 'code': '3015'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'chartsAccountAddModify')
-        self.assert_count_equal('COMPONENTS/*', 5)
-        self.assert_xml_equal('COMPONENTS/EDIT[@name="code"]', '3015!')
-        self.assert_xml_equal('COMPONENTS/EDIT[@name="name"]', None)
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="type_of_account"]', '---')
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="error_code"]', "{[center]}{[font color='red']}Code invalide !{[/font]}{[/center]}")
+        self.assert_count_equal('', 5)
+        self.assert_json_equal('EDIT', 'code', '3015!')
+        self.assert_json_equal('EDIT', 'name', '')
+        self.assert_json_equal('LABELFORM', 'type_of_account', '---')
+        self.assert_json_equal('LABELFORM', 'error_code', "{[center]}{[font color='red']}Code invalide !{[/font]}{[/center]}")
 
         self.factory.xfer = ChartsAccountAddModify()
-        self.call('/diacamma.accounting/chartsAccountAddModify',
-                  {'year': '1', 'type_of_account': '-1', 'code': 'abcd'}, False)
+        self.calljson('/diacamma.accounting/chartsAccountAddModify',
+                      {'year': '1', 'type_of_account': '-1', 'code': 'abcd'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'chartsAccountAddModify')
-        self.assert_count_equal('COMPONENTS/*', 5)
-        self.assert_xml_equal('COMPONENTS/EDIT[@name="code"]', 'abcd!')
-        self.assert_xml_equal('COMPONENTS/EDIT[@name="name"]', None)
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="type_of_account"]', '---')
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="error_code"]', "{[center]}{[font color='red']}Code invalide !{[/font]}{[/center]}")
+        self.assert_count_equal('', 5)
+        self.assert_json_equal('EDIT', 'code', 'abcd!')
+        self.assert_json_equal('EDIT', 'name', '')
+        self.assert_json_equal('LABELFORM', 'type_of_account', '---')
+        self.assert_json_equal('LABELFORM', 'error_code', "{[center]}{[font color='red']}Code invalide !{[/font]}{[/center]}")
 
     def test_modify(self):
         self.factory.xfer = ChartsAccountAddModify()
-        self.call('/diacamma.accounting/chartsAccountAddModify',
-                  {'year': '1', 'type_of_account': '-1', 'chartsaccount': '10'}, False)
+        self.calljson('/diacamma.accounting/chartsAccountAddModify',
+                      {'year': '1', 'type_of_account': '-1', 'chartsaccount': '10'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'chartsAccountAddModify')
-        self.assert_count_equal('COMPONENTS/*', 5)
-        self.assert_xml_equal('COMPONENTS/EDIT[@name="code"]', '707')
-        self.assert_xml_equal('COMPONENTS/EDIT[@name="name"]', '707')
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="type_of_account"]', 'Produit')
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="error_code"]', "{[center]}{[font color='red']}{[/font]}{[/center]}")
+        self.assert_count_equal('', 5)
+        self.assert_json_equal('EDIT', 'code', '707')
+        self.assert_json_equal('EDIT', 'name', '707')
+        self.assert_json_equal('LABELFORM', 'type_of_account', 'Produit')
+        self.assert_json_equal('LABELFORM', 'error_code', "{[center]}{[font color='red']}{[/font]}{[/center]}")
 
         self.factory.xfer = ChartsAccountAddModify()
-        self.call('/diacamma.accounting/chartsAccountAddModify',
-                  {'year': '1', 'type_of_account': '-1', 'chartsaccount': '10', 'code': '7061'}, False)
+        self.calljson('/diacamma.accounting/chartsAccountAddModify',
+                      {'year': '1', 'type_of_account': '-1', 'chartsaccount': '10', 'code': '7061'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'chartsAccountAddModify')
-        self.assert_count_equal('COMPONENTS/*', 5)
-        self.assert_xml_equal('COMPONENTS/EDIT[@name="code"]', '7061')
-        self.assert_xml_equal('COMPONENTS/EDIT[@name="name"]', '707')
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="type_of_account"]', 'Produit')
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="error_code"]', "{[center]}{[font color='red']}{[/font]}{[/center]}")
+        self.assert_count_equal('', 5)
+        self.assert_json_equal('EDIT', 'code', '7061')
+        self.assert_json_equal('EDIT', 'name', '707')
+        self.assert_json_equal('LABELFORM', 'type_of_account', 'Produit')
+        self.assert_json_equal('LABELFORM', 'error_code', "{[center]}{[font color='red']}{[/font]}{[/center]}")
 
         self.factory.xfer = ChartsAccountAddModify()
-        self.call('/diacamma.accounting/chartsAccountAddModify',
-                  {'year': '1', 'type_of_account': '-1', 'chartsaccount': '10', 'code': '3015'}, False)
+        self.calljson('/diacamma.accounting/chartsAccountAddModify',
+                      {'year': '1', 'type_of_account': '-1', 'chartsaccount': '10', 'code': '3015'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'chartsAccountAddModify')
-        self.assert_count_equal('COMPONENTS/*', 5)
-        self.assert_xml_equal('COMPONENTS/EDIT[@name="code"]', '3015!')
-        self.assert_xml_equal('COMPONENTS/EDIT[@name="name"]', '707')
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="type_of_account"]', 'Produit')
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="error_code"]', "{[center]}{[font color='red']}Code invalide !{[/font]}{[/center]}")
+        self.assert_count_equal('', 5)
+        self.assert_json_equal('EDIT', 'code', '3015!')
+        self.assert_json_equal('EDIT', 'name', '707')
+        self.assert_json_equal('LABELFORM', 'type_of_account', 'Produit')
+        self.assert_json_equal('LABELFORM', 'error_code', "{[center]}{[font color='red']}Code invalide !{[/font]}{[/center]}")
 
         self.factory.xfer = ChartsAccountAddModify()
-        self.call('/diacamma.accounting/chartsAccountAddModify',
-                  {'year': '1', 'type_of_account': '-1', 'chartsaccount': '10', 'code': 'abcd'}, False)
+        self.calljson('/diacamma.accounting/chartsAccountAddModify',
+                      {'year': '1', 'type_of_account': '-1', 'chartsaccount': '10', 'code': 'abcd'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'chartsAccountAddModify')
-        self.assert_count_equal('COMPONENTS/*', 5)
-        self.assert_xml_equal('COMPONENTS/EDIT[@name="code"]', 'abcd!')
-        self.assert_xml_equal('COMPONENTS/EDIT[@name="name"]', '707')
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="type_of_account"]', 'Produit')
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="error_code"]', "{[center]}{[font color='red']}Code invalide !{[/font]}{[/center]}")
+        self.assert_count_equal('', 5)
+        self.assert_json_equal('EDIT', 'code', 'abcd!')
+        self.assert_json_equal('EDIT', 'name', '707')
+        self.assert_json_equal('LABELFORM', 'type_of_account', 'Produit')
+        self.assert_json_equal('LABELFORM', 'error_code', "{[center]}{[font color='red']}Code invalide !{[/font]}{[/center]}")
 
         self.factory.xfer = ChartsAccountAddModify()
-        self.call('/diacamma.accounting/chartsAccountAddModify',
-                  {'year': '1', 'type_of_account': '-1', 'chartsaccount': '10', 'code': '6125'}, False)
+        self.calljson('/diacamma.accounting/chartsAccountAddModify',
+                      {'year': '1', 'type_of_account': '-1', 'chartsaccount': '10', 'code': '6125'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'chartsAccountAddModify')
-        self.assert_count_equal('COMPONENTS/*', 5)
-        self.assert_xml_equal('COMPONENTS/EDIT[@name="code"]', '6125!')
-        self.assert_xml_equal('COMPONENTS/EDIT[@name="name"]', '707')
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="type_of_account"]', 'Produit')
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="error_code"]', "{[center]}{[font color='red']}Changement non permis !{[/font]}{[/center]}")
+        self.assert_count_equal('', 5)
+        self.assert_json_equal('EDIT', 'code', '6125!')
+        self.assert_json_equal('EDIT', 'name', '707')
+        self.assert_json_equal('LABELFORM', 'type_of_account', 'Produit')
+        self.assert_json_equal('LABELFORM', 'error_code', "{[center]}{[font color='red']}Changement non permis !{[/font]}{[/center]}")
 
     def test_listing(self):
         self.factory.xfer = ChartsAccountListing()
-        self.call('/diacamma.accounting/chartsAccountListing',
-                  {'year': '1', 'type_of_account': '-1', 'PRINT_MODE': '4', 'MODEL': 6}, False)
+        self.calljson('/diacamma.accounting/chartsAccountListing',
+                      {'year': '1', 'type_of_account': '-1', 'PRINT_MODE': '4', 'MODEL': 6}, False)
         self.assert_observer('core.print', 'diacamma.accounting', 'chartsAccountListing')
         csv_value = b64decode(
-            six.text_type(self.get_first_xpath('PRINT').text)).decode("utf-8")
+            six.text_type(self.response_json['print']['content'])).decode("utf-8")
         content_csv = csv_value.split('\n')
         self.assertEqual(len(content_csv), 24, str(content_csv))
         self.assertEqual(content_csv[1].strip(), '"Liste de plan comptable"')
-        self.assertEqual(content_csv[
-                         3].strip(), '"code";"nom";"total de l\'exercice précédent";"total exercice";"total validé";')
-        self.assertEqual(content_csv[4].strip(
-        ), '"106";"106";"Crédit: 1250.38€";"Crédit: 1250.38€";"Crédit: 1250.38€";')
-        self.assertEqual(content_csv[11].strip(
-        ), '"512";"512";"Débit: 1135.93€";"Débit: 1130.29€";"Débit: 1130.29€";')
-        self.assertEqual(content_csv[12].strip(
-        ), '"531";"531";"Débit: 114.45€";"Crédit: 79.63€";"Débit: 114.45€";')
+        self.assertEqual(content_csv[3].strip(), '"code";"nom";"total de l\'exercice précédent";"total exercice";"total validé";')
+        self.assertEqual(content_csv[4].strip(), '"106";"106";"Crédit: 1250.38€";"Crédit: 1250.38€";"Crédit: 1250.38€";')
+        self.assertEqual(content_csv[11].strip(), '"512";"512";"Débit: 1135.93€";"Débit: 1130.29€";"Débit: 1130.29€";')
+        self.assertEqual(content_csv[12].strip(), '"531";"531";"Débit: 114.45€";"Crédit: 79.63€";"Débit: 114.45€";')
 
         self.factory.xfer = ChartsAccountListing()
-        self.call('/diacamma.accounting/chartsAccountListing',
-                  {'year': '1', 'type_of_account': '4', 'PRINT_MODE': '4', 'MODEL': 6}, False)
+        self.calljson('/diacamma.accounting/chartsAccountListing',
+                      {'year': '1', 'type_of_account': '4', 'PRINT_MODE': '4', 'MODEL': 6}, False)
         self.assert_observer('core.print', 'diacamma.accounting', 'chartsAccountListing')
         csv_value = b64decode(
-            six.text_type(self.get_first_xpath('PRINT').text)).decode("utf-8")
+            six.text_type(self.response_json['print']['content'])).decode("utf-8")
         content_csv = csv_value.split('\n')
         self.assertEqual(len(content_csv), 12, str(content_csv))
 
@@ -335,114 +322,109 @@ class FiscalYearWorkflowTest(PaymentTest):
             FiscalYear.objects.get(id=1).status, 0)
 
         self.factory.xfer = ChartsAccountList()
-        self.call('/diacamma.accounting/chartsAccountList',
-                  {'year': '1', 'type_of_account': '-1'}, False)
+        self.calljson('/diacamma.accounting/chartsAccountList',
+                      {'year': '1', 'type_of_account': '-1'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'chartsAccountList')
-        self.assert_count_equal('COMPONENTS/*', 8)
-        self.assert_count_equal('ACTIONS/ACTION', 4)
-        self.assert_action_equal('ACTIONS/ACTION[1]', ('Commencer', 'images/ok.png', 'diacamma.accounting', 'fiscalYearBegin', 0, 1, 1))
+        self.assert_count_equal('', 8)
+        self.assertEqual(len(self.json_actions), 4)
+        self.assert_action_equal(self.json_actions[0], ('Commencer', 'images/ok.png', 'diacamma.accounting', 'fiscalYearBegin', 0, 1, 1))
 
         self.factory.xfer = FiscalYearBegin()
-        self.call('/diacamma.accounting/fiscalYearBegin',
-                  {'year': '1', 'type_of_account': '-1'}, False)
+        self.calljson('/diacamma.accounting/fiscalYearBegin',
+                      {'year': '1', 'type_of_account': '-1'}, False)
         self.assert_observer('core.dialogbox', 'diacamma.accounting', 'fiscalYearBegin')
-        self.assert_xml_equal('TEXT', "Voulez-vous commencer 'Exercice du 1 janvier 2015 au 31 décembre 2015", True)
+        self.assert_json_equal('', 'text', "Voulez-vous commencer 'Exercice du 1 janvier 2015 au 31 décembre 2015", True)
 
         self.factory.xfer = FiscalYearBegin()
-        self.call('/diacamma.accounting/fiscalYearBegin',
-                  {'CONFIRME': 'YES', 'year': '1', 'type_of_account': '-1'}, False)
+        self.calljson('/diacamma.accounting/fiscalYearBegin',
+                      {'CONFIRME': 'YES', 'year': '1', 'type_of_account': '-1'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'fiscalYearBegin')
 
         self.assertEqual(FiscalYear.objects.get(id=1).status, 1)
 
         self.factory.xfer = ChartsAccountList()
-        self.call('/diacamma.accounting/chartsAccountList',
-                  {'year': '1', 'type_of_account': '-1'}, False)
+        self.calljson('/diacamma.accounting/chartsAccountList',
+                      {'year': '1', 'type_of_account': '-1'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'chartsAccountList')
-        self.assert_count_equal('ACTIONS/ACTION', 4)
-        self.assert_action_equal('ACTIONS/ACTION[1]', ('Clôture', 'images/ok.png', 'diacamma.accounting', 'fiscalYearClose', 0, 1, 1))
+        self.assertEqual(len(self.json_actions), 4)
+        self.assert_action_equal(self.json_actions[0], ('Clôture', 'images/ok.png', 'diacamma.accounting', 'fiscalYearClose', 0, 1, 1))
 
     def test_begin_lastyearnovalid(self):
-        self.assertEqual(
-            FiscalYear.objects.get(id=1).status, 0)
-        new_entry = add_entry(
-            1, 1, '2015-04-11', 'Report à nouveau aussi', '-1|1|0|37.61|None|\n-2|2|0|-37.61|None|', False)
+        self.assertEqual(FiscalYear.objects.get(id=1).status, 0)
+        new_entry = add_entry(1, 1, '2015-04-11', 'Report à nouveau aussi', '-1|1|0|37.61|None|\n-2|2|0|-37.61|None|', False)
 
         self.factory.xfer = FiscalYearBegin()
-        self.call('/diacamma.accounting/fiscalYearBegin',
-                  {'year': '1', 'type_of_account': '-1'}, False)
+        self.calljson('/diacamma.accounting/fiscalYearBegin',
+                      {'year': '1', 'type_of_account': '-1'}, False)
         self.assert_observer('core.exception', 'diacamma.accounting', 'fiscalYearBegin')
-        self.assert_xml_equal('EXCEPTION/MESSAGE', "Des écritures de report à nouveau ne sont pas validées !")
+        self.assert_json_equal('', 'message', "Des écritures de report à nouveau ne sont pas validées !")
 
         new_entry.closed()
 
         self.factory.xfer = FiscalYearBegin()
-        self.call('/diacamma.accounting/fiscalYearBegin',
-                  {'CONFIRME': 'YES', 'year': '1', 'type_of_account': '-1'}, False)
+        self.calljson('/diacamma.accounting/fiscalYearBegin',
+                      {'CONFIRME': 'YES', 'year': '1', 'type_of_account': '-1'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'fiscalYearBegin')
-        self.assertEqual(
-            FiscalYear.objects.get(id=1).status, 1)
+        self.assertEqual(FiscalYear.objects.get(id=1).status, 1)
 
     def test_begin_withbenef(self):
-        self.assertEqual(
-            FiscalYear.objects.get(id=1).status, 0)
+        self.assertEqual(FiscalYear.objects.get(id=1).status, 0)
         add_entry(1, 1, '2015-04-11', 'Report à nouveau bénèf',
                   '-1|16|0|123.45|None|\n-2|2|0|123.45|None|', True)
 
         self.factory.xfer = ChartsAccountList()
-        self.call('/diacamma.accounting/chartsAccountList',
-                  {'year': '1', 'type_of_account': '2'}, False)
+        self.calljson('/diacamma.accounting/chartsAccountList',
+                      {'year': '1', 'type_of_account': '2'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'chartsAccountList')
-        self.assert_count_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD', 5)
-        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[1]/VALUE[@name="code"]', '106')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[1]/VALUE[@name="last_year_total"]', '{[font color="green"]}Crédit: 1250.38€{[/font]}')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[4]/VALUE[@name="code"]', '120')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[4]/VALUE[@name="last_year_total"]', '{[font color="green"]}Crédit: 123.45€{[/font]}')
+        self.assert_count_equal('chartsaccount', 5)
+        self.assert_json_equal('', 'chartsaccount/@0/code', '106')
+        self.assert_json_equal('', 'chartsaccount/@0/last_year_total', '{[font color="green"]}Crédit: 1250.38€{[/font]}')
+        self.assert_json_equal('', 'chartsaccount/@3/code', '120')
+        self.assert_json_equal('', 'chartsaccount/@3/last_year_total', '{[font color="green"]}Crédit: 123.45€{[/font]}')
 
         self.factory.xfer = FiscalYearBegin()
-        self.call('/diacamma.accounting/fiscalYearBegin',
-                  {'year': '1', 'type_of_account': '-1'}, False)
+        self.calljson('/diacamma.accounting/fiscalYearBegin',
+                      {'year': '1', 'type_of_account': '-1'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'fiscalYearBegin')
-        self.assert_count_equal('COMPONENTS/*', 4)
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="info"]', "{[i]}Vous avez un bénéfice de 123.45€.{[br/]}", True)
-        self.assert_xml_equal('COMPONENTS/SELECT[@name="profit_account"]', '5')
-        self.assert_count_equal('COMPONENTS/SELECT[@name="profit_account"]/CASE', 3)
-        self.assert_count_equal('ACTIONS/ACTION', 2)
+        self.assert_count_equal('', 4)
+        self.assert_json_equal('LABELFORM', 'info', "{[i]}Vous avez un bénéfice de 123.45€.{[br/]}", True)
+        self.assert_json_equal('SELECT', 'profit_account', '5')
+        self.assert_select_equal('profit_account', 3)  # nb=3
+        self.assertEqual(len(self.json_actions), 2)
 
         self.factory.xfer = FiscalYearBegin()
-        self.call('/diacamma.accounting/fiscalYearBegin',
-                  {'profit_account': '5', 'year': '1', 'type_of_account': '-1'}, False)
+        self.calljson('/diacamma.accounting/fiscalYearBegin',
+                      {'profit_account': '5', 'year': '1', 'type_of_account': '-1'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'fiscalYearBegin')
 
-        self.assertEqual(
-            FiscalYear.objects.get(id=1).status, 1)
+        self.assertEqual(FiscalYear.objects.get(id=1).status, 1)
 
         self.factory.xfer = ChartsAccountList()
-        self.call('/diacamma.accounting/chartsAccountList',
-                  {'year': '1', 'type_of_account': '2'}, False)
+        self.calljson('/diacamma.accounting/chartsAccountList',
+                      {'year': '1', 'type_of_account': '2'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'chartsAccountList')
-        self.assert_count_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD', 5)
-        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[1]/VALUE[@name="code"]', '106')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[1]/VALUE[@name="last_year_total"]', '{[font color="green"]}Crédit: 1250.38€{[/font]}')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[1]/VALUE[@name="current_total"]', '{[font color="green"]}Crédit: 1373.83€{[/font]}')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[4]/VALUE[@name="code"]', '120')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[4]/VALUE[@name="last_year_total"]', '{[font color="green"]}Crédit: 123.45€{[/font]}')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[4]/VALUE[@name="current_total"]', '{[font color="green"]}Crédit: 0.00€{[/font]}')
+        self.assert_count_equal('chartsaccount', 5)
+        self.assert_json_equal('', 'chartsaccount/@0/code', '106')
+        self.assert_json_equal('', 'chartsaccount/@0/last_year_total', '{[font color="green"]}Crédit: 1250.38€{[/font]}')
+        self.assert_json_equal('', 'chartsaccount/@0/current_total', '{[font color="green"]}Crédit: 1373.83€{[/font]}')
+        self.assert_json_equal('', 'chartsaccount/@3/code', '120')
+        self.assert_json_equal('', 'chartsaccount/@3/last_year_total', '{[font color="green"]}Crédit: 123.45€{[/font]}')
+        self.assert_json_equal('', 'chartsaccount/@3/current_total', '{[font color="green"]}Crédit: 0.00€{[/font]}')
 
     def test_begin_dont_add_report(self):
         self.factory.xfer = FiscalYearBegin()
-        self.call('/diacamma.accounting/fiscalYearBegin',
-                  {'CONFIRME': 'YES', 'year': '1', 'type_of_account': '-1'}, False)
+        self.calljson('/diacamma.accounting/fiscalYearBegin',
+                      {'CONFIRME': 'YES', 'year': '1', 'type_of_account': '-1'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'fiscalYearBegin')
         self.assertEqual(FiscalYear.objects.get(id=1).status, 1)
 
         self.factory.xfer = EntryAccountEdit()
-        self.call('/diacamma.accounting/entryAccountEdit', {'year': '1', 'journal': '1'}, False)
+        self.calljson('/diacamma.accounting/entryAccountEdit', {'year': '1', 'journal': '1'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountEdit')
-        self.assert_count_equal('COMPONENTS/*', 5)
-        self.assert_count_equal("COMPONENTS/SELECT[@name='journal']/CASE", 4)
-        self.assert_xml_equal("COMPONENTS/SELECT[@name='journal']", '2')
-        self.assert_count_equal('ACTIONS/ACTION', 2)
+        self.assert_count_equal('', 5)
+        self.assert_select_equal('journal', 4)  # nb=4
+        self.assert_json_equal('SELECT', 'journal', '2')
+        self.assertEqual(len(self.json_actions), 2)
 
     def test_import_charsaccount(self):
         import_module("diacamma.asso.views")
@@ -452,192 +434,187 @@ class FiscalYearWorkflowTest(PaymentTest):
         self.assertEqual(FiscalYear.objects.get(id=2).status, 0)
 
         self.factory.xfer = ChartsAccountImportFiscalYear()
-        self.call('/diacamma.accounting/chartsAccountImportFiscalYear',
-                  {'CONFIRME': 'YES', 'year': '1', 'type_of_account': '-1'}, False)
+        self.calljson('/diacamma.accounting/chartsAccountImportFiscalYear',
+                      {'CONFIRME': 'YES', 'year': '1', 'type_of_account': '-1'}, False)
         self.assert_observer('core.exception', 'diacamma.accounting', 'chartsAccountImportFiscalYear')
-        self.assert_xml_equal('EXCEPTION/MESSAGE', "Cet exercice n'a pas d'exercice précédent !")
+        self.assert_json_equal('', 'message', "Cet exercice n'a pas d'exercice précédent !")
 
         self.factory.xfer = ChartsAccountList()
-        self.call('/diacamma.accounting/chartsAccountList', {'year': '1', 'type_of_account': '-1'}, False)
+        self.calljson('/diacamma.accounting/chartsAccountList', {'year': '1', 'type_of_account': '-1'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'chartsAccountList')
-        self.assert_count_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD', 17)
-        self.assert_count_equal('COMPONENTS/GRID[@name="chartsaccount"]/ACTIONS/ACTION', 5)
+        self.assert_count_equal('chartsaccount', 17)
+        self.assert_count_equal('#chartsaccount/actions', 5)
 
         self.factory.xfer = ChartsAccountList()
-        self.call('/diacamma.accounting/chartsAccountList', {'year': '2', 'type_of_account': '-1'}, False)
+        self.calljson('/diacamma.accounting/chartsAccountList', {'year': '2', 'type_of_account': '-1'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'chartsAccountList')
-        self.assert_count_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD', 0)
-        self.assert_count_equal('COMPONENTS/GRID[@name="chartsaccount"]/ACTIONS/ACTION', 6)
-        self.assert_action_equal('COMPONENTS/GRID[@name="chartsaccount"]/ACTIONS/ACTION[4]',
+        self.assert_count_equal('chartsaccount', 0)
+        self.assert_count_equal('#chartsaccount/actions', 6)
+        self.assert_action_equal('#chartsaccount/actions/@3',
                                  ('importer', None, 'diacamma.accounting', 'chartsAccountImportFiscalYear', 0, 1, 1))
 
         self.factory.xfer = ChartsAccountImportFiscalYear()
-        self.call('/diacamma.accounting/chartsAccountImportFiscalYear',
-                  {'CONFIRME': 'YES', 'year': '2', 'type_of_account': '-1'}, False)
+        self.calljson('/diacamma.accounting/chartsAccountImportFiscalYear',
+                      {'CONFIRME': 'YES', 'year': '2', 'type_of_account': '-1'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'chartsAccountImportFiscalYear')
 
         self.factory.xfer = ChartsAccountList()
-        self.call('/diacamma.accounting/chartsAccountList',
-                  {'year': '2', 'type_of_account': '-1'}, False)
+        self.calljson('/diacamma.accounting/chartsAccountList',
+                      {'year': '2', 'type_of_account': '-1'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'chartsAccountList')
-        self.assert_count_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD', 17)
+        self.assert_count_equal('chartsaccount', 17)
 
         self.factory.xfer = ChartsAccountImportFiscalYear()
-        self.call('/diacamma.accounting/chartsAccountImportFiscalYear',
-                  {'CONFIRME': 'YES', 'year': '2', 'type_of_account': '-1'}, False)
+        self.calljson('/diacamma.accounting/chartsAccountImportFiscalYear',
+                      {'CONFIRME': 'YES', 'year': '2', 'type_of_account': '-1'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'chartsAccountImportFiscalYear')
 
         self.factory.xfer = ChartsAccountList()
-        self.call('/diacamma.accounting/chartsAccountList',
-                  {'year': '2', 'type_of_account': '-1'}, False)
+        self.calljson('/diacamma.accounting/chartsAccountList',
+                      {'year': '2', 'type_of_account': '-1'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'chartsAccountList')
-        self.assert_count_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD', 17)
+        self.assert_count_equal('chartsaccount', 17)
 
     def test_close(self):
         self.assertEqual(
             FiscalYear.objects.get(id=1).status, 0)
         self.factory.xfer = FiscalYearClose()
-        self.call('/diacamma.accounting/fiscalYearImport',
-                  {'year': '1', 'type_of_account': '-1'}, False)
+        self.calljson('/diacamma.accounting/fiscalYearImport',
+                      {'year': '1', 'type_of_account': '-1'}, False)
         self.assert_observer('core.exception', 'diacamma.accounting', 'fiscalYearImport')
-        self.assert_xml_equal('EXCEPTION/MESSAGE', "Cet exercice n'est pas 'en cours' !")
+        self.assert_json_equal('', 'message', "Cet exercice n'est pas 'en cours' !")
 
         self.factory.xfer = FiscalYearBegin()
-        self.call('/diacamma.accounting/fiscalYearBegin', {'CONFIRME': 'YES', 'year': '1', 'type_of_account': '-1'}, False)
+        self.calljson('/diacamma.accounting/fiscalYearBegin', {'CONFIRME': 'YES', 'year': '1', 'type_of_account': '-1'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'fiscalYearBegin')
         self.assertEqual(FiscalYear.objects.get(id=1).status, 1)
 
         self.factory.xfer = ThirdList()
-        self.call('/diacamma.accounting/thirdListing', {'show_filter': '1'}, False)
+        self.calljson('/diacamma.accounting/thirdListing', {'show_filter': '1'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'thirdListing')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="third"]/RECORD[2]/VALUE[@name="contact"]', 'Dalton Jack')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="third"]/RECORD[2]/VALUE[@name="total"]', '0.00€')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="third"]/RECORD[4]/VALUE[@name="contact"]', 'Dalton William')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="third"]/RECORD[4]/VALUE[@name="total"]', '-125.97€')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="third"]/RECORD[7]/VALUE[@name="contact"]', 'Minimum')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="third"]/RECORD[7]/VALUE[@name="total"]', '-34.01€')
+        self.assert_json_equal('', 'third/@1/contact', 'Dalton Jack')
+        self.assert_json_equal('', 'third/@1/total', '0.00€')
+        self.assert_json_equal('', 'third/@3/contact', 'Dalton William')
+        self.assert_json_equal('', 'third/@3/total', '-125.97€')
+        self.assert_json_equal('', 'third/@6/contact', 'Minimum')
+        self.assert_json_equal('', 'third/@6/total', '-34.01€')
         self.check_account(1, '411', 159.98)
         self.check_account(1, '401', 78.24)
 
         self.factory.xfer = FiscalYearClose()
-        self.call('/diacamma.accounting/fiscalYearImport',
-                  {'year': '1', 'type_of_account': '-1'}, False)
+        self.calljson('/diacamma.accounting/fiscalYearImport',
+                      {'year': '1', 'type_of_account': '-1'}, False)
         self.assert_observer('core.exception', 'diacamma.accounting', 'fiscalYearImport')
-        self.assert_xml_equal('EXCEPTION/MESSAGE', "Cet exercice a des écritures non-validées et pas d'exercice suivant !")
+        self.assert_json_equal('', 'message', "Cet exercice a des écritures non-validées et pas d'exercice suivant !")
 
         FiscalYear.objects.create(begin='2016-01-01', end='2016-12-31', status=0,
                                   last_fiscalyear=FiscalYear.objects.get(id=1))
 
         self.factory.xfer = FiscalYearClose()
-        self.call('/diacamma.accounting/fiscalYearClose',
-                  {'year': '1', 'type_of_account': '-1'}, False)
+        self.calljson('/diacamma.accounting/fiscalYearClose',
+                      {'year': '1', 'type_of_account': '-1'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'fiscalYearClose')
-        text_value = self.get_first_xpath("COMPONENTS/LABELFORM[@name='info']").text
+        text_value = self.json_data['info']
 
         self.assertTrue('Voulez-vous cloturer cet exercice ?' in text_value, text_value)
         self.assertTrue('4 écritures ne sont pas validées' in text_value, text_value)
 
         self.factory.xfer = EntryAccountList()
-        self.call('/diacamma.accounting/entryAccountList',
-                  {'year': '1', 'journal': '-1', 'filter': '0'}, False)
+        self.calljson('/diacamma.accounting/entryAccountList',
+                      {'year': '1', 'journal': '-1', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
-        self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', 11)
-        self.assert_xml_equal(
-            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit :{[/b]} 230.62€ - {[b]}Charge :{[/b]} 348.60€ = {[b]}Résultat :{[/b]} -117.98€{[br/]}{[b]}Trésorerie :{[/b]} 1050.66€ - {[b]}Validé :{[/b]} 1244.74€{[/center]}')
+        self.assert_count_equal('entryaccount', 11)
+        self.assert_json_equal('LABELFORM', 'result', '{[center]}{[b]}Produit :{[/b]} 230.62€ - {[b]}Charge :{[/b]} 348.60€ = {[b]}Résultat :{[/b]} -117.98€{[br/]}{[b]}Trésorerie :{[/b]} 1050.66€ - {[b]}Validé :{[/b]} 1244.74€{[/center]}')
 
         self.factory.xfer = EntryAccountList()
-        self.call('/diacamma.accounting/entryAccountList',
-                  {'year': '2', 'journal': '-1', 'filter': '0'}, False)
+        self.calljson('/diacamma.accounting/entryAccountList',
+                      {'year': '2', 'journal': '-1', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
-        self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', 0)
-        self.assert_xml_equal(
-            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit :{[/b]} 0.00€ - {[b]}Charge :{[/b]} 0.00€ = {[b]}Résultat :{[/b]} 0.00€{[br/]}{[b]}Trésorerie :{[/b]} 0.00€ - {[b]}Validé :{[/b]} 0.00€{[/center]}')
+        self.assert_count_equal('entryaccount', 0)
+        self.assert_json_equal('LABELFORM', 'result', '{[center]}{[b]}Produit :{[/b]} 0.00€ - {[b]}Charge :{[/b]} 0.00€ = {[b]}Résultat :{[/b]} 0.00€{[br/]}{[b]}Trésorerie :{[/b]} 0.00€ - {[b]}Validé :{[/b]} 0.00€{[/center]}')
 
         self.factory.xfer = FiscalYearClose()
-        self.call('/diacamma.accounting/fiscalYearClose',
-                  {'CONFIRME': 'YES', 'year': '1', 'type_of_account': '-1'}, False)
+        self.calljson('/diacamma.accounting/fiscalYearClose',
+                      {'CONFIRME': 'YES', 'year': '1', 'type_of_account': '-1'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'fiscalYearClose')
 
         self.assertEqual(FiscalYear.objects.get(id=1).status, 2)
 
         self.factory.xfer = EntryAccountList()
-        self.call('/diacamma.accounting/entryAccountList',
-                  {'year': '1', 'journal': '-1', 'filter': '0'}, False)
+        self.calljson('/diacamma.accounting/entryAccountList',
+                      {'year': '1', 'journal': '-1', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
-        self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', 9)
-        self.assert_xml_equal(
-            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit :{[/b]} 196.61€ - {[b]}Charge :{[/b]} 76.28€ = {[b]}Résultat :{[/b]} 120.33€{[br/]}{[b]}Trésorerie :{[/b]} 1244.74€ - {[b]}Validé :{[/b]} 1244.74€{[/center]}')
+        self.assert_count_equal('entryaccount', 9)
+        self.assert_json_equal('LABELFORM', 'result', '{[center]}{[b]}Produit :{[/b]} 196.61€ - {[b]}Charge :{[/b]} 76.28€ = {[b]}Résultat :{[/b]} 120.33€{[br/]}{[b]}Trésorerie :{[/b]} 1244.74€ - {[b]}Validé :{[/b]} 1244.74€{[/center]}')
 
         self.factory.xfer = EntryAccountList()
-        self.call('/diacamma.accounting/entryAccountList',
-                  {'year': '2', 'journal': '-1', 'filter': '0'}, False)
+        self.calljson('/diacamma.accounting/entryAccountList',
+                      {'year': '2', 'journal': '-1', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
-        self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', 4)
-        self.assert_xml_equal(
-            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit :{[/b]} 34.01€ - {[b]}Charge :{[/b]} 272.32€ = {[b]}Résultat :{[/b]} -238.31€{[br/]}{[b]}Trésorerie :{[/b]} -194.08€ - {[b]}Validé :{[/b]} 0.00€{[/center]}')
+        self.assert_count_equal('entryaccount', 4)
+        self.assert_json_equal('LABELFORM', 'result', '{[center]}{[b]}Produit :{[/b]} 34.01€ - {[b]}Charge :{[/b]} 272.32€ = {[b]}Résultat :{[/b]} -238.31€{[br/]}{[b]}Trésorerie :{[/b]} -194.08€ - {[b]}Validé :{[/b]} 0.00€{[/center]}')
 
         self.factory.xfer = ChartsAccountList()
-        self.call('/diacamma.accounting/chartsAccountList',
-                  {'year': '1', 'type_of_account': '-1'}, False)
+        self.calljson('/diacamma.accounting/chartsAccountList',
+                      {'year': '1', 'type_of_account': '-1'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'chartsAccountList')
-        self.assert_count_equal('COMPONENTS/*', 8)
-        self.assert_count_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD', 17)
-        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[4]/VALUE[@name="code"]', '120')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[4]/VALUE[@name="current_total"]',
-                              '{[font color="green"]}Crédit: 120.33€{[/font]}')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[6]/VALUE[@name="code"]', '401')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[6]/VALUE[@name="current_total"]',
-                              '{[font color="green"]}Crédit: 0.00€{[/font]}')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[7]/VALUE[@name="code"]', '411')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[7]/VALUE[@name="current_total"]',
-                              '{[font color="blue"]}Débit: 125.97€{[/font]}')
+        self.assert_count_equal('', 8)
+        self.assert_count_equal('chartsaccount', 17)
+        self.assert_json_equal('', 'chartsaccount/@3/code', '120')
+        self.assert_json_equal('', 'chartsaccount/@3/current_total',
+                               '{[font color="green"]}Crédit: 120.33€{[/font]}')
+        self.assert_json_equal('', 'chartsaccount/@5/code', '401')
+        self.assert_json_equal('', 'chartsaccount/@5/current_total',
+                               '{[font color="green"]}Crédit: 0.00€{[/font]}')
+        self.assert_json_equal('', 'chartsaccount/@6/code', '411')
+        self.assert_json_equal('', 'chartsaccount/@6/current_total',
+                               '{[font color="blue"]}Débit: 125.97€{[/font]}')
 
     def test_import_lastyear(self):
         FiscalYear.objects.create(begin='2016-01-01', end='2016-12-31', status=0,
                                   last_fiscalyear=FiscalYear.objects.get(id=1))
         self.factory.xfer = FiscalYearBegin()
-        self.call('/diacamma.accounting/fiscalYearBegin',
-                  {'CONFIRME': 'YES', 'year': '1', 'type_of_account': '-1'}, False)
+        self.calljson('/diacamma.accounting/fiscalYearBegin',
+                      {'CONFIRME': 'YES', 'year': '1', 'type_of_account': '-1'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'fiscalYearBegin')
         self.assertEqual(FiscalYear.objects.get(id=1).status, 1)
         self.factory.xfer = FiscalYearClose()
-        self.call('/diacamma.accounting/fiscalYearClose',
-                  {'CONFIRME': 'YES', 'year': '1', 'type_of_account': '-1'}, False)
+        self.calljson('/diacamma.accounting/fiscalYearClose',
+                      {'CONFIRME': 'YES', 'year': '1', 'type_of_account': '-1'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'fiscalYearClose')
 
         self.assertEqual(FiscalYear.objects.get(id=1).status, 2)
         self.assertEqual(FiscalYear.objects.get(id=2).status, 0)
 
         self.factory.xfer = FiscalYearReportLastYear()
-        self.call('/diacamma.accounting/fiscalYearReportLastYear',
-                  {'CONFIRME': 'YES', 'year': '2', 'type_of_account': '-1'}, False)
+        self.calljson('/diacamma.accounting/fiscalYearReportLastYear',
+                      {'CONFIRME': 'YES', 'year': '2', 'type_of_account': '-1'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'fiscalYearReportLastYear')
         self.assertEqual(FiscalYear.objects.get(id=2).status, 0)
 
         self.factory.xfer = EntryAccountList()
-        self.call('/diacamma.accounting/entryAccountList',
-                  {'year': '2', 'journal': '-1', 'filter': '0'}, False)
+        self.calljson('/diacamma.accounting/entryAccountList',
+                      {'year': '2', 'journal': '-1', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
-        self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', 6)
-        self.assert_xml_equal(
-            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit :{[/b]} 34.01€ - {[b]}Charge :{[/b]} 272.32€ = {[b]}Résultat :{[/b]} -238.31€{[br/]}{[b]}Trésorerie :{[/b]} 1050.66€ - {[b]}Validé :{[/b]} 1244.74€{[/center]}')
+        self.assert_count_equal('entryaccount', 6)
+        self.assert_json_equal('LABELFORM', 'result', '{[center]}{[b]}Produit :{[/b]} 34.01€ - {[b]}Charge :{[/b]} 272.32€ = {[b]}Résultat :{[/b]} -238.31€{[br/]}{[b]}Trésorerie :{[/b]} 1050.66€ - {[b]}Validé :{[/b]} 1244.74€{[/center]}')
 
         self.factory.xfer = ChartsAccountList()
-        self.call('/diacamma.accounting/chartsAccountList',
-                  {'year': '2', 'type_of_account': '-1'}, False)
+        self.calljson('/diacamma.accounting/chartsAccountList',
+                      {'year': '2', 'type_of_account': '-1'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'chartsAccountList')
-        self.assert_count_equal('COMPONENTS/*', 8)
-        self.assert_count_equal('ACTIONS/ACTION', 4)
-        self.assert_count_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD', 9)
-        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[2]/VALUE[@name="code"]', '120')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[2]/VALUE[@name="current_total"]',
-                              '{[font color="green"]}Crédit: 120.33€{[/font]}')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[4]/VALUE[@name="code"]', '411')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="chartsaccount"]/RECORD[4]/VALUE[@name="current_total"]',
-                              '{[font color="blue"]}Débit: 159.98€{[/font]}')
+        self.assert_count_equal('', 8)
+        self.assertEqual(len(self.json_actions), 4)
+        self.assert_count_equal('chartsaccount', 9)
+        self.assert_json_equal('', 'chartsaccount/@1/code', '120')
+        self.assert_json_equal('', 'chartsaccount/@1/current_total',
+                               '{[font color="green"]}Crédit: 120.33€{[/font]}')
+        self.assert_json_equal('', 'chartsaccount/@3/code', '411')
+        self.assert_json_equal('', 'chartsaccount/@3/current_total',
+                               '{[font color="blue"]}Débit: 159.98€{[/font]}')
 
         self.factory.xfer = ChartsAccountList()
-        self.call('/diacamma.accounting/chartsAccountList',
-                  {'year': '1', 'type_of_account': '-1'}, False)
+        self.calljson('/diacamma.accounting/chartsAccountList',
+                      {'year': '1', 'type_of_account': '-1'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'chartsAccountList')
-        self.assert_count_equal('ACTIONS/ACTION', 3)
+        self.assertEqual(len(self.json_actions), 3)
