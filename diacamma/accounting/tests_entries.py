@@ -53,641 +53,620 @@ class EntryTest(LucteriosTest):
 
     def test_empty_list(self):
         self.factory.xfer = EntryAccountList()
-        self.call('/diacamma.accounting/entryAccountList', {}, False)
+        self.calljson('/diacamma.accounting/entryAccountList', {}, False)
         self.assert_observer(
             'core.custom', 'diacamma.accounting', 'entryAccountList')
-        self.assert_count_equal('COMPONENTS/*', 7)
-        self.assert_xml_equal("COMPONENTS/SELECT[@name='year']", '1')
-        self.assert_count_equal("COMPONENTS/SELECT[@name='year']/CASE", 1)
-        self.assert_xml_equal("COMPONENTS/SELECT[@name='journal']", '4')
-        self.assert_count_equal("COMPONENTS/SELECT[@name='journal']/CASE", 6)
-        self.assert_xml_equal("COMPONENTS/SELECT[@name='filter']", '1')
-        self.assert_count_equal("COMPONENTS/SELECT[@name='filter']/CASE", 5)
-        self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/HEADER', 6)
-        self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', 0)
-        self.assert_xml_equal(
-            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit :{[/b]} 0.00€ - {[b]}Charge :{[/b]} 0.00€ = {[b]}Résultat :{[/b]} 0.00€{[br/]}{[b]}Trésorerie :{[/b]} 0.00€ - {[b]}Validé :{[/b]} 0.00€{[/center]}')
+        self.assert_count_equal('', 7)
+        self.assert_json_equal('SELECT', 'year', '1')
+        self.assert_select_equal('year', 1)  # nb=1
+        self.assert_json_equal('SELECT', 'journal', '4')
+        self.assert_select_equal('journal', 6)  # nb=6
+        self.assert_json_equal('SELECT', 'filter', '1')
+        self.assert_select_equal('filter', 5)  # nb=5
+        self.assert_count_equal('entryaccount', 0)
+        self.assert_json_equal('LABELFORM', 'result', '{[center]}{[b]}Produit :{[/b]} 0.00€ - {[b]}Charge :{[/b]} 0.00€ = {[b]}Résultat :{[/b]} 0.00€{[br/]}{[b]}Trésorerie :{[/b]} 0.00€ - {[b]}Validé :{[/b]} 0.00€{[/center]}')
 
     def test_add_entry(self):
         self.factory.xfer = EntryAccountEdit()
-        self.call('/diacamma.accounting/entryAccountEdit', {'year': '1', 'journal': '2'}, False)
+        self.calljson('/diacamma.accounting/entryAccountEdit', {'year': '1', 'journal': '2'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountEdit')
-        self.assert_count_equal('COMPONENTS/*', 5)
-        self.assert_xml_equal("COMPONENTS/SELECT[@name='journal']", '2')
-        self.assert_xml_equal("COMPONENTS/DATE[@name='date_value']", '2015-12-31')
-        self.assert_xml_equal("COMPONENTS/EDIT[@name='designation']", None)
-        self.assert_xml_equal("COMPONENTS/SELECT[@name='costaccounting']", '0')
-        self.assert_count_equal("COMPONENTS/SELECT[@name='costaccounting']/CASE", 1)
-        self.assert_count_equal('ACTIONS/ACTION', 2)
+        self.assert_count_equal('', 5)
+        self.assert_json_equal('SELECT', 'journal', '2')
+        self.assert_json_equal('DATE', 'date_value', '2015-12-31')
+        self.assert_json_equal('EDIT', 'designation', '')
+        self.assert_json_equal('SELECT', 'costaccounting', '0')
+        self.assert_select_equal('costaccounting', 1)  # nb=1
+        self.assertEqual(len(self.json_actions), 2)
 
         self.factory.xfer = EntryAccountEdit()
-        self.call('/diacamma.accounting/entryAccountEdit', {'SAVE': 'YES', 'year': '1', 'journal': '2',
-                                                            'date_value': '2015-02-13', 'designation': 'un plein cadie'}, False)
+        self.calljson('/diacamma.accounting/entryAccountEdit', {'SAVE': 'YES', 'year': '1', 'journal': '2',
+                                                                'date_value': '2015-02-13', 'designation': 'un plein cadie'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountEdit')
-        self.assert_attrib_equal("ACTION", "id", "diacamma.accounting/entryAccountAfterSave")
-        self.assert_count_equal("ACTION/PARAM", 1)
-        self.assert_xml_equal("ACTION/PARAM[@name='entryaccount']", "1")
-        self.assert_count_equal("CONTEXT/*", 4)
-        self.assert_xml_equal("CONTEXT/PARAM[@name='year']", "1")
-        self.assert_xml_equal("CONTEXT/PARAM[@name='journal']", "2")
-        self.assert_xml_equal("CONTEXT/PARAM[@name='date_value']", "2015-02-13")
-        self.assert_xml_equal("CONTEXT/PARAM[@name='designation']", "un plein cadie")
+        self.assertEqual(self.response_json['action']['id'], "diacamma.accounting/entryAccountAfterSave")
+        self.assertEqual(len(self.response_json['action']['params']), 1)
+        self.assertEqual(self.response_json['action']['params']['entryaccount'], 1)
+        self.assertEqual(len(self.json_context), 4)
+        self.assertEqual(self.json_context['year'], "1")
+        self.assertEqual(self.json_context['journal'], "2")
+        self.assertEqual(self.json_context['date_value'], "2015-02-13")
+        self.assertEqual(self.json_context['designation'], "un plein cadie")
 
         self.factory.xfer = EntryAccountAfterSave()
-        self.call('/diacamma.accounting/entryAccountAfterSave', {'SAVE': 'YES', 'year': '1', 'journal': '2',
-                                                                 'date_value': '2015-02-13', 'designation': 'un plein cadie', 'entryaccount': "1"}, False)
+        self.calljson('/diacamma.accounting/entryAccountAfterSave', {'SAVE': 'YES', 'year': '1', 'journal': '2',
+                                                                     'date_value': '2015-02-13', 'designation': 'un plein cadie', 'entryaccount': "1"}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountAfterSave')
-        self.assert_attrib_equal("ACTION", "id", "diacamma.accounting/entryAccountEdit")
-        self.assert_count_equal("ACTION/PARAM", 0)
-        self.assert_count_equal("CONTEXT/*", 3)
-        self.assert_xml_equal("CONTEXT/PARAM[@name='entryaccount']", "1")
-        self.assert_xml_equal("CONTEXT/PARAM[@name='year']", "1")
-        self.assert_xml_equal("CONTEXT/PARAM[@name='journal']", "2")
+        self.assertEqual(self.response_json['action']['id'], "diacamma.accounting/entryAccountEdit")
+        self.assertEqual(self.response_json['action']['params'], None)
+        self.assertEqual(len(self.json_context), 3)
+        self.assertEqual(self.json_context['entryaccount'], "1")
+        self.assertEqual(self.json_context['year'], "1")
+        self.assertEqual(self.json_context['journal'], "2")
 
     def test_add_entry_bad_date(self):
         self.factory.xfer = EntryAccountEdit()
-        self.call('/diacamma.accounting/entryAccountEdit', {'SAVE': 'YES', 'year': '1', 'journal': '2',
-                                                            'date_value': '2017-04-20', 'designation': 'Truc'}, False)
+        self.calljson('/diacamma.accounting/entryAccountEdit', {'SAVE': 'YES', 'year': '1', 'journal': '2',
+                                                                'date_value': '2017-04-20', 'designation': 'Truc'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountEdit')
-        self.assert_xml_equal("ACTION/PARAM[@name='entryaccount']", "1")
+        self.assertEqual(self.response_json['action']['params']['entryaccount'], 1)
 
         self.factory.xfer = EntryAccountEdit()
-        self.call('/diacamma.accounting/entryAccountEdit',
-                  {'year': '1', 'journal': '2', 'entryaccount': '1'}, False)
+        self.calljson('/diacamma.accounting/entryAccountEdit',
+                      {'year': '1', 'journal': '2', 'entryaccount': '1'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountEdit')
-        self.assert_count_equal('COMPONENTS/*', 16)
-        self.assert_xml_equal("COMPONENTS/SELECT[@name='journal']", '2')
-        self.assert_xml_equal("COMPONENTS/DATE[@name='date_value']", '2015-12-31')
-        self.assert_xml_equal("COMPONENTS/EDIT[@name='designation']", 'Truc')
-        self.assert_count_equal('ACTIONS/ACTION', 2)
+        self.assert_count_equal('', 16)
+        self.assert_json_equal('SELECT', 'journal', '2')
+        self.assert_json_equal('DATE', 'date_value', '2015-12-31')
+        self.assert_json_equal('EDIT', 'designation', 'Truc')
+        self.assertEqual(len(self.json_actions), 2)
 
         self.factory.xfer = EntryAccountEdit()
-        self.call('/diacamma.accounting/entryAccountEdit', {'SAVE': 'YES', 'year': '1', 'journal': '2',
-                                                            'date_value': '2010-04-20', 'designation': 'Machin'}, False)
+        self.calljson('/diacamma.accounting/entryAccountEdit', {'SAVE': 'YES', 'year': '1', 'journal': '2',
+                                                                'date_value': '2010-04-20', 'designation': 'Machin'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountEdit')
-        self.assert_xml_equal("ACTION/PARAM[@name='entryaccount']", "2")
+        self.assertEqual(self.response_json['action']['params']['entryaccount'], 2)
 
         self.factory.xfer = EntryAccountEdit()
-        self.call('/diacamma.accounting/entryAccountEdit',
-                  {'year': '1', 'journal': '2', 'entryaccount': '2'}, False)
+        self.calljson('/diacamma.accounting/entryAccountEdit',
+                      {'year': '1', 'journal': '2', 'entryaccount': '2'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountEdit')
-        self.assert_count_equal('COMPONENTS/*', 16)
-        self.assert_xml_equal("COMPONENTS/SELECT[@name='journal']", '2')
-        self.assert_xml_equal("COMPONENTS/DATE[@name='date_value']", '2015-01-01')
-        self.assert_xml_equal("COMPONENTS/EDIT[@name='designation']", 'Machin')
-        self.assert_count_equal('ACTIONS/ACTION', 2)
+        self.assert_count_equal('', 16)
+        self.assert_json_equal('SELECT', 'journal', '2')
+        self.assert_json_equal('DATE', 'date_value', '2015-01-01')
+        self.assert_json_equal('EDIT', 'designation', 'Machin')
+        self.assertEqual(len(self.json_actions), 2)
 
     def test_add_line_third(self):
         self.factory.xfer = EntryAccountEdit()
-        self.call('/diacamma.accounting/entryAccountEdit', {'SAVE': 'YES', 'year': '1', 'journal': '2',
-                                                            'date_value': '2015-02-13', 'designation': 'un plein cadie'}, False)
+        self.calljson('/diacamma.accounting/entryAccountEdit', {'SAVE': 'YES', 'year': '1', 'journal': '2',
+                                                                'date_value': '2015-02-13', 'designation': 'un plein cadie'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountEdit')
 
         self.factory.xfer = EntryAccountEdit()
-        self.call('/diacamma.accounting/entryAccountEdit',
-                  {'year': '1', 'journal': '2', 'entryaccount': '1'}, False)
+        self.calljson('/diacamma.accounting/entryAccountEdit',
+                      {'year': '1', 'journal': '2', 'entryaccount': '1'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountEdit')
-        self.assert_count_equal('COMPONENTS/*', 16)
+        self.assert_count_equal('', 16)
 
-        self.assert_xml_equal("COMPONENTS/SELECT[@name='journal']", '2')
-        self.assert_xml_equal("COMPONENTS/DATE[@name='date_value']", '2015-02-13')
-        self.assert_xml_equal("COMPONENTS/EDIT[@name='designation']", 'un plein cadie')
-        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/HEADER', 4)
-        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD', 0)
-        self.assert_xml_equal("COMPONENTS/EDIT[@name='num_cpt_txt']", None)
-        self.assert_xml_equal("COMPONENTS/SELECT[@name='num_cpt']", 'NULL')
-        self.assert_count_equal("COMPONENTS/SELECT[@name='num_cpt']/CASE", 0)
-        self.assert_xml_equal("COMPONENTS/FLOAT[@name='debit_val']", '0.00')
-        self.assert_xml_equal("COMPONENTS/FLOAT[@name='credit_val']", '0.00')
-        self.assert_count_equal('ACTIONS/ACTION', 2)
+        self.assert_json_equal('SELECT', 'journal', '2')
+        self.assert_json_equal('DATE', 'date_value', '2015-02-13')
+        self.assert_json_equal('EDIT', 'designation', 'un plein cadie')
+        self.assert_count_equal('entrylineaccount_serial', 0)
+        self.assert_json_equal('EDIT', 'num_cpt_txt', '')
+        self.assert_json_equal('SELECT', 'num_cpt', 'None')
+        self.assert_select_equal('num_cpt', 0)  # nb=0
+        self.assert_json_equal('FLOAT', 'debit_val', '0.00')
+        self.assert_json_equal('FLOAT', 'credit_val', '0.00')
+        self.assertEqual(len(self.json_actions), 2)
 
         self.factory.xfer = EntryAccountEdit()
-        self.call('/diacamma.accounting/entryAccountEdit',
-                  {'year': '1', 'journal': '2', 'entryaccount': '1', 'num_cpt_txt': '401'}, False)
+        self.calljson('/diacamma.accounting/entryAccountEdit',
+                      {'year': '1', 'journal': '2', 'entryaccount': '1', 'num_cpt_txt': '401'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountEdit')
-        self.assert_count_equal('COMPONENTS/*', 17)
+        self.assert_count_equal('', 17)
 
-        self.assert_xml_equal("COMPONENTS/EDIT[@name='num_cpt_txt']", '401')
-        self.assert_xml_equal("COMPONENTS/SELECT[@name='num_cpt']", '4')
-        self.assert_count_equal("COMPONENTS/SELECT[@name='num_cpt']/CASE", 1)
-        self.assert_xml_equal("COMPONENTS/FLOAT[@name='debit_val']", '0.00')
-        self.assert_xml_equal("COMPONENTS/FLOAT[@name='credit_val']", '0.00')
-        self.assert_xml_equal("COMPONENTS/SELECT[@name='third']", '0')
-        self.assert_count_equal("COMPONENTS/SELECT[@name='third']/CASE", 5)
-        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD', 0)
-        self.assert_count_equal('ACTIONS/ACTION', 2)
+        self.assert_json_equal('EDIT', 'num_cpt_txt', '401')
+        self.assert_json_equal('SELECT', 'num_cpt', '4')
+        self.assert_select_equal('num_cpt', 1)  # nb=1
+        self.assert_json_equal('FLOAT', 'debit_val', '0.00')
+        self.assert_json_equal('FLOAT', 'credit_val', '0.00')
+        self.assert_json_equal('SELECT', 'third', '0')
+        self.assert_select_equal('third', 5)  # nb=5
+        self.assert_count_equal('entrylineaccount_serial', 0)
+        self.assertEqual(len(self.json_actions), 2)
 
         self.factory.xfer = EntryLineAccountAdd()
-        self.call('/diacamma.accounting/entryLineAccountAdd', {'year': '1', 'journal': '2', 'entryaccount': '1', 'num_cpt_txt': '401',
-                                                               'num_cpt': '4', 'third': 0, 'debit_val': '0.0', 'credit_val': '152.34'}, False)
+        self.calljson('/diacamma.accounting/entryLineAccountAdd', {'year': '1', 'journal': '2', 'entryaccount': '1', 'num_cpt_txt': '401',
+                                                                   'num_cpt': '4', 'third': 0, 'debit_val': '0.0', 'credit_val': '152.34'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryLineAccountAdd')
-        self.assert_count_equal("CONTEXT/*", 3)
-        self.assert_xml_equal("CONTEXT/PARAM[@name='entryaccount']", "1")
-        self.assert_xml_equal("CONTEXT/PARAM[@name='year']", "1")
-        self.assert_xml_equal("CONTEXT/PARAM[@name='journal']", "2")
+        self.assertEqual(len(self.json_context), 3)
+        self.assertEqual(self.json_context['entryaccount'], "1")
+        self.assertEqual(self.json_context['year'], "1")
+        self.assertEqual(self.json_context['journal'], "2")
 
         self.factory.xfer = EntryAccountEdit()
-        self.call('/diacamma.accounting/entryAccountEdit',
-                  {'year': '1', 'journal': '2', 'entryaccount': '1', 'serial_entry': "-1|4|0|152.340000|None|"}, False)
+        self.calljson('/diacamma.accounting/entryAccountEdit',
+                      {'year': '1', 'journal': '2', 'entryaccount': '1', 'serial_entry': "-1|4|0|152.340000|None|"}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountEdit')
-        self.assert_count_equal('COMPONENTS/*', 16)
+        self.assert_count_equal('', 16)
 
-        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD', 1)
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="entry_account"]', '[401] 401')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="debit"]', '{[font color="green"]}{[/font]}')
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="credit"]', '{[font color="green"]}152.34€{[/font]}')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="reference"]', '---')
-        self.assert_count_equal('ACTIONS/ACTION', 2)
+        self.assert_count_equal('entrylineaccount_serial', 1)
+        self.assert_json_equal('', 'entrylineaccount_serial/@0/entry_account', '[401] 401')
+        self.assert_json_equal('', 'entrylineaccount_serial/@0/debit', '{[font color="green"]}{[/font]}')
+        self.assert_json_equal('', 'entrylineaccount_serial/@0/credit', '{[font color="green"]}152.34€{[/font]}')
+        self.assert_json_equal('', 'entrylineaccount_serial/@0/reference', '---')
+        self.assertEqual(len(self.json_actions), 2)
 
     def test_add_line_revenue(self):
         self.factory.xfer = EntryAccountEdit()
-        self.call('/diacamma.accounting/entryAccountEdit', {'SAVE': 'YES', 'year': '1', 'journal': '2',
-                                                            'date_value': '2015-02-13', 'designation': 'un plein cadie'}, False)
+        self.calljson('/diacamma.accounting/entryAccountEdit', {'SAVE': 'YES', 'year': '1', 'journal': '2',
+                                                                'date_value': '2015-02-13', 'designation': 'un plein cadie'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountEdit')
 
         self.factory.xfer = EntryAccountEdit()
-        self.call('/diacamma.accounting/entryAccountEdit',
-                  {'year': '1', 'journal': '2', 'entryaccount': '1', 'serial_entry': "-1|4|0|152.340000|None|", 'num_cpt_txt': '60'}, False)
+        self.calljson('/diacamma.accounting/entryAccountEdit',
+                      {'year': '1', 'journal': '2', 'entryaccount': '1', 'serial_entry': "-1|4|0|152.340000|None|", 'num_cpt_txt': '60'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountEdit')
-        self.assert_count_equal('COMPONENTS/*', 17)
+        self.assert_count_equal('', 17)
 
-        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD', 1)
-        self.assert_xml_equal("COMPONENTS/EDIT[@name='num_cpt_txt']", '60')
-        self.assert_xml_equal("COMPONENTS/SELECT[@name='num_cpt']", '11')
-        self.assert_count_equal("COMPONENTS/SELECT[@name='num_cpt']/CASE", 4)
-        self.assert_xml_equal("COMPONENTS/FLOAT[@name='debit_val']", '152.34')
-        self.assert_xml_equal("COMPONENTS/FLOAT[@name='credit_val']", '0.00')
-        self.assert_count_equal('ACTIONS/ACTION', 2)
+        self.assert_count_equal('entrylineaccount_serial', 1)
+        self.assert_json_equal('EDIT', 'num_cpt_txt', '60')
+        self.assert_json_equal('SELECT', 'num_cpt', '11')
+        self.assert_select_equal('num_cpt', 4)  # nb=4
+        self.assert_json_equal('FLOAT', 'debit_val', '152.34')
+        self.assert_json_equal('FLOAT', 'credit_val', '0.00')
+        self.assertEqual(len(self.json_actions), 2)
 
         self.factory.xfer = EntryLineAccountAdd()
-        self.call('/diacamma.accounting/entryLineAccountAdd', {'year': '1', 'journal': '2', 'entryaccount': '1', 'serial_entry': "-1|4|0|152.340000|None|",
-                                                               'num_cpt_txt': '60', 'num_cpt': '12', 'debit_val': '152.34', 'credit_val': '0.0'}, False)
+        self.calljson('/diacamma.accounting/entryLineAccountAdd', {'year': '1', 'journal': '2', 'entryaccount': '1', 'serial_entry': "-1|4|0|152.340000|None|",
+                                                                   'num_cpt_txt': '60', 'num_cpt': '12', 'debit_val': '152.34', 'credit_val': '0.0'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryLineAccountAdd')
-        self.assert_count_equal("CONTEXT/*", 3)
-        self.assert_xml_equal("CONTEXT/PARAM[@name='entryaccount']", "1")
-        self.assert_xml_equal("CONTEXT/PARAM[@name='year']", "1")
-        self.assert_xml_equal("CONTEXT/PARAM[@name='journal']", "2")
+        self.assertEqual(len(self.json_context), 3)
+        self.assertEqual(self.json_context['entryaccount'], '1')
+        self.assertEqual(self.json_context['year'], "1")
+        self.assertEqual(self.json_context['journal'], "2")
 
         self.factory.xfer = EntryAccountEdit()
-        self.call('/diacamma.accounting/entryAccountEdit',
-                  {'year': '1', 'journal': '2', 'entryaccount': '1', 'serial_entry': "-1|4|0|152.340000|None|\n-2|12|0|152.340000|None|"}, False)
+        self.calljson('/diacamma.accounting/entryAccountEdit',
+                      {'year': '1', 'journal': '2', 'entryaccount': '1', 'serial_entry': "-1|4|0|152.340000|None|\n-2|12|0|152.340000|None|"}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountEdit')
-        self.assert_count_equal('COMPONENTS/*', 16)
+        self.assert_count_equal('', 16)
 
-        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD', 2)
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="entry_account"]', '[401] 401')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="debit"]', '{[font color="green"]}{[/font]}')
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="credit"]', '{[font color="green"]}152.34€{[/font]}')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="reference"]', '---')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[2]/VALUE[@name="entry_account"]', '[602] 602')
+        self.assert_count_equal('entrylineaccount_serial', 2)
+        self.assert_json_equal('', 'entrylineaccount_serial/@0/entry_account', '[401] 401')
+        self.assert_json_equal('', 'entrylineaccount_serial/@0/debit', '{[font color="green"]}{[/font]}')
+        self.assert_json_equal('', 'entrylineaccount_serial/@0/credit', '{[font color="green"]}152.34€{[/font]}')
+        self.assert_json_equal('', 'entrylineaccount_serial/@0/reference', '---')
+        self.assert_json_equal('', 'entrylineaccount_serial/@1/entry_account', '[602] 602')
 
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[2]/VALUE[@name="debit"]',
-                              '{[font color="blue"]}152.34€{[/font]}')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[2]/VALUE[@name="credit"]', '{[font color="green"]}{[/font]}')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[2]/VALUE[@name="reference"]', '---')
-        self.assert_count_equal('ACTIONS/ACTION', 2)
-        self.assert_attrib_equal("ACTIONS/ACTION[1]", "id", "diacamma.accounting/entryAccountValidate")
+        self.assert_json_equal('', 'entrylineaccount_serial/@1/debit',
+                               '{[font color="blue"]}152.34€{[/font]}')
+        self.assert_json_equal('', 'entrylineaccount_serial/@1/credit', '{[font color="green"]}{[/font]}')
+        self.assert_json_equal('', 'entrylineaccount_serial/@1/reference', '---')
+        self.assertEqual(len(self.json_actions), 2)
+        self.assertEqual(self.json_actions[0]['id'], "diacamma.accounting/entryAccountValidate")
 
     def test_add_line_payoff(self):
         self.factory.xfer = EntryAccountEdit()
-        self.call('/diacamma.accounting/entryAccountEdit', {'SAVE': 'YES', 'year': '1', 'journal': '3',
-                                                            'date_value': '2015-02-13', 'designation': 'un plein cadie'}, False)
+        self.calljson('/diacamma.accounting/entryAccountEdit', {'SAVE': 'YES', 'year': '1', 'journal': '3',
+                                                                'date_value': '2015-02-13', 'designation': 'un plein cadie'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountEdit')
 
         self.factory.xfer = EntryAccountEdit()
-        self.call('/diacamma.accounting/entryAccountEdit',
-                  {'year': '1', 'journal': '3', 'entryaccount': '1', 'serial_entry': "-1|4|0|152.340000|None|", 'num_cpt_txt': '5'}, False)
+        self.calljson('/diacamma.accounting/entryAccountEdit',
+                      {'year': '1', 'journal': '3', 'entryaccount': '1', 'serial_entry': "-1|4|0|152.340000|None|", 'num_cpt_txt': '5'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountEdit')
-        self.assert_count_equal('COMPONENTS/*', 17)
+        self.assert_count_equal('', 17)
 
-        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD', 1)
-        self.assert_xml_equal("COMPONENTS/EDIT[@name='num_cpt_txt']", '5')
-        self.assert_xml_equal("COMPONENTS/SELECT[@name='num_cpt']", '2')
-        self.assert_count_equal("COMPONENTS/SELECT[@name='num_cpt']/CASE", 2)
-        self.assert_xml_equal("COMPONENTS/FLOAT[@name='debit_val']", '152.34')
-        self.assert_xml_equal("COMPONENTS/FLOAT[@name='credit_val']", '0.00')
-        self.assert_xml_equal("COMPONENTS/EDIT[@name='reference']", None)
-        self.assert_count_equal('ACTIONS/ACTION', 2)
+        self.assert_count_equal('entrylineaccount_serial', 1)
+        self.assert_json_equal('EDIT', 'num_cpt_txt', '5')
+        self.assert_json_equal('SELECT', 'num_cpt', '2')
+        self.assert_select_equal('num_cpt', 2)  # nb=2
+        self.assert_json_equal('FLOAT', 'debit_val', '152.34')
+        self.assert_json_equal('FLOAT', 'credit_val', '0.00')
+        self.assert_json_equal('EDIT', 'reference', '')
+        self.assertEqual(len(self.json_actions), 2)
 
         self.factory.xfer = EntryLineAccountAdd()
-        self.call('/diacamma.accounting/entryLineAccountAdd', {'year': '1', 'journal': '3', 'entryaccount': '1', 'serial_entry': "-1|4|0|152.340000|None|",
-                                                               'num_cpt_txt': '5', 'num_cpt': '3', 'debit_val': '152.34', 'credit_val': '0.0', 'reference': 'aaabbb'}, False)
+        self.calljson('/diacamma.accounting/entryLineAccountAdd', {'year': '1', 'journal': '3', 'entryaccount': '1', 'serial_entry': "-1|4|0|152.340000|None|",
+                                                                   'num_cpt_txt': '5', 'num_cpt': '3', 'debit_val': '152.34', 'credit_val': '0.0', 'reference': 'aaabbb'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryLineAccountAdd')
-        self.assert_count_equal("CONTEXT/*", 3)
-        self.assert_xml_equal("CONTEXT/PARAM[@name='entryaccount']", "1")
-        self.assert_xml_equal("CONTEXT/PARAM[@name='year']", "1")
-        self.assert_xml_equal("CONTEXT/PARAM[@name='journal']", "3")
+        self.assertEqual(len(self.json_context), 3)
+        self.assertEqual(self.json_context['entryaccount'], '1')
+        self.assertEqual(self.json_context['year'], "1")
+        self.assertEqual(self.json_context['journal'], "3")
 
         self.factory.xfer = EntryAccountEdit()
-        self.call('/diacamma.accounting/entryAccountEdit',
-                  {'year': '1', 'journal': '2', 'entryaccount': '1', 'serial_entry': "-1|4|0|152.340000|None|\n-2|3|0|152.340000|aaabbb|"}, False)
+        self.calljson('/diacamma.accounting/entryAccountEdit',
+                      {'year': '1', 'journal': '2', 'entryaccount': '1', 'serial_entry': "-1|4|0|152.340000|None|\n-2|3|0|152.340000|aaabbb|"}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountEdit')
-        self.assert_count_equal('COMPONENTS/*', 16)
+        self.assert_count_equal('', 16)
 
-        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD', 2)
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="entry_account"]', '[401] 401')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="debit"]', '{[font color="green"]}{[/font]}')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="credit"]', '{[font color="green"]}152.34€{[/font]}')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="reference"]', '---')
+        self.assert_count_equal('entrylineaccount_serial', 2)
+        self.assert_json_equal('', 'entrylineaccount_serial/@0/entry_account', '[401] 401')
+        self.assert_json_equal('', 'entrylineaccount_serial/@0/debit', '{[font color="green"]}{[/font]}')
+        self.assert_json_equal('', 'entrylineaccount_serial/@0/credit', '{[font color="green"]}152.34€{[/font]}')
+        self.assert_json_equal('', 'entrylineaccount_serial/@0/reference', '---')
 
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[2]/VALUE[@name="entry_account"]', '[531] 531')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[2]/VALUE[@name="debit"]', '{[font color="blue"]}152.34€{[/font]}')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[2]/VALUE[@name="credit"]', '{[font color="green"]}{[/font]}')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[2]/VALUE[@name="reference"]', 'aaabbb')
-        self.assert_count_equal('ACTIONS/ACTION', 2)
-        self.assert_attrib_equal("ACTIONS/ACTION[1]", "id", "diacamma.accounting/entryAccountValidate")
+        self.assert_json_equal('', 'entrylineaccount_serial/@1/entry_account', '[531] 531')
+        self.assert_json_equal('', 'entrylineaccount_serial/@1/debit', '{[font color="blue"]}152.34€{[/font]}')
+        self.assert_json_equal('', 'entrylineaccount_serial/@1/credit', '{[font color="green"]}{[/font]}')
+        self.assert_json_equal('', 'entrylineaccount_serial/@1/reference', 'aaabbb')
+        self.assertEqual(len(self.json_actions), 2)
+        self.assertEqual(self.json_actions[0]['id'], "diacamma.accounting/entryAccountValidate")
 
     def test_change_line_third(self):
         self.factory.xfer = EntryAccountEdit()
-        self.call('/diacamma.accounting/entryAccountEdit', {'SAVE': 'YES', 'year': '1', 'journal': '2',
-                                                            'date_value': '2015-02-13', 'designation': 'un plein cadie'}, False)
+        self.calljson('/diacamma.accounting/entryAccountEdit', {'SAVE': 'YES', 'year': '1', 'journal': '2',
+                                                                'date_value': '2015-02-13', 'designation': 'un plein cadie'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountEdit')
 
         self.factory.xfer = EntryLineAccountEdit()
-        self.call('/diacamma.accounting/entryLineAccountEdit', {'year': '1', 'journal': '2', 'entryaccount': '1',
-                                                                'serial_entry': "-1|4|0|152.340000|None|\n-2|12|0|152.340000|None|", 'entrylineaccount_serial': '-1'}, False)
+        self.calljson('/diacamma.accounting/entryLineAccountEdit', {'year': '1', 'journal': '2', 'entryaccount': '1',
+                                                                    'serial_entry': "-1|4|0|152.340000|None|\n-2|12|0|152.340000|None|", 'entrylineaccount_serial': '-1'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryLineAccountEdit')
-        self.assert_count_equal('COMPONENTS/*', 5)
+        self.assert_count_equal('', 5)
 
-        self.assert_xml_equal("COMPONENTS/LABELFORM[@name='account']", '[401] 401')
-        self.assert_xml_equal("COMPONENTS/FLOAT[@name='debit_val']", '0.00')
-        self.assert_xml_equal("COMPONENTS/FLOAT[@name='credit_val']", '152.34')
-        self.assert_xml_equal("COMPONENTS/SELECT[@name='third']", '0')
-        self.assert_count_equal("COMPONENTS/SELECT[@name='third']/CASE", 5)
-        self.assert_attrib_equal("ACTIONS/ACTION[1]", "id", "diacamma.accounting/entryLineAccountAdd")
-        self.assert_count_equal("ACTIONS/ACTION[1]/PARAM", 1)
-        self.assert_xml_equal("ACTIONS/ACTION[1]/PARAM[@name='num_cpt']", '4')
+        self.assert_json_equal('LABELFORM', 'account', '[401] 401')
+        self.assert_json_equal('FLOAT', 'debit_val', '0.00')
+        self.assert_json_equal('FLOAT', 'credit_val', '152.34')
+        self.assert_json_equal('SELECT', 'third', '0')
+        self.assert_select_equal('third', 5)  # nb=5
+        self.assertEqual(self.json_actions[0]['id'], "diacamma.accounting/entryLineAccountAdd")
+        self.assertEqual(len(self.json_actions[0]['params']), 1)
+        self.assertEqual(self.json_actions[0]['params']['num_cpt'], 4)
 
         self.factory.xfer = EntryLineAccountAdd()
-        self.call('/diacamma.accounting/entryLineAccountAdd', {'year': '1', 'journal': '2', 'entryaccount': '1',
-                                                               'serial_entry': "-1|4|0|152.340000|None|\n-2|12|0|152.340000|None|", 'debit_val': '0.0',
-                                                               'credit_val': '152.34', 'entrylineaccount_serial': '-1', 'third': '3', 'num_cpt': '4'}, False)
+        self.calljson('/diacamma.accounting/entryLineAccountAdd', {'year': '1', 'journal': '2', 'entryaccount': '1',
+                                                                   'serial_entry': "-1|4|0|152.340000|None|\n-2|12|0|152.340000|None|", 'debit_val': '0.0',
+                                                                   'credit_val': '152.34', 'entrylineaccount_serial': '-1', 'third': '3', 'num_cpt': '4'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryLineAccountAdd')
-        self.assert_count_equal("CONTEXT/*", 3)
-        self.assert_xml_equal("CONTEXT/PARAM[@name='entryaccount']", "1")
-        self.assert_xml_equal("CONTEXT/PARAM[@name='year']", "1")
-        self.assert_xml_equal("CONTEXT/PARAM[@name='journal']", "2")
+        self.assertEqual(len(self.json_context), 3)
+        self.assertEqual(self.json_context['entryaccount'], '1')
+        self.assertEqual(self.json_context['year'], "1")
+        self.assertEqual(self.json_context['journal'], "2")
 
         self.factory.xfer = EntryAccountEdit()
-        self.call('/diacamma.accounting/entryAccountEdit',
-                  {'year': '1', 'journal': '2', 'entryaccount': '1', 'serial_entry': "-2|12|0|152.340000|None|\n-3|4|3|152.340000|None|"}, False)
+        self.calljson('/diacamma.accounting/entryAccountEdit',
+                      {'year': '1', 'journal': '2', 'entryaccount': '1', 'serial_entry': "-2|12|0|152.340000|None|\n-3|4|3|152.340000|None|"}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountEdit')
-        self.assert_count_equal('COMPONENTS/*', 16)
+        self.assert_count_equal('', 16)
 
-        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD', 2)
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="entry_account"]', '[602] 602')
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="debit"]', '{[font color="blue"]}152.34€{[/font]}')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="credit"]', '{[font color="green"]}{[/font]}')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="reference"]', '---')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[2]/VALUE[@name="entry_account"]', '[401 Luke Lucky]')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[2]/VALUE[@name="debit"]', '{[font color="green"]}{[/font]}')
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[2]/VALUE[@name="credit"]', '{[font color="green"]}152.34€{[/font]}')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[2]/VALUE[@name="reference"]', '---')
-        self.assert_count_equal('ACTIONS/ACTION', 2)
-        self.assert_attrib_equal("ACTIONS/ACTION[1]", "id", "diacamma.accounting/entryAccountValidate")
+        self.assert_count_equal('entrylineaccount_serial', 2)
+        self.assert_json_equal('', 'entrylineaccount_serial/@0/entry_account', '[602] 602')
+        self.assert_json_equal('', 'entrylineaccount_serial/@0/debit', '{[font color="blue"]}152.34€{[/font]}')
+        self.assert_json_equal('', 'entrylineaccount_serial/@0/credit', '{[font color="green"]}{[/font]}')
+        self.assert_json_equal('', 'entrylineaccount_serial/@0/reference', '---')
+        self.assert_json_equal('', 'entrylineaccount_serial/@1/entry_account', '[401 Luke Lucky]')
+        self.assert_json_equal('', 'entrylineaccount_serial/@1/debit', '{[font color="green"]}{[/font]}')
+        self.assert_json_equal('', 'entrylineaccount_serial/@1/credit', '{[font color="green"]}152.34€{[/font]}')
+        self.assert_json_equal('', 'entrylineaccount_serial/@1/reference', '---')
+        self.assertEqual(len(self.json_actions), 2)
+        self.assertEqual(self.json_actions[0]['id'], "diacamma.accounting/entryAccountValidate")
 
         self.factory.xfer = EntryLineAccountEdit()
-        self.call('/diacamma.accounting/entryLineAccountEdit', {'year': '1', 'journal': '2', 'entryaccount': '1',
-                                                                'serial_entry': "-1|4|3|152.340000|None|\n-2|12|0|152.340000|None|", 'entrylineaccount_serial': '-1'}, False)
+        self.calljson('/diacamma.accounting/entryLineAccountEdit', {'year': '1', 'journal': '2', 'entryaccount': '1',
+                                                                    'serial_entry': "-1|4|3|152.340000|None|\n-2|12|0|152.340000|None|", 'entrylineaccount_serial': '-1'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryLineAccountEdit')
-        self.assert_count_equal('COMPONENTS/*', 5)
+        self.assert_count_equal('', 5)
 
-        self.assert_xml_equal("COMPONENTS/LABELFORM[@name='account']", '[401] 401')
-        self.assert_xml_equal("COMPONENTS/FLOAT[@name='debit_val']", '0.00')
-        self.assert_xml_equal("COMPONENTS/FLOAT[@name='credit_val']", '152.34')
-        self.assert_xml_equal("COMPONENTS/SELECT[@name='third']", '3')
-        self.assert_count_equal("COMPONENTS/SELECT[@name='third']/CASE", 5)
-        self.assert_attrib_equal("ACTIONS/ACTION[1]", "id", "diacamma.accounting/entryLineAccountAdd")
-        self.assert_count_equal("ACTIONS/ACTION[1]/PARAM", 1)
-        self.assert_xml_equal("ACTIONS/ACTION[1]/PARAM[@name='num_cpt']", '4')
+        self.assert_json_equal('LABELFORM', 'account', '[401] 401')
+        self.assert_json_equal('FLOAT', 'debit_val', '0.00')
+        self.assert_json_equal('FLOAT', 'credit_val', '152.34')
+        self.assert_json_equal('SELECT', 'third', '3')
+        self.assert_select_equal('third', 5)  # nb=5
+        self.assertEqual(self.json_actions[0]['id'], "diacamma.accounting/entryLineAccountAdd")
+        self.assertEqual(len(self.json_actions[0]['params']), 1)
+        self.assertEqual(self.json_actions[0]['params']['num_cpt'], 4)
 
     def test_change_line_payoff(self):
         self.factory.xfer = EntryAccountEdit()
-        self.call('/diacamma.accounting/entryAccountEdit', {'SAVE': 'YES', 'year': '1', 'journal': '3',
-                                                            'date_value': '2015-02-13', 'designation': 'un plein cadie'}, False)
+        self.calljson('/diacamma.accounting/entryAccountEdit', {'SAVE': 'YES', 'year': '1', 'journal': '3',
+                                                                'date_value': '2015-02-13', 'designation': 'un plein cadie'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountEdit')
 
         self.factory.xfer = EntryLineAccountEdit()
-        self.call('/diacamma.accounting/entryLineAccountEdit', {'year': '1', 'journal': '3', 'entryaccount': '1', 'reference': '',
-                                                                'serial_entry': "-1|4|0|152.340000|None|\n-2|3|0|152.340000|aaabbb|", 'entrylineaccount_serial': '-2'}, False)
+        self.calljson('/diacamma.accounting/entryLineAccountEdit', {'year': '1', 'journal': '3', 'entryaccount': '1', 'reference': '',
+                                                                    'serial_entry': "-1|4|0|152.340000|None|\n-2|3|0|152.340000|aaabbb|", 'entrylineaccount_serial': '-2'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryLineAccountEdit')
-        self.assert_count_equal('COMPONENTS/*', 5)
+        self.assert_count_equal('', 5)
 
-        self.assert_xml_equal("COMPONENTS/LABELFORM[@name='account']", '[531] 531')
-        self.assert_xml_equal("COMPONENTS/FLOAT[@name='debit_val']", '152.34')
-        self.assert_xml_equal("COMPONENTS/FLOAT[@name='credit_val']", '0.00')
-        self.assert_xml_equal("COMPONENTS/EDIT[@name='reference']", 'aaabbb')
-        self.assert_attrib_equal("ACTIONS/ACTION[1]", "id", "diacamma.accounting/entryLineAccountAdd")
-        self.assert_count_equal("ACTIONS/ACTION[1]/PARAM", 1)
-        self.assert_xml_equal("ACTIONS/ACTION[1]/PARAM[@name='num_cpt']", '3')
+        self.assert_json_equal('LABELFORM', 'account', '[531] 531')
+        self.assert_json_equal('FLOAT', 'debit_val', '152.34')
+        self.assert_json_equal('FLOAT', 'credit_val', '0.00')
+        self.assert_json_equal('EDIT', 'reference', 'aaabbb')
+        self.assertEqual(self.json_actions[0]['id'], "diacamma.accounting/entryLineAccountAdd")
+        self.assertEqual(len(self.json_actions[0]['params']), 1)
+        self.assertEqual(self.json_actions[0]['params']['num_cpt'], 3)
 
         self.factory.xfer = EntryLineAccountAdd()
-        self.call('/diacamma.accounting/entryLineAccountAdd', {'year': '1', 'journal': '3', 'entryaccount': '1',
-                                                               'serial_entry': "-1|4|0|152.340000|None|\n-2|3|0|152.340000|aaabbb|", 'debit_val': '152.34',
-                                                               'credit_val': '0.0', 'entrylineaccount_serial': '-2', 'reference': 'ccdd', 'num_cpt': '3'}, False)
+        self.calljson('/diacamma.accounting/entryLineAccountAdd', {'year': '1', 'journal': '3', 'entryaccount': '1',
+                                                                   'serial_entry': "-1|4|0|152.340000|None|\n-2|3|0|152.340000|aaabbb|", 'debit_val': '152.34',
+                                                                   'credit_val': '0.0', 'entrylineaccount_serial': '-2', 'reference': 'ccdd', 'num_cpt': '3'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryLineAccountAdd')
-        self.assert_count_equal("CONTEXT/*", 3)
-        self.assert_xml_equal("CONTEXT/PARAM[@name='entryaccount']", "1")
-        self.assert_xml_equal("CONTEXT/PARAM[@name='year']", "1")
-        self.assert_xml_equal("CONTEXT/PARAM[@name='journal']", "3")
-        self.assert_attrib_equal("ACTION", "id", "diacamma.accounting/entryAccountEdit")
-        self.assert_count_equal("ACTION/PARAM", 1)
-        serial_value = self.get_first_xpath("ACTION/PARAM[@name='serial_entry']").text
+        self.assertEqual(len(self.json_context), 3)
+        self.assertEqual(self.json_context['entryaccount'], '1')
+        self.assertEqual(self.json_context['year'], "1")
+        self.assertEqual(self.json_context['journal'], "3")
+        self.assertEqual(self.response_json['action']['id'], "diacamma.accounting/entryAccountEdit")
+        self.assertEqual(len(self.response_json['action']['params']), 1)
+        serial_value = self.response_json['action']['params']['serial_entry']
         self.assertEqual(serial_value[-21:], "|3|0|152.340000|ccdd|")
 
     def test_valid_entry(self):
         self.factory.xfer = EntryAccountEdit()
-        self.call('/diacamma.accounting/entryAccountEdit', {'SAVE': 'YES', 'year': '1', 'journal': '2',
-                                                            'date_value': '2015-02-13', 'designation': 'un plein cadie'}, False)
+        self.calljson('/diacamma.accounting/entryAccountEdit', {'SAVE': 'YES', 'year': '1', 'journal': '2',
+                                                                'date_value': '2015-02-13', 'designation': 'un plein cadie'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountEdit')
         self.factory.xfer = EntryAccountValidate()
-        self.call('/diacamma.accounting/entryAccountValidate',
-                  {'year': '1', 'journal': '2', 'entryaccount': '1', 'serial_entry': "-2|12|0|152.340000|None|\n-3|4|3|152.340000|None|"}, False)
+        self.calljson('/diacamma.accounting/entryAccountValidate',
+                      {'year': '1', 'journal': '2', 'entryaccount': '1', 'serial_entry': "-2|12|0|152.340000|None|\n-3|4|3|152.340000|None|"}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountValidate')
 
         self.factory.xfer = EntryAccountList()
-        self.call('/diacamma.accounting/entryAccountList',
-                  {'year': '1', 'journal': '2', 'filter': '0'}, False)
+        self.calljson('/diacamma.accounting/entryAccountList',
+                      {'year': '1', 'journal': '2', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
-        self.assert_count_equal('COMPONENTS/*', 7)
-        self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/HEADER', 6)
-        self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', 1)
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[1]/VALUE[@name="num"]', '---')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[1]/VALUE[@name="date_entry"]', '---')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[1]/VALUE[@name="date_value"]', '13 février 2015')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[1]/VALUE[@name="link"]', '---')
-        description = self.get_first_xpath('COMPONENTS/GRID[@name="entryaccount"]/RECORD[1]/VALUE[@name="description"]').text
+        self.assert_count_equal('', 7)
+        self.assert_count_equal('entryaccount', 1)
+        self.assert_json_equal('', 'entryaccount/@0/num', '---')
+        self.assert_json_equal('', 'entryaccount/@0/date_entry', '---')
+        self.assert_json_equal('', 'entryaccount/@0/date_value', '2015-02-13')
+        self.assert_json_equal('', 'entryaccount/@0/link', '---')
+        description = self.json_data['entryaccount'][0]['description']
         self.assertTrue('un plein cadie' in description, description)
         self.assertTrue('[602] 602' in description, description)
         self.assertTrue('[401 Luke Lucky]' in description, description)
         self.assertTrue('152.34€' in description, description)
-        self.assert_xml_equal(
-            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit :{[/b]} 0.00€ - {[b]}Charge :{[/b]} 152.34€ = {[b]}Résultat :{[/b]} -152.34€{[br/]}{[b]}Trésorerie :{[/b]} 0.00€ - {[b]}Validé :{[/b]} 0.00€{[/center]}')
+        self.assert_json_equal('LABELFORM', 'result', '{[center]}{[b]}Produit :{[/b]} 0.00€ - {[b]}Charge :{[/b]} 152.34€ = {[b]}Résultat :{[/b]} -152.34€{[br/]}{[b]}Trésorerie :{[/b]} 0.00€ - {[b]}Validé :{[/b]} 0.00€{[/center]}')
 
         self.factory.xfer = EntryAccountOpenFromLine()
-        self.call('/diacamma.accounting/entryAccountOpenFromLine',
-                  {'year': '1', 'journal': '2', 'filter': '0', 'entryaccount': '1'}, False)
+        self.calljson('/diacamma.accounting/entryAccountOpenFromLine',
+                      {'year': '1', 'journal': '2', 'filter': '0', 'entryaccount': '1'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountOpenFromLine')
-        self.assert_attrib_equal("ACTION", "id", "diacamma.accounting/entryAccountEdit")
-        self.assert_count_equal("ACTION/PARAM", 0)
-        self.assert_count_equal("CONTEXT/*", 4)
-        self.assert_xml_equal("CONTEXT/PARAM[@name='filter']", "0")
-        self.assert_xml_equal("CONTEXT/PARAM[@name='year']", "1")
-        self.assert_xml_equal("CONTEXT/PARAM[@name='journal']", "2")
-        self.assert_xml_equal("CONTEXT/PARAM[@name='entryaccount']", "1")
+        self.assertEqual(self.response_json['action']['id'], "diacamma.accounting/entryAccountEdit")
+        self.assertEqual(self.response_json['action']['params'], None)
+        self.assertEqual(len(self.json_context), 4)
+        self.assertEqual(self.json_context['filter'], "0")
+        self.assertEqual(self.json_context['year'], "1")
+        self.assertEqual(self.json_context['journal'], "2")
+        self.assertEqual(self.json_context['entryaccount'], '1')
 
         self.factory.xfer = EntryAccountClose()
-        self.call('/diacamma.accounting/entryAccountClose',
-                  {'CONFIRME': 'YES', 'year': '1', 'journal': '2', "entryaccount": "1"}, False)
+        self.calljson('/diacamma.accounting/entryAccountClose',
+                      {'CONFIRME': 'YES', 'year': '1', 'journal': '2', "entryaccount": "1"}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountClose')
 
         self.factory.xfer = EntryAccountList()
-        self.call('/diacamma.accounting/entryAccountList',
-                  {'year': '1', 'journal': '2', 'filter': '0'}, False)
+        self.calljson('/diacamma.accounting/entryAccountList',
+                      {'year': '1', 'journal': '2', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
-        self.assert_count_equal('COMPONENTS/*', 7)
-        self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/HEADER', 6)
-        self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', 1)
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[1]/VALUE[@name="num"]', '1')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[1]/VALUE[@name="date_entry"]',
-                              formats.date_format(date.today(), "DATE_FORMAT"))
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[1]/VALUE[@name="date_value"]', '13 février 2015')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[1]/VALUE[@name="link"]', '---')
-        description = self.get_first_xpath('COMPONENTS/GRID[@name="entryaccount"]/RECORD[1]/VALUE[@name="description"]').text
+        self.assert_count_equal('', 7)
+        self.assert_count_equal('entryaccount', 1)
+        self.assert_json_equal('', 'entryaccount/@0/num', '1')
+        self.assert_json_equal('', 'entryaccount/@0/date_entry', date.today())
+        self.assert_json_equal('', 'entryaccount/@0/date_value', '2015-02-13')
+        self.assert_json_equal('', 'entryaccount/@0/link', '---')
+        description = self.json_data['entryaccount'][0]['description']
         self.assertTrue('un plein cadie' in description, description)
         self.assertTrue('[602] 602' in description, description)
         self.assertTrue('[401 Luke Lucky]' in description, description)
         self.assertTrue('152.34€' in description, description)
-        self.assert_xml_equal(
-            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit :{[/b]} 0.00€ - {[b]}Charge :{[/b]} 152.34€ = {[b]}Résultat :{[/b]} -152.34€{[br/]}{[b]}Trésorerie :{[/b]} 0.00€ - {[b]}Validé :{[/b]} 0.00€{[/center]}')
+        self.assert_json_equal('LABELFORM', 'result', '{[center]}{[b]}Produit :{[/b]} 0.00€ - {[b]}Charge :{[/b]} 152.34€ = {[b]}Résultat :{[/b]} -152.34€{[br/]}{[b]}Trésorerie :{[/b]} 0.00€ - {[b]}Validé :{[/b]} 0.00€{[/center]}')
 
         self.factory.xfer = EntryAccountOpenFromLine()
-        self.call('/diacamma.accounting/entryAccountOpenFromLine',
-                  {'year': '1', 'journal': '2', 'filter': '0', 'entryaccount': '1'}, False)
+        self.calljson('/diacamma.accounting/entryAccountOpenFromLine',
+                      {'year': '1', 'journal': '2', 'filter': '0', 'entryaccount': '1'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountOpenFromLine')
-        self.assert_attrib_equal("ACTION", "id", "diacamma.accounting/entryAccountShow")
-        self.assert_count_equal("ACTION/PARAM", 0)
-        self.assert_count_equal("CONTEXT/*", 4)
-        self.assert_xml_equal("CONTEXT/PARAM[@name='filter']", "0")
-        self.assert_xml_equal("CONTEXT/PARAM[@name='year']", "1")
-        self.assert_xml_equal("CONTEXT/PARAM[@name='journal']", "2")
-        self.assert_xml_equal("CONTEXT/PARAM[@name='entryaccount']", "1")
+        self.assertEqual(self.response_json['action']['id'], "diacamma.accounting/entryAccountShow")
+        self.assertEqual(self.response_json['action']['params'], None)
+        self.assertEqual(len(self.json_context), 4)
+        self.assertEqual(self.json_context['filter'], "0")
+        self.assertEqual(self.json_context['year'], "1")
+        self.assertEqual(self.json_context['journal'], "2")
+        self.assertEqual(self.json_context['entryaccount'], '1')
 
         self.factory.xfer = EntryAccountShow()
-        self.call('/diacamma.accounting/entryAccountShow',
-                  {'year': '1', 'journal': '2', 'filter': '0', 'entryaccount': '1'}, False)
+        self.calljson('/diacamma.accounting/entryAccountShow',
+                      {'year': '1', 'journal': '2', 'filter': '0', 'entryaccount': '1'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountShow')
-        self.assert_count_equal('COMPONENTS/*', 9)
-        self.assert_xml_equal("COMPONENTS/LABELFORM[@name='num']", '1')
-        self.assert_xml_equal("COMPONENTS/LABELFORM[@name='journal']", 'Achats')
-        self.assert_xml_equal("COMPONENTS/LABELFORM[@name='date_entry']", formats.date_format(date.today(), "DATE_FORMAT"))
-        self.assert_xml_equal("COMPONENTS/LABELFORM[@name='date_value']", '13 février 2015')
-        self.assert_xml_equal("COMPONENTS/LABELFORM[@name='designation']", 'un plein cadie')
-        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount"]/HEADER', 4)
-        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount"]/RECORD', 2)
-        self.assert_count_equal('ACTIONS/ACTION', 3)
-        self.assert_attrib_equal("ACTIONS/ACTION[2]", "id", "diacamma.accounting/entryAccountCreateLinked")
+        self.assert_count_equal('', 9)
+        self.assert_json_equal('LABELFORM', 'num', '1')
+        self.assert_json_equal('LABELFORM', 'journal', 'Achats')
+        self.assert_json_equal('LABELFORM', 'date_entry', formats.date_format(date.today(), "DATE_FORMAT"))
+        self.assert_json_equal('LABELFORM', 'date_value', '13 février 2015')
+        self.assert_json_equal('LABELFORM', 'designation', 'un plein cadie')
+        self.assert_count_equal('entrylineaccount', 2)
+        self.assertEqual(len(self.json_actions), 3)
+        self.assertEqual(self.json_actions[1]['id'], "diacamma.accounting/entryAccountCreateLinked")
 
     def test_inverse_entry(self):
         self.factory.xfer = EntryAccountEdit()
-        self.call('/diacamma.accounting/entryAccountEdit', {'SAVE': 'YES', 'year': '1', 'journal': '2',
-                                                            'date_value': '2015-02-13', 'designation': 'un plein cadie'}, False)
+        self.calljson('/diacamma.accounting/entryAccountEdit', {'SAVE': 'YES', 'year': '1', 'journal': '2',
+                                                                'date_value': '2015-02-13', 'designation': 'un plein cadie'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountEdit')
         self.factory.xfer = EntryAccountValidate()
-        self.call('/diacamma.accounting/entryAccountValidate',
-                  {'year': '1', 'journal': '2', 'entryaccount': '1', 'serial_entry': "-2|12|0|152.340000|None|\n-3|4|3|152.340000|None|"}, False)
+        self.calljson('/diacamma.accounting/entryAccountValidate',
+                      {'year': '1', 'journal': '2', 'entryaccount': '1', 'serial_entry': "-2|12|0|152.340000|None|\n-3|4|3|152.340000|None|"}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountValidate')
 
         self.factory.xfer = EntryAccountEdit()
-        self.call('/diacamma.accounting/entryAccountEdit',
-                  {'year': '1', 'journal': '2', 'entryaccount': '1'}, False)
+        self.calljson('/diacamma.accounting/entryAccountEdit',
+                      {'year': '1', 'journal': '2', 'entryaccount': '1'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountEdit')
-        self.assert_count_equal('COMPONENTS/*', 16)
+        self.assert_count_equal('', 16)
 
-        self.assert_count_equal('ACTIONS/ACTION', 5)
-        self.assert_attrib_equal("ACTIONS/ACTION[2]", "id", "diacamma.accounting/entryAccountClose")
-        self.assert_attrib_equal("ACTIONS/ACTION[3]", "id", "diacamma.accounting/entryAccountCreateLinked")
-        self.assert_attrib_equal("ACTIONS/ACTION[4]", "id", "diacamma.accounting/entryAccountReverse")
+        self.assertEqual(len(self.json_actions), 5)
+        self.assertEqual(self.json_actions[1]['id'], "diacamma.accounting/entryAccountClose")
+        self.assertEqual(self.json_actions[2]['id'], "diacamma.accounting/entryAccountCreateLinked")
+        self.assertEqual(self.json_actions[3]['id'], "diacamma.accounting/entryAccountReverse")
 
         self.factory.xfer = EntryAccountReverse()
-        self.call('/diacamma.accounting/entryAccountReverse',
-                  {'year': '1', 'journal': '2', 'entryaccount': '1'}, False)
+        self.calljson('/diacamma.accounting/entryAccountReverse',
+                      {'year': '1', 'journal': '2', 'entryaccount': '1'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountReverse')
 
         self.factory.xfer = EntryAccountEdit()
-        self.call('/diacamma.accounting/entryAccountEdit',
-                  {'year': '1', 'journal': '2', 'entryaccount': '1'}, False)
+        self.calljson('/diacamma.accounting/entryAccountEdit',
+                      {'year': '1', 'journal': '2', 'entryaccount': '1'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountEdit')
-        self.assert_count_equal('COMPONENTS/*', 17)
+        self.assert_count_equal('', 17)
 
-        self.assert_xml_equal("COMPONENTS/LABELFORM[@name='asset_warning']", "{[center]}{[i]}écriture d'un avoir{[/i]}{[/center]}")
+        self.assert_json_equal('LABELFORM', 'asset_warning', "{[center]}{[i]}écriture d'un avoir{[/i]}{[/center]}")
 
     def test_valid_payment(self):
         self.factory.xfer = EntryAccountEdit()
-        self.call('/diacamma.accounting/entryAccountEdit', {'SAVE': 'YES', 'year': '1', 'journal': '2',
-                                                            'date_value': '2015-02-13', 'designation': 'un plein cadie'}, False)
+        self.calljson('/diacamma.accounting/entryAccountEdit', {'SAVE': 'YES', 'year': '1', 'journal': '2',
+                                                                'date_value': '2015-02-13', 'designation': 'un plein cadie'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountEdit')
         self.factory.xfer = EntryAccountValidate()
-        self.call('/diacamma.accounting/entryAccountValidate',
-                  {'year': '1', 'journal': '2', 'entryaccount': '1', 'serial_entry': "-2|12|0|152.340000|None|\n-3|4|3|152.340000|None|"}, False)
+        self.calljson('/diacamma.accounting/entryAccountValidate',
+                      {'year': '1', 'journal': '2', 'entryaccount': '1', 'serial_entry': "-2|12|0|152.340000|None|\n-3|4|3|152.340000|None|"}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountValidate')
 
         self.factory.xfer = EntryAccountCreateLinked()
-        self.call('/diacamma.accounting/entryAccountCreateLinked',
-                  {'year': '1', 'journal': '2', 'entryaccount': '1'}, False)
+        self.calljson('/diacamma.accounting/entryAccountCreateLinked',
+                      {'year': '1', 'journal': '2', 'entryaccount': '1'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountCreateLinked')
-        self.assert_attrib_equal("ACTION", "id", "diacamma.accounting/entryAccountEdit")
-        self.assert_count_equal("ACTION/PARAM", 4)
-        self.assert_xml_equal("ACTION/PARAM[@name='entryaccount']", "2")
-        self.assert_xml_equal("ACTION/PARAM[@name='serial_entry']", "|4|3|-152.340000|None", (-22, -1))
-        self.assert_xml_equal("ACTION/PARAM[@name='num_cpt_txt']", "5")
-        self.assert_xml_equal("ACTION/PARAM[@name='journal']", "4")
-        self.assert_count_equal("CONTEXT/*", 3)
-        self.assert_xml_equal("CONTEXT/PARAM[@name='entryaccount']", "1")
-        self.assert_xml_equal("CONTEXT/PARAM[@name='year']", "1")
-        self.assert_xml_equal("CONTEXT/PARAM[@name='journal']", "2")
+        self.assertEqual(self.response_json['action']['id'], "diacamma.accounting/entryAccountEdit")
+        self.assertEqual(len(self.response_json['action']['params']), 4)
+        self.assertEqual(self.response_json['action']['params']['entryaccount'], 2)
+        self.assertEqual(self.response_json['action']['params']['serial_entry'][-22:-1], "|4|3|-152.340000|None")
+        self.assertEqual(self.response_json['action']['params']['num_cpt_txt'], "5")
+        self.assertEqual(self.response_json['action']['params']['journal'], "4")
+        self.assertEqual(len(self.json_context), 3)
+        self.assertEqual(self.json_context['entryaccount'], "1")
+        self.assertEqual(self.json_context['year'], "1")
+        self.assertEqual(self.json_context['journal'], "2")
 
         self.factory.xfer = EntryAccountEdit()
-        self.call('/diacamma.accounting/entryAccountEdit', {'year': '1', 'journal': '4', 'entryaccount': '2',
-                                                            'serial_entry': "-3|4|3|-152.340000|None|", 'num_cpt_txt': '5'}, False)
+        self.calljson('/diacamma.accounting/entryAccountEdit', {'year': '1', 'journal': '4', 'entryaccount': '2',
+                                                                'serial_entry': "-3|4|3|-152.340000|None|", 'num_cpt_txt': '5'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountEdit')
-        self.assert_count_equal('COMPONENTS/*', 20)
-        self.assert_xml_equal("COMPONENTS/SELECT[@name='journal']", '4')
-        self.assert_xml_equal("COMPONENTS/DATE[@name='date_value']", '2015-12-31')
-        self.assert_xml_equal("COMPONENTS/EDIT[@name='designation']", 'règlement de un plein cadie')
+        self.assert_count_equal('', 20)
+        self.assert_json_equal('SELECT', 'journal', '4')
+        self.assert_json_equal('DATE', 'date_value', '2015-12-31')
+        self.assert_json_equal('EDIT', 'designation', 'règlement de un plein cadie')
 
-        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD', 1)
-        self.assert_xml_equal("COMPONENTS/EDIT[@name='num_cpt_txt']", '5')
-        self.assert_xml_equal("COMPONENTS/SELECT[@name='num_cpt']", '2')
-        self.assert_count_equal("COMPONENTS/SELECT[@name='num_cpt']/CASE", 2)
-        self.assert_xml_equal("COMPONENTS/FLOAT[@name='debit_val']", '0.00')
-        self.assert_xml_equal("COMPONENTS/FLOAT[@name='credit_val']", '152.34')
-        self.assert_xml_equal("COMPONENTS/EDIT[@name='reference']", None)
+        self.assert_count_equal('entrylineaccount_serial', 1)
+        self.assert_json_equal('EDIT', 'num_cpt_txt', '5')
+        self.assert_json_equal('SELECT', 'num_cpt', '2')
+        self.assert_select_equal('num_cpt', 2)  # nb=2
+        self.assert_json_equal('FLOAT', 'debit_val', '0.00')
+        self.assert_json_equal('FLOAT', 'credit_val', '152.34')
+        self.assert_json_equal('EDIT', 'reference', '')
 
-        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD', 1)
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="entry_account"]', '[401 Luke Lucky]')
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="debit"]', '{[font color="blue"]}152.34€{[/font]}')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="credit"]', '{[font color="green"]}{[/font]}')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="reference"]', '---')
-        self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount_link"]/HEADER', 6)
-        self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount_link"]/RECORD', 1)
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount_link"]/RECORD[1]/VALUE[@name="num"]', '---')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount_link"]/RECORD[1]/VALUE[@name="date_entry"]', '---')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount_link"]/RECORD[1]/VALUE[@name="date_value"]', '13 février 2015')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount_link"]/RECORD[1]/VALUE[@name="link"]', 'A')
-        description = self.get_first_xpath('COMPONENTS/GRID[@name="entryaccount_link"]/RECORD[1]/VALUE[@name="description"]').text
+        self.assert_count_equal('entrylineaccount_serial', 1)
+        self.assert_json_equal('', 'entrylineaccount_serial/@0/entry_account', '[401 Luke Lucky]')
+        self.assert_json_equal('', 'entrylineaccount_serial/@0/debit', '{[font color="blue"]}152.34€{[/font]}')
+        self.assert_json_equal('', 'entrylineaccount_serial/@0/credit', '{[font color="green"]}{[/font]}')
+        self.assert_json_equal('', 'entrylineaccount_serial/@0/reference', '---')
+        self.assert_json_equal('', 'entryaccount_link/@0/num', '---')
+        self.assert_json_equal('', 'entryaccount_link/@0/date_entry', '---')
+        self.assert_json_equal('', 'entryaccount_link/@0/date_value', '2015-02-13')
+        self.assert_json_equal('', 'entryaccount_link/@0/link', 'A')
+        description = self.json_data['entryaccount_link'][0]['description']
         self.assertTrue('un plein cadie' in description, description)
         self.assertTrue('[602] 602' in description, description)
         self.assertTrue('[401 Luke Lucky]' in description, description)
         self.assertTrue('152.34€' in description, description)
-        self.assert_count_equal('ACTIONS/ACTION', 2)
+        self.assertEqual(len(self.json_actions), 2)
 
         self.factory.xfer = EntryAccountEdit()
-        self.call('/diacamma.accounting/entryAccountEdit', {'year': '1', 'journal': '2', 'entryaccount': '2',
-                                                            'serial_entry': "-3|4|3|-152.340000|None|\n-4|2|0|-152.340000|Ch N°12345|"}, False)
+        self.calljson('/diacamma.accounting/entryAccountEdit', {'year': '1', 'journal': '2', 'entryaccount': '2',
+                                                                'serial_entry': "-3|4|3|-152.340000|None|\n-4|2|0|-152.340000|Ch N°12345|"}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountEdit')
-        self.assert_count_equal('COMPONENTS/*', 19)
-        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD', 2)
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="entry_account"]', '[401 Luke Lucky]')
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="debit"]', '{[font color="blue"]}152.34€{[/font]}')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="credit"]', '{[font color="green"]}{[/font]}')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[1]/VALUE[@name="reference"]', '---')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[2]/VALUE[@name="entry_account"]', '[512] 512')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[2]/VALUE[@name="debit"]', '{[font color="green"]}{[/font]}')
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[2]/VALUE[@name="credit"]', '{[font color="green"]}152.34€{[/font]}')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD[2]/VALUE[@name="reference"]', 'Ch N°12345')
-        self.assert_count_equal('ACTIONS/ACTION', 2)
+        self.assert_count_equal('', 19)
+        self.assert_count_equal('entrylineaccount_serial', 2)
+        self.assert_json_equal('', 'entrylineaccount_serial/@0/entry_account', '[401 Luke Lucky]')
+        self.assert_json_equal('', 'entrylineaccount_serial/@0/debit', '{[font color="blue"]}152.34€{[/font]}')
+        self.assert_json_equal('', 'entrylineaccount_serial/@0/credit', '{[font color="green"]}{[/font]}')
+        self.assert_json_equal('', 'entrylineaccount_serial/@0/reference', '---')
+        self.assert_json_equal('', 'entrylineaccount_serial/@1/entry_account', '[512] 512')
+        self.assert_json_equal('', 'entrylineaccount_serial/@1/debit', '{[font color="green"]}{[/font]}')
+        self.assert_json_equal('', 'entrylineaccount_serial/@1/credit', '{[font color="green"]}152.34€{[/font]}')
+        self.assert_json_equal('', 'entrylineaccount_serial/@1/reference', 'Ch N°12345')
+        self.assertEqual(len(self.json_actions), 2)
 
         self.factory.xfer = EntryAccountValidate()
-        self.call('/diacamma.accounting/entryAccountValidate',
-                  {'year': '1', 'journal': '2', 'entryaccount': '2', 'serial_entry': "-3|4|3|-152.340000|None||\n-4|2|0|-152.340000|Ch N°12345|"}, False)
+        self.calljson('/diacamma.accounting/entryAccountValidate',
+                      {'year': '1', 'journal': '2', 'entryaccount': '2', 'serial_entry': "-3|4|3|-152.340000|None||\n-4|2|0|-152.340000|Ch N°12345|"}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountValidate')
 
         self.factory.xfer = EntryAccountList()
-        self.call('/diacamma.accounting/entryAccountList',
-                  {'year': '1', 'journal': '-1', 'filter': '0'}, False)
+        self.calljson('/diacamma.accounting/entryAccountList',
+                      {'year': '1', 'journal': '-1', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
-        self.assert_count_equal('COMPONENTS/*', 7)
-        self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/HEADER', 6)
-        self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', 2)
+        self.assert_count_equal('', 7)
+        self.assert_count_equal('entryaccount', 2)
 
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[1]/VALUE[@name="num"]', '---')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[1]/VALUE[@name="date_entry"]', '---')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[1]/VALUE[@name="date_value"]', '13 février 2015')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[1]/VALUE[@name="link"]', 'A')
-        description = self.get_first_xpath('COMPONENTS/GRID[@name="entryaccount"]/RECORD[1]/VALUE[@name="description"]').text
+        self.assert_json_equal('', 'entryaccount/@0/num', '---')
+        self.assert_json_equal('', 'entryaccount/@0/date_entry', '---')
+        self.assert_json_equal('', 'entryaccount/@0/date_value', '2015-02-13')
+        self.assert_json_equal('', 'entryaccount/@0/link', 'A')
+        description = self.json_data['entryaccount'][0]['description']
         self.assertTrue('un plein cadie' in description, description)
         self.assertTrue('[602] 602' in description, description)
         self.assertTrue('[401 Luke Lucky]' in description, description)
         self.assertTrue('152.34€' in description, description)
 
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[2]/VALUE[@name="num"]', '---')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[2]/VALUE[@name="date_entry"]', '---')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[2]/VALUE[@name="date_value"]', '31 décembre 2015')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[2]/VALUE[@name="link"]', 'A')
-        description = self.get_first_xpath('COMPONENTS/GRID[@name="entryaccount"]/RECORD[2]/VALUE[@name="description"]').text
+        self.assert_json_equal('', 'entryaccount/@1/num', '---')
+        self.assert_json_equal('', 'entryaccount/@1/date_entry', '---')
+        self.assert_json_equal('', 'entryaccount/@1/date_value', '2015-12-31')
+        self.assert_json_equal('', 'entryaccount/@1/link', 'A')
+        description = self.json_data['entryaccount'][1]['description']
         self.assertTrue('règlement de un plein cadie' in description, description)
         self.assertTrue('[512] 512' in description, description)
         self.assertTrue('[401 Luke Lucky]' in description, description)
         self.assertTrue('152.34€' in description, description)
-        self.assert_xml_equal(
-            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit :{[/b]} 0.00€ - {[b]}Charge :{[/b]} 152.34€ = {[b]}Résultat :{[/b]} -152.34€{[br/]}{[b]}Trésorerie :{[/b]} -152.34€ - {[b]}Validé :{[/b]} 0.00€{[/center]}')
+        self.assert_json_equal('LABELFORM', 'result', '{[center]}{[b]}Produit :{[/b]} 0.00€ - {[b]}Charge :{[/b]} 152.34€ = {[b]}Résultat :{[/b]} -152.34€{[br/]}{[b]}Trésorerie :{[/b]} -152.34€ - {[b]}Validé :{[/b]} 0.00€{[/center]}')
 
     def test_valid_payment_canceled(self):
         self.factory.xfer = EntryAccountEdit()
-        self.call('/diacamma.accounting/entryAccountEdit', {'SAVE': 'YES', 'year': '1', 'journal': '2',
-                                                            'date_value': '2015-02-13', 'designation': 'un plein cadie'}, False)
+        self.calljson('/diacamma.accounting/entryAccountEdit', {'SAVE': 'YES', 'year': '1', 'journal': '2',
+                                                                'date_value': '2015-02-13', 'designation': 'un plein cadie'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountEdit')
         self.factory.xfer = EntryAccountValidate()
-        self.call('/diacamma.accounting/entryAccountValidate',
-                  {'year': '1', 'journal': '2', 'entryaccount': '1', 'serial_entry': "-2|12|0|152.340000|None|\n-3|4|3|152.340000|None|"}, False)
+        self.calljson('/diacamma.accounting/entryAccountValidate',
+                      {'year': '1', 'journal': '2', 'entryaccount': '1', 'serial_entry': "-2|12|0|152.340000|None|\n-3|4|3|152.340000|None|"}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountValidate')
 
         self.assertEqual(1, EntryAccount.objects.all().count())
 
         self.factory.xfer = EntryAccountCreateLinked()
-        self.call('/diacamma.accounting/entryAccountCreateLinked',
-                  {'year': '1', 'journal': '2', 'entryaccount': '1'}, False)
+        self.calljson('/diacamma.accounting/entryAccountCreateLinked',
+                      {'year': '1', 'journal': '2', 'entryaccount': '1'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountCreateLinked')
-        self.assert_attrib_equal("ACTION", "id", "diacamma.accounting/entryAccountEdit")
-        self.assert_count_equal("ACTION/PARAM", 4)
-        self.assert_xml_equal("ACTION/PARAM[@name='serial_entry']", "|4|3|-152.340000|None", (-22, -1))
-        self.assert_count_equal("CONTEXT/*", 3)
+        self.assertEqual(self.response_json['action']['id'], "diacamma.accounting/entryAccountEdit")
+        self.assertEqual(len(self.response_json['action']['params']), 4)
+        self.assertEqual(self.response_json['action']['params']['serial_entry'][-22:-1], "|4|3|-152.340000|None")
+        self.assertEqual(len(self.json_context), 3)
 
         self.assertEqual(2, EntryAccount.objects.all().count())
 
         self.factory.xfer = EntryAccountEdit()
-        self.call('/diacamma.accounting/entryAccountEdit', {'year': '1', 'journal': '4', 'entryaccount': '2',
-                                                            'serial_entry': "-3|4|3|-152.340000|None|", 'num_cpt_txt': '5'}, False)
+        self.calljson('/diacamma.accounting/entryAccountEdit', {'year': '1', 'journal': '4', 'entryaccount': '2',
+                                                                'serial_entry': "-3|4|3|-152.340000|None|", 'num_cpt_txt': '5'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountEdit')
-        self.assert_count_equal('COMPONENTS/*', 20)
+        self.assert_count_equal('', 20)
 
         self.factory.xfer = EntryAccountUnlock()
-        self.call('/diacamma.accounting/entryAccountUnlock', {'year': '1', 'journal': '4', 'entryaccount': '2',
-                                                              'serial_entry': "-3|4|3|-152.340000|None|", 'num_cpt_txt': '5'}, False)
+        self.calljson('/diacamma.accounting/entryAccountUnlock', {'year': '1', 'journal': '4', 'entryaccount': '2',
+                                                                  'serial_entry': "-3|4|3|-152.340000|None|", 'num_cpt_txt': '5'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountUnlock')
 
         self.assertEqual(1, EntryAccount.objects.all().count())
 
         self.factory.xfer = EntryAccountList()
-        self.call('/diacamma.accounting/entryAccountList',
-                  {'year': '1', 'journal': '-1', 'filter': '0'}, False)
+        self.calljson('/diacamma.accounting/entryAccountList',
+                      {'year': '1', 'journal': '-1', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
-        self.assert_count_equal('COMPONENTS/*', 7)
-        self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/HEADER', 6)
-        self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', 1)
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[1]/VALUE[@name="num"]', '---')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[1]/VALUE[@name="date_entry"]', '---')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[1]/VALUE[@name="date_value"]', '13 février 2015')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[1]/VALUE[@name="link"]', '---')
-        description = self.get_first_xpath('COMPONENTS/GRID[@name="entryaccount"]/RECORD[1]/VALUE[@name="description"]').text
+        self.assert_count_equal('', 7)
+        self.assert_count_equal('entryaccount', 1)
+        self.assert_json_equal('', 'entryaccount/@0/num', '---')
+        self.assert_json_equal('', 'entryaccount/@0/date_entry', '---')
+        self.assert_json_equal('', 'entryaccount/@0/date_value', '2015-02-13')
+        self.assert_json_equal('', 'entryaccount/@0/link', '---')
+        description = self.json_data['entryaccount'][0]['description']
         self.assertTrue('un plein cadie' in description, description)
         self.assertTrue('[602] 602' in description, description)
         self.assertTrue('[401 Luke Lucky]' in description, description)
@@ -695,214 +674,206 @@ class EntryTest(LucteriosTest):
 
     def test_link_unlink_entries(self):
         self.factory.xfer = EntryAccountEdit()
-        self.call('/diacamma.accounting/entryAccountEdit', {'SAVE': 'YES', 'year': '1', 'journal': '2',
-                                                            'date_value': '2015-04-27', 'designation': 'Une belle facture'}, False)
+        self.calljson('/diacamma.accounting/entryAccountEdit', {'SAVE': 'YES', 'year': '1', 'journal': '2',
+                                                                'date_value': '2015-04-27', 'designation': 'Une belle facture'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountEdit')
         self.factory.xfer = EntryAccountValidate()
-        self.call('/diacamma.accounting/entryAccountValidate',
-                  {'year': '1', 'journal': '2', 'entryaccount': '1', 'serial_entry': "-6|9|0|364.91|None|\n-7|1|5|364.91|None|"}, False)
+        self.calljson('/diacamma.accounting/entryAccountValidate',
+                      {'year': '1', 'journal': '2', 'entryaccount': '1', 'serial_entry': "-6|9|0|364.91|None|\n-7|1|5|364.91|None|"}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountValidate')
 
         self.factory.xfer = EntryAccountEdit()
-        self.call('/diacamma.accounting/entryAccountEdit', {'SAVE': 'YES', 'year': '1', 'journal': '4',
-                                                            'date_value': '2015-05-03', 'designation': 'Règlement de belle facture'}, False)
+        self.calljson('/diacamma.accounting/entryAccountEdit', {'SAVE': 'YES', 'year': '1', 'journal': '4',
+                                                                'date_value': '2015-05-03', 'designation': 'Règlement de belle facture'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountEdit')
         self.factory.xfer = EntryAccountValidate()
-        self.call('/diacamma.accounting/entryAccountValidate',
-                  {'year': '1', 'journal': '4', 'entryaccount': '2', 'serial_entry': "-9|1|5|-364.91|None|\n-8|2|0|364.91|BP N°987654|"}, False)
+        self.calljson('/diacamma.accounting/entryAccountValidate',
+                      {'year': '1', 'journal': '4', 'entryaccount': '2', 'serial_entry': "-9|1|5|-364.91|None|\n-8|2|0|364.91|BP N°987654|"}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountValidate')
 
         self.factory.xfer = EntryAccountList()
-        self.call('/diacamma.accounting/entryAccountList',
-                  {'year': '1', 'journal': '-1', 'filter': '0'}, False)
+        self.calljson('/diacamma.accounting/entryAccountList',
+                      {'year': '1', 'journal': '-1', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
-        self.assert_count_equal('COMPONENTS/*', 7)
-        self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/HEADER', 6)
-        self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', 2)
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[1]/VALUE[@name="num"]', '---')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[1]/VALUE[@name="date_entry"]', '---')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[1]/VALUE[@name="date_value"]', '27 avril 2015')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[1]/VALUE[@name="link"]', '---')
-        description = self.get_first_xpath('COMPONENTS/GRID[@name="entryaccount"]/RECORD[1]/VALUE[@name="description"]').text
+        self.assert_count_equal('', 7)
+        self.assert_count_equal('entryaccount', 2)
+        self.assert_json_equal('', 'entryaccount/@0/num', '---')
+        self.assert_json_equal('', 'entryaccount/@0/date_entry', '---')
+        self.assert_json_equal('', 'entryaccount/@0/date_value', '2015-04-27')
+        self.assert_json_equal('', 'entryaccount/@0/link', '---')
+        description = self.json_data['entryaccount'][0]['description']
         self.assertTrue('Une belle facture' in description, description)
         self.assertTrue('[706] 706' in description, description)
         self.assertTrue('[411 Dalton William]' in description, description)
         self.assertTrue('364.91€' in description, description)
 
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[2]/VALUE[@name="num"]', '---')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[2]/VALUE[@name="date_entry"]', '---')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[2]/VALUE[@name="date_value"]', '3 mai 2015')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[2]/VALUE[@name="link"]', '---')
-        description = self.get_first_xpath('COMPONENTS/GRID[@name="entryaccount"]/RECORD[2]/VALUE[@name="description"]').text
+        self.assert_json_equal('', 'entryaccount/@1/num', '---')
+        self.assert_json_equal('', 'entryaccount/@1/date_entry', '---')
+        self.assert_json_equal('', 'entryaccount/@1/date_value', '2015-05-03')
+        self.assert_json_equal('', 'entryaccount/@1/link', '---')
+        description = self.json_data['entryaccount'][1]['description']
         self.assertTrue('Règlement de belle facture' in description, description)
         self.assertTrue('[512] 512' in description, description)
         self.assertTrue('[411 Dalton William]' in description, description)
         self.assertTrue('364.91€' in description, description)
         self.assertTrue('BP N°987654' in description, description)
-        self.assert_xml_equal(
-            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit :{[/b]} 364.91€ - {[b]}Charge :{[/b]} 0.00€ = {[b]}Résultat :{[/b]} 364.91€{[br/]}{[b]}Trésorerie :{[/b]} 364.91€ - {[b]}Validé :{[/b]} 0.00€{[/center]}')
+        self.assert_json_equal('LABELFORM', 'result', '{[center]}{[b]}Produit :{[/b]} 364.91€ - {[b]}Charge :{[/b]} 0.00€ = {[b]}Résultat :{[/b]} 364.91€{[br/]}{[b]}Trésorerie :{[/b]} 364.91€ - {[b]}Validé :{[/b]} 0.00€{[/center]}')
 
         self.factory.xfer = EntryAccountLink()
-        self.call('/diacamma.accounting/entryAccountValidate',
-                  {'year': '1', 'journal': '-1', 'filter': '0', 'entryaccount': '1;2'}, False)
+        self.calljson('/diacamma.accounting/entryAccountValidate',
+                      {'year': '1', 'journal': '-1', 'filter': '0', 'entryaccount': '1;2'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountValidate')
         self.factory.xfer = EntryAccountList()
-        self.call('/diacamma.accounting/entryAccountList',
-                  {'year': '1', 'journal': '-1', 'filter': '0'}, False)
+        self.calljson('/diacamma.accounting/entryAccountList',
+                      {'year': '1', 'journal': '-1', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
-        self.assert_count_equal('COMPONENTS/*', 7)
-        self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/HEADER', 6)
-        self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', 2)
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[1]/VALUE[@name="link"]', 'A')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[2]/VALUE[@name="link"]', 'A')
+        self.assert_count_equal('', 7)
+        self.assert_count_equal('entryaccount', 2)
+        self.assert_json_equal('', 'entryaccount/@0/link', 'A')
+        self.assert_json_equal('', 'entryaccount/@1/link', 'A')
 
         self.factory.xfer = EntryAccountLink()
-        self.call('/diacamma.accounting/entryAccountLink',
-                  {'CONFIRME': 'YES', 'year': '1', 'journal': '-1', 'filter': '0', 'entryaccount': '2'}, False)
+        self.calljson('/diacamma.accounting/entryAccountLink',
+                      {'CONFIRME': 'YES', 'year': '1', 'journal': '-1', 'filter': '0', 'entryaccount': '2'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountLink')
         self.factory.xfer = EntryAccountList()
-        self.call('/diacamma.accounting/entryAccountList',
-                  {'year': '1', 'journal': '-1', 'filter': '0'}, False)
+        self.calljson('/diacamma.accounting/entryAccountList',
+                      {'year': '1', 'journal': '-1', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
-        self.assert_count_equal('COMPONENTS/*', 7)
-        self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/HEADER', 6)
-        self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', 2)
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[1]/VALUE[@name="link"]', '---')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[2]/VALUE[@name="link"]', '---')
+        self.assert_count_equal('', 7)
+        self.assert_count_equal('entryaccount', 2)
+        self.assert_json_equal('', 'entryaccount/@0/link', '---')
+        self.assert_json_equal('', 'entryaccount/@1/link', '---')
 
     def test_delete_lineentry(self):
         self.factory.xfer = EntryAccountEdit()
-        self.call('/diacamma.accounting/entryAccountEdit', {'SAVE': 'YES', 'year': '1', 'journal': '2',
-                                                            'date_value': '2015-04-27', 'designation': 'Une belle facture'}, False)
+        self.calljson('/diacamma.accounting/entryAccountEdit', {'SAVE': 'YES', 'year': '1', 'journal': '2',
+                                                                'date_value': '2015-04-27', 'designation': 'Une belle facture'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountEdit')
         self.factory.xfer = EntryAccountValidate()
-        self.call('/diacamma.accounting/entryAccountValidate',
-                  {'year': '1', 'journal': '2', 'entryaccount': '1', 'serial_entry': "-6|9|0|364.91|None|\n-7|1|5|364.91|None|"}, False)
+        self.calljson('/diacamma.accounting/entryAccountValidate',
+                      {'year': '1', 'journal': '2', 'entryaccount': '1', 'serial_entry': "-6|9|0|364.91|None|\n-7|1|5|364.91|None|"}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountValidate')
 
         self.factory.xfer = EntryAccountEdit()
-        self.call('/diacamma.accounting/entryAccountEdit',
-                  {'year': '1', 'journal': '2', 'entryaccount': '1'}, False)
+        self.calljson('/diacamma.accounting/entryAccountEdit',
+                      {'year': '1', 'journal': '2', 'entryaccount': '1'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountEdit')
-        self.assert_count_equal('COMPONENTS/*', 16)
-        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD', 2)
-        self.assert_count_equal('ACTIONS/ACTION', 5)
+        self.assert_count_equal('', 16)
+        self.assert_count_equal('entrylineaccount_serial', 2)
+        self.assertEqual(len(self.json_actions), 5)
 
         self.factory.xfer = EntryLineAccountDel()
-        self.call('/diacamma.accounting/entryLineAccountDel', {'year': '1', 'journal': '2', 'entryaccount': '1',
-                                                               'serial_entry': "1|9|0|364.91|None|\n2|1|5|364.91|None|", "entrylineaccount_serial": '2'}, False)
+        self.calljson('/diacamma.accounting/entryLineAccountDel', {'year': '1', 'journal': '2', 'entryaccount': '1',
+                                                                   'serial_entry': "1|9|0|364.91|None|\n2|1|5|364.91|None|", "entrylineaccount_serial": '2'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryLineAccountDel')
-        self.assert_attrib_equal(
-            "ACTION", "id", "diacamma.accounting/entryAccountEdit")
-        self.assert_count_equal("ACTION/PARAM", 1)
-        self.assert_xml_equal("ACTION/PARAM[@name='serial_entry']", "1|9|0|364.910000|None|")
-        self.assert_count_equal("CONTEXT/*", 3)
-        self.assert_xml_equal("CONTEXT/PARAM[@name='entryaccount']", "1")
-        self.assert_xml_equal("CONTEXT/PARAM[@name='year']", "1")
-        self.assert_xml_equal("CONTEXT/PARAM[@name='journal']", "2")
+        self.assertEqual(self.response_json['action']['id'], "diacamma.accounting/entryAccountEdit")
+        self.assertEqual(len(self.response_json['action']['params']), 1)
+        self.assertEqual(self.response_json['action']['params']['serial_entry'], "1|9|0|364.910000|None|")
+        self.assertEqual(len(self.json_context), 3)
+        self.assertEqual(self.json_context['entryaccount'], "1")
+        self.assertEqual(self.json_context['year'], "1")
+        self.assertEqual(self.json_context['journal'], "2")
 
         self.factory.xfer = EntryAccountEdit()
-        self.call('/diacamma.accounting/entryAccountEdit',
-                  {'year': '1', 'journal': '2', 'entryaccount': '1', "entrylineaccount_serial": '2', 'serial_entry': "1|9|0|364.91|None|"}, False)
+        self.calljson('/diacamma.accounting/entryAccountEdit',
+                      {'year': '1', 'journal': '2', 'entryaccount': '1', "entrylineaccount_serial": '2', 'serial_entry': "1|9|0|364.91|None|"}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountEdit')
-        self.assert_count_equal('COMPONENTS/*', 16)
-        self.assert_count_equal('COMPONENTS/GRID[@name="entrylineaccount_serial"]/RECORD', 1)
-        self.assert_count_equal('ACTIONS/ACTION', 2)
+        self.assert_count_equal('', 16)
+        self.assert_count_equal('entrylineaccount_serial', 1)
+        self.assertEqual(len(self.json_actions), 2)
 
     def test_delete_entries(self):
         self.factory.xfer = EntryAccountEdit()
-        self.call('/diacamma.accounting/entryAccountEdit', {'SAVE': 'YES', 'year': '1', 'journal': '2',
-                                                            'date_value': '2015-04-27', 'designation': 'Une belle facture'}, False)
+        self.calljson('/diacamma.accounting/entryAccountEdit', {'SAVE': 'YES', 'year': '1', 'journal': '2',
+                                                                'date_value': '2015-04-27', 'designation': 'Une belle facture'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountEdit')
         self.factory.xfer = EntryAccountValidate()
-        self.call('/diacamma.accounting/entryAccountValidate',
-                  {'year': '1', 'journal': '2', 'entryaccount': '1', 'serial_entry': "-6|9|0|364.91|None|\n-7|1|5|364.91|None|"}, False)
+        self.calljson('/diacamma.accounting/entryAccountValidate',
+                      {'year': '1', 'journal': '2', 'entryaccount': '1', 'serial_entry': "-6|9|0|364.91|None|\n-7|1|5|364.91|None|"}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountValidate')
 
         self.factory.xfer = EntryAccountEdit()
-        self.call('/diacamma.accounting/entryAccountEdit', {'SAVE': 'YES', 'year': '1', 'journal': '4',
-                                                            'date_value': '2015-05-03', 'designation': 'Règlement de belle facture'}, False)
+        self.calljson('/diacamma.accounting/entryAccountEdit', {'SAVE': 'YES', 'year': '1', 'journal': '4',
+                                                                'date_value': '2015-05-03', 'designation': 'Règlement de belle facture'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountEdit')
         self.factory.xfer = EntryAccountValidate()
-        self.call('/diacamma.accounting/entryAccountValidate',
-                  {'year': '1', 'journal': '4', 'entryaccount': '2', 'serial_entry': "-9|1|5|-364.91|None|\n-8|2|0|364.91|BP N°987654|"}, False)
+        self.calljson('/diacamma.accounting/entryAccountValidate',
+                      {'year': '1', 'journal': '4', 'entryaccount': '2', 'serial_entry': "-9|1|5|-364.91|None|\n-8|2|0|364.91|BP N°987654|"}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountValidate')
 
         self.factory.xfer = EntryAccountLink()
-        self.call('/diacamma.accounting/entryAccountLink',
-                  {'year': '1', 'journal': '-1', 'filter': '0', 'entryaccount': '1;2'}, False)
+        self.calljson('/diacamma.accounting/entryAccountLink',
+                      {'year': '1', 'journal': '-1', 'filter': '0', 'entryaccount': '1;2'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountLink')
 
         self.factory.xfer = EntryAccountList()
-        self.call('/diacamma.accounting/entryAccountList',
-                  {'year': '1', 'journal': '-1', 'filter': '0'}, False)
+        self.calljson('/diacamma.accounting/entryAccountList',
+                      {'year': '1', 'journal': '-1', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
-        self.assert_count_equal('COMPONENTS/*', 7)
-        self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/HEADER', 6)
-        self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', 2)
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[1]/VALUE[@name="link"]', 'A')
-        description = self.get_first_xpath('COMPONENTS/GRID[@name="entryaccount"]/RECORD[1]/VALUE[@name="description"]').text
+        self.assert_count_equal('', 7)
+        self.assert_count_equal('entryaccount', 2)
+        self.assert_json_equal('', 'entryaccount/@0/link', 'A')
+        description = self.json_data['entryaccount'][0]['description']
         self.assertTrue('[706] 706' in description, description)
         self.assertTrue('[411 Dalton William]' in description, description)
 
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[2]/VALUE[@name="link"]', 'A')
-        description = self.get_first_xpath('COMPONENTS/GRID[@name="entryaccount"]/RECORD[2]/VALUE[@name="description"]').text
+        self.assert_json_equal('', 'entryaccount/@1/link', 'A')
+        description = self.json_data['entryaccount'][1]['description']
         self.assertTrue('[512] 512' in description, description)
         self.assertTrue('[411 Dalton William]' in description, description)
 
         self.factory.xfer = EntryAccountDel()
-        self.call('/diacamma.accounting/entryAccountDel',
-                  {'CONFIRME': 'YES', 'year': '1', 'journal': '-1', 'filter': '0', 'entryaccount': '1'}, False)
+        self.calljson('/diacamma.accounting/entryAccountDel',
+                      {'CONFIRME': 'YES', 'year': '1', 'journal': '-1', 'filter': '0', 'entryaccount': '1'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountDel')
 
         self.factory.xfer = EntryAccountClose()
-        self.call('/diacamma.accounting/entryAccountClose',
-                  {'CONFIRME': 'YES', 'year': '1', 'journal': '-1', 'filter': '0', "entryaccount": "2"}, False)
+        self.calljson('/diacamma.accounting/entryAccountClose',
+                      {'CONFIRME': 'YES', 'year': '1', 'journal': '-1', 'filter': '0', "entryaccount": "2"}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountClose')
 
         self.factory.xfer = EntryAccountList()
-        self.call('/diacamma.accounting/entryAccountList',
-                  {'year': '1', 'journal': '-1', 'filter': '0'}, False)
+        self.calljson('/diacamma.accounting/entryAccountList',
+                      {'year': '1', 'journal': '-1', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
-        self.assert_count_equal('COMPONENTS/*', 7)
-        self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/HEADER', 6)
-        self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', 1)
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[1]/VALUE[@name="num"]', '1')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[1]/VALUE[@name="link"]', '---')
-        description = self.get_first_xpath('COMPONENTS/GRID[@name="entryaccount"]/RECORD[1]/VALUE[@name="description"]').text
+        self.assert_count_equal('', 7)
+        self.assert_count_equal('entryaccount', 1)
+        self.assert_json_equal('', 'entryaccount/@0/num', '1')
+        self.assert_json_equal('', 'entryaccount/@0/link', '---')
+        description = self.json_data['entryaccount'][0]['description']
         self.assertTrue('Règlement de belle facture' in description, description)
         self.assertTrue('BP N°987654' in description, description)
         self.assertTrue('[512] 512' in description, description)
         self.assertTrue('[411 Dalton William]' in description, description)
         self.assertTrue('364.91€' in description, description)
-        self.assert_xml_equal(
-            "COMPONENTS/LABELFORM[@name='result']", '{[center]}{[b]}Produit :{[/b]} 0.00€ - {[b]}Charge :{[/b]} 0.00€ = {[b]}Résultat :{[/b]} 0.00€{[br/]}{[b]}Trésorerie :{[/b]} 364.91€ - {[b]}Validé :{[/b]} 364.91€{[/center]}')
+        self.assert_json_equal('LABELFORM', 'result', '{[center]}{[b]}Produit :{[/b]} 0.00€ - {[b]}Charge :{[/b]} 0.00€ = {[b]}Résultat :{[/b]} 0.00€{[br/]}{[b]}Trésorerie :{[/b]} 364.91€ - {[b]}Validé :{[/b]} 364.91€{[/center]}')
 
         self.factory.xfer = EntryAccountDel()
-        self.call('/diacamma.accounting/entryAccountDel',
-                  {'year': '1', 'journal': '-1', 'filter': '0', 'entryaccount': '2'}, False)
+        self.calljson('/diacamma.accounting/entryAccountDel',
+                      {'year': '1', 'journal': '-1', 'filter': '0', 'entryaccount': '2'}, False)
         self.assert_observer('core.exception', 'diacamma.accounting', 'entryAccountDel')
-        self.assert_xml_equal('EXCEPTION/MESSAGE', 'écriture validée !')
+        self.assert_json_equal('', 'message', 'écriture validée !')
 
     def test_buyingselling_in_report(self):
         self.factory.xfer = EntryAccountEdit()
-        self.call('/diacamma.accounting/entryAccountEdit', {'SAVE': 'YES', 'year': '1', 'journal': '1',
-                                                            'date_value': '2015-03-21', 'designation': 'mauvais report'}, False)
+        self.calljson('/diacamma.accounting/entryAccountEdit', {'SAVE': 'YES', 'year': '1', 'journal': '1',
+                                                                'date_value': '2015-03-21', 'designation': 'mauvais report'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountEdit')
 
         self.factory.xfer = EntryLineAccountAdd()
-        self.call('/diacamma.accounting/entryLineAccountAdd', {'year': '1', 'journal': '1', 'entryaccount': '1', 'num_cpt_txt': '70',
-                                                               'num_cpt': '9', 'third': 0, 'debit_val': '0.0', 'credit_val': '152.34'}, False)
+        self.calljson('/diacamma.accounting/entryLineAccountAdd', {'year': '1', 'journal': '1', 'entryaccount': '1', 'num_cpt_txt': '70',
+                                                                   'num_cpt': '9', 'third': 0, 'debit_val': '0.0', 'credit_val': '152.34'}, False)
         self.assert_observer('core.exception', 'diacamma.accounting', 'entryLineAccountAdd')
-        self.assert_xml_equal('EXCEPTION/MESSAGE', "Ce type d'écriture n'est pas permis dans ce journal !")
+        self.assert_json_equal('', 'message', "Ce type d'écriture n'est pas permis dans ce journal !")
 
         self.factory.xfer = EntryLineAccountAdd()
-        self.call('/diacamma.accounting/entryLineAccountAdd', {'year': '1', 'journal': '1', 'entryaccount': '1', 'num_cpt_txt': '60',
-                                                               'num_cpt': '13', 'third': 0, 'debit_val': '0.0', 'credit_val': '152.34'}, False)
+        self.calljson('/diacamma.accounting/entryLineAccountAdd', {'year': '1', 'journal': '1', 'entryaccount': '1', 'num_cpt_txt': '60',
+                                                                   'num_cpt': '13', 'third': 0, 'debit_val': '0.0', 'credit_val': '152.34'}, False)
         self.assert_observer('core.exception', 'diacamma.accounting', 'entryLineAccountAdd')
-        self.assert_xml_equal('EXCEPTION/MESSAGE', "Ce type d'écriture n'est pas permis dans ce journal !")
+        self.assert_json_equal('', 'message', "Ce type d'écriture n'est pas permis dans ce journal !")
 
         self.factory.xfer = EntryLineAccountAdd()
-        self.call('/diacamma.accounting/entryLineAccountAdd', {'year': '1', 'journal': '1', 'entryaccount': '1', 'num_cpt_txt': '401',
-                                                               'num_cpt': '4', 'third': 0, 'debit_val': '0.0', 'credit_val': '152.34'}, False)
+        self.calljson('/diacamma.accounting/entryLineAccountAdd', {'year': '1', 'journal': '1', 'entryaccount': '1', 'num_cpt_txt': '401',
+                                                                   'num_cpt': '4', 'third': 0, 'debit_val': '0.0', 'credit_val': '152.34'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryLineAccountAdd')
