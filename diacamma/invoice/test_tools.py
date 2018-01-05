@@ -113,25 +113,22 @@ class InvoiceTest(LucteriosTest):
         else:
             cost_accounting = 2
         self.factory.xfer = BillAddModify()
-        self.call('/diacamma.invoice/billAddModify',
-                  {'bill_type': bill_type, 'date': bill_date, 'cost_accounting': cost_accounting, 'SAVE': 'YES'}, False)
-        self.assert_observer(
-            'core.acknowledge', 'diacamma.invoice', 'billAddModify')
-        bill_id = self.get_first_xpath("ACTION/PARAM[@name='bill']").text
+        self.calljson('/diacamma.invoice/billAddModify',
+                      {'bill_type': bill_type, 'date': bill_date, 'cost_accounting': cost_accounting, 'SAVE': 'YES'}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'billAddModify')
+        bill_id = self.response_json['action']['params']['bill']
         self.factory.xfer = SupportingThirdValid()
-        self.call('/diacamma.invoice/supportingThirdValid',
-                  {'supporting': bill_id, 'third': bill_third}, False)
+        self.calljson('/diacamma.invoice/supportingThirdValid',
+                      {'supporting': bill_id, 'third': bill_third}, False)
         for detail in details:
             detail['SAVE'] = 'YES'
             detail['bill'] = bill_id
             self.factory.xfer = DetailAddModify()
-            self.call('/diacamma.invoice/detailAddModify', detail, False)
-            self.assert_observer(
-                'core.acknowledge', 'diacamma.invoice', 'detailAddModify')
+            self.calljson('/diacamma.invoice/detailAddModify', detail, False)
+            self.assert_observer('core.acknowledge', 'diacamma.invoice', 'detailAddModify')
         if valid:
             self.factory.xfer = BillTransition()
-            self.call('/diacamma.invoice/billTransition',
-                      {'CONFIRME': 'YES', 'bill': bill_id, 'withpayoff': False, 'TRANSITION': 'valid'}, False)
-            self.assert_observer(
-                'core.acknowledge', 'diacamma.invoice', 'billTransition')
+            self.calljson('/diacamma.invoice/billTransition',
+                          {'CONFIRME': 'YES', 'bill': bill_id, 'withpayoff': False, 'TRANSITION': 'valid'}, False)
+            self.assert_observer('core.acknowledge', 'diacamma.invoice', 'billTransition')
         return bill_id

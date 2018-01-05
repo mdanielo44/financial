@@ -47,137 +47,115 @@ class PayoffTest(LucteriosTest):
 
     def test_bank(self):
         self.factory.xfer = PayoffConf()
-        self.call('/diacamma.payoff/payoffConf', {}, False)
+        self.calljson('/diacamma.payoff/payoffConf', {}, False)
         self.assert_observer('core.custom', 'diacamma.payoff', 'payoffConf')
-        self.assert_count_equal('COMPONENTS/TAB', 3)
-        self.assert_count_equal('COMPONENTS/*', 2 + 2 + 7)
+        self.assertTrue('__tab_3' in self.json_data.keys(), self.json_data.keys())
+        self.assert_count_equal('', 2 + 2 + 7)
 
-        self.assert_count_equal(
-            'COMPONENTS/GRID[@name="bankaccount"]/HEADER', 3)
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="bankaccount"]/HEADER[@name="designation"]', "désignation")
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="bankaccount"]/HEADER[@name="reference"]', "référence")
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="bankaccount"]/HEADER[@name="account_code"]', "code comptable")
-        self.assert_count_equal(
-            'COMPONENTS/GRID[@name="bankaccount"]/RECORD', 0)
+        self.assert_grid_equal('bankaccount', {'designation': "désignation", 'reference': "référence", 'account_code': "code comptable"}, 0)
 
         self.factory.xfer = BankAccountAddModify()
-        self.call('/diacamma.payoff/bankAccountAddModify', {}, False)
-        self.assert_observer(
-            'core.custom', 'diacamma.payoff', 'bankAccountAddModify')
-        self.assert_count_equal('COMPONENTS/*', 4)
+        self.calljson('/diacamma.payoff/bankAccountAddModify', {}, False)
+        self.assert_observer('core.custom', 'diacamma.payoff', 'bankAccountAddModify')
+        self.assert_count_equal('', 4)
 
         self.factory.xfer = BankAccountAddModify()
-        self.call('/diacamma.payoff/bankAccountAddModify',
-                  {'designation': 'My bank', 'reference': '0123 456789 654 12', 'account_code': '512', 'SAVE': 'YES'}, False)
-        self.assert_observer(
-            'core.acknowledge', 'diacamma.payoff', 'bankAccountAddModify')
+        self.calljson('/diacamma.payoff/bankAccountAddModify',
+                      {'designation': 'My bank', 'reference': '0123 456789 654 12', 'account_code': '512', 'SAVE': 'YES'}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.payoff', 'bankAccountAddModify')
 
         self.factory.xfer = PayoffConf()
-        self.call('/diacamma.payoff/payoffConf', {}, False)
-        self.assert_count_equal(
-            'COMPONENTS/GRID[@name="bankaccount"]/RECORD', 1)
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="bankaccount"]/RECORD[1]/VALUE[@name="designation"]', 'My bank')
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="bankaccount"]/RECORD[1]/VALUE[@name="reference"]', '0123 456789 654 12')
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="bankaccount"]/RECORD[1]/VALUE[@name="account_code"]', '512')
+        self.calljson('/diacamma.payoff/payoffConf', {}, False)
+        self.assert_count_equal('bankaccount', 1)
+        self.assert_json_equal('', 'bankaccount/@0/designation', 'My bank')
+        self.assert_json_equal('', 'bankaccount/@0/reference', '0123 456789 654 12')
+        self.assert_json_equal('', 'bankaccount/@0/account_code', '512')
 
         self.factory.xfer = BankAccountDelete()
-        self.call('/diacamma.payoff/bankAccountDelete',
-                  {'bankaccount': 1, 'CONFIRME': 'YES'}, False)
-        self.assert_observer(
-            'core.acknowledge', 'diacamma.payoff', 'bankAccountDelete')
+        self.calljson('/diacamma.payoff/bankAccountDelete',
+                      {'bankaccount': 1, 'CONFIRME': 'YES'}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.payoff', 'bankAccountDelete')
 
         self.factory.xfer = PayoffConf()
-        self.call('/diacamma.payoff/payoffConf', {}, False)
-        self.assert_count_equal(
-            'COMPONENTS/GRID[@name="bankaccount"]/RECORD', 0)
+        self.calljson('/diacamma.payoff/payoffConf', {}, False)
+        self.assert_count_equal('bankaccount', 0)
 
     def test_method(self):
         self.factory.xfer = BankAccountAddModify()
-        self.call('/diacamma.payoff/bankAccountAddModify',
-                  {'designation': 'My bank', 'reference': '0123 456789 654 12', 'account_code': '512', 'SAVE': 'YES'}, False)
+        self.calljson('/diacamma.payoff/bankAccountAddModify',
+                      {'designation': 'My bank', 'reference': '0123 456789 654 12', 'account_code': '512', 'SAVE': 'YES'}, False)
 
         self.factory.xfer = PayoffConf()
-        self.call('/diacamma.payoff/payoffConf', {}, False)
+        self.calljson('/diacamma.payoff/payoffConf', {}, False)
         self.assert_observer('core.custom', 'diacamma.payoff', 'payoffConf')
-        self.assert_count_equal('COMPONENTS/TAB', 3)
-        self.assert_count_equal('COMPONENTS/*', 2 + 2 + 7)
-        self.assert_count_equal('COMPONENTS/GRID[@name="paymentmethod"]/HEADER', 3)
-        self.assert_xml_equal('COMPONENTS/GRID[@name="paymentmethod"]/HEADER[@name="paytype"]', "type")
-        self.assert_xml_equal('COMPONENTS/GRID[@name="paymentmethod"]/HEADER[@name="bank_account"]', "compte bancaire")
-        self.assert_xml_equal('COMPONENTS/GRID[@name="paymentmethod"]/HEADER[@name="info"]', "paramètres")
-        self.assert_count_equal('COMPONENTS/GRID[@name="paymentmethod"]/RECORD', 0)
+        self.assertTrue('__tab_3' in self.json_data.keys(), self.json_data.keys())
+        self.assert_count_equal('', 2 + 2 + 7)
+        self.assert_grid_equal('paymentmethod', {'paytype': "type", 'bank_account': "compte bancaire", 'info': "paramètres"}, 0)
 
         self.factory.xfer = PaymentMethodAddModify()
-        self.call('/diacamma.payoff/paymentMethodAddModify', {}, False)
+        self.calljson('/diacamma.payoff/paymentMethodAddModify', {}, False)
         self.assert_observer('core.custom', 'diacamma.payoff', 'paymentMethodAddModify')
-        self.assert_count_equal('COMPONENTS/*', 5)
-        self.assert_count_equal('COMPONENTS/SELECT[@name="bank_account"]/CASE', 1)
-        self.assert_attrib_equal('COMPONENTS/EDIT[@name="item_1"]', 'description', 'IBAN')
-        self.assert_xml_equal('COMPONENTS/EDIT[@name="item_1"]', None)
-        self.assert_attrib_equal('COMPONENTS/EDIT[@name="item_2"]', 'description', 'BIC')
-        self.assert_xml_equal('COMPONENTS/EDIT[@name="item_2"]', None)
+        self.assert_count_equal('', 5)
+        self.assert_select_equal('bank_account', 1)  # nb=1
+        self.assert_attrib_equal('item_1', 'description', 'IBAN')
+        self.assert_json_equal('EDIT', 'item_1', '')
+        self.assert_attrib_equal('item_2', 'description', 'BIC')
+        self.assert_json_equal('EDIT', 'item_2', '')
 
         self.factory.xfer = PaymentMethodAddModify()
-        self.call('/diacamma.payoff/paymentMethodAddModify', {'paytype': 0}, False)
+        self.calljson('/diacamma.payoff/paymentMethodAddModify', {'paytype': 0}, False)
         self.assert_observer('core.custom', 'diacamma.payoff', 'paymentMethodAddModify')
-        self.assert_count_equal('COMPONENTS/*', 5)
-        self.assert_attrib_equal('COMPONENTS/EDIT[@name="item_1"]', 'description', 'IBAN')
-        self.assert_xml_equal('COMPONENTS/EDIT[@name="item_1"]', None)
-        self.assert_attrib_equal('COMPONENTS/EDIT[@name="item_2"]', 'description', 'BIC')
-        self.assert_xml_equal('COMPONENTS/EDIT[@name="item_2"]', None)
+        self.assert_count_equal('', 5)
+        self.assert_attrib_equal('item_1', 'description', 'IBAN')
+        self.assert_json_equal('EDIT', 'item_1', '')
+        self.assert_attrib_equal('item_2', 'description', 'BIC')
+        self.assert_json_equal('EDIT', 'item_2', '')
 
         self.factory.xfer = PaymentMethodAddModify()
-        self.call('/diacamma.payoff/paymentMethodAddModify', {'paytype': 1}, False)
+        self.calljson('/diacamma.payoff/paymentMethodAddModify', {'paytype': 1}, False)
         self.assert_observer('core.custom', 'diacamma.payoff', 'paymentMethodAddModify')
-        self.assert_count_equal('COMPONENTS/*', 5)
-        self.assert_attrib_equal('COMPONENTS/EDIT[@name="item_1"]', 'description', 'libellé à')
-        self.assert_xml_equal('COMPONENTS/EDIT[@name="item_1"]', "WoldCompany")
-        self.assert_attrib_equal('COMPONENTS/MEMO[@name="item_2"]', 'description', 'adresse')
-        self.assert_xml_equal('COMPONENTS/MEMO[@name="item_2"]', "Place des cocotiers{[newline]}97200 FORT DE FRANCE")
+        self.assert_count_equal('', 5)
+        self.assert_attrib_equal('item_1', 'description', 'libellé à')
+        self.assert_json_equal('EDIT', 'item_1', "WoldCompany")
+        self.assert_attrib_equal('item_2', 'description', 'adresse')
+        self.assert_json_equal('MEMO', 'item_2', "Place des cocotiers{[newline]}97200 FORT DE FRANCE")
 
         self.factory.xfer = PaymentMethodAddModify()
-        self.call('/diacamma.payoff/paymentMethodAddModify', {'paytype': 2}, False)
+        self.calljson('/diacamma.payoff/paymentMethodAddModify', {'paytype': 2}, False)
         self.assert_observer('core.custom', 'diacamma.payoff', 'paymentMethodAddModify')
-        self.assert_count_equal('COMPONENTS/*', 5)
-        self.assert_attrib_equal('COMPONENTS/EDIT[@name="item_1"]', 'description', 'compte Paypal')
-        self.assert_xml_equal('COMPONENTS/EDIT[@name="item_1"]', None)
-        self.assert_attrib_equal('COMPONENTS/CHECK[@name="item_2"]', 'description', 'avec contrôle')
-        self.assert_xml_equal('COMPONENTS/CHECK[@name="item_2"]', '0')
+        self.assert_count_equal('', 5)
+        self.assert_attrib_equal('item_1', 'description', 'compte Paypal')
+        self.assert_json_equal('EDIT', 'item_1', '')
+        self.assert_attrib_equal('item_2', 'description', 'avec contrôle')
+        self.assert_json_equal('CHECK', 'item_2', '0')
 
         self.factory.xfer = PaymentMethodAddModify()
-        self.call('/diacamma.payoff/paymentMethodAddModify',
-                  {'paytype': 0, 'bank_account': 1, 'item_1': '123456798', 'item_2': 'AADDVVCC', 'SAVE': 'YES'}, False)
+        self.calljson('/diacamma.payoff/paymentMethodAddModify',
+                      {'paytype': 0, 'bank_account': 1, 'item_1': '123456798', 'item_2': 'AADDVVCC', 'SAVE': 'YES'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.payoff', 'paymentMethodAddModify')
 
         self.factory.xfer = PaymentMethodAddModify()
-        self.call('/diacamma.payoff/paymentMethodAddModify',
-                  {'paytype': 1, 'bank_account': 1, 'item_1': 'Truc', 'item_2': '1 rue de la Paix{[newline]}99000 LA-BAS', 'SAVE': 'YES'}, False)
+        self.calljson('/diacamma.payoff/paymentMethodAddModify',
+                      {'paytype': 1, 'bank_account': 1, 'item_1': 'Truc', 'item_2': '1 rue de la Paix{[newline]}99000 LA-BAS', 'SAVE': 'YES'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.payoff', 'paymentMethodAddModify')
 
         self.factory.xfer = PaymentMethodAddModify()
-        self.call('/diacamma.payoff/paymentMethodAddModify',
-                  {'paytype': 2, 'bank_account': 1, 'item_1': 'monney@truc.org', 'item_2': 'o', 'SAVE': 'YES'}, False)
+        self.calljson('/diacamma.payoff/paymentMethodAddModify',
+                      {'paytype': 2, 'bank_account': 1, 'item_1': 'monney@truc.org', 'item_2': 'o', 'SAVE': 'YES'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.payoff', 'paymentMethodAddModify')
 
         self.factory.xfer = PayoffConf()
-        self.call('/diacamma.payoff/payoffConf', {}, False)
+        self.calljson('/diacamma.payoff/payoffConf', {}, False)
         self.assert_observer('core.custom', 'diacamma.payoff', 'payoffConf')
-        self.assert_count_equal('COMPONENTS/GRID[@name="paymentmethod"]/HEADER', 3)
-        self.assert_count_equal('COMPONENTS/GRID[@name="paymentmethod"]/RECORD', 3)
-        self.assert_xml_equal('COMPONENTS/GRID[@name="paymentmethod"]/RECORD[1]/VALUE[@name="paytype"]', "virement")
-        self.assert_xml_equal('COMPONENTS/GRID[@name="paymentmethod"]/RECORD[1]/VALUE[@name="bank_account"]', "My bank")
-        self.assert_xml_equal('COMPONENTS/GRID[@name="paymentmethod"]/RECORD[1]/VALUE[@name="info"]', '{[b]}IBAN{[/b]}{[br/]}123456798{[br/]}{[b]}BIC{[/b]}{[br/]}AADDVVCC{[br/]}')
+        self.assert_count_equal('paymentmethod', 3)
+        self.assert_json_equal('', 'paymentmethod/@0/paytype', "virement")
+        self.assert_json_equal('', 'paymentmethod/@0/bank_account', "My bank")
+        self.assert_json_equal('', 'paymentmethod/@0/info', '{[b]}IBAN{[/b]}{[br/]}123456798{[br/]}{[b]}BIC{[/b]}{[br/]}AADDVVCC{[br/]}')
 
-        self.assert_xml_equal('COMPONENTS/GRID[@name="paymentmethod"]/RECORD[2]/VALUE[@name="paytype"]', "chèque")
-        self.assert_xml_equal('COMPONENTS/GRID[@name="paymentmethod"]/RECORD[2]/VALUE[@name="bank_account"]', "My bank")
-        self.assert_xml_equal('COMPONENTS/GRID[@name="paymentmethod"]/RECORD[2]/VALUE[@name="info"]', '{[b]}libellé à{[/b]}{[br/]}Truc{[br/]}', True)
+        self.assert_json_equal('', 'paymentmethod/@1/paytype', "chèque")
+        self.assert_json_equal('', 'paymentmethod/@1/bank_account', "My bank")
+        self.assert_json_equal('', 'paymentmethod/@1/info', '{[b]}libellé à{[/b]}{[br/]}Truc{[br/]}', True)
 
-        self.assert_xml_equal('COMPONENTS/GRID[@name="paymentmethod"]/RECORD[3]/VALUE[@name="paytype"]', "PayPal")
-        self.assert_xml_equal('COMPONENTS/GRID[@name="paymentmethod"]/RECORD[3]/VALUE[@name="bank_account"]', "My bank")
-        self.assert_xml_equal('COMPONENTS/GRID[@name="paymentmethod"]/RECORD[3]/VALUE[@name="info"]', '{[b]}compte Paypal{[/b]}{[br/]}monney@truc.org{[br/]}{[b]}avec contrôle{[/b]}{[br/]}Oui{[br/]}')
+        self.assert_json_equal('', 'paymentmethod/@2/paytype', "PayPal")
+        self.assert_json_equal('', 'paymentmethod/@2/bank_account', "My bank")
+        self.assert_json_equal('', 'paymentmethod/@2/info', '{[b]}compte Paypal{[/b]}{[br/]}monney@truc.org{[br/]}{[b]}avec contrôle{[/b]}{[br/]}Oui{[br/]}')

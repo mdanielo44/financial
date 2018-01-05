@@ -27,11 +27,11 @@ from re import match
 from django.core.exceptions import ObjectDoesNotExist
 try:
     from urllib.parse import urlsplit, parse_qsl
-except:
+except BaseException:
     from urlparse import urlsplit, parse_qsl
 try:
     from http.server import BaseHTTPRequestHandler, HTTPServer
-except:
+except BaseException:
     from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 from threading import Thread
 
@@ -43,9 +43,7 @@ from lucterios.framework.test import LucteriosTest
 from diacamma.accounting.test_tools import create_account
 from diacamma.accounting.models import FiscalYear, ChartsAccount
 from diacamma.payoff.models import BankAccount, PaymentMethod
-from diacamma.payoff.views_deposit import BankTransactionList,\
-    BankTransactionShow
-from diacamma.payoff.views import ValidationPaymentPaypal
+from diacamma.payoff.views_deposit import BankTransactionList, BankTransactionShow
 
 
 def default_bankaccount():
@@ -106,22 +104,23 @@ class PaymentTest(LucteriosTest):
         self.assertEqual(paypal_params['tax'], tax, paypal_params)
 
     def check_payment(self, itemid, title, amount='100.0', tax='0.0'):
-        self.assert_attrib_equal('COMPONENTS/LABELFORM[@name="paymeth_1"]', 'description', 'virement')
-        txt_value = self.get_first_xpath('COMPONENTS/LABELFORM[@name="paymeth_1"]').text
-        self.assertTrue(txt_value.find('{[u]}{[i]}IBAN{[/i]}{[/u]}') != -1, txt_value)
-        self.assertTrue(txt_value.find('123456789') != -1, txt_value)
+        if len(self.json_data) > 0:
+            self.assert_attrib_equal('paymeth_1', 'description', 'virement')
+            txt_value = self.json_data["paymeth_1"]
+            self.assertTrue(txt_value.find('{[u]}{[i]}IBAN{[/i]}{[/u]}') != -1, txt_value)
+            self.assertTrue(txt_value.find('123456789') != -1, txt_value)
 
-        self.assert_attrib_equal('COMPONENTS/LABELFORM[@name="paymeth_2"]', 'description', 'chèque')
-        txt_value = self.get_first_xpath('COMPONENTS/LABELFORM[@name="paymeth_2"]').text
-        self.assertTrue(txt_value.find('{[u]}{[i]}libellé à{[/i]}{[/u]}') != -1, txt_value)
-        self.assertTrue(txt_value.find('{[u]}{[i]}adresse{[/i]}{[/u]}') != -1, txt_value)
-        self.assertTrue(txt_value.find('Truc') != -1, txt_value)
-        self.assertTrue(txt_value.find('1 rue de la Paix{[newline]}99000 LA-BAS') != -1, txt_value)
+            self.assert_attrib_equal('paymeth_2', 'description', 'chèque')
+            txt_value = self.json_data["paymeth_2"]
+            self.assertTrue(txt_value.find('{[u]}{[i]}libellé à{[/i]}{[/u]}') != -1, txt_value)
+            self.assertTrue(txt_value.find('{[u]}{[i]}adresse{[/i]}{[/u]}') != -1, txt_value)
+            self.assertTrue(txt_value.find('Truc') != -1, txt_value)
+            self.assertTrue(txt_value.find('1 rue de la Paix{[newline]}99000 LA-BAS') != -1, txt_value)
 
-        self.assert_attrib_equal('COMPONENTS/LABELFORM[@name="paymeth_3"]', 'description', 'PayPal')
-        txt_value = self.get_first_xpath('COMPONENTS/LABELFORM[@name="paymeth_3"]').text
-        self.check_paypal_msg(txt_value.replace('{[', '<').replace(']}', '>'), itemid, title, amount, tax)
-        return txt_value
+            self.assert_attrib_equal('paymeth_3', 'description', 'PayPal')
+            txt_value = self.json_data["paymeth_3"]
+            self.check_paypal_msg(txt_value.replace('{[', '<').replace(']}', '>'), itemid, title, amount, tax)
+            return txt_value
 
     def check_payment_paypal(self, itemid, title, success=True, amount=100.0):
         paypal_validation_fields = {"txn_id": "2X7444647R1155525", "residence_country": "FR",
@@ -143,47 +142,45 @@ class PaymentTest(LucteriosTest):
                                     "receiver_email": "monney@truc.org", }
 
         self.factory.xfer = BankTransactionList()
-        self.call('/diacamma.payoff/bankTransactionList', {}, False)
+        self.calljson('/diacamma.payoff/bankTransactionList', {}, False)
         self.assert_observer('core.custom', 'diacamma.payoff', 'bankTransactionList')
-        self.assert_count_equal('COMPONENTS/GRID[@name="banktransaction"]/RECORD', 0)
-        self.assert_count_equal('COMPONENTS/GRID[@name="banktransaction"]/HEADER', 4)
+        self.assert_count_equal('banktransaction', 0)
         setattr(settings, "DIACAMMA_PAYOFF_PAYPAL_URL", "http://localhost:%d" % self.server_port)
         httpd = TestHTTPServer(('localhost', self.server_port))
         httpd.start()
         try:
-            self.call('/diacamma.payoff/validationPaymentPaypal', paypal_validation_fields, True)
+            self.calljson('/diacamma.payoff/validationPaymentPaypal', paypal_validation_fields, True)
             self.assert_observer('PayPal', 'diacamma.payoff', 'validationPaymentPaypal')
         finally:
             httpd.shutdown()
         self.factory.xfer = BankTransactionShow()
-        self.call('/diacamma.payoff/bankTransactionShow', {'banktransaction': 1}, False)
+        self.calljson('/diacamma.payoff/bankTransactionShow', {'banktransaction': 1}, False)
         self.assert_observer('core.custom', 'diacamma.payoff', 'bankTransactionShow')
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="date"]', "3 avril 2015 20:52")
-        contains = self.get_first_xpath('COMPONENTS/LABELFORM[@name="contains"]').text
+        self.assert_json_equal('LABELFORM', 'date', "3 avril 2015 20:52")
+        contains = self.json_data["contains"]
         if success:
             self.assertEqual(len(contains), 1101 + len(title) + len("%.2f" % amount), contains)
         self.assertTrue("item_name = %s" % title in contains, contains)
         self.assertTrue("custom = %d" % itemid in contains, contains)
         self.assertTrue("business = monney@truc.org" in contains, contains)
         if success:
-            self.assert_xml_equal('COMPONENTS/LABELFORM[@name="status"]', "succès")
+            self.assert_json_equal('LABELFORM', 'status', "succès")
         else:
-            self.assert_xml_equal('COMPONENTS/LABELFORM[@name="status"]', "échec")
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="payer"]', "test buyer")
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="amount"]', "%.3f" % amount)
+            self.assert_json_equal('LABELFORM', 'status', "échec")
+        self.assert_json_equal('LABELFORM', 'payer', "test buyer")
+        self.assert_json_equal('LABELFORM', 'amount', "%.3f" % amount)
 
         self.factory.xfer = BankTransactionList()
-        self.call('/diacamma.payoff/bankTransactionList', {}, False)
+        self.calljson('/diacamma.payoff/bankTransactionList', {}, False)
         self.assert_observer('core.custom', 'diacamma.payoff', 'bankTransactionList')
-        self.assert_count_equal('COMPONENTS/GRID[@name="banktransaction"]/RECORD', 1)
-        self.assert_count_equal('COMPONENTS/GRID[@name="banktransaction"]/HEADER', 4)
-        self.assert_xml_equal('COMPONENTS/GRID[@name="banktransaction"]/RECORD[1]/VALUE[@name="date"]', '3 avril 2015 20:52')
+        self.assert_count_equal('banktransaction', 1)
+        self.assert_json_equal('', 'banktransaction/@0/date', '2015-04-03 20:52', True)
         if success:
-            self.assert_xml_equal('COMPONENTS/GRID[@name="banktransaction"]/RECORD[1]/VALUE[@name="status"]', six.text_type('succès'))
+            self.assert_json_equal('', 'banktransaction/@0/status', six.text_type('succès'))
         else:
-            self.assert_xml_equal('COMPONENTS/GRID[@name="banktransaction"]/RECORD[1]/VALUE[@name="status"]', six.text_type('échec'))
-        self.assert_xml_equal('COMPONENTS/GRID[@name="banktransaction"]/RECORD[1]/VALUE[@name="payer"]', 'test buyer')
-        self.assert_xml_equal('COMPONENTS/GRID[@name="banktransaction"]/RECORD[1]/VALUE[@name="amount"]', "%.3f" % amount)
+            self.assert_json_equal('', 'banktransaction/@0/status', six.text_type('échec'))
+        self.assert_json_equal('', 'banktransaction/@0/payer', 'test buyer')
+        self.assert_json_equal('', 'banktransaction/@0/amount', "%.3f" % amount)
 
 
 class TestHTTPServer(HTTPServer, BaseHTTPRequestHandler, Thread):

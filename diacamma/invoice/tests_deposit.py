@@ -59,99 +59,71 @@ class DepositTest(InvoiceTest):
         self.add_bills()
 
     def add_bills(self):
-        details = [
-            {'article': 0, 'designation': 'article 0', 'price': '100.00', 'quantity': 1}]
+        details = [{'article': 0, 'designation': 'article 0', 'price': '100.00', 'quantity': 1}]
         self._create_bill(details, 1, '2015-04-01', 6, True)
-        details = [
-            {'article': 0, 'designation': 'article 0', 'price': '100.00', 'quantity': 1}]
+        details = [{'article': 0, 'designation': 'article 0', 'price': '100.00', 'quantity': 1}]
         self._create_bill(details, 1, '2015-04-01', 4, True)
-        details = [
-            {'article': 0, 'designation': 'article 0', 'price': '100.00', 'quantity': 1}]
+        details = [{'article': 0, 'designation': 'article 0', 'price': '100.00', 'quantity': 1}]
         self._create_bill(details, 2, '2015-04-01', 5, True)
-        details = [
-            {'article': 0, 'designation': 'article 0', 'price': '100.00', 'quantity': 1}]
+        details = [{'article': 0, 'designation': 'article 0', 'price': '100.00', 'quantity': 1}]
         self._create_bill(details, 3, '2015-04-01', 7, True)
 
     def create_deposit(self):
         self.factory.xfer = DepositSlipAddModify()
-        self.call('/diacamma.payoff/depositSlipAddModify',
-                  {'SAVE': 'YES', 'bank_account': 1, 'reference': '123456', 'date': '2015-04-10'}, False)
-        self.assert_observer(
-            'core.acknowledge', 'diacamma.payoff', 'depositSlipAddModify')
+        self.calljson('/diacamma.payoff/depositSlipAddModify',
+                      {'SAVE': 'YES', 'bank_account': 1, 'reference': '123456', 'date': '2015-04-10'}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.payoff', 'depositSlipAddModify')
 
     def create_payoff(self, bill_id, amount, payer, mode, reference):
         self.factory.xfer = PayoffAddModify()
-        self.call(
-            '/diacamma.payoff/payoffAddModify', {'SAVE': 'YES', 'supporting': bill_id, 'amount': amount, 'payer': payer, 'date': '2015-04-03', 'mode': mode, 'reference': reference, 'bank_account': 1}, False)
-        self.assert_observer(
-            'core.acknowledge', 'diacamma.payoff', 'payoffAddModify')
+        self.calljson('/diacamma.payoff/payoffAddModify', {'SAVE': 'YES', 'supporting': bill_id, 'amount': amount, 'payer': payer, 'date': '2015-04-03', 'mode': mode, 'reference': reference, 'bank_account': 1}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.payoff', 'payoffAddModify')
 
     def test_deposit_basic(self):
         self.factory.xfer = DepositSlipList()
-        self.call('/diacamma.payoff/depositSlipList', {}, False)
-        self.assert_observer(
-            'core.custom', 'diacamma.payoff', 'depositSlipList')
-        self.assert_count_equal(
-            'COMPONENTS/GRID[@name="depositslip"]/RECORD', 0)
-        self.assert_count_equal(
-            'COMPONENTS/GRID[@name="depositslip"]/HEADER', 5)
+        self.calljson('/diacamma.payoff/depositSlipList', {}, False)
+        self.assert_observer('core.custom', 'diacamma.payoff', 'depositSlipList')
+        self.assert_grid_equal('depositslip', {"status": "status", "bank_account": "compte bancaire", "date": "date", "reference": "référence", "total": "total"}, 0)  # nb=5
 
         self.factory.xfer = DepositSlipAddModify()
-        self.call('/diacamma.payoff/depositSlipAddModify', {}, False)
-        self.assert_observer(
-            'core.custom', 'diacamma.payoff', 'depositSlipAddModify')
-        self.assert_count_equal('COMPONENTS/*', 4)
+        self.calljson('/diacamma.payoff/depositSlipAddModify', {}, False)
+        self.assert_observer('core.custom', 'diacamma.payoff', 'depositSlipAddModify')
+        self.assert_count_equal('', 4)
 
         self.factory.xfer = DepositSlipAddModify()
-        self.call('/diacamma.payoff/depositSlipAddModify',
-                  {'SAVE': 'YES', 'bank_account': 1, 'reference': '123456', 'date': '2015-04-10'}, False)
-        self.assert_observer(
-            'core.acknowledge', 'diacamma.payoff', 'depositSlipAddModify')
+        self.calljson('/diacamma.payoff/depositSlipAddModify',
+                      {'SAVE': 'YES', 'bank_account': 1, 'reference': '123456', 'date': '2015-04-10'}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.payoff', 'depositSlipAddModify')
 
         self.factory.xfer = DepositSlipList()
-        self.call('/diacamma.payoff/depositSlipList', {}, False)
-        self.assert_observer(
-            'core.custom', 'diacamma.payoff', 'depositSlipList')
-        self.assert_count_equal(
-            'COMPONENTS/GRID[@name="depositslip"]/RECORD', 1)
-        self.assert_count_equal(
-            'COMPONENTS/GRID[@name="depositslip"]/HEADER', 5)
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="depositslip"]/RECORD[1]/VALUE[@name="bank_account"]', 'My bank')
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="depositslip"]/RECORD[1]/VALUE[@name="reference"]', '123456')
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="depositslip"]/RECORD[1]/VALUE[@name="date"]', '10 avril 2015')
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="depositslip"]/RECORD[1]/VALUE[@name="status"]', 'en création')
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="depositslip"]/RECORD[1]/VALUE[@name="total"]', '0.00€')
+        self.calljson('/diacamma.payoff/depositSlipList', {}, False)
+        self.assert_observer('core.custom', 'diacamma.payoff', 'depositSlipList')
+        self.assert_count_equal('depositslip', 1)
+        self.assert_json_equal('', 'depositslip/@0/bank_account', 'My bank')
+        self.assert_json_equal('', 'depositslip/@0/reference', '123456')
+        self.assert_json_equal('', 'depositslip/@0/date', '2015-04-10')
+        self.assert_json_equal('', 'depositslip/@0/status', 'en création')
+        self.assert_json_equal('', 'depositslip/@0/total', '0.00€')
 
         self.factory.xfer = DepositSlipShow()
-        self.call(
-            '/diacamma.payoff/depositSlipShow', {'depositslip': 1}, False)
-        self.assert_observer(
-            'core.custom', 'diacamma.payoff', 'depositSlipShow')
-        self.assert_count_equal('COMPONENTS/*', 15)
-        self.assert_count_equal('ACTIONS/ACTION', 2)
-        self.assert_count_equal('COMPONENTS/GRID[@name="depositdetail"]/RECORD', 0)
-        self.assert_count_equal('COMPONENTS/GRID[@name="depositdetail"]/HEADER', 4)
-        self.assert_count_equal('COMPONENTS/GRID[@name="depositdetail"]/ACTIONS/ACTION', 2)
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="total"]', '0.00€')
+        self.calljson('/diacamma.payoff/depositSlipShow', {'depositslip': 1}, False)
+        self.assert_observer('core.custom', 'diacamma.payoff', 'depositSlipShow')
+        self.assert_count_equal('', 15)
+        self.assertEqual(len(self.json_actions), 2)
+        self.assert_grid_equal('depositdetail', {"payoff.payer": "payeur", "payoff.date": "date", "payoff.reference": "référence", "amount": "montant"}, 0)  # nb=4
+        self.assert_count_equal('#depositdetail/actions', 2)
+        self.assert_json_equal('LABELFORM', 'total', '0.00€')
 
     def test_deposit_nocheque(self):
         self.create_deposit()
 
         self.factory.xfer = DepositDetailAddModify()
-        self.call(
-            '/diacamma.payoff/depositDetailAddModify', {'depositslip': 1}, False)
-        self.assert_observer(
-            'core.custom', 'diacamma.payoff', 'depositDetailAddModify')
-        self.assert_count_equal('COMPONENTS/*', 5)
-        self.assert_count_equal('ACTIONS/ACTION', 1)
-        self.assert_count_equal('COMPONENTS/GRID[@name="entry"]/RECORD', 0)
-        self.assert_count_equal('COMPONENTS/GRID[@name="entry"]/HEADER', 5)
-        self.assert_count_equal('COMPONENTS/GRID[@name="entry"]/ACTIONS/ACTION', 1)
+        self.calljson('/diacamma.payoff/depositDetailAddModify', {'depositslip': 1}, False)
+        self.assert_observer('core.custom', 'diacamma.payoff', 'depositDetailAddModify')
+        self.assert_count_equal('', 5)
+        self.assertEqual(len(self.json_actions), 1)
+        self.assert_grid_equal('entry', {"bill": "facture", "payer": "payeur", "amount": "montant", "date": "date", "reference": "référence"}, 0)  # nb=5
+        self.assert_count_equal('#entry/actions', 1)
 
     def test_deposit_simple(self):
         self.create_payoff(1, "75.0", "Mr Smith", 1, "ABC123")
@@ -160,65 +132,39 @@ class DepositTest(InvoiceTest):
         self.create_deposit()
 
         self.factory.xfer = DepositDetailAddModify()
-        self.call(
-            '/diacamma.payoff/depositDetailAddModify', {'depositslip': 1}, False)
-        self.assert_observer(
-            'core.custom', 'diacamma.payoff', 'depositDetailAddModify')
-        self.assert_count_equal(
-            'COMPONENTS/GRID[@name="entry"]/RECORD', 3)
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entry"]/RECORD[1]/VALUE[@name="bill"]', 'facture A-1 - 1 avril 2015')
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entry"]/RECORD[1]/VALUE[@name="payer"]', 'Mr Smith')
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entry"]/RECORD[1]/VALUE[@name="amount"]', '75.00€')
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entry"]/RECORD[1]/VALUE[@name="reference"]', 'ABC123')
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entry"]/RECORD[2]/VALUE[@name="bill"]', 'facture A-2 - 1 avril 2015')
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entry"]/RECORD[2]/VALUE[@name="payer"]', 'Mme Smith')
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entry"]/RECORD[2]/VALUE[@name="amount"]', '50.00€')
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entry"]/RECORD[2]/VALUE[@name="reference"]', 'XYZ987')
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entry"]/RECORD[3]/VALUE[@name="bill"]', 'reçu A-1 - 1 avril 2015')
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entry"]/RECORD[3]/VALUE[@name="payer"]', 'Miss Smith')
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entry"]/RECORD[3]/VALUE[@name="amount"]', '30.00€')
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entry"]/RECORD[3]/VALUE[@name="reference"]', '?????')
-        id1 = self.get_first_xpath(
-            'COMPONENTS/GRID[@name="entry"]/RECORD[1]').get('id')
-        id2 = self.get_first_xpath(
-            'COMPONENTS/GRID[@name="entry"]/RECORD[2]').get('id')
+        self.calljson('/diacamma.payoff/depositDetailAddModify', {'depositslip': 1}, False)
+        self.assert_observer('core.custom', 'diacamma.payoff', 'depositDetailAddModify')
+        self.assert_count_equal('entry', 3)
+        self.assert_json_equal('', 'entry/@0/bill', 'facture A-1 - 1 avril 2015')
+        self.assert_json_equal('', 'entry/@0/payer', 'Mr Smith')
+        self.assert_json_equal('', 'entry/@0/amount', '75.00€')
+        self.assert_json_equal('', 'entry/@0/reference', 'ABC123')
+        self.assert_json_equal('', 'entry/@1/bill', 'facture A-2 - 1 avril 2015')
+        self.assert_json_equal('', 'entry/@1/payer', 'Mme Smith')
+        self.assert_json_equal('', 'entry/@1/amount', '50.00€')
+        self.assert_json_equal('', 'entry/@1/reference', 'XYZ987')
+        self.assert_json_equal('', 'entry/@2/bill', 'reçu A-1 - 1 avril 2015')
+        self.assert_json_equal('', 'entry/@2/payer', 'Miss Smith')
+        self.assert_json_equal('', 'entry/@2/amount', '30.00€')
+        self.assert_json_equal('', 'entry/@2/reference', '?????')
+        id1 = self.get_json_path("entry/@0/id")
+        id2 = self.get_json_path("entry/@1/id")
 
         self.factory.xfer = DepositDetailSave()
-        self.call(
-            '/diacamma.payoff/depositDetailSave', {'depositslip': 1, 'entry': '%s;%s' % (id1, id2)}, False)
-        self.assert_observer(
-            'core.acknowledge', 'diacamma.payoff', 'depositDetailSave')
+        self.calljson('/diacamma.payoff/depositDetailSave', {'depositslip': 1, 'entry': '%s;%s' % (id1, id2)}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.payoff', 'depositDetailSave')
 
         self.factory.xfer = DepositSlipShow()
-        self.call(
-            '/diacamma.payoff/depositSlipShow', {'depositslip': 1}, False)
-        self.assert_observer(
-            'core.custom', 'diacamma.payoff', 'depositSlipShow')
-        self.assert_count_equal('ACTIONS/ACTION', 3)
-        self.assert_count_equal(
-            'COMPONENTS/GRID[@name="depositdetail"]/RECORD', 2)
-        self.assert_xml_equal(
-            'COMPONENTS/LABELFORM[@name="total"]', '125.00€')
+        self.calljson('/diacamma.payoff/depositSlipShow', {'depositslip': 1}, False)
+        self.assert_observer('core.custom', 'diacamma.payoff', 'depositSlipShow')
+        self.assertEqual(len(self.json_actions), 3)
+        self.assert_count_equal('depositdetail', 2)
+        self.assert_json_equal('LABELFORM', 'total', '125.00€')
 
         self.factory.xfer = DepositDetailAddModify()
-        self.call(
-            '/diacamma.payoff/depositDetailAddModify', {'depositslip': 1}, False)
-        self.assert_observer(
-            'core.custom', 'diacamma.payoff', 'depositDetailAddModify')
-        self.assert_count_equal(
-            'COMPONENTS/GRID[@name="entry"]/RECORD', 1)
+        self.calljson('/diacamma.payoff/depositDetailAddModify', {'depositslip': 1}, False)
+        self.assert_observer('core.custom', 'diacamma.payoff', 'depositDetailAddModify')
+        self.assert_count_equal('entry', 1)
 
     def test_deposit_othermode(self):
         self.create_payoff(1, "10.0", "Mr Smith", 0, "ABC123")
@@ -228,12 +174,9 @@ class DepositTest(InvoiceTest):
         self.create_deposit()
 
         self.factory.xfer = DepositDetailAddModify()
-        self.call(
-            '/diacamma.payoff/depositDetailAddModify', {'depositslip': 1}, False)
-        self.assert_observer(
-            'core.custom', 'diacamma.payoff', 'depositDetailAddModify')
-        self.assert_count_equal(
-            'COMPONENTS/GRID[@name="entry"]/RECORD', 0)
+        self.calljson('/diacamma.payoff/depositDetailAddModify', {'depositslip': 1}, False)
+        self.assert_observer('core.custom', 'diacamma.payoff', 'depositDetailAddModify')
+        self.assert_count_equal('entry', 0)
 
     def test_deposit_asset(self):
         self.create_payoff(3, "10.0", "Mr Smith", 1, "ABC123")
@@ -243,87 +186,54 @@ class DepositTest(InvoiceTest):
         self.create_deposit()
 
         self.factory.xfer = DepositDetailAddModify()
-        self.call(
-            '/diacamma.payoff/depositDetailAddModify', {'depositslip': 1}, False)
-        self.assert_observer(
-            'core.custom', 'diacamma.payoff', 'depositDetailAddModify')
-        self.assert_count_equal(
-            'COMPONENTS/GRID[@name="entry"]/RECORD', 0)
+        self.calljson('/diacamma.payoff/depositDetailAddModify', {'depositslip': 1}, False)
+        self.assert_observer('core.custom', 'diacamma.payoff', 'depositDetailAddModify')
+        self.assert_count_equal('entry', 0)
 
     def test_deposit_multipayoff(self):
         self.create_payoff(1, "50.0", "Mr Smith", 1, "ABC123")
 
         self.factory.xfer = PayoffAddModify()
-        self.call(
-            '/diacamma.payoff/payoffAddModify', {'SAVE': 'YES', 'supportings': '1;2', 'amount': '150.0', 'date': '2015-04-04', 'mode': 1, 'reference': 'IJKL654', 'bank_account': 1, 'payer': "Jean Dupond"}, False)
-        self.assert_observer(
-            'core.acknowledge', 'diacamma.payoff', 'payoffAddModify')
+        self.calljson('/diacamma.payoff/payoffAddModify', {'SAVE': 'YES', 'supportings': '1;2', 'amount': '150.0', 'date': '2015-04-04', 'mode': 1, 'reference': 'IJKL654', 'bank_account': 1, 'payer': "Jean Dupond"}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.payoff', 'payoffAddModify')
         self.create_deposit()
 
         self.factory.xfer = DepositDetailAddModify()
-        self.call(
-            '/diacamma.payoff/depositDetailAddModify', {'depositslip': 1}, False)
-        self.assert_observer(
-            'core.custom', 'diacamma.payoff', 'depositDetailAddModify')
-        self.assert_count_equal(
-            'COMPONENTS/GRID[@name="entry"]/RECORD', 2)
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entry"]/RECORD[1]/VALUE[@name="bill"]', 'facture A-1 - 1 avril 2015')
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entry"]/RECORD[1]/VALUE[@name="payer"]', 'Mr Smith')
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entry"]/RECORD[1]/VALUE[@name="amount"]', '50.00€')
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entry"]/RECORD[1]/VALUE[@name="reference"]', 'ABC123')
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entry"]/RECORD[2]/VALUE[@name="bill"]', 'facture A-1 - 1 avril 2015{[br/]}facture A-2 - 1 avril 2015')
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entry"]/RECORD[2]/VALUE[@name="payer"]', 'Jean Dupond')
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entry"]/RECORD[2]/VALUE[@name="amount"]', '150.00€')
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="entry"]/RECORD[2]/VALUE[@name="reference"]', 'IJKL654')
+        self.calljson('/diacamma.payoff/depositDetailAddModify', {'depositslip': 1}, False)
+        self.assert_observer('core.custom', 'diacamma.payoff', 'depositDetailAddModify')
+        self.assert_count_equal('entry', 2)
+        self.assert_json_equal('', 'entry/@0/bill', 'facture A-1 - 1 avril 2015')
+        self.assert_json_equal('', 'entry/@0/payer', 'Mr Smith')
+        self.assert_json_equal('', 'entry/@0/amount', '50.00€')
+        self.assert_json_equal('', 'entry/@0/reference', 'ABC123')
+        self.assert_json_equal('', 'entry/@1/bill', 'facture A-1 - 1 avril 2015{[br/]}facture A-2 - 1 avril 2015')
+        self.assert_json_equal('', 'entry/@1/payer', 'Jean Dupond')
+        self.assert_json_equal('', 'entry/@1/amount', '150.00€')
+        self.assert_json_equal('', 'entry/@1/reference', 'IJKL654')
 
-        id1 = self.get_first_xpath(
-            'COMPONENTS/GRID[@name="entry"]/RECORD[1]').get('id')
-        id2 = self.get_first_xpath(
-            'COMPONENTS/GRID[@name="entry"]/RECORD[2]').get('id')
+        id1 = self.get_json_path("entry/@0/id")
+        id2 = self.get_json_path("entry/@1/id")
 
         self.factory.xfer = DepositDetailSave()
-        self.call(
-            '/diacamma.payoff/depositDetailSave', {'depositslip': 1, 'entry': '%s;%s' % (id1, id2)}, False)
-        self.assert_observer(
-            'core.acknowledge', 'diacamma.payoff', 'depositDetailSave')
+        self.calljson('/diacamma.payoff/depositDetailSave', {'depositslip': 1, 'entry': '%s;%s' % (id1, id2)}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.payoff', 'depositDetailSave')
 
         self.factory.xfer = DepositSlipShow()
-        self.call(
-            '/diacamma.payoff/depositSlipShow', {'depositslip': 1}, False)
-        self.assert_observer(
-            'core.custom', 'diacamma.payoff', 'depositSlipShow')
-        self.assert_count_equal(
-            'COMPONENTS/GRID[@name="depositdetail"]/RECORD', 2)
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="depositdetail"]/RECORD[1]/VALUE[@name="payoff.payer"]', 'Mr Smith')
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="depositdetail"]/RECORD[1]/VALUE[@name="payoff.reference"]', 'ABC123')
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="depositdetail"]/RECORD[1]/VALUE[@name="amount"]', '50.00€')
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="depositdetail"]/RECORD[2]/VALUE[@name="payoff.payer"]', 'Jean Dupond')
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="depositdetail"]/RECORD[2]/VALUE[@name="payoff.reference"]', 'IJKL654')
-        self.assert_xml_equal(
-            'COMPONENTS/GRID[@name="depositdetail"]/RECORD[2]/VALUE[@name="amount"]', '150.00€')
-        self.assert_xml_equal(
-            'COMPONENTS/LABELFORM[@name="total"]', '200.00€')
+        self.calljson('/diacamma.payoff/depositSlipShow', {'depositslip': 1}, False)
+        self.assert_observer('core.custom', 'diacamma.payoff', 'depositSlipShow')
+        self.assert_count_equal('depositdetail', 2)
+        self.assert_json_equal('', 'depositdetail/@0/payoff.payer', 'Mr Smith')
+        self.assert_json_equal('', 'depositdetail/@0/payoff.reference', 'ABC123')
+        self.assert_json_equal('', 'depositdetail/@0/amount', '50.00€')
+        self.assert_json_equal('', 'depositdetail/@1/payoff.payer', 'Jean Dupond')
+        self.assert_json_equal('', 'depositdetail/@1/payoff.reference', 'IJKL654')
+        self.assert_json_equal('', 'depositdetail/@1/amount', '150.00€')
+        self.assert_json_equal('LABELFORM', 'total', '200.00€')
 
         self.factory.xfer = DepositDetailAddModify()
-        self.call(
-            '/diacamma.payoff/depositDetailAddModify', {'depositslip': 1}, False)
-        self.assert_observer(
-            'core.custom', 'diacamma.payoff', 'depositDetailAddModify')
-        self.assert_count_equal(
-            'COMPONENTS/GRID[@name="entry"]/RECORD', 0)
+        self.calljson('/diacamma.payoff/depositDetailAddModify', {'depositslip': 1}, False)
+        self.assert_observer('core.custom', 'diacamma.payoff', 'depositDetailAddModify')
+        self.assert_count_equal('entry', 0)
 
     def test_deposit_valid(self):
         self.create_payoff(1, "75.0", "Mr Smith", 1, "ABC123")
@@ -331,77 +241,61 @@ class DepositTest(InvoiceTest):
         self.create_deposit()
 
         self.factory.xfer = DepositDetailAddModify()
-        self.call(
-            '/diacamma.payoff/depositDetailAddModify', {'depositslip': 1}, False)
-        self.assert_observer(
-            'core.custom', 'diacamma.payoff', 'depositDetailAddModify')
-        self.assert_count_equal('COMPONENTS/GRID[@name="entry"]/RECORD', 2)
-        id1 = self.get_first_xpath(
-            'COMPONENTS/GRID[@name="entry"]/RECORD[1]').get('id')
-        id2 = self.get_first_xpath(
-            'COMPONENTS/GRID[@name="entry"]/RECORD[2]').get('id')
+        self.calljson('/diacamma.payoff/depositDetailAddModify', {'depositslip': 1}, False)
+        self.assert_observer('core.custom', 'diacamma.payoff', 'depositDetailAddModify')
+        self.assert_count_equal('entry', 2)
+        id1 = self.get_json_path("entry/@0/id")
+        id2 = self.get_json_path("entry/@1/id")
         self.factory.xfer = DepositDetailSave()
-        self.call(
-            '/diacamma.payoff/depositDetailSave', {'depositslip': 1, 'entry': '%s;%s' % (id1, id2)}, False)
-        self.assert_observer(
-            'core.acknowledge', 'diacamma.payoff', 'depositDetailSave')
+        self.calljson('/diacamma.payoff/depositDetailSave', {'depositslip': 1, 'entry': '%s;%s' % (id1, id2)}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.payoff', 'depositDetailSave')
 
         self.factory.xfer = DepositSlipTransition()
-        self.call(
-            '/diacamma.payoff/depositSlipTransition', {'depositslip': 1, 'CONFIRME': 'YES', 'TRANSITION': 'close_deposit'}, False)
-        self.assert_observer(
-            'core.acknowledge', 'diacamma.payoff', 'depositSlipTransition')
+        self.calljson('/diacamma.payoff/depositSlipTransition', {'depositslip': 1, 'CONFIRME': 'YES', 'TRANSITION': 'close_deposit'}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.payoff', 'depositSlipTransition')
 
         self.factory.xfer = DepositSlipShow()
-        self.call(
-            '/diacamma.payoff/depositSlipShow', {'depositslip': 1}, False)
-        self.assert_observer(
-            'core.custom', 'diacamma.payoff', 'depositSlipShow')
-        self.assert_count_equal('ACTIONS/ACTION', 3)
+        self.calljson('/diacamma.payoff/depositSlipShow', {'depositslip': 1}, False)
+        self.assert_observer('core.custom', 'diacamma.payoff', 'depositSlipShow')
+        self.assertEqual(len(self.json_actions), 3)
 
         self.factory.xfer = EntryAccountList()
-        self.call('/diacamma.accounting/entryAccountList',
-                  {'year': '1', 'journal': '-1', 'filter': '0'}, False)
+        self.calljson('/diacamma.accounting/entryAccountList',
+                      {'year': '1', 'journal': '-1', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
-        self.assert_count_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD', 6)
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[5]/VALUE[@name="num"]', '---')
-        description = self.get_first_xpath('COMPONENTS/GRID[@name="entryaccount"]/RECORD[5]/VALUE[@name="description"]').text
+        self.assert_count_equal('entryaccount', 6)
+        self.assert_json_equal('', 'entryaccount/@4/num', '---')
+        description = self.json_data['entryaccount'][4]['description']
         self.assertTrue('[512] 512' in description, description)
         self.assertTrue('[411 Dalton Jack]' in description, description)
         self.assertTrue('75.00€' in description, description)
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[6]/VALUE[@name="num"]', '---')
-        description = self.get_first_xpath('COMPONENTS/GRID[@name="entryaccount"]/RECORD[6]/VALUE[@name="description"]').text
+        self.assert_json_equal('', 'entryaccount/@5/num', '---')
+        description = self.json_data['entryaccount'][6 - 1]['description']
         self.assertTrue('[512] 512' in description, description)
         self.assertTrue('[411 Minimum]' in description, description)
         self.assertTrue('50.00€' in description, description)
 
         self.factory.xfer = DepositSlipTransition()
-        self.call(
-            '/diacamma.payoff/depositSlipTransition', {'depositslip': 1, 'CONFIRME': 'YES', 'TRANSITION': 'validate_deposit'}, False)
-        self.assert_observer(
-            'core.acknowledge', 'diacamma.payoff', 'depositSlipTransition')
+        self.calljson('/diacamma.payoff/depositSlipTransition', {'depositslip': 1, 'CONFIRME': 'YES', 'TRANSITION': 'validate_deposit'}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.payoff', 'depositSlipTransition')
 
         self.factory.xfer = DepositSlipShow()
-        self.call(
-            '/diacamma.payoff/depositSlipShow', {'depositslip': 1}, False)
-        self.assert_observer(
-            'core.custom', 'diacamma.payoff', 'depositSlipShow')
-        self.assert_count_equal('ACTIONS/ACTION', 2)
+        self.calljson('/diacamma.payoff/depositSlipShow', {'depositslip': 1}, False)
+        self.assert_observer('core.custom', 'diacamma.payoff', 'depositSlipShow')
+        self.assertEqual(len(self.json_actions), 2)
 
         self.factory.xfer = EntryAccountList()
-        self.call('/diacamma.accounting/entryAccountList',
-                  {'year': '1', 'journal': '-1', 'filter': '0'}, False)
-        self.assert_observer(
-            'core.custom', 'diacamma.accounting', 'entryAccountList')
-        self.assert_count_equal(
-            'COMPONENTS/GRID[@name="entryaccount"]/RECORD', 6)
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[5]/VALUE[@name="num"]', '1')
-        description = self.get_first_xpath('COMPONENTS/GRID[@name="entryaccount"]/RECORD[5]/VALUE[@name="description"]').text
+        self.calljson('/diacamma.accounting/entryAccountList',
+                      {'year': '1', 'journal': '-1', 'filter': '0'}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
+        self.assert_count_equal('entryaccount', 6)
+        self.assert_json_equal('', 'entryaccount/@4/num', '1')
+        description = self.json_data['entryaccount'][4]['description']
         self.assertTrue('[512] 512' in description, description)
         self.assertTrue('[411 Dalton Jack]' in description, description)
         self.assertTrue('75.00€' in description, description)
-        self.assert_xml_equal('COMPONENTS/GRID[@name="entryaccount"]/RECORD[6]/VALUE[@name="num"]', '2')
-        description = self.get_first_xpath('COMPONENTS/GRID[@name="entryaccount"]/RECORD[6]/VALUE[@name="description"]').text
+        self.assert_json_equal('', 'entryaccount/@5/num', '2')
+        description = self.json_data['entryaccount'][6 - 1]['description']
         self.assertTrue('[512] 512' in description, description)
         self.assertTrue('[411 Minimum]' in description, description)
         self.assertTrue('50.00€' in description, description)
@@ -434,60 +328,60 @@ class MethodTest(InvoiceTest, PaymentTest):
 
     def test_payment_asset(self):
         self.factory.xfer = BillShow()
-        self.call('/diacamma.invoice/billShow', {'bill': 3}, False)
+        self.calljson('/diacamma.invoice/billShow', {'bill': 3}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'billShow')
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="title"]', "{[br/]}{[center]}{[u]}{[b]}avoir{[/b]}{[/u]}{[/center]}")
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="status"]', "validé")
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="total_rest_topay"]', "100.00€")
-        self.assert_count_equal('ACTIONS/ACTION', 3)
+        self.assert_json_equal('LABELFORM', 'title', "{[br/]}{[center]}{[u]}{[b]}avoir{[/b]}{[/u]}{[/center]}")
+        self.assert_json_equal('LABELFORM', 'status', "validé")
+        self.assert_json_equal('LABELFORM', 'total_rest_topay', "100.00€")
+        self.assertEqual(len(self.json_actions), 3)
 
         self.factory.xfer = PayableShow()
-        self.call('/diacamma.payoff/supportingPaymentMethod', {'bill': 3, 'item_name': 'bill'}, False)
+        self.calljson('/diacamma.payoff/supportingPaymentMethod', {'bill': 3, 'item_name': 'bill'}, False)
         self.assert_observer('core.exception', 'diacamma.payoff', 'supportingPaymentMethod')
 
     def test_payment_building(self):
         self.factory.xfer = BillShow()
-        self.call('/diacamma.invoice/billShow', {'bill': 5}, False)
+        self.calljson('/diacamma.invoice/billShow', {'bill': 5}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'billShow')
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="title"]', "{[br/]}{[center]}{[u]}{[b]}facture{[/b]}{[/u]}{[/center]}")
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="status"]', "en création")
-        self.assert_count_equal('ACTIONS/ACTION', 3)
+        self.assert_json_equal('LABELFORM', 'title', "{[br/]}{[center]}{[u]}{[b]}facture{[/b]}{[/u]}{[/center]}")
+        self.assert_json_equal('LABELFORM', 'status', "en création")
+        self.assertEqual(len(self.json_actions), 3)
 
         self.factory.xfer = PayableShow()
-        self.call('/diacamma.payoff/supportingPaymentMethod', {'bill': 5, 'item_name': 'bill'}, False)
+        self.calljson('/diacamma.payoff/supportingPaymentMethod', {'bill': 5, 'item_name': 'bill'}, False)
         self.assert_observer('core.exception', 'diacamma.payoff', 'supportingPaymentMethod')
 
     def test_payment_cotation(self):
         self.factory.xfer = BillShow()
-        self.call('/diacamma.invoice/billShow', {'bill': 1}, False)
+        self.calljson('/diacamma.invoice/billShow', {'bill': 1}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'billShow')
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="title"]', "{[br/]}{[center]}{[u]}{[b]}devis{[/b]}{[/u]}{[/center]}")
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="status"]', "validé")
-        self.assert_count_equal('ACTIONS/ACTION', 6)
-        self.assert_action_equal('ACTIONS/ACTION[1]', (six.text_type('Règlement'), 'diacamma.payoff/images/payments.png', 'diacamma.payoff', 'payableShow', 0, 1, 1))
+        self.assert_json_equal('LABELFORM', 'title', "{[br/]}{[center]}{[u]}{[b]}devis{[/b]}{[/u]}{[/center]}")
+        self.assert_json_equal('LABELFORM', 'status', "validé")
+        self.assertEqual(len(self.json_actions), 6)
+        self.assert_action_equal(self.json_actions[0], (six.text_type('Règlement'), 'diacamma.payoff/images/payments.png', 'diacamma.payoff', 'payableShow', 0, 1, 1))
 
         self.factory.xfer = PayableShow()
-        self.call('/diacamma.payoff/supportingPaymentMethod', {'bill': 1, 'item_name': 'bill'}, False)
+        self.calljson('/diacamma.payoff/supportingPaymentMethod', {'bill': 1, 'item_name': 'bill'}, False)
         self.assert_observer('core.custom', 'diacamma.payoff', 'supportingPaymentMethod')
-        self.assert_count_equal('COMPONENTS/*', 14)
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="num_txt"]', 'A-1')
+        self.assert_count_equal('', 14)
+        self.assert_json_equal('LABELFORM', 'num_txt', 'A-1')
         self.check_payment(1, 'devis A-1 - 1 avril 2015')
 
     def test_payment_bill(self):
         self.factory.xfer = BillShow()
-        self.call('/diacamma.invoice/billShow', {'bill': 2}, False)
+        self.calljson('/diacamma.invoice/billShow', {'bill': 2}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'billShow')
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="title"]', "{[br/]}{[center]}{[u]}{[b]}facture{[/b]}{[/u]}{[/center]}")
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="status"]', "validé")
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="total_rest_topay"]', "100.00€")
-        self.assert_count_equal('ACTIONS/ACTION', 5)
-        self.assert_action_equal('ACTIONS/ACTION[1]', (six.text_type('Règlement'), 'diacamma.payoff/images/payments.png', 'diacamma.payoff', 'payableShow', 0, 1, 1))
+        self.assert_json_equal('LABELFORM', 'title', "{[br/]}{[center]}{[u]}{[b]}facture{[/b]}{[/u]}{[/center]}")
+        self.assert_json_equal('LABELFORM', 'status', "validé")
+        self.assert_json_equal('LABELFORM', 'total_rest_topay', "100.00€")
+        self.assertEqual(len(self.json_actions), 5)
+        self.assert_action_equal(self.json_actions[0], (six.text_type('Règlement'), 'diacamma.payoff/images/payments.png', 'diacamma.payoff', 'payableShow', 0, 1, 1))
 
         self.factory.xfer = PayableShow()
-        self.call('/diacamma.payoff/supportingPaymentMethod', {'bill': 2, 'item_name': 'bill'}, False)
+        self.calljson('/diacamma.payoff/supportingPaymentMethod', {'bill': 2, 'item_name': 'bill'}, False)
         self.assert_observer('core.custom', 'diacamma.payoff', 'supportingPaymentMethod')
-        self.assert_count_equal('COMPONENTS/*', 14)
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="num_txt"]', 'A-1')
+        self.assert_count_equal('', 14)
+        self.assert_json_equal('LABELFORM', 'num_txt', 'A-1')
         self.check_payment(2, 'facture A-1 - 1 avril 2015')
 
     def test_send_bill(self):
@@ -496,21 +390,21 @@ class MethodTest(InvoiceTest, PaymentTest):
         server.start(2025)
         try:
             self.factory.xfer = ResponsabilityModify()
-            self.call('/lucterios.contacts/responsabilityModify', {'legal_entity': '7', 'individual': '3', "SAVE": "YES"}, False)
+            self.calljson('/lucterios.contacts/responsabilityModify', {'legal_entity': '7', 'individual': '3', "SAVE": "YES"}, False)
             self.assert_observer('core.acknowledge', 'lucterios.contacts', 'responsabilityModify')
 
             self.assertEqual(0, server.count())
             self.factory.xfer = PayableEmail()
-            self.call('/diacamma.payoff/payableEmail', {'item_name': 'bill', 'bill': 2}, False)
+            self.calljson('/diacamma.payoff/payableEmail', {'item_name': 'bill', 'bill': 2}, False)
             self.assert_observer('core.custom', 'diacamma.payoff', 'payableEmail')
-            self.assert_count_equal('COMPONENTS/*', 4)
-            self.assert_xml_equal('COMPONENTS/EDIT[@name="subject"]', 'facture A-1 - 1 avril 2015')
-            self.assert_xml_equal('COMPONENTS/MEMO[@name="message"]',
-                                  'William Dalton (Minimum)\n\nVeuillez trouver ci-Joint à ce courriel facture A-1 - 1 avril 2015.\n\nSincères salutations')
+            self.assert_count_equal('', 4)
+            self.assert_json_equal('EDIT', 'subject', 'facture A-1 - 1 avril 2015')
+            self.assert_json_equal('MEMO', 'message',
+                                   'William Dalton (Minimum)\n\nVeuillez trouver ci-Joint à ce courriel facture A-1 - 1 avril 2015.\n\nSincères salutations')
 
             self.factory.xfer = PayableEmail()
-            self.call('/diacamma.payoff/payableEmail', {'bill': 2, 'OK': 'YES', 'item_name': 'bill',
-                                                        'subject': 'my bill', 'message': 'this is a bill.', 'model': 8}, False)
+            self.calljson('/diacamma.payoff/payableEmail', {'bill': 2, 'OK': 'YES', 'item_name': 'bill',
+                                                            'subject': 'my bill', 'message': 'this is a bill.', 'model': 8}, False)
             self.assert_observer('core.acknowledge', 'diacamma.payoff', 'payableEmail')
             self.assertEqual(1, server.count())
             self.assertEqual('mr-sylvestre@worldcompany.com', server.get(0)[1])
@@ -530,19 +424,19 @@ class MethodTest(InvoiceTest, PaymentTest):
         details = [{'article': 2, 'designation': 'Article 02', 'price': '100.00', 'quantity': 1}]
         self._create_bill(details, 1, '2015-04-02', 4, True)
         self.factory.xfer = BillShow()
-        self.call('/diacamma.invoice/billShow', {'bill': 6}, False)
+        self.calljson('/diacamma.invoice/billShow', {'bill': 6}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'billShow')
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="title"]', "{[br/]}{[center]}{[u]}{[b]}facture{[/b]}{[/u]}{[/center]}")
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="status"]', "validé")
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="total_rest_topay"]', "100.00€")
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="vta_sum"]', "4.76€")
-        self.assert_count_equal('ACTIONS/ACTION', 5)
-        self.assert_action_equal('ACTIONS/ACTION[1]', (six.text_type('Règlement'), 'diacamma.payoff/images/payments.png', 'diacamma.payoff', 'payableShow', 0, 1, 1))
+        self.assert_json_equal('LABELFORM', 'title', "{[br/]}{[center]}{[u]}{[b]}facture{[/b]}{[/u]}{[/center]}")
+        self.assert_json_equal('LABELFORM', 'status', "validé")
+        self.assert_json_equal('LABELFORM', 'total_rest_topay', "100.00€")
+        self.assert_json_equal('LABELFORM', 'vta_sum', "4.76€")
+        self.assertEqual(len(self.json_actions), 5)
+        self.assert_action_equal(self.json_actions[0], (six.text_type('Règlement'), 'diacamma.payoff/images/payments.png', 'diacamma.payoff', 'payableShow', 0, 1, 1))
 
         self.factory.xfer = PayableShow()
-        self.call('/diacamma.payoff/supportingPaymentMethod', {'bill': 6, 'item_name': 'bill'}, False)
+        self.calljson('/diacamma.payoff/supportingPaymentMethod', {'bill': 6, 'item_name': 'bill'}, False)
         self.assert_observer('core.custom', 'diacamma.payoff', 'supportingPaymentMethod')
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="num_txt"]', 'A-2')
+        self.assert_json_equal('LABELFORM', 'num_txt', 'A-2')
         self.check_payment(6, 'facture A-2 - 2 avril 2015', '95.24', '4.76')
 
     def test_payment_billpartial_with_tax(self):
@@ -551,88 +445,88 @@ class MethodTest(InvoiceTest, PaymentTest):
         details = [{'article': 2, 'designation': 'Article 02', 'price': '100.00', 'quantity': 1}]
         self._create_bill(details, 1, '2015-04-02', 4, True)
         self.factory.xfer = PayoffAddModify()
-        self.call('/diacamma.payoff/payoffAddModify', {'SAVE': 'YES', 'supporting': 6, 'amount': '60.0',
-                                                       'payer': "Ma'a Dalton", 'date': '2015-04-01', 'mode': 0, 'reference': 'abc', 'bank_account': 0}, False)
+        self.calljson('/diacamma.payoff/payoffAddModify', {'SAVE': 'YES', 'supporting': 6, 'amount': '60.0',
+                                                           'payer': "Ma'a Dalton", 'date': '2015-04-01', 'mode': 0, 'reference': 'abc', 'bank_account': 0}, False)
         self.assert_observer('core.acknowledge', 'diacamma.payoff', 'payoffAddModify')
 
         self.factory.xfer = BillShow()
-        self.call('/diacamma.invoice/billShow', {'bill': 6}, False)
+        self.calljson('/diacamma.invoice/billShow', {'bill': 6}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'billShow')
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="title"]', "{[br/]}{[center]}{[u]}{[b]}facture{[/b]}{[/u]}{[/center]}")
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="status"]', "validé")
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="total_rest_topay"]', "40.00€")
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="vta_sum"]', "4.76€")
-        self.assert_count_equal('ACTIONS/ACTION', 5)
-        self.assert_action_equal('ACTIONS/ACTION[1]', (six.text_type('Règlement'), 'diacamma.payoff/images/payments.png', 'diacamma.payoff', 'payableShow', 0, 1, 1))
+        self.assert_json_equal('LABELFORM', 'title', "{[br/]}{[center]}{[u]}{[b]}facture{[/b]}{[/u]}{[/center]}")
+        self.assert_json_equal('LABELFORM', 'status', "validé")
+        self.assert_json_equal('LABELFORM', 'total_rest_topay', "40.00€")
+        self.assert_json_equal('LABELFORM', 'vta_sum', "4.76€")
+        self.assertEqual(len(self.json_actions), 5)
+        self.assert_action_equal(self.json_actions[0], (six.text_type('Règlement'), 'diacamma.payoff/images/payments.png', 'diacamma.payoff', 'payableShow', 0, 1, 1))
 
         self.factory.xfer = PayableShow()
-        self.call('/diacamma.payoff/supportingPaymentMethod', {'bill': 6, 'item_name': 'bill'}, False)
+        self.calljson('/diacamma.payoff/supportingPaymentMethod', {'bill': 6, 'item_name': 'bill'}, False)
         self.assert_observer('core.custom', 'diacamma.payoff', 'supportingPaymentMethod')
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="num_txt"]', 'A-2')
+        self.assert_json_equal('LABELFORM', 'num_txt', 'A-2')
         self.check_payment(6, 'facture A-2 - 2 avril 2015', '38.1', '1.9')
 
     def test_payment_recip(self):
         self.factory.xfer = BillShow()
-        self.call('/diacamma.invoice/billShow', {'bill': 4}, False)
+        self.calljson('/diacamma.invoice/billShow', {'bill': 4}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'billShow')
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="title"]', "{[br/]}{[center]}{[u]}{[b]}reçu{[/b]}{[/u]}{[/center]}")
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="status"]', "validé")
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="total_rest_topay"]', "100.00€")
-        self.assert_count_equal('ACTIONS/ACTION', 5)
-        self.assert_action_equal('ACTIONS/ACTION[1]', (six.text_type('Règlement'), 'diacamma.payoff/images/payments.png', 'diacamma.payoff', 'payableShow', 0, 1, 1))
+        self.assert_json_equal('LABELFORM', 'title', "{[br/]}{[center]}{[u]}{[b]}reçu{[/b]}{[/u]}{[/center]}")
+        self.assert_json_equal('LABELFORM', 'status', "validé")
+        self.assert_json_equal('LABELFORM', 'total_rest_topay', "100.00€")
+        self.assertEqual(len(self.json_actions), 5)
+        self.assert_action_equal(self.json_actions[0], (six.text_type('Règlement'), 'diacamma.payoff/images/payments.png', 'diacamma.payoff', 'payableShow', 0, 1, 1))
 
         self.factory.xfer = PayableShow()
-        self.call('/diacamma.payoff/supportingPaymentMethod', {'bill': 4, 'item_name': 'bill'}, False)
+        self.calljson('/diacamma.payoff/supportingPaymentMethod', {'bill': 4, 'item_name': 'bill'}, False)
         self.assert_observer('core.custom', 'diacamma.payoff', 'supportingPaymentMethod')
         self.check_payment(4, 'recu A-1 - 1 avril 2015')
 
     def test_payment_paypal_bill(self):
         self.check_payment_paypal(2, "facture A-1 - 1 avril 2015")
         self.factory.xfer = BillShow()
-        self.call('/diacamma.invoice/billShow', {'bill': 2}, False)
+        self.calljson('/diacamma.invoice/billShow', {'bill': 2}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'billShow')
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="title"]', "{[br/]}{[center]}{[u]}{[b]}facture{[/b]}{[/u]}{[/center]}")
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="status"]', "validé")
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="total_rest_topay"]', "0.00€")
-        self.assert_count_equal('ACTIONS/ACTION', 4)
+        self.assert_json_equal('LABELFORM', 'title', "{[br/]}{[center]}{[u]}{[b]}facture{[/b]}{[/u]}{[/center]}")
+        self.assert_json_equal('LABELFORM', 'status', "validé")
+        self.assert_json_equal('LABELFORM', 'total_rest_topay', "0.00€")
+        self.assertEqual(len(self.json_actions), 4)
 
     def test_payment_paypal_cotation(self):
         self.check_payment_paypal(1, "devis A-1 - 1 avril 2015")
         self.factory.xfer = BillShow()
-        self.call('/diacamma.invoice/billShow', {'bill': 1}, False)
+        self.calljson('/diacamma.invoice/billShow', {'bill': 1}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'billShow')
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="title"]', "{[br/]}{[center]}{[u]}{[b]}devis{[/b]}{[/u]}{[/center]}")
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="date"]', "1 avril 2015")
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="status"]', "archivé")
+        self.assert_json_equal('LABELFORM', 'title', "{[br/]}{[center]}{[u]}{[b]}devis{[/b]}{[/u]}{[/center]}")
+        self.assert_json_equal('LABELFORM', 'date', "1 avril 2015")
+        self.assert_json_equal('LABELFORM', 'status', "archivé")
 
         self.factory.xfer = BillShow()
-        self.call('/diacamma.invoice/billShow', {'bill': 6}, False)
+        self.calljson('/diacamma.invoice/billShow', {'bill': 6}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'billShow')
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="title"]', "{[br/]}{[center]}{[u]}{[b]}facture{[/b]}{[/u]}{[/center]}")
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="status"]', "validé")
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="date"]', "3 avril 2015")
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="total_rest_topay"]', "0.00€")
-        self.assert_count_equal('ACTIONS/ACTION', 4)
+        self.assert_json_equal('LABELFORM', 'title', "{[br/]}{[center]}{[u]}{[b]}facture{[/b]}{[/u]}{[/center]}")
+        self.assert_json_equal('LABELFORM', 'status', "validé")
+        self.assert_json_equal('LABELFORM', 'date', "3 avril 2015")
+        self.assert_json_equal('LABELFORM', 'total_rest_topay', "0.00€")
+        self.assertEqual(len(self.json_actions), 4)
 
     def test_payment_paypal_recip(self):
         self.check_payment_paypal(4, "recu A-1 - 1 avril 2015")
         self.factory.xfer = BillShow()
-        self.call('/diacamma.invoice/billShow', {'bill': 4}, False)
+        self.calljson('/diacamma.invoice/billShow', {'bill': 4}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'billShow')
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="title"]', "{[br/]}{[center]}{[u]}{[b]}reçu{[/b]}{[/u]}{[/center]}")
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="status"]', "validé")
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="total_rest_topay"]', "0.00€")
-        self.assert_count_equal('ACTIONS/ACTION', 4)
+        self.assert_json_equal('LABELFORM', 'title', "{[br/]}{[center]}{[u]}{[b]}reçu{[/b]}{[/u]}{[/center]}")
+        self.assert_json_equal('LABELFORM', 'status', "validé")
+        self.assert_json_equal('LABELFORM', 'total_rest_topay', "0.00€")
+        self.assertEqual(len(self.json_actions), 4)
 
     def test_payment_paypal_asset(self):
         self.check_payment_paypal(5, "avoir A-1 - 1 avril 2015", False)
         self.factory.xfer = BillShow()
-        self.call('/diacamma.invoice/billShow', {'bill': 3}, False)
+        self.calljson('/diacamma.invoice/billShow', {'bill': 3}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'billShow')
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="title"]', "{[br/]}{[center]}{[u]}{[b]}avoir{[/b]}{[/u]}{[/center]}")
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="status"]', "validé")
-        self.assert_xml_equal('COMPONENTS/LABELFORM[@name="total_rest_topay"]', "100.00€")
-        self.assert_count_equal('ACTIONS/ACTION', 3)
+        self.assert_json_equal('LABELFORM', 'title', "{[br/]}{[center]}{[u]}{[b]}avoir{[/b]}{[/u]}{[/center]}")
+        self.assert_json_equal('LABELFORM', 'status', "validé")
+        self.assert_json_equal('LABELFORM', 'total_rest_topay', "100.00€")
+        self.assertEqual(len(self.json_actions), 3)
 
     def test_check_payment_paypal(self):
         self.call_ex('/diacamma.payoff/checkPaymentPaypal', {'payid': 1}, True, 302)
