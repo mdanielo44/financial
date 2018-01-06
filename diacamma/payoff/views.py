@@ -333,7 +333,7 @@ class ValidationPaymentPaypal(XferContainerAbstract):
                 fields += "&%s=%s" % (key, quote_plus(value))
             res = post(paypal_url, data=fields.encode(), headers={"Content-Type": "application/x-www-form-urlencoded", 'Content-Length': six.text_type(len(fields))})
             return res.text
-        except:
+        except Exception:
             logging.getLogger('diacamma.payoff').warning(paypal_url)
             logging.getLogger('diacamma.payoff').warning(fields)
             raise
@@ -350,7 +350,8 @@ class ValidationPaymentPaypal(XferContainerAbstract):
             except Exception:
                 self.item.date = timezone.now()
             param_list = dict(self.request.POST)
-            del param_list['FORMAT']
+            if 'FORMAT' in param_list.keys():
+                del param_list['FORMAT']
             self.item.contains += "{[newline]}".join(["%s = %s" % (itemkey, itemvalue[0]) for (itemkey, itemvalue) in param_list.items()])
             conf_res = self.confirm_paypal()
             if conf_res == 'VERIFIED':
