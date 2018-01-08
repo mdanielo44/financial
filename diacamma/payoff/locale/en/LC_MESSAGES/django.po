@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-12-20 18:34+0000\n"
+"POT-Creation-Date: 2018-01-08 17:18+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: __init__.py:42 views_conf.py:139 views_conf.py:142 views_conf.py:145
+#: __init__.py:42 views_conf.py:137 views_conf.py:140 views_conf.py:143
 msgid "Diacamma payoff"
 msgstr "Diacamma payoff"
 
@@ -89,7 +89,7 @@ msgstr "reference"
 msgid "account code"
 msgstr "account code"
 
-#: models.py:236 models.py:254 models.py:459 models.py:600 views_conf.py:99
+#: models.py:236 models.py:254 models.py:459 models.py:600 views_conf.py:97
 msgid "bank account"
 msgstr "bank account"
 
@@ -244,7 +244,7 @@ msgstr "PayPal"
 msgid "data"
 msgstr "data"
 
-#: models.py:605 views_conf.py:101
+#: models.py:605 views_conf.py:99
 msgid "parameters"
 msgstr "parameters"
 
@@ -331,67 +331,67 @@ msgstr ""
 "\n"
 "Regards"
 
-#: views.py:63
+#: views.py:65
 msgid "Add payoff"
 msgstr "Add payoff"
 
-#: views.py:64
+#: views.py:66
 msgid "Modify payoff"
 msgstr "Modify payoff"
 
-#: views.py:94
+#: views.py:96
 msgid "Delete payoff"
 msgstr "Delete payoff"
 
-#: views.py:97
+#: views.py:99
 msgid "change"
 msgstr "change"
 
-#: views.py:103 views.py:148
+#: views.py:105 views.py:166
 msgid "Select third"
 msgstr "Select third"
 
-#: views.py:120
+#: views.py:140
 msgid "Filtrer by contact"
 msgstr "Filtrer by contact"
 
-#: views.py:136 views_deposit.py:164
+#: views.py:154 views_deposit.py:164
 msgid "select"
 msgstr "select"
 
-#: views.py:161
+#: views.py:179
 msgid "Send"
 msgstr "Send"
 
-#: views.py:164
+#: views.py:182
 msgid "Send by email"
 msgstr "Send by email"
 
-#: views.py:182
+#: views.py:200
 msgid "subject"
 msgstr "subject"
 
-#: views.py:186
+#: views.py:204
 msgid "message"
 msgstr "message"
 
-#: views.py:209 views.py:212 views.py:269
+#: views.py:227 views.py:230 views.py:287
 msgid "Payment"
 msgstr "Payment"
 
-#: views.py:223
+#: views.py:241
 msgid "No payment for this document."
 msgstr "No payment for this document."
 
-#: views.py:236 views.py:255
+#: views.py:254 views.py:273
 msgid "Payement methods"
 msgstr "Payement methods"
 
-#: views.py:289
+#: views.py:307
 msgid "It is not possible to pay-off this item with PayPal !"
 msgstr "It is not possible to pay-off this item with PayPal !"
 
-#: views.py:290
+#: views.py:308
 msgid "This item is deleted, payed or disabled."
 msgstr "This item is deleted, payed or disabled."
 
@@ -403,15 +403,15 @@ msgstr "Management of parameters and configuration of payoff"
 msgid "Payoff configuration"
 msgstr "Payoff configuration"
 
-#: views_conf.py:41 views_conf.py:142
+#: views_conf.py:41 views_conf.py:140
 msgid "Bank account"
 msgstr "Bank account"
 
-#: views_conf.py:45 views_conf.py:145
+#: views_conf.py:45 views_conf.py:143
 msgid "Payment method"
 msgstr "Payment method"
 
-#: views_conf.py:47 views_conf.py:139
+#: views_conf.py:47 views_conf.py:137
 msgid "Parameters"
 msgstr "Parameters"
 
@@ -439,19 +439,19 @@ msgstr "Modify payment method"
 msgid "Delete payment method"
 msgstr "Delete payment method"
 
-#: views_conf.py:104
+#: views_conf.py:102
 msgid "Payoff"
 msgstr "Payoff"
 
-#: views_conf.py:139
+#: views_conf.py:137
 msgid "Configuration of payoff parameters"
 msgstr "Define parameters for payoff"
 
-#: views_conf.py:142
+#: views_conf.py:140
 msgid "Configuration of bank account"
 msgstr "Add your bank accounts"
 
-#: views_conf.py:145
+#: views_conf.py:143
 msgid "Configuration of payment method"
 msgstr "Add your payment methods"
 

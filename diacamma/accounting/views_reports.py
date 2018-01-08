@@ -154,8 +154,7 @@ def convert_query_to_account(query1, query2=None, query_budget=None, sign_value=
     else:
         total3 = total_b[0]
     res = []
-    keys = list(dict_account.keys())
-    keys.sort()
+    keys = sorted(dict_account.keys())
     for key in keys:
         res.append(dict_account[key])
     return res, total1, total2, total3
@@ -174,6 +173,8 @@ class FiscalYearReport(XferContainerCustom):
         self.budgetfilter_left = None
         self.budgetfilter_right = None
         self.total_summary = (0, 0, 0, 0, 0, 0)
+        self.result = (0, 0, 0)
+        self.line_offset = 0
 
     def fillresponse(self):
         self.fill_header()
@@ -239,12 +240,12 @@ class FiscalYearReport(XferContainerCustom):
     def fill_grid(self, index_begin, side, data_line):
         line_idx = index_begin
         for data_item in data_line:
-            self.grid.set_value(line_idx, side, data_item[0])
-            self.grid.set_value(line_idx, side + '_n', data_item[1])
+            self.grid.set_value(self.line_offset + line_idx, side, data_item[0])
+            self.grid.set_value(self.line_offset + line_idx, side + '_n', data_item[1])
             if self.lastfilter is not None:
-                self.grid.set_value(line_idx, side + '_n_1', data_item[2])
+                self.grid.set_value(self.line_offset + line_idx, side + '_n_1', data_item[2])
             if (self.budgetfilter_left is not None) and (self.budgetfilter_right is not None):
-                self.grid.set_value(line_idx, side + '_b', data_item[3])
+                self.grid.set_value(self.line_offset + line_idx, side + '_b', data_item[3])
             line_idx += 1
         return line_idx
 
@@ -254,22 +255,19 @@ class FiscalYearReport(XferContainerCustom):
         else:
             self.total_summary = (max(total1_left, total1_right), max(total2_left, total2_right), max(totalb_left, totalb_right))
         line_idx += 1
-        self.grid.set_value(line_idx, 'left', '')
-        self.grid.set_value(line_idx, 'right', '')
-        line_idx += 1
         if (abs(total1_left - total1_right) > 0.0001) or ((total2_left is not None) and (total2_right is not None) and (abs(total2_left - total2_right) > 0.0001)):
             if total_in_left:
-                self.grid.set_value(line_idx, 'left', get_spaces(5) + "{[i]}%s{[/i]}" % _('result (profit)'))
-                self.grid.set_value(line_idx, 'right', get_spaces(5) + "{[i]}%s{[/i]}" % _('result (deficit)'))
+                self.grid.set_value(self.line_offset + line_idx, 'left', get_spaces(5) + "{[i]}%s{[/i]}" % _('result (profit)'))
+                self.grid.set_value(self.line_offset + line_idx, 'right', get_spaces(5) + "{[i]}%s{[/i]}" % _('result (deficit)'))
             else:
-                self.grid.set_value(line_idx, 'left', get_spaces(5) + "{[i]}%s{[/i]}" % _('result (deficit)'))
-                self.grid.set_value(line_idx, 'right', get_spaces(5) + "{[i]}%s{[/i]}" % _('result (profit)'))
-            self.grid.set_value(line_idx, 'right_n', '')
-            self.grid.set_value(line_idx, 'right_n_1', '')
-            self.grid.set_value(line_idx, 'right_b', '')
-            self.grid.set_value(line_idx, 'left_n', '')
-            self.grid.set_value(line_idx, 'left_n_1', '')
-            self.grid.set_value(line_idx, 'left_b', '')
+                self.grid.set_value(self.line_offset + line_idx, 'left', get_spaces(5) + "{[i]}%s{[/i]}" % _('result (deficit)'))
+                self.grid.set_value(self.line_offset + line_idx, 'right', get_spaces(5) + "{[i]}%s{[/i]}" % _('result (profit)'))
+            self.grid.set_value(self.line_offset + line_idx, 'right_n', '')
+            self.grid.set_value(self.line_offset + line_idx, 'right_n_1', '')
+            self.grid.set_value(self.line_offset + line_idx, 'right_b', '')
+            self.grid.set_value(self.line_offset + line_idx, 'left_n', '')
+            self.grid.set_value(self.line_offset + line_idx, 'left_n_1', '')
+            self.grid.set_value(self.line_offset + line_idx, 'left_b', '')
             result_n = total1_right - total1_left
             if (total2_left is not None) and (total2_right is not None):
                 result_n_1 = total2_right - total2_left
@@ -279,6 +277,7 @@ class FiscalYearReport(XferContainerCustom):
                 result_b = totalb_right - totalb_left
             else:
                 result_b = 0.0
+            self.result = (result_n, result_n_1, result_b)
             if total_in_left:
                 if result_n > 0:
                     pos_n = 'left_n'
@@ -307,32 +306,32 @@ class FiscalYearReport(XferContainerCustom):
                     pos_b = 'right_b'
                 else:
                     pos_b = 'left_b'
-            self.grid.set_value(line_idx, pos_n, format_devise(abs(result_n), 5))
+            self.grid.set_value(self.line_offset + line_idx, pos_n, format_devise(abs(result_n), 5))
             if (totalb_left is not None) and (abs(result_b) > 0.0001):
-                self.grid.set_value(line_idx, pos_b, format_devise(abs(result_b), 5))
+                self.grid.set_value(self.line_offset + line_idx, pos_b, format_devise(abs(result_b), 5))
             else:
                 pos_b = ""
             if (self.lastfilter is not None) and (abs(result_n_1) > 0.0001):
-                self.grid.set_value(line_idx, pos_n_1, format_devise(abs(result_n_1), 5))
+                self.grid.set_value(self.line_offset + line_idx, pos_n_1, format_devise(abs(result_n_1), 5))
             else:
                 pos_n_1 = ""
             if (pos_n != 'left_n') and (pos_n_1 != 'left_n_1') and (pos_b != 'left_b'):
-                self.grid.set_value(line_idx, 'left', '')
+                self.grid.set_value(self.line_offset + line_idx, 'left', '')
             if (pos_n != 'right_n') and (pos_n_1 != 'right_n_1') and (pos_b != 'right_b'):
-                self.grid.set_value(line_idx, 'right', '')
+                self.grid.set_value(self.line_offset + line_idx, 'right', '')
             line_idx += 1
-        self.grid.set_value(line_idx, 'left', get_spaces(10) + "{[u]}{[b]}%s{[/b]}{[/u]}" % _('total'))
-        self.grid.set_value(line_idx, 'left_n', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(total1_left, total1_right), 5))
+        self.grid.set_value(self.line_offset + line_idx, 'left', get_spaces(10) + "{[u]}{[b]}%s{[/b]}{[/u]}" % _('total'))
+        self.grid.set_value(self.line_offset + line_idx, 'left_n', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(total1_left, total1_right), 5))
         if self.lastfilter is not None:
-            self.grid.set_value(line_idx, 'left_n_1', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(total2_left, total2_right), 5))
+            self.grid.set_value(self.line_offset + line_idx, 'left_n_1', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(total2_left, total2_right), 5))
         if self.budgetfilter_left is not None:
-            self.grid.set_value(line_idx, 'left_b', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(totalb_left, totalb_right), 5))
-        self.grid.set_value(line_idx, 'right', get_spaces(10) + "{[u]}{[b]}%s{[/b]}{[/u]}" % _('total'))
-        self.grid.set_value(line_idx, 'right_n', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(total1_left, total1_right), 5))
+            self.grid.set_value(self.line_offset + line_idx, 'left_b', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(totalb_left, totalb_right), 5))
+        self.grid.set_value(self.line_offset + line_idx, 'right', get_spaces(10) + "{[u]}{[b]}%s{[/b]}{[/u]}" % _('total'))
+        self.grid.set_value(self.line_offset + line_idx, 'right_n', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(total1_left, total1_right), 5))
         if self.lastfilter is not None:
-            self.grid.set_value(line_idx, 'right_n_1', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(total2_left, total2_right), 5))
+            self.grid.set_value(self.line_offset + line_idx, 'right_n_1', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(total2_left, total2_right), 5))
         if self.budgetfilter_right is not None:
-            self.grid.set_value(line_idx, 'right_b', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(totalb_left, totalb_right), 5))
+            self.grid.set_value(self.line_offset + line_idx, 'right_b', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(totalb_left, totalb_right), 5))
         return line_idx
 
     def _add_left_right_accounting(self, left_filter, rigth_filter, total_in_left):
@@ -343,27 +342,19 @@ class FiscalYearReport(XferContainerCustom):
         line_idx = 0
         for line_idx in range(max(len(data_line_left), len(data_line_right))):
             if line_idx < len(data_line_left):
-                self.grid.set_value(
-                    line_idx, 'left', data_line_left[line_idx][0])
-                self.grid.set_value(
-                    line_idx, 'left_n', data_line_left[line_idx][1])
+                self.grid.set_value(self.line_offset + line_idx, 'left', data_line_left[line_idx][0])
+                self.grid.set_value(self.line_offset + line_idx, 'left_n', data_line_left[line_idx][1])
                 if self.lastfilter is not None:
-                    self.grid.set_value(
-                        line_idx, 'left_n_1', data_line_left[line_idx][2])
+                    self.grid.set_value(self.line_offset + line_idx, 'left_n_1', data_line_left[line_idx][2])
                 if self.budgetfilter_left is not None:
-                    self.grid.set_value(
-                        line_idx, 'left_b', data_line_left[line_idx][3])
+                    self.grid.set_value(self.line_offset + line_idx, 'left_b', data_line_left[line_idx][3])
             if line_idx < len(data_line_right):
-                self.grid.set_value(
-                    line_idx, 'right', data_line_right[line_idx][0])
-                self.grid.set_value(
-                    line_idx, 'right_n', data_line_right[line_idx][1])
+                self.grid.set_value(self.line_offset + line_idx, 'right', data_line_right[line_idx][0])
+                self.grid.set_value(self.line_offset + line_idx, 'right_n', data_line_right[line_idx][1])
                 if self.lastfilter is not None:
-                    self.grid.set_value(
-                        line_idx, 'right_n_1', data_line_right[line_idx][2])
+                    self.grid.set_value(self.line_offset + line_idx, 'right_n_1', data_line_right[line_idx][2])
                 if self.budgetfilter_right is not None:
-                    self.grid.set_value(
-                        line_idx, 'right_b', data_line_right[line_idx][3])
+                    self.grid.set_value(self.line_offset + line_idx, 'right_b', data_line_right[line_idx][3])
         return self.add_total_in_grid(total_in_left, total1_left, total2_left, totalb_left, total1_right, total2_right, totalb_right, line_idx)
 
     def calcul_table(self):
@@ -481,7 +472,7 @@ class FiscalYearIncomeStatement(FiscalYearReport):
             self.add_component(lbl)
 
     def show_annexe(self, line_idx, budgetfilter):
-        self.grid.set_value(line_idx + 1, 'left', '')
+        self.grid.set_value(self.line_offset + line_idx + 1, 'left', '')
         other_filter = Q(account__code__regex=current_system_account().get_annexe_mask())
         budget_other = Q(code__regex=current_system_account().get_annexe_mask())
         data_line_left, anx_total1_left, anx_total2_left, anx_totalb_left = convert_query_to_account(self.filter & other_filter,
@@ -495,29 +486,32 @@ class FiscalYearIncomeStatement(FiscalYearReport):
                                                                                                          sign_value=1)
         right_line_idx = self.fill_grid(line_idx + 2, 'right', data_line_right)
         if (left_line_idx != line_idx + 2) or (right_line_idx != line_idx + 2):
-            self.grid.set_value(line_idx + 1, 'left', get_spaces(20) + "{[i]}%s{[/i]}" % _('annexe'))
-            self.grid.set_value(line_idx + 1, 'right', get_spaces(20) + "{[i]}%s{[/i]}" % _('annexe'))
+            max_line_idx = max(left_line_idx, right_line_idx)
+            self.grid.set_value(self.line_offset + line_idx + 1, 'left', get_spaces(20) + "{[i]}%s{[/i]}" % _('annexe'))
+            self.grid.set_value(self.line_offset + line_idx + 1, 'right', get_spaces(20) + "{[i]}%s{[/i]}" % _('annexe'))
             left_line_idx += 1
             total1_left, total2_left, totalb_left = self.total_summary
             total1_right, total2_right, totalb_right = self.total_summary
-            self.grid.set_value(left_line_idx, 'left', get_spaces(10) + "{[u]}{[b]}%s{[/b]}{[/u]}" % _('total with annexe'))
+            self.grid.set_value(self.line_offset + max_line_idx, 'left', get_spaces(10) + "{[u]}{[b]}%s{[/b]}{[/u]}" % _('total with annexe'))
             total1_left += anx_total1_left
-            self.grid.set_value(left_line_idx, 'left_n', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(total1_left, total1_right), 5))
+            self.grid.set_value(self.line_offset + max_line_idx, 'left_n', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(total1_left, total1_right), 5))
             if self.lastfilter is not None:
                 total2_left += anx_total2_left
-                self.grid.set_value(left_line_idx, 'left_n_1', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(total2_left, total2_right), 5))
+                self.grid.set_value(self.line_offset + max_line_idx, 'left_n_1', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(total2_left, total2_right), 5))
             if self.budgetfilter_left is not None:
                 totalb_left += anx_totalb_left
-                self.grid.set_value(left_line_idx, 'left_b', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(totalb_left, totalb_right), 5))
-            self.grid.set_value(left_line_idx, 'right', get_spaces(10) + "{[u]}{[b]}%s{[/b]}{[/u]}" % _('total with annexe'))
+                self.grid.set_value(self.line_offset + max_line_idx, 'left_b', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(totalb_left, totalb_right), 5))
+            self.grid.set_value(self.line_offset + max_line_idx, 'right', get_spaces(10) + "{[u]}{[b]}%s{[/b]}{[/u]}" % _('total with annexe'))
             total1_right += anx_total1_right
-            self.grid.set_value(left_line_idx, 'right_n', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(total1_left, total1_right), 5))
+            self.grid.set_value(self.line_offset + max_line_idx, 'right_n', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(total1_left, total1_right), 5))
             if self.lastfilter is not None:
                 total2_right += anx_total2_right
-                self.grid.set_value(left_line_idx, 'right_n_1', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(total2_left, total2_right), 5))
+                self.grid.set_value(self.line_offset + max_line_idx, 'right_n_1', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(total2_left, total2_right), 5))
             if self.budgetfilter_right is not None:
                 totalb_right += anx_totalb_right
-                self.grid.set_value(left_line_idx, 'right_b', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(totalb_left, totalb_right), 5))
+                self.grid.set_value(self.line_offset + max_line_idx, 'right_b', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(totalb_left, totalb_right), 5))
+            self.grid.set_value(self.line_offset + max_line_idx + 1, 'left', '')
+            self.grid.set_value(self.line_offset + max_line_idx + 1, 'right', '')
 
     def calcul_table(self):
         self.budgetfilter_right = Q(year=self.item) & Q(code__regex=current_system_account().get_revenue_mask())
@@ -549,11 +543,11 @@ class FiscalYearLedger(FiscalYearReport):
 
     def _add_total_account(self):
         if self.last_account is not None:
-            self.grid.set_value(self.line_idx, 'entry.designation', get_spaces(30) + "{[i]}%s{[/i]}" % _('total'))
-            self.grid.set_value(self.line_idx, 'debit', "{[i]}%s{[/i]}" % format_devise(max((0, -1 * self.last_account.credit_debit_way() * self.last_total)), 0))
-            self.grid.set_value(self.line_idx, 'credit', "{[i]}%s{[/i]}" % format_devise(max((0, self.last_account.credit_debit_way() * self.last_total)), 0))
+            self.grid.set_value(self.line_offset + self.line_idx, 'entry.designation', get_spaces(30) + "{[i]}%s{[/i]}" % _('total'))
+            self.grid.set_value(self.line_offset + self.line_idx, 'debit', "{[i]}%s{[/i]}" % format_devise(max((0, -1 * self.last_account.credit_debit_way() * self.last_total)), 0))
+            self.grid.set_value(self.line_offset + self.line_idx, 'credit', "{[i]}%s{[/i]}" % format_devise(max((0, self.last_account.credit_debit_way() * self.last_total)), 0))
             self.line_idx += 1
-            self.grid.set_value(self.line_idx, 'entry.designation', '{[br/]}')
+            self.grid.set_value(self.line_offset + self.line_idx, 'entry.designation', '{[br/]}')
             self.line_idx += 1
             self.last_total = 0
 
@@ -567,14 +561,14 @@ class FiscalYearLedger(FiscalYearReport):
                 self._add_total_account()
                 self.last_account = line.account
                 self.last_third = None
-                self.grid.set_value(self.line_idx, 'entry.designation', get_spaces(15) + "{[u]}{[b]}%s{[/b]}{[/u]}" % six.text_type(self.last_account))
+                self.grid.set_value(self.line_offset + self.line_idx, 'entry.designation', get_spaces(15) + "{[u]}{[b]}%s{[/b]}{[/u]}" % six.text_type(self.last_account))
                 self.line_idx += 1
             if self.last_third != line.third:
-                self.grid.set_value(self.line_idx, 'entry.designation', get_spaces(8) + "{[b]}%s{[/b]}" % six.text_type(line.entry_account))
+                self.grid.set_value(self.line_offset + self.line_idx, 'entry.designation', get_spaces(8) + "{[b]}%s{[/b]}" % six.text_type(line.entry_account))
                 self.line_idx += 1
             self.last_third = line.third
             for header in self.grid.headers:
-                self.grid.set_value(self.line_idx, header.name, line.evaluate('#' + header.name))
+                self.grid.set_value(self.line_offset + self.line_idx, header.name, line.evaluate('#' + header.name))
             self.last_total += line.amount
             self.line_idx += 1
         self._add_total_account()
@@ -634,18 +628,17 @@ class FiscalYearTrialBalance(FiscalYearReport):
     def calcul_table(self):
         line_idx = 1
         balance_values = self._get_balance_values()
-        keys = list(balance_values.keys())
-        keys.sort()
+        keys = sorted(balance_values.keys())
         for key in keys:
-            self.grid.set_value(line_idx, 'designation', balance_values[key][0])
-            self.grid.set_value(line_idx, 'total_debit', format_devise(balance_values[key][1], 5))
-            self.grid.set_value(line_idx, 'total_credit', format_devise(balance_values[key][2], 5))
+            self.grid.set_value(self.line_offset + line_idx, 'designation', balance_values[key][0])
+            self.grid.set_value(self.line_offset + line_idx, 'total_debit', format_devise(balance_values[key][1], 5))
+            self.grid.set_value(self.line_offset + line_idx, 'total_credit', format_devise(balance_values[key][2], 5))
             diff = balance_values[key][1] - balance_values[key][2]
-            self.grid.set_value(line_idx, 'solde_debit', format_devise(max(0, diff), 0))
+            self.grid.set_value(self.line_offset + line_idx, 'solde_debit', format_devise(max(0, diff), 0))
             if abs(diff) < 0.0001:
-                self.grid.set_value(line_idx, 'solde_credit', format_devise(0, 5))
+                self.grid.set_value(self.line_offset + line_idx, 'solde_credit', format_devise(0, 5))
             else:
-                self.grid.set_value(line_idx, 'solde_credit', format_devise(max(0, -1 * diff), 0))
+                self.grid.set_value(self.line_offset + line_idx, 'solde_credit', format_devise(max(0, -1 * diff), 0))
             line_idx += 1
 
 
@@ -705,15 +698,20 @@ class CostAccountingReport(FiscalYearReport):
     field_id = 'costaccounting'
 
     def fillresponse(self):
+        self.fill_header()
+        self.addNameCol = False
         for self.item in self.items:
             self.new_tab(six.text_type(self.item))
-            self.fill_header()
+            self.define_gridheader()
+            self.fill_filterheader()
             self.calcul_table()
             self.fill_body()
         self.fill_buttons()
 
     def define_gridheader(self):
         self.grid = XferCompGrid('report_%d' % self.item.id)
+        if self.addNameCol:
+            self.grid.add_header('name', _('Cost accounting'))
         self.grid.add_header('left', _('Expenses'))
         self.grid.add_header('left_n', _('Value'))
         self.grid.add_header('left_b', _('Budget'))
@@ -735,16 +733,15 @@ class CostAccountingReport(FiscalYearReport):
         img.set_location(0, 0, 1, 3)
         self.add_component(img)
         lbl = XferCompLabelForm('name')
-        lbl.set_value(self.item)
+        names = []
+        for self.item in self.items:
+            names.append(six.text_type(self.item))
+        lbl.set_value('{[br/]}'.join(names))
         lbl.set_location(1, 2, 4)
         lbl.description = self.model._meta.verbose_name
         self.add_component(lbl)
-        self.filltab_from_model(1, 6, True, [(
-            (_('total revenue'), 'total_revenue'), (_('total expense'), 'total_expense'))])
         self.filter = Q(entry__costaccounting=self.item)
         self.fill_filterCode()
-        self.fill_filterheader()
-        self.define_gridheader()
 
     def fill_buttons(self):
         self.add_action(CostAccountingReportPrint.get_action(TITLE_PRINT, "images/print.png"),
@@ -760,29 +757,67 @@ class CostAccountingIncomeStatement(CostAccountingReport, FiscalYearIncomeStatem
     def fill_header(self):
         CostAccountingReport.fill_header(self)
 
+    def fillresponse(self):
+        self.fill_header()
+        all_have_last = False
+        tot_n, tot_b, tot_n1 = (0, 0, 0)
+        res1, res2, resb = (0, 0, 0)
+        self.addNameCol = True
+        self.lastfilter = True
+        self.define_gridheader()
+        for self.item in self.items:
+            self.grid.set_value(self.line_offset, 'name', '{[b]}{[u]}%s{[/u]}{[/b]}' % self.item)
+            self.line_offset += 1
+            self.filter = Q(entry__costaccounting=self.item)
+            self.fill_filterheader()
+            all_have_last = all_have_last or (self.lastfilter is not None)
+            self.calcul_table()
+            total1_left, total2_left, totalb_left = self.total_summary
+            if total1_left:
+                tot_n += total1_left
+            if totalb_left:
+                tot_b += totalb_left
+            if total2_left:
+                tot_n1 += total2_left
+            subres1, subres2, subresb = self.result
+            res1 -= subres1
+            res2 -= subres2
+            resb -= subresb
+            self.fill_body()
+            self.line_offset = len(self.grid.records)
+        if not all_have_last:
+            self.grid.delete_header('left_n_1')
+            self.grid.delete_header('right_n_1')
+        self.grid.set_value(self.line_offset + 1, 'left', get_spaces(5) + "{[i]}%s{[/i]}" % _('general result (profit)'))
+        self.grid.set_value(self.line_offset + 1, 'right', get_spaces(5) + "{[i]}%s{[/i]}" % _('general result (deficit)'))
+        if res1 < 0:
+            self.grid.set_value(self.line_offset + 1, 'left_n', format_devise(-1 * res1, 5))
+        else:
+            self.grid.set_value(self.line_offset + 1, 'right_n', format_devise(res1, 5))
+        if res2 < 0:
+            self.grid.set_value(self.line_offset + 1, 'left_n_1', format_devise(-1 * res2, 5))
+        else:
+            self.grid.set_value(self.line_offset + 1, 'right_n_1', format_devise(res2, 5))
+        if resb < 0:
+            self.grid.set_value(self.line_offset + 1, 'left_b', format_devise(-1 * resb, 5))
+        else:
+            self.grid.set_value(self.line_offset + 1, 'right_b', format_devise(resb, 5))
+
+        self.grid.set_value(self.line_offset + 2, 'left', get_spaces(10) + "{[u]}{[b]}%s{[/b]}{[/u]}" % _('general total'))
+        self.grid.set_value(self.line_offset + 2, 'left_n', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(tot_n, 5))
+        self.grid.set_value(self.line_offset + 2, 'left_b', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(tot_b, 5))
+        self.grid.set_value(self.line_offset + 2, 'left_n_1', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(tot_n1, 5))
+        self.grid.set_value(self.line_offset + 2, 'right', get_spaces(10) + "{[u]}{[b]}%s{[/b]}{[/u]}" % _('general total'))
+        self.grid.set_value(self.line_offset + 2, 'right_n', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(tot_n, 5))
+        self.grid.set_value(self.line_offset + 2, 'right_b', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(tot_b, 5))
+        self.grid.set_value(self.line_offset + 2, 'right_n_1', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(tot_n1, 5))
+        self.fill_buttons()
+
     def fill_filterheader(self):
         if self.item.last_costaccounting is not None:
-            self.lastfilter = Q(
-                entry__costaccounting=self.item.last_costaccounting)
-            lbl = XferCompLabelForm('sep_last')
-            lbl.set_value("{[br/]}{[br/]}")
-            lbl.set_location(2, 11, 3)
-            self.add_component(lbl)
-            lbl = XferCompLabelForm('lbllast')
-            lbl.set_value_as_name(_("Last"))
-            lbl.set_location(1, 12)
-            self.add_component(lbl)
-            lbl = XferCompLabelForm('last')
-            lbl.set_value(six.text_type(self.item.last_costaccounting))
-            lbl.set_location(2, 12, 4)
-            self.add_component(lbl)
-            old_accounting = self.item
-            self.item = self.item.last_costaccounting
-            try:
-                self.filltab_from_model(1, 13, True, [(
-                    (_('total revenue'), 'total_revenue'), (_('total expense'), 'total_expense'))])
-            finally:
-                self.item = old_accounting
+            self.lastfilter = Q(entry__costaccounting=self.item.last_costaccounting)
+        else:
+            self.lastfilter = None
 
     def calcul_table(self):
         self.budgetfilter_right = Q(cost_accounting=self.item) & Q(code__regex=current_system_account().get_revenue_mask())
@@ -806,6 +841,9 @@ class CostAccountingLedger(CostAccountingReport, FiscalYearLedger):
     def calcul_table(self):
         FiscalYearLedger.calcul_table(self)
 
+    def fill_filterCode(self):
+        FiscalYearReport.fill_filterCode(self)
+
 
 @ActionsManage.affect_grid(_("Trial balance"), 'images/print.png', unique=SELECT_MULTI, modal=FORMTYPE_NOMODAL)
 @MenuManage.describ('accounting.change_entryaccount')
@@ -821,3 +859,7 @@ class CostAccountingTrialBalance(CostAccountingReport, FiscalYearTrialBalance):
 
     def calcul_table(self):
         FiscalYearTrialBalance.calcul_table(self)
+
+    def fill_filterCode(self):
+        FiscalYearReport.fill_filterCode(self)
+        self.with_third = False

@@ -314,7 +314,7 @@ class CompletedEntryTest(LucteriosTest):
         self.assert_count_equal('costaccounting', 1)
 
         self.factory.xfer = CostAccountingList()
-        self.calljson('/diacamma.accounting/costAccountingList', {}, False)
+        self.calljson('/diacamma.accounting/costAccountingList', {'status': -1}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'costAccountingList')
         self.assert_count_equal('costaccounting', 2)
 
@@ -455,22 +455,22 @@ class CompletedEntryTest(LucteriosTest):
         self.assert_json_equal('', 'costaccounting/@2/total_expense', '63.94€')
 
         self.factory.xfer = CostAccountingList()
-        self.calljson('/diacamma.accounting/costAccountingList', {'year': 1}, False)
+        self.calljson('/diacamma.accounting/costAccountingList', {'year': 1, 'status':-1}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'costAccountingList')
         self.assert_count_equal('costaccounting', 1)
 
         self.factory.xfer = CostAccountingList()
-        self.calljson('/diacamma.accounting/costAccountingList', {'year': 2}, False)
+        self.calljson('/diacamma.accounting/costAccountingList', {'year': 2, 'status':-1}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'costAccountingList')
         self.assert_count_equal('costaccounting', 1)
 
         self.factory.xfer = CostAccountingList()
-        self.calljson('/diacamma.accounting/costAccountingList', {'year': -1}, False)
+        self.calljson('/diacamma.accounting/costAccountingList', {'year': -1, 'status':-1}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'costAccountingList')
         self.assert_count_equal('costaccounting', 2)
 
         self.factory.xfer = CostAccountingList()
-        self.calljson('/diacamma.accounting/costAccountingList', {'year': 0}, False)
+        self.calljson('/diacamma.accounting/costAccountingList', {'year': 0, 'status':-1}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'costAccountingList')
         self.assert_count_equal('costaccounting', 4)
 

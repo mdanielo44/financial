@@ -24,7 +24,7 @@ class CostAccountingList(XferListEditor):
     def fillresponse_header(self):
         self.filter = Q()
 
-        status_filter = self.getparam('status', -1)
+        status_filter = self.getparam('status', 0)
         if status_filter != -1:
             self.filter &= Q(status=status_filter)
         self.status = status_filter
@@ -41,6 +41,7 @@ class CostAccountingList(XferListEditor):
         comp_year.set_action(self.request, self.get_action(), close=CLOSE_NO, modal=FORMTYPE_REFRESH)
         comp_status = self.get_components('status')
         comp_status.select_list.insert(0, (-1, None))
+        comp_status.set_value(status_filter)
         comp_status.set_action(self.request, self.get_action(), close=CLOSE_NO, modal=FORMTYPE_REFRESH)
 
     def fillresponse(self):
