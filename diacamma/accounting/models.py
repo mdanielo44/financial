@@ -461,8 +461,8 @@ class FiscalYear(LucteriosModel):
 
 
 class CostAccounting(LucteriosModel):
-    name = models.CharField(_('name'), max_length=50, unique=True)
-    description = models.CharField(_('description'), max_length=50)
+    name = models.CharField(_('name'), max_length=150, unique=True)
+    description = models.CharField(_('description'), max_length=200)
     status = models.IntegerField(verbose_name=_('status'), choices=((0, _('opened')), (1, _('closed'))), default=0)
     last_costaccounting = models.ForeignKey('CostAccounting', verbose_name=_(
         'last cost accounting'), related_name='next_costaccounting', null=True, on_delete=models.SET_NULL)

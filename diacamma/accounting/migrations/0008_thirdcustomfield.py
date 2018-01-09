@@ -20,7 +20,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('value', models.TextField(default='', verbose_name='value')),
                 ('field', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='contacts.CustomField', verbose_name='field')),
-                ('third', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='accounting.Third', verbose_name='article')),
+                ('third', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='accounting.Third', verbose_name='third')),
             ],
             options={
                 'verbose_name_plural': 'custom field values',
