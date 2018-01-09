@@ -45,8 +45,8 @@ from lucterios.framework.error import LucteriosException, IMPORTANT, GRAVE
 from lucterios.framework.filetools import read_file, xml_validator, save_file, get_user_path
 from lucterios.framework.signal_and_lock import RecordLocker, Signal
 from lucterios.CORE.models import Parameter
-from lucterios.contacts.models import AbstractContact, CustomField,\
-    CustomizeObject
+from lucterios.CORE.parameters import Params
+from lucterios.contacts.models import AbstractContact, CustomField, CustomizeObject
 
 from diacamma.accounting.tools import get_amount_sum, format_devise, current_system_account, currency_round, correct_accounting_code
 
@@ -898,9 +898,10 @@ class EntryAccount(LucteriosModel):
                 _no_change, debit_rest, credit_rest = self.serial_control(self.get_serial())
                 if abs(debit_rest - credit_rest) > 0.0001:
                     raise LucteriosException(GRAVE, "Account entry not balanced: sum credit=%.3f / sum debit=%.3f" % (debit_rest, credit_rest))
+            if Params.getvalue("accounting-needcost") and (self.costaccounting_id is None):
+                raise LucteriosException(IMPORTANT, _("Cost accounting is mandatory !"))
             self.close = True
-            val = self.year.entryaccount_set.all().aggregate(
-                Max('num'))
+            val = self.year.entryaccount_set.all().aggregate(Max('num'))
             if val['num__max'] is None:
                 self.num = 1
             else:
@@ -1401,6 +1402,7 @@ def accounting_checkparam():
     Parameter.check_and_create(name='accounting-devise-prec', typeparam=1, title=_("accounting-devise-prec"), args="{'Min':0, 'Max':4}", value='2')
     Parameter.check_and_create(name='accounting-system', typeparam=0, title=_("accounting-system"), args="{'Multi':False}", value='')
     Parameter.check_and_create(name='accounting-sizecode', typeparam=1, title=_("accounting-sizecode"), args="{'Min':3, 'Max':50}", value='3')
+    Parameter.check_and_create(name='accounting-needcost', typeparam=3, title=_("accounting-needcost"), args="{}", value='False')
     check_accountingcost()
 
 

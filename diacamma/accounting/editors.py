@@ -225,6 +225,7 @@ class EntryAccountEditor(LucteriosEditor):
             xfer.fill_from_model(1, name_comp.row + 1, False, ['costaccounting'])
             sel = xfer.get_components('costaccounting')
             sel.set_select_query(CostAccounting.objects.filter(Q(status=0) & (Q(year=None) | Q(year=xfer.item.year))))
+            sel.set_needed(Params.getvalue('accounting-needcost'))
             self.added = True
         else:
             xfer.fill_from_model(1, name_comp.row + 1, True, ['costaccounting'])
