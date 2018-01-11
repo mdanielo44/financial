@@ -343,7 +343,7 @@ class FiscalYear(LucteriosModel):
                     try:
                         next_ficalyear = FiscalYear.objects.get(
                             last_fiscalyear=self)
-                    except:
+                    except BaseException:
                         raise LucteriosException(IMPORTANT, _(
                             "This fiscal year has entries not closed and not next fiscal year!"))
                 for entryline in entry_noclose.entrylineaccount_set.all():
@@ -989,18 +989,18 @@ class EntryLineAccount(LucteriosModel):
             res = "%s %s" % (self.entry_account, format_devise(self.account.credit_debit_way() * self.amount, 2))
             if (self.reference is not None) and (self.reference != ''):
                 res += " (%s)" % self.reference
-        except:
+        except BaseException:
             res = "???"
         return res
 
     @classmethod
-    def get_default_fields(cls):
+    def get_other_fields(cls):
         return [(_('account'), 'entry_account'), (_('debit'), 'debit'), (_('credit'), 'credit'), 'reference']
 
     @classmethod
-    def get_other_fields(cls):
-        return ['entry.num', 'entry.date_entry', 'entry.date_value', (_('account'), 'entry_account'),
-                (_('name'), 'designation_ref'), (_('debit'), 'debit'), (_('credit'), 'credit'), 'entry.link', 'entry.costaccounting']
+    def get_default_fields(cls):
+        return ['entry.num', 'entry.date_entry', 'entry.date_value', (_('name'), 'designation_ref'), (_('account'), 'entry_account'),
+                (_('debit'), 'debit'), (_('credit'), 'credit'), 'reference', 'entry.costaccounting', 'entry.link']
 
     @classmethod
     def get_edit_fields(cls):
@@ -1155,6 +1155,7 @@ class EntryLineAccount(LucteriosModel):
         verbose_name = _('entry line of account')
         verbose_name_plural = _('entry lines of account')
         default_permissions = []
+        ordering = ['entry__date_value', 'entry__id', 'account__code', 'third']
 
 
 class ModelEntry(LucteriosModel):

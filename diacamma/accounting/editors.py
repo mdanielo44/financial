@@ -238,9 +238,11 @@ class EntryAccountEditor(LucteriosEditor):
         lbl.set_location(0, last_row + 1, 6)
         lbl.set_value_center("{[hr/]}")
         xfer.add_component(lbl)
-        xfer.filltab_from_model(1, last_row + 2, True, ['entrylineaccount_set'])
-        grid_lines = xfer.get_components('entrylineaccount')
-        grid_lines.actions = []
+        grid_lines = XferCompGrid('entrylineaccount')
+        grid_lines.set_location(0, last_row + 2)
+        grid_lines.set_model(xfer.item.entrylineaccount_set.all(), EntryLineAccount.get_other_fields(), xfer)
+        grid_lines.description = _('entry line of account')
+        xfer.add_component(grid_lines)
         if self.item.has_third:
             sum_customer = get_amount_sum(self.item.entrylineaccount_set.filter(
                 account__code__regex=current_system_account().get_third_mask()).aggregate(Sum('amount')))
@@ -295,8 +297,8 @@ class EntryAccountEditor(LucteriosEditor):
         xfer.remove_component('entrylineaccount')
         new_grid_lines = XferCompGrid('entrylineaccount_serial')
         new_grid_lines.description = grid_lines.description
-        new_grid_lines.set_model(self.item.get_entrylineaccounts(serial_vals), None, xfer)
-        new_grid_lines.set_location(grid_lines.col, grid_lines.row, grid_lines.colspan + 2, grid_lines.rowspan)
+        new_grid_lines.set_model(self.item.get_entrylineaccounts(serial_vals), EntryLineAccount.get_other_fields(), xfer)
+        new_grid_lines.set_location(grid_lines.col, grid_lines.row, grid_lines.colspan + 3, grid_lines.rowspan)
         new_grid_lines.add_action_notified(xfer, EntryLineAccount)
         xfer.add_component(new_grid_lines)
         nb_lines = len(new_grid_lines.record_ids)

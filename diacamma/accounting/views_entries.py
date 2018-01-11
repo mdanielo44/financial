@@ -31,6 +31,7 @@ from lucterios.framework.xferadvance import XferShowEditor, XferDelete, XferSave
     TITLE_EDIT, TITLE_ADD
 from lucterios.framework.tools import FORMTYPE_NOMODAL, CLOSE_NO, FORMTYPE_REFRESH, SELECT_SINGLE, SELECT_MULTI, SELECT_NONE, CLOSE_YES
 from lucterios.framework.tools import ActionsManage, MenuManage, WrapAction
+from lucterios.framework.xferadvance import action_list_sorted
 from lucterios.framework.xferadvance import XferListEditor, XferAddEditor
 from lucterios.framework.xfergraphic import XferContainerAcknowledge, XferContainerCustom
 from lucterios.framework.xfercomponents import XferCompSelect, XferCompLabelForm, XferCompImage, XferCompFloat
@@ -45,7 +46,7 @@ from diacamma.accounting.models import EntryLineAccount, EntryAccount, FiscalYea
 class EntryAccountList(XferListEditor):
     icon = "entry.png"
     model = EntryAccount
-    field_id = 'entryaccount'
+    field_id = '???'
     caption = _("accounting entries")
 
     def _filter_by_year(self):
@@ -55,7 +56,7 @@ class EntryAccountList(XferListEditor):
         self.fill_from_model(0, 1, False, ['year', 'journal'])
         self.get_components('year').set_action(self.request, self.get_action(), modal=FORMTYPE_REFRESH, close=CLOSE_NO)
         self.get_components('year').colspan = 2
-        self.filter = Q(year=self.item.year)
+        self.filter = Q(entry__year=self.item.year)
 
     def _filter_by_journal(self):
         select_journal = self.getparam('journal', 4)
@@ -65,7 +66,7 @@ class EntryAccountList(XferListEditor):
         journal.set_action(self.request, self.get_action(), modal=FORMTYPE_REFRESH, close=CLOSE_NO)
         journal.colspan = 2
         if select_journal != -1:
-            self.filter &= Q(journal__id=select_journal)
+            self.filter &= Q(entry__journal__id=select_journal)
 
     def _filter_by_nature(self):
         select_filter = self.getparam('filter', 1)
@@ -78,18 +79,32 @@ class EntryAccountList(XferListEditor):
         sel.set_action(self.request, self.get_action(), close=CLOSE_NO, modal=FORMTYPE_REFRESH)
         self.add_component(sel)
         if select_filter == 1:
-            self.filter &= Q(close=False)
+            self.filter &= Q(entry__close=False)
         elif select_filter == 2:
-            self.filter &= Q(close=True)
+            self.filter &= Q(entry__close=True)
         elif select_filter == 3:
-            self.filter &= Q(link__id__gt=0)
+            self.filter &= Q(entry__link__id__gt=0)
         elif select_filter == 4:
-            self.filter &= Q(link=None)
+            self.filter &= Q(entry__link=None)
 
     def fillresponse_header(self):
         self._filter_by_year()
         self._filter_by_journal()
         self._filter_by_nature()
+
+    def get_items_from_filter(self):
+        items = XferListEditor.get_items_from_filter(self)
+        # items = items.extra(select={'credit':'abs(amount)','debit':'-1*abs(amount)'}).all()
+        return items
+
+    def fillresponse_body(self):
+        self.model = EntryLineAccount
+        self.field_id = 'entryline'
+        XferListEditor.fillresponse_body(self)
+        grid = self.get_components('entryline')
+        grid.actions = []
+        grid.add_action_notified(self, model=EntryAccount)
+        self.model = EntryAccount
 
     def fillresponse(self):
         XferListEditor.fillresponse(self)
@@ -104,8 +119,21 @@ class EntryAccountList(XferListEditor):
 class EntryAccountSearch(XferSavedCriteriaSearchEditor):
     icon = "entry.png"
     model = EntryAccount
-    field_id = 'entryaccount'
+    field_id = '???'
     caption = _("Search accounting entry")
+
+    def __init__(self):
+        self.model = EntryLineAccount
+        self.field_id = 'entryline'
+        XferSavedCriteriaSearchEditor.__init__(self)
+
+    def fillresponse(self):
+        XferSavedCriteriaSearchEditor.fillresponse(self)
+        self.model = EntryAccount
+        self.actions = []
+        for act, opt in ActionsManage.get_actions(ActionsManage.ACTION_IDENT_LIST, self, key=action_list_sorted):
+            self.add_action(act, **opt)
+        self.add_action(WrapAction(_('Close'), 'images/close.png'))
 
 
 @ActionsManage.affect_list(TITLE_LISTING, "images/print.png")
@@ -113,7 +141,7 @@ class EntryAccountSearch(XferSavedCriteriaSearchEditor):
 class EntryAccountListing(XferPrintListing):
     icon = "entry.png"
     model = EntryAccount
-    field_id = 'entryaccount'
+    field_id = '???'
     caption = _("Listing accounting entry")
 
     def __init__(self):
@@ -138,10 +166,7 @@ class EntryAccountListing(XferPrintListing):
             if select_journal != -1:
                 new_filter &= Q(entry__journal__id=select_journal)
         else:
-            self.item = EntryAccount()
-            entries = EntryAccount.objects.filter(XferPrintListing.get_filter(self))
-            self.item = EntryLineAccount()
-            new_filter = Q(entry_id__in=[entry.id for entry in entries])
+            new_filter = XferPrintListing.get_filter(self)
         return new_filter
 
 
@@ -150,8 +175,15 @@ class EntryAccountListing(XferPrintListing):
 class EntryAccountDel(XferDelete):
     icon = "entry.png"
     model = EntryAccount
-    field_id = 'entryaccount'
+    field_id = '???'
     caption = _("Delete accounting entry")
+
+    def _search_model(self):
+        if self.getparam('entryline') is not None:
+            entryline = self.getparam('entryline', ())
+            self.items = EntryAccount.objects.filter(entrylineaccount__id__in=entryline).distinct()
+        else:
+            XferDelete._search_model(self)
 
 
 @ActionsManage.affect_grid(_("Closed"), "images/ok.png", unique=SELECT_MULTI, condition=lambda xfer, gridname='': not hasattr(xfer.item, 'year') or ((xfer.item.year.status in [0, 1]) and (xfer.getparam('filter', 0) != 2)))
@@ -159,8 +191,15 @@ class EntryAccountDel(XferDelete):
 class EntryAccountClose(XferContainerAcknowledge):
     icon = "entry.png"
     model = EntryAccount
-    field_id = 'entryaccount'
+    field_id = '???'
     caption = _("Close accounting entry")
+
+    def _search_model(self):
+        if self.getparam('entryline') is not None:
+            entryline = self.getparam('entryline', ())
+            self.items = EntryAccount.objects.filter(entrylineaccount__id__in=entryline).distinct()
+        else:
+            XferDelete._search_model(self)
 
     def fillresponse(self):
         if (len(self.items) > 0) and self.confirme(_("Do you want to close this entry?")):
@@ -175,8 +214,15 @@ class EntryAccountClose(XferContainerAcknowledge):
 class EntryAccountLink(XferContainerAcknowledge):
     icon = "entry.png"
     model = EntryAccount
-    field_id = 'entryaccount'
+    field_id = '???'
     caption = _("Delete accounting entry")
+
+    def _search_model(self):
+        if self.getparam('entryline') is not None:
+            entryline = self.getparam('entryline', ())
+            self.items = EntryAccount.objects.filter(entrylineaccount__id__in=entryline).distinct()
+        else:
+            XferDelete._search_model(self)
 
     def fillresponse(self):
         if self.items is None:
@@ -194,8 +240,15 @@ class EntryAccountCostAccounting(XferContainerAcknowledge):
     icon = "entry.png"
     model = EntryAccount
     readonly = True
-    field_id = 'entryaccount'
+    field_id = '???'
     caption = _("cost accounting for entry")
+
+    def _search_model(self):
+        if self.getparam('entryline') is not None:
+            entryline = self.getparam('entryline', ())
+            self.items = EntryAccount.objects.filter(entrylineaccount__id__in=entryline).distinct()
+        else:
+            XferDelete._search_model(self)
 
     def fillresponse(self, cost_accounting_id=0):
         if self.getparam("SAVE") is None:
@@ -240,10 +293,18 @@ class EntryAccountCostAccounting(XferContainerAcknowledge):
 class EntryAccountOpenFromLine(XferContainerAcknowledge):
     icon = "entry.png"
     model = EntryAccount
-    field_id = 'entryaccount'
+    field_id = '???'
     caption = _("accounting entries")
 
-    def fillresponse(self, field_id=''):
+    def _search_model(self):
+        if self.getparam('entryline') is not None:
+            entryline = self.getparam('entryline', 0)
+            self.item = EntryAccount.objects.get(entrylineaccount__id=entryline)
+            self.params['entryaccount'] = self.item.id
+        else:
+            XferDelete._search_model(self)
+
+    def fillresponse(self, field_id='', entryline=0):
         if field_id != '':
             self.item = EntryAccount.objects.get(id=self.getparam(field_id, 0))
             self.params['entryaccount'] = self.item.id

@@ -63,97 +63,92 @@ class CompletedEntryTest(LucteriosTest):
                       {'year': '1', 'journal': journal, 'filter': filterlist}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
         self.assert_count_equal('', 7)
-        self.assert_count_equal('entryaccount', nb_line)
+        self.assert_count_equal('entryline', nb_line)
 
     def test_lastyear(self):
-        self._goto_entrylineaccountlist(1, 0, 1)
-        self.assert_json_equal('', 'entryaccount/@0/num', '1')
-        self.assert_json_equal('', 'entryaccount/@0/link', '---')
-        description = self.json_data['entryaccount'][0]['description']
-        self.assertTrue('[106] 106' in description, description)
-        self.assertTrue('[512] 512' in description, description)
-        self.assertTrue('[531] 531' in description, description)
-        self.assertTrue('1250.38€' in description, description)
-        self.assertTrue('1135.93€' in description, description)
-        self.assertTrue('114.45€' in description, description)
+        self._goto_entrylineaccountlist(1, 0, 3)
+        self.assert_json_equal('', 'entryline/@0/entry.num', '1')
+        self.assert_json_equal('', 'entryline/@0/entry.link', '---')
+        self.assert_json_equal('', 'entryline/@0/entry_account', '[106] 106')
+        self.assert_json_equal('', 'entryline/@0/credit', '{[font color="green"]}1250.38€{[/font]}')
+        self.assert_json_equal('', 'entryline/@1/entry_account', '[512] 512')
+        self.assert_json_equal('', 'entryline/@1/debit', '{[font color="blue"]}1135.93€{[/font]}')
+        self.assert_json_equal('', 'entryline/@2/entry_account', '[531] 531')
+        self.assert_json_equal('', 'entryline/@2/debit', '{[font color="blue"]}114.45€{[/font]}')
 
     def test_buying(self):
-        self._goto_entrylineaccountlist(2, 0, 3)
-        self.assert_json_equal('', 'entryaccount/@0/num', '---')
-        self.assert_json_equal('', 'entryaccount/@0/link', 'C')
-        description = self.json_data['entryaccount'][0]['description']
-        self.assertTrue('[607] 607' in description, description)
-        self.assertTrue('[401 Dalton Avrel]' in description, description)
-        self.assertTrue('194.08€' in description, description)
+        self._goto_entrylineaccountlist(2, 0, 6)
+        self.assert_json_equal('', 'entryline/@0/entry.num', '---')
+        self.assert_json_equal('', 'entryline/@0/entry.link', 'C')
+        self.assert_json_equal('', 'entryline/@0/entry_account', '[401 Dalton Avrel]')
+        self.assert_json_equal('', 'entryline/@0/credit', '{[font color="green"]}194.08€{[/font]}')
+        self.assert_json_equal('', 'entryline/@1/entry_account', '[607] 607')
 
-        self.assert_json_equal('', 'entryaccount/@1/num', '2')
-        self.assert_json_equal('', 'entryaccount/@1/link', 'A')
-        description = self.json_data['entryaccount'][1]['description']
-        self.assertTrue('[602] 602' in description, description)
-        self.assertTrue('[401 Minimum]' in description, description)
-        self.assertTrue('63.94' in description, description)
+        self.assert_json_equal('', 'entryline/@2/entry.num', '2')
+        self.assert_json_equal('', 'entryline/@2/entry.link', 'A')
+        self.assert_json_equal('', 'entryline/@2/entry_account', '[401 Minimum]')
+        self.assert_json_equal('', 'entryline/@2/credit', '{[font color="green"]}63.94€{[/font]}')
+        self.assert_json_equal('', 'entryline/@3/entry_account', '[602] 602')
 
-        self.assert_json_equal('', 'entryaccount/@2/num', '---')
-        self.assert_json_equal('', 'entryaccount/@2/link', '---')
-        description = self.json_data['entryaccount'][2]['description']
-        self.assertTrue('[601] 601' in description, description)
-        self.assertTrue('[401 Maximum]' in description, description)
-        self.assertTrue('78.24€' in description, description)
+        self.assert_json_equal('', 'entryline/@4/entry.num', '---')
+        self.assert_json_equal('', 'entryline/@4/entry.link', '---')
+        self.assert_json_equal('', 'entryline/@4/entry_account', '[401 Maximum]')
+        self.assert_json_equal('', 'entryline/@4/credit', '{[font color="green"]}78.24€{[/font]}')
+        self.assert_json_equal('', 'entryline/@5/entry_account', '[601] 601')
 
     def test_selling(self):
-        self._goto_entrylineaccountlist(3, 0, 3)
-        self.assert_json_equal('', 'entryaccount/@0/num', '4')
-        self.assert_json_equal('', 'entryaccount/@0/link', 'E')
-        description = self.json_data['entryaccount'][0]['description']
-        self.assertTrue('[707] 707' in description, description)
-        self.assertTrue('[411 Dalton Joe]' in description, description)
-        self.assertTrue('70.64€' in description, description)
+        self._goto_entrylineaccountlist(3, 0, 6)
+        self.assert_json_equal('', 'entryline/@0/entry.num', '4')
+        self.assert_json_equal('', 'entryline/@0/entry.link', 'E')
+        self.assert_json_equal('', 'entryline/@0/entry_account', '[411 Dalton Joe]')
+        self.assert_json_equal('', 'entryline/@0/debit', '{[font color="blue"]}70.64€{[/font]}')
+        self.assert_json_equal('', 'entryline/@1/entry.num', '4')
+        self.assert_json_equal('', 'entryline/@1/entry.link', 'E')
+        self.assert_json_equal('', 'entryline/@1/entry_account', '[707] 707')
 
-        self.assert_json_equal('', 'entryaccount/@1/num', '6')
-        self.assert_json_equal('', 'entryaccount/@1/link', '---')
-        description = self.json_data['entryaccount'][1]['description']
-        self.assertTrue('[707] 707' in description, description)
-        self.assertTrue('[411 Dalton William]' in description, description)
-        self.assertTrue('125.97€' in description, description)
+        self.assert_json_equal('', 'entryline/@2/entry.num', '6')
+        self.assert_json_equal('', 'entryline/@2/entry.link', '---')
+        self.assert_json_equal('', 'entryline/@2/entry_account', '[411 Dalton William]')
+        self.assert_json_equal('', 'entryline/@2/debit', '{[font color="blue"]}125.97€{[/font]}')
+        self.assert_json_equal('', 'entryline/@3/entry.num', '6')
+        self.assert_json_equal('', 'entryline/@3/entry.link', '---')
+        self.assert_json_equal('', 'entryline/@3/entry_account', '[707] 707')
 
-        self.assert_json_equal('', 'entryaccount/@2/num', '---')
-        self.assert_json_equal('', 'entryaccount/@2/link', '---')
-        description = self.json_data['entryaccount'][2]['description']
-        self.assertTrue('[707] 707' in description, description)
-        self.assertTrue('[411 Minimum]' in description, description)
-        self.assertTrue('34.01€' in description, description)
+        self.assert_json_equal('', 'entryline/@4/entry.num', '---')
+        self.assert_json_equal('', 'entryline/@4/entry.link', '---')
+        self.assert_json_equal('', 'entryline/@4/entry_account', '[411 Minimum]')
+        self.assert_json_equal('', 'entryline/@4/debit', '{[font color="blue"]}34.01€{[/font]}')
+        self.assert_json_equal('', 'entryline/@5/entry.num', '---')
+        self.assert_json_equal('', 'entryline/@5/entry.link', '---')
+        self.assert_json_equal('', 'entryline/@5/entry_account', '[707] 707')
 
     def test_payment(self):
-        self._goto_entrylineaccountlist(4, 0, 3)
-        self.assert_json_equal('', 'entryaccount/@0/num', '3')
-        self.assert_json_equal('', 'entryaccount/@0/link', 'A')
-        description = self.json_data['entryaccount'][0]['description']
-        self.assertTrue('[512] 512' in description, description)
-        self.assertTrue('[401 Minimum]' in description, description)
-        self.assertTrue('63.94€' in description, description)
+        self._goto_entrylineaccountlist(4, 0, 6)
+        self.assert_json_equal('', 'entryline/@0/entry.num', '3')
+        self.assert_json_equal('', 'entryline/@0/entry.link', 'A')
+        self.assert_json_equal('', 'entryline/@0/entry_account', '[401 Minimum]')
+        self.assert_json_equal('', 'entryline/@0/debit', '{[font color="blue"]}63.94€{[/font]}')
+        self.assert_json_equal('', 'entryline/@1/entry_account', '[512] 512')
 
-        self.assert_json_equal('', 'entryaccount/@1/num', '---')
-        self.assert_json_equal('', 'entryaccount/@1/link', 'C')
-        description = self.json_data['entryaccount'][1]['description']
-        self.assertTrue('[531] 531' in description, description)
-        self.assertTrue('[401 Dalton Avrel]' in description, description)
-        self.assertTrue('194.08€' in description, description)
+        self.assert_json_equal('', 'entryline/@2/entry.num', '---')
+        self.assert_json_equal('', 'entryline/@2/entry.link', 'C')
+        self.assert_json_equal('', 'entryline/@2/entry_account', '[401 Dalton Avrel]')
+        self.assert_json_equal('', 'entryline/@2/debit', '{[font color="blue"]}194.08€{[/font]}')
+        self.assert_json_equal('', 'entryline/@3/entry_account', '[531] 531')
 
-        self.assert_json_equal('', 'entryaccount/@2/num', '5')
-        self.assert_json_equal('', 'entryaccount/@2/link', 'E')
-        description = self.json_data['entryaccount'][2]['description']
-        self.assertTrue('[512] 512' in description, description)
-        self.assertTrue('[411 Dalton Joe]' in description, description)
-        self.assertTrue('70.64€' in description, description)
+        self.assert_json_equal('', 'entryline/@4/entry.num', '5')
+        self.assert_json_equal('', 'entryline/@4/entry.link', 'E')
+        self.assert_json_equal('', 'entryline/@4/entry_account', '[411 Dalton Joe]')
+        self.assert_json_equal('', 'entryline/@4/credit', '{[font color="green"]}70.64€{[/font]}')
+        self.assert_json_equal('', 'entryline/@5/entry_account', '[512] 512')
 
     def test_other(self):
-        self._goto_entrylineaccountlist(5, 0, 1)
-        self.assert_json_equal('', 'entryaccount/@0/num', '7')
-        self.assert_json_equal('', 'entryaccount/@0/link', '---')
-        description = self.json_data['entryaccount'][0]['description']
-        self.assertTrue('[512] 512' in description, description)
-        self.assertTrue('[627] 627' in description, description)
-        self.assertTrue('12.34€' in description, description)
+        self._goto_entrylineaccountlist(5, 0, 2)
+        self.assert_json_equal('', 'entryline/@0/entry.num', '7')
+        self.assert_json_equal('', 'entryline/@0/entry.link', '---')
+        self.assert_json_equal('', 'entryline/@0/entry_account', '[512] 512')
+        self.assert_json_equal('', 'entryline/@0/credit', '{[font color="green"]}12.34€{[/font]}')
+        self.assert_json_equal('', 'entryline/@1/entry_account', '[627] 627')
 
     def _check_result(self):
         return self.assert_json_equal('LABELFORM', 'result', '{[center]}{[b]}Produit :{[/b]} 230.62€ - {[b]}Charge :{[/b]} 348.60€ = {[b]}Résultat :{[/b]} -117.98€{[br/]}{[b]}Trésorerie :{[/b]} 1050.66€ - {[b]}Validé :{[/b]} 1244.74€{[/center]}')
@@ -162,20 +157,20 @@ class CompletedEntryTest(LucteriosTest):
         return self.assert_json_equal('LABELFORM', 'result', '{[center]}{[b]}Produit :{[/b]} 34.01€ - {[b]}Charge :{[/b]} 0.00€ = {[b]}Résultat :{[/b]} 34.01€{[br/]}{[b]}Trésorerie :{[/b]} 70.64€ - {[b]}Validé :{[/b]} 70.64€{[/center]}')
 
     def test_all(self):
-        self._goto_entrylineaccountlist(-1, 0, 11)
+        self._goto_entrylineaccountlist(-1, 0, 23)
         self._check_result()
 
     def test_noclose(self):
-        self._goto_entrylineaccountlist(-1, 1, 4)
+        self._goto_entrylineaccountlist(-1, 1, 8)
 
     def test_close(self):
-        self._goto_entrylineaccountlist(-1, 2, 7)
+        self._goto_entrylineaccountlist(-1, 2, 15)
 
     def test_letter(self):
-        self._goto_entrylineaccountlist(-1, 3, 6)
+        self._goto_entrylineaccountlist(-1, 3, 12)
 
     def test_noletter(self):
-        self._goto_entrylineaccountlist(-1, 4, 5)
+        self._goto_entrylineaccountlist(-1, 4, 11)
 
     def test_summary(self):
         self.factory.xfer = StatusMenu()
@@ -197,9 +192,8 @@ class CompletedEntryTest(LucteriosTest):
         self.assertEqual(len(content_csv), 30, str(content_csv))
         self.assertEqual(content_csv[1].strip(), '"Liste d\'écritures"')
         self.assertEqual(content_csv[3].strip(), '"N°";"date d\'écriture";"date de pièce";"compte";"nom";"débit";"crédit";"lettrage";')
-        self.assertEqual(content_csv[4].strip(), '"1";"%s";"1 février 2015";"[106] 106";"Report à nouveau";"";"1250.38€";"";' %
-                         formats.date_format(date.today(), "DATE_FORMAT"))
-        self.assertEqual(content_csv[11].strip(), '"---";"---";"13 février 2015";"[607] 607";"depense 2";"194.08€";"";"C";')
+        self.assertEqual(content_csv[4].strip(), '"1";"%s";"1 février 2015";"[106] 106";"Report à nouveau";"";"1250.38€";"";' % formats.date_format(date.today(), "DATE_FORMAT"))
+        self.assertEqual(content_csv[8].strip(), '"---";"---";"13 février 2015";"[607] 607";"depense 2";"194.08€";"";"C";')
 
         self.factory.xfer = EntryAccountListing()
         self.calljson('/diacamma.accounting/entryAccountListing',
@@ -246,23 +240,23 @@ class CompletedEntryTest(LucteriosTest):
     def test_search(self):
         self.factory.xfer = EntryAccountSearch()
         self.calljson('/diacamma.accounting/entryAccountSearch',
-                      {'year': '1', 'journal': '-1', 'filter': '0', 'CRITERIA': 'year||8||1//entrylineaccount_set.account.code||6||7'}, False)
+                      {'year': '1', 'journal': '-1', 'filter': '0', 'CRITERIA': 'entry.year||8||1//account.code||6||7'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountSearch')
         self.assert_count_equal('', 22)
-        self.assert_count_equal('entryaccount', 3)
+        self.assert_count_equal('entryline', 3)
 
     def test_listing_search(self):
         self.factory.xfer = EntryAccountListing()
         self.calljson('/diacamma.accounting/entryAccountListing',
-                      {'PRINT_MODE': '4', 'MODEL': 7, 'year': '1', 'journal': '-1', 'filter': '0', 'CRITERIA': 'year||8||1//entrylineaccount_set.account.code||6||7'}, False)
+                      {'PRINT_MODE': '4', 'MODEL': 7, 'year': '1', 'journal': '-1', 'filter': '0', 'CRITERIA': 'entry.year||8||1//account.code||6||7'}, False)
         self.assert_observer('core.print', 'diacamma.accounting', 'entryAccountListing')
         csv_value = b64decode(six.text_type(self.response_json['print']['content'])).decode("utf-8")
         content_csv = csv_value.split('\n')
-        self.assertEqual(len(content_csv), 13, str(content_csv))
+        self.assertEqual(len(content_csv), 10, str(content_csv))
         self.assertEqual(content_csv[1].strip(), '"Liste d\'écritures"')
         self.assertEqual(content_csv[3].strip(), '"N°";"date d\'écriture";"date de pièce";"compte";"nom";"débit";"crédit";"lettrage";')
         self.assertEqual(content_csv[4].strip(), '"4";"%s";"21 février 2015";"[707] 707";"vente 1";"";"70.64€";"E";' % formats.date_format(date.today(), "DATE_FORMAT"))
-        self.assertEqual(content_csv[8].strip(), '"---";"---";"24 février 2015";"[707] 707";"vente 3";"";"34.01€";"";')
+        self.assertEqual(content_csv[6].strip(), '"---";"---";"24 février 2015";"[707] 707";"vente 3";"";"34.01€";"";')
 
     def test_costaccounting(self):
         self.factory.xfer = EntryAccountEdit()
@@ -326,7 +320,7 @@ class CompletedEntryTest(LucteriosTest):
 
         self.factory.xfer = EntryAccountClose()
         self.calljson('/diacamma.accounting/entryAccountClose',
-                      {'CONFIRME': 'YES', 'year': '1', 'journal': '2', "entryaccount": "4"}, False)
+                      {'CONFIRME': 'YES', 'year': '1', 'journal': '2', "entryline": "8"}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountClose')
 
         self.factory.xfer = CostAccountingClose()
@@ -380,14 +374,14 @@ class CompletedEntryTest(LucteriosTest):
         self.assert_json_equal('', 'costaccounting/@2/total_expense', '258.02€')
 
         self.factory.xfer = EntryAccountCostAccounting()
-        self.calljson('/diacamma.accounting/entryAccountCostAccounting', {'entryaccount': '4;6;9'}, False)
+        self.calljson('/diacamma.accounting/entryAccountCostAccounting', {'entryline': '8;9;12;13;18;19'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountCostAccounting')
         self.assert_count_equal('', 3)
         self.assert_json_equal('SELECT', 'cost_accounting_id', '0')
         self.assert_select_equal('cost_accounting_id', 3)  # nb=3
 
         self.factory.xfer = EntryAccountCostAccounting()
-        self.calljson('/diacamma.accounting/entryAccountCostAccounting', {"SAVE": "YES", 'entryaccount': '4;6;9', 'cost_accounting_id': '2'}, False)  # -78.24 / +125.97
+        self.calljson('/diacamma.accounting/entryAccountCostAccounting', {"SAVE": "YES", 'entryline': '8;9;12;13;18;19', 'cost_accounting_id': '2'}, False)  # -78.24 / +125.97
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountCostAccounting')
 
         self.factory.xfer = CostAccountingList()
@@ -403,7 +397,7 @@ class CompletedEntryTest(LucteriosTest):
         self.assert_json_equal('', 'costaccounting/@2/total_expense', '336.26€')
 
         self.factory.xfer = EntryAccountCostAccounting()
-        self.calljson('/diacamma.accounting/entryAccountCostAccounting', {"SAVE": "YES", 'entryaccount': '4;6;9', 'cost_accounting_id': '0'}, False)  # - -194.08 / 0
+        self.calljson('/diacamma.accounting/entryAccountCostAccounting', {"SAVE": "YES", 'entryline': '8;9;12;13;18;19', 'cost_accounting_id': '0'}, False)  # - -194.08 / 0
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountCostAccounting')
 
         self.factory.xfer = CostAccountingList()
@@ -419,7 +413,7 @@ class CompletedEntryTest(LucteriosTest):
         self.assert_json_equal('', 'costaccounting/@2/total_expense', '63.94€')
 
         self.factory.xfer = EntryAccountCostAccounting()
-        self.calljson('/diacamma.accounting/entryAccountCostAccounting', {"SAVE": "YES", 'entryaccount': '4;6;9', 'cost_accounting_id': '3'}, False)
+        self.calljson('/diacamma.accounting/entryAccountCostAccounting', {"SAVE": "YES", 'entryline': '8;9;12;13;18;19', 'cost_accounting_id': '3'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountCostAccounting')
 
         self.factory.xfer = CostAccountingList()
@@ -439,7 +433,7 @@ class CompletedEntryTest(LucteriosTest):
         self.assert_observer('core.exception', 'diacamma.accounting', 'costAccountingAddModify')
 
         self.factory.xfer = EntryAccountCostAccounting()
-        self.calljson('/diacamma.accounting/entryAccountCostAccounting', {"SAVE": "YES", 'entryaccount': '4;6;9', 'cost_accounting_id': '4'}, False)
+        self.calljson('/diacamma.accounting/entryAccountCostAccounting', {"SAVE": "YES", 'entryline': '8;9;12;13;18;19', 'cost_accounting_id': '4'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountCostAccounting')
 
         self.factory.xfer = CostAccountingList()
@@ -455,22 +449,22 @@ class CompletedEntryTest(LucteriosTest):
         self.assert_json_equal('', 'costaccounting/@2/total_expense', '63.94€')
 
         self.factory.xfer = CostAccountingList()
-        self.calljson('/diacamma.accounting/costAccountingList', {'year': 1, 'status':-1}, False)
+        self.calljson('/diacamma.accounting/costAccountingList', {'year': 1, 'status': -1}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'costAccountingList')
         self.assert_count_equal('costaccounting', 1)
 
         self.factory.xfer = CostAccountingList()
-        self.calljson('/diacamma.accounting/costAccountingList', {'year': 2, 'status':-1}, False)
+        self.calljson('/diacamma.accounting/costAccountingList', {'year': 2, 'status': -1}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'costAccountingList')
         self.assert_count_equal('costaccounting', 1)
 
         self.factory.xfer = CostAccountingList()
-        self.calljson('/diacamma.accounting/costAccountingList', {'year': -1, 'status':-1}, False)
+        self.calljson('/diacamma.accounting/costAccountingList', {'year': -1, 'status': -1}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'costAccountingList')
         self.assert_count_equal('costaccounting', 2)
 
         self.factory.xfer = CostAccountingList()
-        self.calljson('/diacamma.accounting/costAccountingList', {'year': 0, 'status':-1}, False)
+        self.calljson('/diacamma.accounting/costAccountingList', {'year': 0, 'status': -1}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'costAccountingList')
         self.assert_count_equal('costaccounting', 4)
 
