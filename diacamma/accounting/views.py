@@ -372,12 +372,12 @@ def show_contact_accounting(contact, xfer):
 def thirdaddon_accounting(item, xfer):
     if WrapAction.is_permission(xfer.request, 'accounting.change_entryaccount'):
         try:
-            entry_lines_filter = Q(entrylineaccount__third=item)
+            entry_lines_filter = Q(entry__entrylineaccount__third=item)
             lines_filter = xfer.getparam('lines_filter', 0)
             if lines_filter == 0:
-                entry_lines_filter &= Q(year=FiscalYear.get_current())
+                entry_lines_filter &= Q(entry__year=FiscalYear.get_current())
             elif lines_filter == 1:
-                entry_lines_filter &= Q(year=FiscalYear.get_current()) & Q(close=False)
+                entry_lines_filter &= Q(entry__year=FiscalYear.get_current()) & Q(entry__close=False)
             xfer.new_tab(_('entry of account'))
             lbl = XferCompLabelForm('lbl_lines_filter')
             lbl.set_value_as_name(_('Accounts filter'))
@@ -391,9 +391,9 @@ def thirdaddon_accounting(item, xfer):
             edt.set_action(xfer.request, xfer.get_action(),
                            modal=FORMTYPE_REFRESH, close=CLOSE_NO)
             xfer.add_component(edt)
-            entries = EntryAccount.objects.filter(entry_lines_filter)
-            link_grid_lines = XferCompGrid('entryaccount')
-            link_grid_lines.set_model(entries, EntryAccount.get_default_fields(), xfer)
+            entrulines = EntryLineAccount.objects.filter(entry_lines_filter)
+            link_grid_lines = XferCompGrid('entryline')
+            link_grid_lines.set_model(entrulines, EntryLineAccount.get_default_fields(), xfer)
             link_grid_lines.set_location(0, 2, 2)
             link_grid_lines.add_action(xfer.request, ActionsManage.get_action_url('accounting.EntryAccount', 'OpenFromLine', xfer),
                                        modal=FORMTYPE_MODAL, unique=SELECT_SINGLE, close=CLOSE_NO)

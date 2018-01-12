@@ -752,7 +752,7 @@ class EntryAccount(LucteriosModel):
 
     @classmethod
     def get_default_fields(cls):
-        return ['num', 'date_entry', 'date_value', (_('description'), 'description'), 'link', 'costaccounting']
+        return ['num', 'date_entry', 'date_value', (_('description'), 'description'), 'costaccounting']
 
     @classmethod
     def get_edit_fields(cls):
@@ -1000,7 +1000,7 @@ class EntryLineAccount(LucteriosModel):
     @classmethod
     def get_default_fields(cls):
         return ['entry.num', 'entry.date_entry', 'entry.date_value', (_('name'), 'designation_ref'), (_('account'), 'entry_account'),
-                (_('debit'), 'debit'), (_('credit'), 'credit'), 'reference', 'entry.costaccounting', 'entry.link']
+                (_('debit'), 'debit'), (_('credit'), 'credit'), 'entry.costaccounting', 'entry.link']
 
     @classmethod
     def get_edit_fields(cls):

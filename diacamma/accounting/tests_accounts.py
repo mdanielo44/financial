@@ -155,24 +155,21 @@ class ChartsAccountTest(LucteriosTest):
         self.assert_json_equal('LABELFORM', 'code', '707')
         self.assert_json_equal('LABELFORM', 'name', '707')
         self.assert_json_equal('LABELFORM', 'type_of_account', 'Produit')
-        self.assert_grid_equal('entryaccount', {"num": "N°", "date_entry": "date d'écriture", "date_value": "date de pièce", "description": "description", "link": "lettrage", "costaccounting": "comptabilité analytique"}, 3)  # nb=6
+        self.assert_grid_equal('entryaccount', {"num": "N°", "date_entry": "date d'écriture", "date_value": "date de pièce", "description": "description", "costaccounting": "comptabilité analytique"}, 3)  # nb=5
         self.assert_json_equal('', 'entryaccount/@0/num', '4')
         self.assert_json_equal('', 'entryaccount/@0/date_value', '2015-02-21')
-        self.assert_json_equal('', 'entryaccount/@0/link', 'E')
         description = self.json_data['entryaccount'][0]['description']
         self.assertTrue('vente 1' in description, description)
         self.assertTrue('70.64€' in description, description)
 
         self.assert_json_equal('', 'entryaccount/@1/num', '6')
         self.assert_json_equal('', 'entryaccount/@1/date_value', '2015-02-21')
-        self.assert_json_equal('', 'entryaccount/@1/link', '---')
         description = self.json_data['entryaccount'][1]['description']
         self.assertTrue('vente 2' in description, description)
         self.assertTrue('125.97€' in description, description)
 
         self.assert_json_equal('', 'entryaccount/@2/num', '---')
         self.assert_json_equal('', 'entryaccount/@2/date_value', '2015-02-24')
-        self.assert_json_equal('', 'entryaccount/@2/link', '---')
         description = self.json_data['entryaccount'][2]['description']
         self.assertTrue('vente 3' in description, description)
         self.assertTrue('34.01€' in description, description)

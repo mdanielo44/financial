@@ -537,7 +537,7 @@ class EntryTest(LucteriosTest):
         self.calljson('/diacamma.accounting/entryAccountEdit', {'year': '1', 'journal': '4', 'entryaccount': '2',
                                                                 'serial_entry': "-3|4|3|-152.340000|None|", 'num_cpt_txt': '5'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountEdit')
-        self.assert_count_equal('', 20)
+        self.assert_count_equal('', 19)
         self.assert_json_equal('SELECT', 'journal', '4')
         self.assert_json_equal('DATE', 'date_value', '2015-12-31')
         self.assert_json_equal('EDIT', 'designation', 'règlement de un plein cadie')
@@ -558,7 +558,6 @@ class EntryTest(LucteriosTest):
         self.assert_json_equal('', 'entryaccount_link/@0/num', '---')
         self.assert_json_equal('', 'entryaccount_link/@0/date_entry', '---')
         self.assert_json_equal('', 'entryaccount_link/@0/date_value', '2015-02-13')
-        self.assert_json_equal('', 'entryaccount_link/@0/link', 'A')
         description = self.json_data['entryaccount_link'][0]['description']
         self.assertTrue('un plein cadie' in description, description)
         self.assertTrue('[602] 602' in description, description)
@@ -570,7 +569,7 @@ class EntryTest(LucteriosTest):
         self.calljson('/diacamma.accounting/entryAccountEdit', {'year': '1', 'journal': '2', 'entryaccount': '2',
                                                                 'serial_entry': "-3|4|3|-152.340000|None|\n-4|2|0|-152.340000|Ch N°12345|"}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountEdit')
-        self.assert_count_equal('', 19)
+        self.assert_count_equal('', 18)
         self.assert_count_equal('entrylineaccount_serial', 2)
         self.assert_json_equal('', 'entrylineaccount_serial/@0/entry_account', '[401 Luke Lucky]')
         self.assert_json_equal('', 'entrylineaccount_serial/@0/debit', '{[font color="blue"]}152.34€{[/font]}')
@@ -638,7 +637,7 @@ class EntryTest(LucteriosTest):
         self.calljson('/diacamma.accounting/entryAccountEdit', {'year': '1', 'journal': '4', 'entryaccount': '2',
                                                                 'serial_entry': "-3|4|3|-152.340000|None|", 'num_cpt_txt': '5'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountEdit')
-        self.assert_count_equal('', 20)
+        self.assert_count_equal('', 19)
 
         self.factory.xfer = EntryAccountUnlock()
         self.calljson('/diacamma.accounting/entryAccountUnlock', {'year': '1', 'journal': '4', 'entryaccount': '2',
@@ -701,7 +700,7 @@ class EntryTest(LucteriosTest):
         self.assert_json_equal('', 'entryline/@2/entry_account', '[411 Dalton William]')
         self.assert_json_equal('', 'entryline/@2/credit', '{[font color="green"]}364.91€{[/font]}')
         self.assert_json_equal('', 'entryline/@3/entry_account', '[512] 512')
-        self.assert_json_equal('', 'entryline/@3/reference', 'BP N°987654')
+        self.assert_json_equal('', 'entryline/@3/designation_ref', 'Règlement de belle facture{[br/]}BP N°987654')
         self.assert_json_equal('LABELFORM', 'result', '{[center]}{[b]}Produit :{[/b]} 364.91€ - {[b]}Charge :{[/b]} 0.00€ = {[b]}Résultat :{[/b]} 364.91€{[br/]}{[b]}Trésorerie :{[/b]} 364.91€ - {[b]}Validé :{[/b]} 0.00€{[/center]}')
 
         self.factory.xfer = EntryAccountLink()
@@ -722,7 +721,7 @@ class EntryTest(LucteriosTest):
         self.factory.xfer = EntryAccountLink()
         self.calljson('/diacamma.accounting/entryAccountLink',
                       {'CONFIRME': 'YES', 'year': '1', 'journal': '-1', 'filter': '0', 'entryline': '3'}, False)
-        
+
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountLink')
         self.factory.xfer = EntryAccountList()
         self.calljson('/diacamma.accounting/entryAccountList',
@@ -834,7 +833,6 @@ class EntryTest(LucteriosTest):
         self.assert_json_equal('', 'entryline/@0/entry_account', '[411 Dalton William]')
         self.assert_json_equal('', 'entryline/@1/entry_account', '[512] 512')
         self.assert_json_equal('', 'entryline/@1/debit', '{[font color="blue"]}364.91€{[/font]}')
-        self.assert_json_equal('', 'entryline/@1/reference', 'BP N°987654')
         self.assert_json_equal('', 'entryline/@1/designation_ref', 'Règlement de belle facture{[br/]}BP N°987654')
         self.assert_json_equal('LABELFORM', 'result', '{[center]}{[b]}Produit :{[/b]} 0.00€ - {[b]}Charge :{[/b]} 0.00€ = {[b]}Résultat :{[/b]} 0.00€{[br/]}{[b]}Trésorerie :{[/b]} 364.91€ - {[b]}Validé :{[/b]} 364.91€{[/center]}')
 

@@ -272,7 +272,7 @@ class CompletedEntryTest(LucteriosTest):
         self.calljson('/diacamma.accounting/entryAccountShow',
                       {'year': '1', 'journal': '2', 'entryaccount': '2'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountShow')
-        self.assert_count_equal('', 12)
+        self.assert_count_equal('', 11)
         self.assert_json_equal('LABELFORM', 'designation', 'depense 1')
         self.assert_json_equal('SELECT', 'costaccounting', '2')
         self.assert_select_equal('costaccounting', 2)  # nb=2
