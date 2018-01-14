@@ -38,6 +38,7 @@ from lucterios.framework.xfercomponents import XferCompSelect, XferCompLabelForm
 from lucterios.framework.error import LucteriosException, IMPORTANT
 from lucterios.CORE.xferprint import XferPrintListing
 from lucterios.CORE.editors import XferSavedCriteriaSearchEditor
+from lucterios.CORE.parameters import Params
 
 from diacamma.accounting.models import EntryLineAccount, EntryAccount, FiscalYear, Journal, AccountLink, current_system_account, CostAccounting, ModelEntry
 
@@ -234,7 +235,7 @@ class EntryAccountLink(XferContainerAcknowledge):
             AccountLink.create_link(self.items)
 
 
-@ActionsManage.affect_grid(_("Cost"), "images/edit.png", unique=SELECT_MULTI)
+@ActionsManage.affect_grid(_("Cost"), "images/edit.png", unique=SELECT_MULTI, condition=lambda xfer, gridname='': len(CostAccounting.objects.filter(status=0)) > 0)
 @MenuManage.describ('accounting.add_entryaccount')
 class EntryAccountCostAccounting(XferContainerAcknowledge):
     icon = "entry.png"
@@ -246,30 +247,29 @@ class EntryAccountCostAccounting(XferContainerAcknowledge):
     def _search_model(self):
         if self.getparam('entryline') is not None:
             entryline = self.getparam('entryline', ())
-            self.items = EntryAccount.objects.filter(entrylineaccount__id__in=entryline).distinct()
+            self.model = EntryLineAccount
+            self.items = EntryLineAccount.objects.filter(Q(id__in=entryline) & Q(account__type_of_account__in=(3, 4, 5)) & (Q(costaccounting__isnull=True) | Q(costaccounting__status=0)))
+            if len(self.items) > 0:
+                self.item = self.items[0]
         else:
             XferDelete._search_model(self)
 
     def fillresponse(self, cost_accounting_id=0):
+        if len(self.items) == 0:
+            raise LucteriosException(IMPORTANT, _('No entry line selected is availabled to change cost accounting !'))
+        current_year = self.item.entry.year
         if self.getparam("SAVE") is None:
-            if len(self.items) == 1:
-                item = self.items[0]
-                if (item.costaccounting is not None) and (item.costaccounting.status != 0):
-                    raise LucteriosException(IMPORTANT, _('This cost accounting is already closed!'))
-            if len(self.items) > 0:
-                current_year = self.items[0].year
-            else:
-                current_year = None
             dlg = self.create_custom()
             icon = XferCompImage('img')
             icon.set_location(0, 0, 1, 6)
             icon.set_value(self.icon_path())
             dlg.add_component(icon)
             lbl = XferCompLabelForm('lb_costaccounting')
-            lbl.set_value_as_name(CostAccounting._meta.verbose_name)
+            lbl.set_value_as_name(_('cost accounting'))
             lbl.set_location(1, 1)
             dlg.add_component(lbl)
             sel = XferCompSelect('cost_accounting_id')
+            sel.set_needed(Params.getvalue('accounting-needcost'))
             sel.set_select_query(CostAccounting.objects.filter(Q(status=0) & (Q(year=None) | Q(year=current_year))))
             if self.item is not None:
                 sel.set_value(self.item.costaccounting_id)
@@ -282,10 +282,11 @@ class EntryAccountCostAccounting(XferContainerAcknowledge):
                 new_cost = None
             else:
                 new_cost = CostAccounting.objects.get(id=cost_accounting_id)
-            for item in self.items:
-                if (item.costaccounting is None) or (item.costaccounting.status == 0):
-                    item.costaccounting = new_cost
-                    item.save()
+            if (new_cost is None) or (new_cost.year is None) or (new_cost.year == current_year):
+                for item in self.items:
+                    if (item.costaccounting is None) or (item.costaccounting.status == 0):
+                        item.costaccounting = new_cost
+                        item.save()
 
 
 @ActionsManage.affect_grid(TITLE_EDIT, 'images/edit.png', unique=SELECT_SINGLE)
@@ -500,13 +501,13 @@ class EntryLineAccountAdd(XferContainerAcknowledge):
     field_id = 'entrylineaccount'
     caption = _("Save entry line of account")
 
-    def fillresponse(self, entryaccount=0, entrylineaccount_serial=0, serial_entry='', num_cpt=0, credit_val=0.0, debit_val=0.0, third=0, reference='None'):
+    def fillresponse(self, entryaccount=0, entrylineaccount_serial=0, serial_entry='', num_cpt=0, credit_val=0.0, debit_val=0.0, third=0, costaccounting=0, reference='None'):
         if (credit_val > 0.0001) or (debit_val > 0.0001):
             for old_key in ['num_cpt_txt', 'num_cpt', 'credit_val', 'debit_val', 'third', 'reference', 'entrylineaccount_serial', 'serial_entry']:
                 if old_key in self.params.keys():
                     del self.params[old_key]
             entry = EntryAccount.objects.get(id=entryaccount)
-            serial_entry = entry.add_new_entryline(serial_entry, entrylineaccount_serial, num_cpt, credit_val, debit_val, third, reference)
+            serial_entry = entry.add_new_entryline(serial_entry, entrylineaccount_serial, num_cpt, credit_val, debit_val, third, costaccounting, reference)
         self.redirect_action(EntryAccountEdit.get_action(), params={"serial_entry": serial_entry})
 
 

@@ -24,26 +24,27 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
 from shutil import rmtree
+from os.path import exists
+from base64 import b64decode
+from datetime import date
 
 from django.utils import six, formats
 
 from lucterios.framework.test import LucteriosTest
 from lucterios.framework.xfergraphic import XferContainerAcknowledge
 from lucterios.framework.filetools import get_user_dir, get_user_path
-
-from diacamma.accounting.views_entries import EntryAccountList, EntryAccountListing, \
-    EntryAccountEdit, EntryAccountShow, EntryAccountClose, \
-    EntryAccountCostAccounting, EntryAccountSearch
-from diacamma.accounting.test_tools import default_compta, initial_thirds, fill_entries
+from lucterios.CORE.models import Parameter
+from lucterios.CORE.parameters import Params
 from lucterios.CORE.views import StatusMenu
-from base64 import b64decode
-from datetime import date
-from diacamma.accounting.views_other import CostAccountingList, \
-    CostAccountingClose, CostAccountingAddModify
-from diacamma.accounting.views_reports import FiscalYearBalanceSheet,\
-    FiscalYearIncomeStatement, FiscalYearLedger, FiscalYearTrialBalance
+
+from diacamma.accounting.views_entries import EntryAccountList, EntryAccountListing, EntryAccountEdit, EntryAccountShow, \
+    EntryAccountClose, EntryAccountCostAccounting, EntryAccountSearch
+from diacamma.accounting.test_tools import default_compta, initial_thirds, fill_entries
+from diacamma.accounting.views_other import CostAccountingList, CostAccountingClose, CostAccountingAddModify
+from diacamma.accounting.views_reports import FiscalYearBalanceSheet, FiscalYearIncomeStatement, FiscalYearLedger, FiscalYearTrialBalance,\
+    CostAccountingTrialBalance, CostAccountingLedger,\
+    CostAccountingIncomeStatement
 from diacamma.accounting.views_admin import FiscalYearExport
-from os.path import exists
 from diacamma.accounting.models import FiscalYear
 
 
@@ -263,28 +264,35 @@ class CompletedEntryTest(LucteriosTest):
         self.calljson('/diacamma.accounting/entryAccountEdit',
                       {'year': '1', 'journal': '2'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountEdit')
-        self.assert_count_equal('', 5)
-        self.assert_json_equal('SELECT', 'costaccounting', '0')
-        self.assert_select_equal('costaccounting', 2)  # nb=2
+        self.assert_count_equal('', 4)
         self.assertEqual(len(self.json_actions), 2)
 
         self.factory.xfer = EntryAccountShow()
         self.calljson('/diacamma.accounting/entryAccountShow',
                       {'year': '1', 'journal': '2', 'entryaccount': '2'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountShow')
-        self.assert_count_equal('', 11)
+        self.assert_count_equal('', 10)
         self.assert_json_equal('LABELFORM', 'designation', 'depense 1')
-        self.assert_json_equal('SELECT', 'costaccounting', '2')
-        self.assert_select_equal('costaccounting', 2)  # nb=2
-        self.assertEqual(len(self.json_actions), 2)
+        self.assert_count_equal('entrylineaccount', 2)
+        self.assert_json_equal('', 'entrylineaccount/@0/entry_account', '[401 Minimum]')
+        self.assert_json_equal('', 'entrylineaccount/@0/costaccounting', '---')
+        self.assert_json_equal('', 'entrylineaccount/@1/entry_account', '[602] 602')
+        self.assert_json_equal('', 'entrylineaccount/@1/costaccounting', 'open')
+        self.assert_count_equal('#entrylineaccount/actions', 1)
+        self.assertEqual(len(self.json_actions), 1)
 
         self.factory.xfer = EntryAccountShow()
         self.calljson('/diacamma.accounting/entryAccountShow',
                       {'year': '1', 'journal': '2', 'entryaccount': '11'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountShow')
-        self.assert_count_equal('', 9)
+        self.assert_count_equal('', 8)
         self.assert_json_equal('LABELFORM', 'designation', 'Frais bancaire')
-        self.assert_json_equal('LABELFORM', 'costaccounting', 'close')
+        self.assert_count_equal('entrylineaccount', 2)
+        self.assert_json_equal('', 'entrylineaccount/@0/entry_account', '[512] 512')
+        self.assert_json_equal('', 'entrylineaccount/@0/costaccounting', '---')
+        self.assert_json_equal('', 'entrylineaccount/@1/entry_account', '[627] 627')
+        self.assert_json_equal('', 'entrylineaccount/@1/costaccounting', 'close')
+        self.assert_count_equal('#entrylineaccount/actions', 0)
         self.assertEqual(len(self.json_actions), 1)
 
     def test_costaccounting_list(self):
@@ -360,29 +368,84 @@ class CompletedEntryTest(LucteriosTest):
         self.calljson('/diacamma.accounting/costAccountingList', {'status': 0}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'costAccountingList')
         self.assert_count_equal('costaccounting', 3)
+        self.assert_json_equal('', 'costaccounting/@0/id', '3')
         self.assert_json_equal('', 'costaccounting/@0/name', 'aaa')
         self.assert_json_equal('', 'costaccounting/@0/year', 'Exercice du 1 janvier 2015 au 31 décembre 2015 [en création]')
         self.assert_json_equal('', 'costaccounting/@0/total_revenue', '0.00€')
         self.assert_json_equal('', 'costaccounting/@0/total_expense', '0.00€')
+        self.assert_json_equal('', 'costaccounting/@1/id', '4')
         self.assert_json_equal('', 'costaccounting/@1/name', 'bbb')
         self.assert_json_equal('', 'costaccounting/@1/year', 'Exercice du 1 janvier 2016 au 31 décembre 2016 [en création]')
         self.assert_json_equal('', 'costaccounting/@1/total_revenue', '0.00€')
         self.assert_json_equal('', 'costaccounting/@1/total_expense', '0.00€')
+        self.assert_json_equal('', 'costaccounting/@2/id', '2')
         self.assert_json_equal('', 'costaccounting/@2/name', 'open')
         self.assert_json_equal('', 'costaccounting/@2/year', '---')
         self.assert_json_equal('', 'costaccounting/@2/total_revenue', '70.64€')
         self.assert_json_equal('', 'costaccounting/@2/total_expense', '258.02€')
 
+        self._goto_entrylineaccountlist(-1, 0, 23)
+        self.assert_json_equal('', 'entryline/@3/id', '9')
+        self.assert_json_equal('', 'entryline/@3/entry.num', '---')
+        self.assert_json_equal('', 'entryline/@3/entry_account', '[401 Dalton Avrel]')
+        self.assert_json_equal('', 'entryline/@3/costaccounting', '---')
+        self.assert_json_equal('', 'entryline/@4/id', '8')
+        self.assert_json_equal('', 'entryline/@4/entry.num', '---')
+        self.assert_json_equal('', 'entryline/@4/entry_account', '[607] 607')
+        self.assert_json_equal('', 'entryline/@4/costaccounting', 'open')
+        self.assert_json_equal('', 'entryline/@11/id', '13')
+        self.assert_json_equal('', 'entryline/@11/entry.num', '---')
+        self.assert_json_equal('', 'entryline/@11/entry_account', '[401 Maximum]')
+        self.assert_json_equal('', 'entryline/@11/costaccounting', '---')
+        self.assert_json_equal('', 'entryline/@12/id', '12')
+        self.assert_json_equal('', 'entryline/@12/entry.num', '---')
+        self.assert_json_equal('', 'entryline/@12/entry_account', '[601] 601')
+        self.assert_json_equal('', 'entryline/@12/costaccounting', '---')
+        self.assert_json_equal('', 'entryline/@17/id', '19')
+        self.assert_json_equal('', 'entryline/@17/entry.num', '6')
+        self.assert_json_equal('', 'entryline/@17/entry_account', '[411 Dalton William]')
+        self.assert_json_equal('', 'entryline/@17/costaccounting', '---')
+        self.assert_json_equal('', 'entryline/@18/id', '18')
+        self.assert_json_equal('', 'entryline/@18/entry.num', '6')
+        self.assert_json_equal('', 'entryline/@18/entry_account', '[707] 707')
+        self.assert_json_equal('', 'entryline/@18/costaccounting', '---')
+
         self.factory.xfer = EntryAccountCostAccounting()
         self.calljson('/diacamma.accounting/entryAccountCostAccounting', {'entryline': '8;9;12;13;18;19'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountCostAccounting')
         self.assert_count_equal('', 3)
-        self.assert_json_equal('SELECT', 'cost_accounting_id', '0')
-        self.assert_select_equal('cost_accounting_id', 3)  # nb=3
+        self.assert_select_equal('cost_accounting_id', {0: None, 2: 'open', 3: 'aaa'})  # nb=3
+        self.assert_json_equal('SELECT', 'cost_accounting_id', '2')
 
         self.factory.xfer = EntryAccountCostAccounting()
         self.calljson('/diacamma.accounting/entryAccountCostAccounting', {"SAVE": "YES", 'entryline': '8;9;12;13;18;19', 'cost_accounting_id': '2'}, False)  # -78.24 / +125.97
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountCostAccounting')
+
+        self._goto_entrylineaccountlist(-1, 0, 23)
+        self.assert_json_equal('', 'entryline/@3/id', '9')
+        self.assert_json_equal('', 'entryline/@3/entry.num', '---')
+        self.assert_json_equal('', 'entryline/@3/entry_account', '[401 Dalton Avrel]')
+        self.assert_json_equal('', 'entryline/@3/costaccounting', '---')
+        self.assert_json_equal('', 'entryline/@4/id', '8')
+        self.assert_json_equal('', 'entryline/@4/entry.num', '---')
+        self.assert_json_equal('', 'entryline/@4/entry_account', '[607] 607')
+        self.assert_json_equal('', 'entryline/@4/costaccounting', 'open')
+        self.assert_json_equal('', 'entryline/@11/id', '13')
+        self.assert_json_equal('', 'entryline/@11/entry.num', '---')
+        self.assert_json_equal('', 'entryline/@11/entry_account', '[401 Maximum]')
+        self.assert_json_equal('', 'entryline/@11/costaccounting', '---')
+        self.assert_json_equal('', 'entryline/@12/id', '12')
+        self.assert_json_equal('', 'entryline/@12/entry.num', '---')
+        self.assert_json_equal('', 'entryline/@12/entry_account', '[601] 601')
+        self.assert_json_equal('', 'entryline/@12/costaccounting', 'open')
+        self.assert_json_equal('', 'entryline/@17/id', '19')
+        self.assert_json_equal('', 'entryline/@17/entry.num', '6')
+        self.assert_json_equal('', 'entryline/@17/entry_account', '[411 Dalton William]')
+        self.assert_json_equal('', 'entryline/@17/costaccounting', '---')
+        self.assert_json_equal('', 'entryline/@18/id', '18')
+        self.assert_json_equal('', 'entryline/@18/entry.num', '6')
+        self.assert_json_equal('', 'entryline/@18/entry_account', '[707] 707')
+        self.assert_json_equal('', 'entryline/@18/costaccounting', 'open')
 
         self.factory.xfer = CostAccountingList()
         self.calljson('/diacamma.accounting/costAccountingList', {'status': 0}, False)
@@ -400,6 +463,32 @@ class CompletedEntryTest(LucteriosTest):
         self.calljson('/diacamma.accounting/entryAccountCostAccounting', {"SAVE": "YES", 'entryline': '8;9;12;13;18;19', 'cost_accounting_id': '0'}, False)  # - -194.08 / 0
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountCostAccounting')
 
+        self._goto_entrylineaccountlist(-1, 0, 23)
+        self.assert_json_equal('', 'entryline/@3/id', '9')
+        self.assert_json_equal('', 'entryline/@3/entry.num', '---')
+        self.assert_json_equal('', 'entryline/@3/entry_account', '[401 Dalton Avrel]')
+        self.assert_json_equal('', 'entryline/@3/costaccounting', '---')
+        self.assert_json_equal('', 'entryline/@4/id', '8')
+        self.assert_json_equal('', 'entryline/@4/entry.num', '---')
+        self.assert_json_equal('', 'entryline/@4/entry_account', '[607] 607')
+        self.assert_json_equal('', 'entryline/@4/costaccounting', '---')
+        self.assert_json_equal('', 'entryline/@11/id', '13')
+        self.assert_json_equal('', 'entryline/@11/entry.num', '---')
+        self.assert_json_equal('', 'entryline/@11/entry_account', '[401 Maximum]')
+        self.assert_json_equal('', 'entryline/@11/costaccounting', '---')
+        self.assert_json_equal('', 'entryline/@12/id', '12')
+        self.assert_json_equal('', 'entryline/@12/entry.num', '---')
+        self.assert_json_equal('', 'entryline/@12/entry_account', '[601] 601')
+        self.assert_json_equal('', 'entryline/@12/costaccounting', '---')
+        self.assert_json_equal('', 'entryline/@17/id', '19')
+        self.assert_json_equal('', 'entryline/@17/entry.num', '6')
+        self.assert_json_equal('', 'entryline/@17/entry_account', '[411 Dalton William]')
+        self.assert_json_equal('', 'entryline/@17/costaccounting', '---')
+        self.assert_json_equal('', 'entryline/@18/id', '18')
+        self.assert_json_equal('', 'entryline/@18/entry.num', '6')
+        self.assert_json_equal('', 'entryline/@18/entry_account', '[707] 707')
+        self.assert_json_equal('', 'entryline/@18/costaccounting', '---')
+
         self.factory.xfer = CostAccountingList()
         self.calljson('/diacamma.accounting/costAccountingList', {'status': 0}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'costAccountingList')
@@ -416,12 +505,40 @@ class CompletedEntryTest(LucteriosTest):
         self.calljson('/diacamma.accounting/entryAccountCostAccounting', {"SAVE": "YES", 'entryline': '8;9;12;13;18;19', 'cost_accounting_id': '3'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountCostAccounting')
 
+        self._goto_entrylineaccountlist(-1, 0, 23)
+        self.assert_json_equal('', 'entryline/@3/id', '9')
+        self.assert_json_equal('', 'entryline/@3/entry.num', '---')
+        self.assert_json_equal('', 'entryline/@3/entry_account', '[401 Dalton Avrel]')
+        self.assert_json_equal('', 'entryline/@3/costaccounting', '---')
+        self.assert_json_equal('', 'entryline/@4/id', '8')
+        self.assert_json_equal('', 'entryline/@4/entry.num', '---')
+        self.assert_json_equal('', 'entryline/@4/entry_account', '[607] 607')
+        self.assert_json_equal('', 'entryline/@4/costaccounting', 'aaa')
+        self.assert_json_equal('', 'entryline/@11/id', '13')
+        self.assert_json_equal('', 'entryline/@11/entry.num', '---')
+        self.assert_json_equal('', 'entryline/@11/entry_account', '[401 Maximum]')
+        self.assert_json_equal('', 'entryline/@11/costaccounting', '---')
+        self.assert_json_equal('', 'entryline/@12/id', '12')
+        self.assert_json_equal('', 'entryline/@12/entry.num', '---')
+        self.assert_json_equal('', 'entryline/@12/entry_account', '[601] 601')
+        self.assert_json_equal('', 'entryline/@12/costaccounting', 'aaa')
+        self.assert_json_equal('', 'entryline/@17/id', '19')
+        self.assert_json_equal('', 'entryline/@17/entry.num', '6')
+        self.assert_json_equal('', 'entryline/@17/entry_account', '[411 Dalton William]')
+        self.assert_json_equal('', 'entryline/@17/costaccounting', '---')
+        self.assert_json_equal('', 'entryline/@18/id', '18')
+        self.assert_json_equal('', 'entryline/@18/entry.num', '6')
+        self.assert_json_equal('', 'entryline/@18/entry_account', '[707] 707')
+        self.assert_json_equal('', 'entryline/@18/costaccounting', 'aaa')
+
         self.factory.xfer = CostAccountingList()
         self.calljson('/diacamma.accounting/costAccountingList', {'status': 0}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'costAccountingList')
         self.assert_count_equal('costaccounting', 3)
+        self.assert_json_equal('', 'costaccounting/@0/name', 'aaa')
         self.assert_json_equal('', 'costaccounting/@0/total_revenue', '125.97€')
         self.assert_json_equal('', 'costaccounting/@0/total_expense', '272.32€')
+        self.assert_json_equal('', 'costaccounting/@1/name', 'bbb')
         self.assert_json_equal('', 'costaccounting/@1/total_revenue', '0.00€')
         self.assert_json_equal('', 'costaccounting/@1/total_expense', '0.00€')
         self.assert_json_equal('', 'costaccounting/@2/name', 'open')
@@ -436,12 +553,40 @@ class CompletedEntryTest(LucteriosTest):
         self.calljson('/diacamma.accounting/entryAccountCostAccounting', {"SAVE": "YES", 'entryline': '8;9;12;13;18;19', 'cost_accounting_id': '4'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountCostAccounting')
 
+        self._goto_entrylineaccountlist(-1, 0, 23)
+        self.assert_json_equal('', 'entryline/@3/id', '9')
+        self.assert_json_equal('', 'entryline/@3/entry.num', '---')
+        self.assert_json_equal('', 'entryline/@3/entry_account', '[401 Dalton Avrel]')
+        self.assert_json_equal('', 'entryline/@3/costaccounting', '---')
+        self.assert_json_equal('', 'entryline/@4/id', '8')
+        self.assert_json_equal('', 'entryline/@4/entry.num', '---')
+        self.assert_json_equal('', 'entryline/@4/entry_account', '[607] 607')
+        self.assert_json_equal('', 'entryline/@4/costaccounting', 'aaa')
+        self.assert_json_equal('', 'entryline/@11/id', '13')
+        self.assert_json_equal('', 'entryline/@11/entry.num', '---')
+        self.assert_json_equal('', 'entryline/@11/entry_account', '[401 Maximum]')
+        self.assert_json_equal('', 'entryline/@11/costaccounting', '---')
+        self.assert_json_equal('', 'entryline/@12/id', '12')
+        self.assert_json_equal('', 'entryline/@12/entry.num', '---')
+        self.assert_json_equal('', 'entryline/@12/entry_account', '[601] 601')
+        self.assert_json_equal('', 'entryline/@12/costaccounting', 'aaa')
+        self.assert_json_equal('', 'entryline/@17/id', '19')
+        self.assert_json_equal('', 'entryline/@17/entry.num', '6')
+        self.assert_json_equal('', 'entryline/@17/entry_account', '[411 Dalton William]')
+        self.assert_json_equal('', 'entryline/@17/costaccounting', '---')
+        self.assert_json_equal('', 'entryline/@18/id', '18')
+        self.assert_json_equal('', 'entryline/@18/entry.num', '6')
+        self.assert_json_equal('', 'entryline/@18/entry_account', '[707] 707')
+        self.assert_json_equal('', 'entryline/@18/costaccounting', 'aaa')
+
         self.factory.xfer = CostAccountingList()
         self.calljson('/diacamma.accounting/costAccountingList', {'status': 0}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'costAccountingList')
         self.assert_count_equal('costaccounting', 3)
-        self.assert_json_equal('', 'costaccounting/@0/total_revenue', '0.00€')
-        self.assert_json_equal('', 'costaccounting/@0/total_expense', '0.00€')
+        self.assert_json_equal('', 'costaccounting/@0/name', 'aaa')
+        self.assert_json_equal('', 'costaccounting/@0/total_revenue', '125.97€')
+        self.assert_json_equal('', 'costaccounting/@0/total_expense', '272.32€')
+        self.assert_json_equal('', 'costaccounting/@1/name', 'bbb')
         self.assert_json_equal('', 'costaccounting/@1/total_revenue', '0.00€')
         self.assert_json_equal('', 'costaccounting/@1/total_expense', '0.00€')
         self.assert_json_equal('', 'costaccounting/@2/name', 'open')
@@ -467,6 +612,65 @@ class CompletedEntryTest(LucteriosTest):
         self.calljson('/diacamma.accounting/costAccountingList', {'year': 0, 'status': -1}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'costAccountingList')
         self.assert_count_equal('costaccounting', 4)
+
+    def test_costaccounting_needed(self):
+        Parameter.change_value('accounting-needcost', '1')
+        Params.clear()
+        FiscalYear.objects.create(begin='2016-01-01', end='2016-12-31', status=0, last_fiscalyear_id=1)
+
+        self.factory.xfer = CostAccountingAddModify()
+        self.calljson('/diacamma.accounting/costAccountingAddModify', {"SAVE": "YES", 'name': 'aaa', 'description': 'aaa', 'year': '1'}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.accounting', 'costAccountingAddModify')  # id = 3
+
+        self.factory.xfer = CostAccountingAddModify()
+        self.calljson('/diacamma.accounting/costAccountingAddModify', {"SAVE": "YES", 'name': 'bbb', 'description': 'bbb', 'year': '2'}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.accounting', 'costAccountingAddModify')  # id = 4
+
+        self.factory.xfer = CostAccountingList()
+        self.calljson('/diacamma.accounting/costAccountingList', {'status': 0}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'costAccountingList')
+        self.assert_count_equal('costaccounting', 3)
+        self.assert_json_equal('', 'costaccounting/@0/name', 'aaa')
+        self.assert_json_equal('', 'costaccounting/@1/name', 'bbb')
+        self.assert_json_equal('', 'costaccounting/@2/name', 'open')
+
+        self.factory.xfer = EntryAccountCostAccounting()
+        self.calljson('/diacamma.accounting/entryAccountCostAccounting', {'entryline': '8;9;12;13;18;19'}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountCostAccounting')
+        self.assert_count_equal('', 3)
+        self.assert_select_equal('cost_accounting_id', {2: 'open', 3: 'aaa'})  # nb=2
+        self.assert_json_equal('SELECT', 'cost_accounting_id', '2')
+
+    def test_costaccounting_incomestatement(self):
+        self.factory.xfer = CostAccountingIncomeStatement()
+        self.calljson('/diacamma.accounting/costAccountingIncomeStatement', {'costaccounting': '1;2'}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'costAccountingIncomeStatement')
+        self.assertFalse('__tab_1' in self.json_data.keys(), self.json_data.keys())
+        self.assert_grid_equal('report_2', {"name": "Comptabilit\u00e9 analytique", "left": "Charges", "left_n": "Valeur", "left_b": "Budget", "space": "", "right": "Produits", "right_n": "Valeur", "right_b": "Budget"}, 5 + 6 + 2)
+
+        self.factory.xfer = CostAccountingIncomeStatement()
+        self.calljson('/diacamma.accounting/costAccountingIncomeStatement', {'costaccounting': '1'}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'costAccountingIncomeStatement')
+        self.assertFalse('__tab_1' in self.json_data.keys(), self.json_data.keys())
+        self.assert_grid_equal('report_1', {"left": "Charges", "left_n": "Valeur", "left_b": "Budget", "space": "", "right": "Produits", "right_n": "Valeur", "right_b": "Budget"}, 5)
+
+    def test_costaccounting_ledger(self):
+        self.factory.xfer = CostAccountingLedger()
+        self.calljson('/diacamma.accounting/costAccountingLedger', {'costaccounting': '1;2'}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'costAccountingLedger')
+        self.assertTrue('__tab_2' in self.json_data.keys(), self.json_data.keys())
+        self.assertFalse('__tab_3' in self.json_data.keys(), self.json_data.keys())
+        self.assert_count_equal('report_1', 3 * 4)
+        self.assert_count_equal('report_2', 3 * 4)
+
+    def test_costaccounting_trialbalance(self):
+        self.factory.xfer = CostAccountingTrialBalance()
+        self.calljson('/diacamma.accounting/costAccountingTrialBalance', {'costaccounting': '1;2'}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'costAccountingTrialBalance')
+        self.assertTrue('__tab_2' in self.json_data.keys(), self.json_data.keys())
+        self.assertFalse('__tab_3' in self.json_data.keys(), self.json_data.keys())
+        self.assert_count_equal('report_1', 1 + 2)
+        self.assert_count_equal('report_2', 1 + 2)
 
     def test_fiscalyear_balancesheet(self):
         self.factory.xfer = FiscalYearBalanceSheet()

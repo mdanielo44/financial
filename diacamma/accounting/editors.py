@@ -221,15 +221,7 @@ class EntryAccountEditor(LucteriosEditor):
 
     def _add_cost_savebtn(self, xfer):
         name_comp = xfer.get_components('designation')
-        if (self.item.costaccounting_id is None) or (self.item.costaccounting_id == 0) or (self.item.costaccounting.status == 0):
-            xfer.fill_from_model(1, name_comp.row + 1, False, ['costaccounting'])
-            sel = xfer.get_components('costaccounting')
-            sel.set_select_query(CostAccounting.objects.filter(Q(status=0) & (Q(year=None) | Q(year=xfer.item.year))))
-            sel.set_needed(Params.getvalue('accounting-needcost'))
-            self.added = True
-        else:
-            xfer.fill_from_model(1, name_comp.row + 1, True, ['costaccounting'])
-            self.added = isinstance(name_comp, XferCompEdit)
+        self.added = isinstance(name_comp, XferCompEdit)
 
     def show(self, xfer):
         self._add_cost_savebtn(xfer)
@@ -242,6 +234,8 @@ class EntryAccountEditor(LucteriosEditor):
         grid_lines.set_location(0, last_row + 2, 4)
         grid_lines.set_model(xfer.item.entrylineaccount_set.all(), EntryLineAccount.get_other_fields(), xfer)
         grid_lines.description = _('entry line of account')
+        if len(xfer.item.entrylineaccount_set.filter(Q(account__type_of_account__in=(3, 4, 5)) & (Q(costaccounting__isnull=True) | Q(costaccounting__status=0)))) > 0:
+            grid_lines.add_action(xfer.request, ActionsManage.get_action_url('accounting.EntryAccount', 'CostAccounting', xfer), close=CLOSE_NO, unique=SELECT_MULTI)
         xfer.add_component(grid_lines)
         if self.item.has_third:
             sum_customer = get_amount_sum(self.item.entrylineaccount_set.filter(
@@ -264,8 +258,7 @@ class EntryAccountEditor(LucteriosEditor):
                 link_grid_lines.description = _("Linked entries")
                 link_grid_lines.set_model(linkentries, fieldnames=None, xfer_custom=xfer)
                 link_grid_lines.set_location(0, last_row + 5, 4)
-                link_grid_lines.add_action(xfer.request, ActionsManage.get_action_url(
-                    'accounting.EntryAccount', 'OpenFromLine', xfer), unique=SELECT_SINGLE, close=CLOSE_YES, params={'field_id': 'entryaccount_link', 'journal': ''})
+                link_grid_lines.add_action(xfer.request, ActionsManage.get_action_url('accounting.EntryAccount', 'OpenFromLine', xfer), unique=SELECT_SINGLE, close=CLOSE_YES, params={'field_id': 'entryaccount_link', 'journal': ''})
                 xfer.add_component(link_grid_lines)
         if self.added:
             xfer.add_action(xfer.get_action(TITLE_MODIFY, "images/ok.png"), params={"SAVE": "YES"})
@@ -391,6 +384,22 @@ class EntryLineAccountEditor(LucteriosEditor):
         try:
             if self.item.has_account and self.item.account.is_third:
                 edit_third_for_line(xfer, column, row, self.item.account.code, self.item.third, vertical)
+            elif self.item.account.type_of_account in (3, 4, 5):
+                sel = XferCompSelect('costaccounting')
+                sel.set_select_query(CostAccounting.objects.filter(Q(status=0) & (Q(year=None) | Q(year=xfer.item.year))))
+                sel.set_needed(Params.getvalue('accounting-needcost'))
+                if self.item.costaccounting is not None:
+                    sel.set_value(self.item.costaccounting)
+                if vertical:
+                    sel.set_location(column, row + 1, 2)
+                    lbl = XferCompLabelForm('costaccountinglbl')
+                    lbl.set_value_as_name(_('cost accounting'))
+                    lbl.set_location(column, row)
+                    xfer.add_component(lbl)
+                else:
+                    sel.set_location(column, row)
+                    sel.description = _('cost accounting')
+                xfer.add_component(sel)
             else:
                 edt = XferCompEdit('reference')
                 reference = xfer.getparam('reference', self.item.reference)

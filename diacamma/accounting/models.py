@@ -493,14 +493,14 @@ class CostAccounting(LucteriosModel):
         return format_devise(self.get_total_revenue(), 5)
 
     def get_total_revenue(self):
-        return get_amount_sum(EntryLineAccount.objects.filter(account__type_of_account=3, entry__costaccounting=self).aggregate(Sum('amount')))
+        return get_amount_sum(EntryLineAccount.objects.filter(account__type_of_account=3, costaccounting=self).aggregate(Sum('amount')))
 
     @property
     def total_expense(self):
         return format_devise(self.get_total_expense(), 5)
 
     def get_total_expense(self):
-        return get_amount_sum(EntryLineAccount.objects.filter(account__type_of_account=4, entry__costaccounting=self).aggregate(Sum('amount')))
+        return get_amount_sum(EntryLineAccount.objects.filter(account__type_of_account=4, costaccounting=self).aggregate(Sum('amount')))
 
     @property
     def total_result(self):
@@ -527,14 +527,14 @@ class CostAccounting(LucteriosModel):
 
     def check_before_close(self):
         EntryAccount.clear_ghost()
-        if self.entryaccount_set.filter(close=False).count() > 0:
+        if self.entrylineaccount_set.filter(entry__close=False).count() > 0:
             raise LucteriosException(IMPORTANT, _('The cost accounting "%s" has some not validated entry!') % self)
         if self.modelentry_set.all().count() > 0:
             raise LucteriosException(IMPORTANT, _('The cost accounting "%s" is include in a model of entry!') % self)
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         if (self.id is not None) and (self.year is not None):
-            entries = EntryAccount.objects.filter(costaccounting=self).exclude(year=self.year)
+            entries = EntryAccount.objects.filter(entrylineaccount__costaccounting=self).exclude(year=self.year)
             if len(entries) > 0:
                 raise LucteriosException(IMPORTANT, _('This cost accounting have entry with another year!'))
         res = LucteriosModel.save(self, force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields)
@@ -734,25 +734,19 @@ class AccountLink(LucteriosModel):
 
 
 class EntryAccount(LucteriosModel):
-    year = models.ForeignKey('FiscalYear', verbose_name=_(
-        'fiscal year'), null=False, on_delete=models.CASCADE)
+    year = models.ForeignKey('FiscalYear', verbose_name=_('fiscal year'), null=False, on_delete=models.CASCADE)
     num = models.IntegerField(verbose_name=_('numeros'), null=True)
-    journal = models.ForeignKey('Journal', verbose_name=_(
-        'journal'), null=False, default=0, on_delete=models.PROTECT)
-    link = models.ForeignKey(
-        'AccountLink', verbose_name=_('link'), null=True, on_delete=models.SET_NULL)
+    journal = models.ForeignKey('Journal', verbose_name=_('journal'), null=False, default=0, on_delete=models.PROTECT)
+    link = models.ForeignKey('AccountLink', verbose_name=_('link'), null=True, on_delete=models.SET_NULL)
     date_entry = models.DateField(verbose_name=_('date entry'), null=True)
-    date_value = models.DateField(
-        verbose_name=_('date value'), null=False, db_index=True)
+    date_value = models.DateField(verbose_name=_('date value'), null=False, db_index=True)
     designation = models.CharField(_('name'), max_length=200)
-    costaccounting = models.ForeignKey('CostAccounting', verbose_name=_(
-        'cost accounting'), null=True, on_delete=models.PROTECT)
-    close = models.BooleanField(
-        verbose_name=_('close'), default=False, db_index=True)
+    costaccounting = models.ForeignKey('CostAccounting', verbose_name=_('cost accounting'), null=True, on_delete=models.PROTECT)
+    close = models.BooleanField(verbose_name=_('close'), default=False, db_index=True)
 
     @classmethod
     def get_default_fields(cls):
-        return ['num', 'date_entry', 'date_value', (_('description'), 'description'), 'costaccounting']
+        return ['num', 'date_entry', 'date_value', (_('description'), 'description'), (_('cost accounting'), 'costaccountingset')]
 
     @classmethod
     def get_edit_fields(cls):
@@ -764,7 +758,7 @@ class EntryAccount(LucteriosModel):
 
     @classmethod
     def get_search_fields(cls):
-        result = ['year', 'date_value', 'num', 'designation', 'date_entry', 'costaccounting']
+        result = ['year', 'date_value', 'num', 'designation', 'date_entry', 'entrylineaccount_set.costaccounting']
         result.append(('entrylineaccount_set.amount', models.DecimalField(_('amount')), 'entrylineaccount__amount__abs', Q()))
         result.extend(['entrylineaccount_set.account.code', 'entrylineaccount_set.account.name',
                        'entrylineaccount_set.account.type_of_account', 'entrylineaccount_set.reference'])
@@ -794,6 +788,13 @@ class EntryAccount(LucteriosModel):
             res += "{[/tr]}"
         res += "{[/table]}"
         return res
+
+    @property
+    def costaccountingset(self):
+        res = []
+        for line in self.entrylineaccount_set.filter(costaccounting_id__isnull=False):
+            res.append(six.text_type(line.costaccounting))
+        return '{[br/]}'.join(res)
 
     def can_delete(self):
         if self.close:
@@ -835,14 +836,12 @@ class EntryAccount(LucteriosModel):
             if serial_val != '':
                 new_line = EntryLineAccount.get_entrylineaccount(serial_val)
                 new_line.entry = self
-                res._result_cache.append(
-                    new_line)
+                res._result_cache.append(new_line)
         return res
 
     def save_entrylineaccounts(self, serial_vals):
         if not self.close:
-            self.entrylineaccount_set.all().delete(
-            )
+            self.entrylineaccount_set.all().delete()
             for line in self.get_entrylineaccounts(serial_vals):
                 if line.id < 0:
                     line.id = None
@@ -857,21 +856,17 @@ class EntryAccount(LucteriosModel):
         del lines._result_cache[line_idx]
         return self.get_serial(lines)
 
-    def add_new_entryline(self, serial_entry, entrylineaccount, num_cpt, credit_val, debit_val, third, reference):
+    def add_new_entryline(self, serial_entry, entrylineaccount, num_cpt, credit_val, debit_val, third, costaccounting, reference):
         if self.journal.id == 1:
-            charts = ChartsAccount.objects.get(
-                id=num_cpt)
+            charts = ChartsAccount.objects.get(id=num_cpt)
             if match(current_system_account().get_revenue_mask(), charts.code) or \
                     match(current_system_account().get_expence_mask(), charts.code):
-                raise LucteriosException(
-                    IMPORTANT, _('This kind of entry is not allowed for this journal!'))
+                raise LucteriosException(IMPORTANT, _('This kind of entry is not allowed for this journal!'))
         if entrylineaccount != 0:
-            serial_entry = self.remove_entrylineaccounts(
-                serial_entry, entrylineaccount)
+            serial_entry = self.remove_entrylineaccounts(serial_entry, entrylineaccount)
         if serial_entry != '':
             serial_entry += '\n'
-        serial_entry += EntryLineAccount.add_serial(
-            num_cpt, debit_val, credit_val, third, reference)
+        serial_entry += EntryLineAccount.add_serial(num_cpt, debit_val, credit_val, third, costaccounting, reference)
         return serial_entry
 
     def serial_control(self, serial_vals):
@@ -974,14 +969,12 @@ class EntryAccount(LucteriosModel):
 
 
 class EntryLineAccount(LucteriosModel):
-    account = models.ForeignKey('ChartsAccount', verbose_name=_(
-        'account'), null=False, on_delete=models.PROTECT)
-    entry = models.ForeignKey(
-        'EntryAccount', verbose_name=_('entry'), null=False, on_delete=models.CASCADE)
+    account = models.ForeignKey('ChartsAccount', verbose_name=_('account'), null=False, on_delete=models.PROTECT)
+    entry = models.ForeignKey('EntryAccount', verbose_name=_('entry'), null=False, on_delete=models.CASCADE)
     amount = models.FloatField(_('amount'), db_index=True)
     reference = models.CharField(_('reference'), max_length=100, null=True)
-    third = models.ForeignKey('Third', verbose_name=_(
-        'third'), null=True, on_delete=models.PROTECT, db_index=True)
+    third = models.ForeignKey('Third', verbose_name=_('third'), null=True, on_delete=models.PROTECT, db_index=True)
+    costaccounting = models.ForeignKey('CostAccounting', verbose_name=_('cost accounting'), null=True, on_delete=models.PROTECT)
 
     def __str__(self):
         res = ""
@@ -995,12 +988,12 @@ class EntryLineAccount(LucteriosModel):
 
     @classmethod
     def get_other_fields(cls):
-        return [(_('account'), 'entry_account'), (_('debit'), 'debit'), (_('credit'), 'credit'), 'reference']
+        return [(_('account'), 'entry_account'), (_('debit'), 'debit'), (_('credit'), 'credit'), 'reference', 'costaccounting']
 
     @classmethod
     def get_default_fields(cls):
         return ['entry.num', 'entry.date_entry', 'entry.date_value', (_('name'), 'designation_ref'), (_('account'), 'entry_account'),
-                (_('debit'), 'debit'), (_('credit'), 'credit'), 'entry.costaccounting', 'entry.link']
+                (_('debit'), 'debit'), (_('credit'), 'credit'), 'costaccounting', 'entry.link']
 
     @classmethod
     def get_edit_fields(cls):
@@ -1014,7 +1007,7 @@ class EntryLineAccount(LucteriosModel):
 
     @classmethod
     def get_print_fields(cls):
-        return ['entry', (_('account'), 'entry_account'), (_('debit'), 'debit'), (_('credit'), 'credit'), 'reference', 'third', 'entry.costaccounting']
+        return ['entry', (_('account'), 'entry_account'), (_('debit'), 'debit'), (_('credit'), 'credit'), 'reference', 'third', 'costaccounting']
 
     @classmethod
     def get_search_fields(cls):
@@ -1022,7 +1015,7 @@ class EntryLineAccount(LucteriosModel):
         result.append(
             ('amount', models.FloatField(_('amount')), 'amount__abs', Q()))
         result.extend(['reference', 'entry.num', 'entry.designation', 'entry.date_entry',
-                       'entry.costaccounting', 'account.name', 'account.type_of_account'])
+                       'costaccounting', 'account.name', 'account.type_of_account'])
         for fieldname in Third.get_search_fields():
             result.append("third." + fieldname)
         return result
@@ -1077,8 +1070,11 @@ class EntryLineAccount(LucteriosModel):
         if self.third is None:
             res = res and (other.third is None)
         else:
-            res = res and (
-                self.third.id == other.third.id)
+            res = res and (self.third.id == other.third.id)
+        if self.costaccounting is None:
+            res = res and (other.costaccounting is None)
+        else:
+            res = res and (self.costaccounting.id == other.costaccounting.id)
         return res
 
     def get_serial(self):
@@ -1090,10 +1086,14 @@ class EntryLineAccount(LucteriosModel):
             reference = 'None'
         else:
             reference = self.reference
-        return "%d|%d|%d|%f|%s|" % (self.id, self.account.id, third_id, self.amount, reference)
+        if self.costaccounting is None:
+            costaccounting_id = 0
+        else:
+            costaccounting_id = self.costaccounting.id
+        return "%d|%d|%d|%f|%d|%s|" % (self.id, self.account.id, third_id, self.amount, costaccounting_id, reference)
 
     @classmethod
-    def add_serial(cls, num_cpt, debit_val, credit_val, thirdid=0, reference=None):
+    def add_serial(cls, num_cpt, debit_val, credit_val, thirdid=0, costaccountingid=0, reference=None):
         import time
         new_entry_line = cls()
         new_entry_line.id = -1 * int(time.time() * 60)
@@ -1102,6 +1102,10 @@ class EntryLineAccount(LucteriosModel):
             new_entry_line.third = None
         else:
             new_entry_line.third = Third.objects.get(id=thirdid)
+        if costaccountingid == 0:
+            new_entry_line.costaccounting = None
+        else:
+            new_entry_line.costaccounting = CostAccounting.objects.get(id=costaccountingid)
         new_entry_line.set_montant(debit_val, credit_val)
         if reference == "None":
             new_entry_line.reference = None
@@ -1113,17 +1117,18 @@ class EntryLineAccount(LucteriosModel):
     def get_entrylineaccount(cls, serial_val):
         serial_vals = serial_val.split('|')
         new_entry_line = cls()
-        new_entry_line.id = int(
-            serial_vals[0])
-        new_entry_line.account = ChartsAccount.objects.get(
-            id=int(serial_vals[1]))
+        new_entry_line.id = int(serial_vals[0])
+        new_entry_line.account = ChartsAccount.objects.get(id=int(serial_vals[1]))
         if int(serial_vals[2]) == 0:
             new_entry_line.third = None
         else:
-            new_entry_line.third = Third.objects.get(
-                id=int(serial_vals[2]))
+            new_entry_line.third = Third.objects.get(id=int(serial_vals[2]))
         new_entry_line.amount = float(serial_vals[3])
-        new_entry_line.reference = "".join(serial_vals[4:-1])
+        if int(serial_vals[4]) == 0:
+            new_entry_line.costaccounting = None
+        else:
+            new_entry_line.costaccounting = CostAccounting.objects.get(id=int(serial_vals[4]))
+        new_entry_line.reference = "".join(serial_vals[5:-1])
         if new_entry_line.reference.startswith("None"):
             new_entry_line.reference = None
         return new_entry_line
@@ -1131,15 +1136,17 @@ class EntryLineAccount(LucteriosModel):
     def create_clone_inverse(self):
         import time
         new_entry_line = EntryLineAccount()
-        new_entry_line.id = -1 * \
-            int(time.time() *
-                60)
+        new_entry_line.id = -1 * int(time.time() * 60)
         new_entry_line.account = self.account
         if self.third:
             new_entry_line.third = self.third
         else:
             new_entry_line.third = None
         new_entry_line.amount = -1 * self.amount
+        if self.costaccounting:
+            new_entry_line.costaccounting = self.costaccounting
+        else:
+            new_entry_line.costaccounting = None
         new_entry_line.reference = self.reference
         return new_entry_line.get_serial()
 
@@ -1150,8 +1157,12 @@ class EntryLineAccount(LucteriosModel):
         except ObjectDoesNotExist:
             return False
 
-    class Meta(object):
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+        if (self.account.type_of_account not in (3, 4, 5)) and (self.costaccounting is not None):
+            self.costaccounting = None
+        return LucteriosModel.save(self, force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields)
 
+    class Meta(object):
         verbose_name = _('entry line of account')
         verbose_name_plural = _('entry lines of account')
         default_permissions = []
@@ -1208,11 +1219,9 @@ class ModelEntry(LucteriosModel):
 
 
 class ModelLineEntry(LucteriosModel):
-    model = models.ForeignKey('ModelEntry', verbose_name=_(
-        'model'), null=False, default=0, on_delete=models.CASCADE)
+    model = models.ForeignKey('ModelEntry', verbose_name=_('model'), null=False, default=0, on_delete=models.CASCADE)
     code = models.CharField(_('code'), max_length=50)
-    third = models.ForeignKey(
-        'Third', verbose_name=_('third'), null=True, on_delete=models.PROTECT)
+    third = models.ForeignKey('Third', verbose_name=_('third'), null=True, on_delete=models.PROTECT)
     amount = models.FloatField(_('amount'), default=0)
 
     @classmethod
@@ -1387,6 +1396,13 @@ def check_accountingcost():
         except ObjectDoesNotExist:
             entry.costaccounting = None
             entry.save()
+    entryline_cmp = 0
+    for entryline in EntryLineAccount.objects.filter(costaccounting_id__isnull=True, entry__costaccounting_id__isnull=False, account__type_of_account__in=(3, 4, 5)):
+        entryline.costaccounting_id = entryline.entry.costaccounting_id
+        entryline.save()
+        entryline_cmp += 1
+    if entryline_cmp > 0:
+        six.print_(' * convert costaccounting: nb=%d' % entryline_cmp)
 
 
 def pre_save_datadb(sender, **kwargs):

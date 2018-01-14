@@ -740,7 +740,7 @@ class CostAccountingReport(FiscalYearReport):
         lbl.set_location(1, 2, 4)
         lbl.description = self.model._meta.verbose_name
         self.add_component(lbl)
-        self.filter = Q(entry__costaccounting=self.item)
+        self.filter = Q(costaccounting=self.item)
         self.fill_filterCode()
 
     def fill_buttons(self):
@@ -768,7 +768,7 @@ class CostAccountingIncomeStatement(CostAccountingReport, FiscalYearIncomeStatem
         for self.item in self.items:
             self.grid.set_value(self.line_offset, 'name', '{[b]}{[u]}%s{[/u]}{[/b]}' % self.item)
             self.line_offset += 1
-            self.filter = Q(entry__costaccounting=self.item)
+            self.filter = Q(costaccounting=self.item)
             self.fill_filterheader()
             all_have_last = all_have_last or (self.lastfilter is not None)
             self.calcul_table()
@@ -788,34 +788,36 @@ class CostAccountingIncomeStatement(CostAccountingReport, FiscalYearIncomeStatem
         if not all_have_last:
             self.grid.delete_header('left_n_1')
             self.grid.delete_header('right_n_1')
-        self.grid.set_value(self.line_offset + 1, 'left', get_spaces(5) + "{[i]}%s{[/i]}" % _('general result (profit)'))
-        self.grid.set_value(self.line_offset + 1, 'right', get_spaces(5) + "{[i]}%s{[/i]}" % _('general result (deficit)'))
-        if res1 < 0:
-            self.grid.set_value(self.line_offset + 1, 'left_n', format_devise(-1 * res1, 5))
+        if len(self.items) > 1:
+            self.grid.set_value(self.line_offset + 1, 'left', get_spaces(5) + "{[i]}%s{[/i]}" % _('general result (profit)'))
+            self.grid.set_value(self.line_offset + 1, 'right', get_spaces(5) + "{[i]}%s{[/i]}" % _('general result (deficit)'))
+            if res1 < 0:
+                self.grid.set_value(self.line_offset + 1, 'left_n', format_devise(-1 * res1, 5))
+            else:
+                self.grid.set_value(self.line_offset + 1, 'right_n', format_devise(res1, 5))
+            if res2 < 0:
+                self.grid.set_value(self.line_offset + 1, 'left_n_1', format_devise(-1 * res2, 5))
+            else:
+                self.grid.set_value(self.line_offset + 1, 'right_n_1', format_devise(res2, 5))
+            if resb < 0:
+                self.grid.set_value(self.line_offset + 1, 'left_b', format_devise(-1 * resb, 5))
+            else:
+                self.grid.set_value(self.line_offset + 1, 'right_b', format_devise(resb, 5))
+            self.grid.set_value(self.line_offset + 2, 'left', get_spaces(10) + "{[u]}{[b]}%s{[/b]}{[/u]}" % _('general total'))
+            self.grid.set_value(self.line_offset + 2, 'left_n', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(tot_n, 5))
+            self.grid.set_value(self.line_offset + 2, 'left_b', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(tot_b, 5))
+            self.grid.set_value(self.line_offset + 2, 'left_n_1', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(tot_n1, 5))
+            self.grid.set_value(self.line_offset + 2, 'right', get_spaces(10) + "{[u]}{[b]}%s{[/b]}{[/u]}" % _('general total'))
+            self.grid.set_value(self.line_offset + 2, 'right_n', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(tot_n, 5))
+            self.grid.set_value(self.line_offset + 2, 'right_b', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(tot_b, 5))
+            self.grid.set_value(self.line_offset + 2, 'right_n_1', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(tot_n1, 5))
         else:
-            self.grid.set_value(self.line_offset + 1, 'right_n', format_devise(res1, 5))
-        if res2 < 0:
-            self.grid.set_value(self.line_offset + 1, 'left_n_1', format_devise(-1 * res2, 5))
-        else:
-            self.grid.set_value(self.line_offset + 1, 'right_n_1', format_devise(res2, 5))
-        if resb < 0:
-            self.grid.set_value(self.line_offset + 1, 'left_b', format_devise(-1 * resb, 5))
-        else:
-            self.grid.set_value(self.line_offset + 1, 'right_b', format_devise(resb, 5))
-
-        self.grid.set_value(self.line_offset + 2, 'left', get_spaces(10) + "{[u]}{[b]}%s{[/b]}{[/u]}" % _('general total'))
-        self.grid.set_value(self.line_offset + 2, 'left_n', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(tot_n, 5))
-        self.grid.set_value(self.line_offset + 2, 'left_b', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(tot_b, 5))
-        self.grid.set_value(self.line_offset + 2, 'left_n_1', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(tot_n1, 5))
-        self.grid.set_value(self.line_offset + 2, 'right', get_spaces(10) + "{[u]}{[b]}%s{[/b]}{[/u]}" % _('general total'))
-        self.grid.set_value(self.line_offset + 2, 'right_n', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(tot_n, 5))
-        self.grid.set_value(self.line_offset + 2, 'right_b', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(tot_b, 5))
-        self.grid.set_value(self.line_offset + 2, 'right_n_1', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(tot_n1, 5))
+            self.grid.delete_header('name')
         self.fill_buttons()
 
     def fill_filterheader(self):
         if self.item.last_costaccounting is not None:
-            self.lastfilter = Q(entry__costaccounting=self.item.last_costaccounting)
+            self.lastfilter = Q(costaccounting=self.item.last_costaccounting)
         else:
             self.lastfilter = None
 

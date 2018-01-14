@@ -278,7 +278,7 @@ class ThirdTest(LucteriosTest):
         self.assert_count_equal('', 9 + 4 + 4 + 3)
         self.assert_json_equal('SELECT', 'lines_filter', '0')
         self.assert_select_equal('lines_filter', 3)  # nb=3
-        self.assert_grid_equal('entryline', {"entry.num": "N°", "entry.date_entry": "date d'écriture", "entry.date_value": "date de pièce", "designation_ref": "nom", "entry_account": "compte", 'debit': 'débit', 'credit': 'crédit', "entry.costaccounting": "comptabilité analytique", "entry.link": "lettrage"}, 6)
+        self.assert_grid_equal('entryline', {"entry.num": "N°", "entry.date_entry": "date d'écriture", "entry.date_value": "date de pièce", "designation_ref": "nom", "entry_account": "compte", 'debit': 'débit', 'credit': 'crédit', "costaccounting": "comptabilité analytique", "entry.link": "lettrage"}, 6)
 
         self.factory.xfer = ThirdShow()
         self.calljson('/diacamma.accounting/thirdShow', {"third": 4, 'lines_filter': 1}, False)
@@ -824,5 +824,5 @@ class ModelTest(LucteriosTest):
         self.assertEqual(self.response_json["action"]["id"], "diacamma.accounting/entryAccountEdit")
         self.assertEqual(len(self.response_json["action"]["params"]), 1)
         serial_entry = self.response_json["action"]["params"]['serial_entry'].split('\n')
-        self.assertEqual(serial_entry[0][-20:], "|1|3|48.430000|None|", serial_entry[0])
-        self.assertEqual(serial_entry[1][-21:], "|2|0|-48.430000|None|", serial_entry[1])
+        self.assertEqual(serial_entry[0][-22:], "|1|3|48.430000|0|None|", serial_entry[0])
+        self.assertEqual(serial_entry[1][-23:], "|2|0|-48.430000|0|None|", serial_entry[1])

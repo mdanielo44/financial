@@ -155,11 +155,10 @@ def default_compta(status=0, with12=True):
     fill_accounts(year, with12)
 
 
-def add_entry(yearid, journalid, date_value, designation, serial_entry, closed=False, costaccounting=None):
+def add_entry(yearid, journalid, date_value, designation, serial_entry, closed=False):
     year = FiscalYear.objects.get(id=yearid)
     journal = Journal.objects.get(id=journalid)
-    new_entry = EntryAccount.objects.create(
-        year=year, journal=journal, date_value=date_value, designation=designation, costaccounting=costaccounting)
+    new_entry = EntryAccount.objects.create(year=year, journal=journal, date_value=date_value, designation=designation)
     new_entry.save_entrylineaccounts(serial_entry)
     if closed:
         new_entry.closed()
@@ -168,35 +167,22 @@ def add_entry(yearid, journalid, date_value, designation, serial_entry, closed=F
 
 def fill_entries(yearid):
 
-    cost1 = CostAccounting.objects.create(
-        name='close', description='Close cost', status=1, is_default=False)
-    # cost1: dep=12.34 / rec=0.00 => res=-12.34
-    cost2 = CostAccounting.objects.create(
-        name='open', description='Open cost', status=0, is_default=True)
+    CostAccounting.objects.create(name='close', description='Close cost', status=1, is_default=False)
+    # cost id=1: dep=12.34 / rec=0.00 => res=-12.34
+    CostAccounting.objects.create(name='open', description='Open cost', status=0, is_default=True)
+    # cost id=2: dep=258.02 / rec=70.64 => res=-187.38
 
-    # cost2: dep=258.02 / rec=70.64 => res=-187.38
-    _ = add_entry(yearid, 1, '2015-02-01', 'Report à nouveau',
-                  '-1|5|0|1250.380000|None|\n-2|2|0|1135.930000|None|\n-3|3|0|114.450000|None|', True)  # 1 2 3
-    entry2 = add_entry(yearid, 2, '2015-02-14', 'depense 1',
-                       '-1|12|0|63.940000|None|\n-2|4|4|63.940000|None|', True, costaccounting=cost2)  # 4 5
-    entry3 = add_entry(yearid, 4, '2015-02-15', 'regement depense 1',
-                       '-1|2|0|-63.940000|ch N°34543|\n-2|4|4|-63.940000|None|', True)  # 6 7
-    entry4 = add_entry(yearid, 2, '2015-02-13', 'depense 2',
-                       '-1|14|0|194.080000|None|\n-2|4|1|194.080000|None|', costaccounting=cost2)  # 8 9
-    entry5 = add_entry(yearid, 4, '2015-02-17', 'regement depense 2',
-                       '-1|3|0|-194.080000|ch N°34545|\n-2|4|1|-194.080000|None|')  # 10 11
-    _ = add_entry(yearid, 2, '2015-02-20', 'depense 3',
-                  '-1|11|0|78.240000|None|\n-2|4|2|78.240000|None|')  # 12 13
-    entry7 = add_entry(yearid, 3, '2015-02-21', 'vente 1',
-                       '-1|10|0|70.640000|None|\n-2|1|7|70.640000|None|', True, costaccounting=cost2)  # 14 15
-    entry8 = add_entry(yearid, 4, '2015-02-22', 'regement vente 1',
-                       '-1|2|0|70.640000|BP N°654321|\n-2|1|7|-70.640000|None|', True)  # 16 17
-    _ = add_entry(yearid, 3, '2015-02-21', 'vente 2',
-                  '-1|10|0|125.970000|None|\n-2|1|5|125.970000|None|', True)  # 18 19
-    _ = add_entry(yearid, 3, '2015-02-24', 'vente 3',
-                  '-1|10|0|34.010000|None|\n-2|1|4|34.010000|None|')  # 20 21
-    _ = add_entry(yearid, 5, '2015-02-20', 'Frais bancaire',
-                  '-1|2|0|-12.340000|None|\n-2|15|0|12.340000|None|', True, costaccounting=cost1)  # 22 23
+    _ = add_entry(yearid, 1, '2015-02-01', 'Report à nouveau', '-1|5|0|1250.380000|0|None|\n-2|2|0|1135.930000|0|None|\n-3|3|0|114.450000|0|None|', True)  # 1 2 3
+    entry2 = add_entry(yearid, 2, '2015-02-14', 'depense 1', '-1|12|0|63.940000|2|None|\n-2|4|4|63.940000|0|None|', True)  # 4 5 - cost 2
+    entry3 = add_entry(yearid, 4, '2015-02-15', 'regement depense 1', '-1|2|0|-63.940000|0|ch N°34543|\n-2|4|4|-63.940000|0|None|', True)  # 6 7
+    entry4 = add_entry(yearid, 2, '2015-02-13', 'depense 2', '-1|14|0|194.080000|2|None|\n-2|4|1|194.080000|0|None|')  # 8 9 - cost 2
+    entry5 = add_entry(yearid, 4, '2015-02-17', 'regement depense 2', '-1|3|0|-194.080000|0|ch N°34545|\n-2|4|1|-194.080000|0|None|')  # 10 11
+    _ = add_entry(yearid, 2, '2015-02-20', 'depense 3', '-1|11|0|78.240000|0|None|\n-2|4|2|78.240000|0|None|')  # 12 13
+    entry7 = add_entry(yearid, 3, '2015-02-21', 'vente 1', '-1|10|0|70.640000|2|None|\n-2|1|7|70.640000|0|None|', True)  # 14 15 - cost 2
+    entry8 = add_entry(yearid, 4, '2015-02-22', 'regement vente 1', '-1|2|0|70.640000|0|BP N°654321|\n-2|1|7|-70.640000|0|None|', True)  # 16 17
+    _ = add_entry(yearid, 3, '2015-02-21', 'vente 2', '-1|10|0|125.970000|0|None|\n-2|1|5|125.970000|0|None|', True)  # 18 19
+    _ = add_entry(yearid, 3, '2015-02-24', 'vente 3', '-1|10|0|34.010000|0|None|\n-2|1|4|34.010000|0|None|')  # 20 21
+    _ = add_entry(yearid, 5, '2015-02-20', 'Frais bancaire', '-1|2|0|-12.340000|0|None|\n-2|15|0|12.340000|1|None|', True)  # 22 23 - cost 1
     AccountLink.create_link([entry2, entry3])
     AccountLink.create_link([entry4, entry5])
     AccountLink.create_link([entry7, entry8])
