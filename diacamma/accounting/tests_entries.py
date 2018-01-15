@@ -40,7 +40,7 @@ from diacamma.accounting.views_entries import EntryAccountList, \
     EntryLineAccountDel, EntryAccountUnlock
 from diacamma.accounting.test_tools import default_compta, initial_thirds,\
     fill_entries
-from diacamma.accounting.models import EntryAccount
+from diacamma.accounting.models import EntryAccount, CostAccounting
 from diacamma.accounting.views_other import CostAccountingAddModify
 
 
@@ -362,6 +362,32 @@ class EntryTest(LucteriosTest):
         self.assertEqual(self.json_actions[0]['id'], "diacamma.accounting/entryLineAccountAdd")
         self.assertEqual(len(self.json_actions[0]['params']), 1)
         self.assertEqual(self.json_actions[0]['params']['num_cpt'], 4)
+
+    def test_edit_line(self):
+        CostAccounting.objects.create(name='close', description='Close cost', status=1, is_default=False)
+        CostAccounting.objects.create(name='open', description='Open cost', status=0, is_default=True)
+        self.factory.xfer = EntryAccountEdit()
+        self.calljson('/diacamma.accounting/entryAccountEdit', {'SAVE': 'YES', 'year': '1', 'journal': '2',
+                                                                'date_value': '2015-02-13', 'designation': 'un plein cadie'}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountEdit')
+        self.factory.xfer = EntryAccountValidate()
+        self.calljson('/diacamma.accounting/entryAccountValidate',
+                      {'year': '1', 'journal': '2', 'entryaccount': '1', 'serial_entry': "-1|4|2|87.230000|0|None|\n-2|11|0|87.230000|2|None|"}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountValidate')
+
+        self.factory.xfer = EntryLineAccountEdit()
+        self.calljson('/diacamma.accounting/entryLineAccountEdit', {'year': 1, 'debit_val': 0, 'date_value': '2015-02-13', 'num_cpt_txt': '', 'credit_val': 0, 'entrylineaccount_serial': -
+                                                                    2, 'serial_entry': '-1|4|2|87.230000|0|None|\n-2|11|0|87.230000|2|None|', 'journal': 2, 'designation': 'un plein cadie', 'entryaccount': '1'}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'entryLineAccountEdit')
+        self.assert_count_equal('', 5)
+        self.assert_json_equal('LABELFORM', 'account', '[601] 601')
+        self.assert_json_equal('FLOAT', 'debit_val', '87.23')
+        self.assert_json_equal('FLOAT', 'credit_val', '0')
+        self.assert_json_equal('SELECT', 'costaccounting', '2')
+        self.assert_select_equal('costaccounting', 2)  # nb=2
+        self.assertEqual(self.json_actions[0]['id'], "diacamma.accounting/entryLineAccountAdd")
+        self.assertEqual(len(self.json_actions[0]['params']), 1)
+        self.assertEqual(self.json_actions[0]['params']['num_cpt'], 11)
 
     def test_change_line_payoff(self):
         self.factory.xfer = EntryAccountEdit()

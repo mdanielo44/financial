@@ -386,10 +386,16 @@ class EntryLineAccountEditor(LucteriosEditor):
                 edit_third_for_line(xfer, column, row, self.item.account.code, self.item.third, vertical)
             elif self.item.account.type_of_account in (3, 4, 5):
                 sel = XferCompSelect('costaccounting')
-                sel.set_select_query(CostAccounting.objects.filter(Q(status=0) & (Q(year=None) | Q(year=xfer.item.year))))
+                if hasattr(xfer.item, 'year'):
+                    current_year = xfer.item.year
+                    current_costaccounting = None
+                else:
+                    current_year = xfer.item.entry.year
+                    current_costaccounting = self.item.costaccounting
+                sel.set_select_query(CostAccounting.objects.filter(Q(status=0) & (Q(year=None) | Q(year=current_year))))
                 sel.set_needed(Params.getvalue('accounting-needcost'))
-                if self.item.costaccounting is not None:
-                    sel.set_value(self.item.costaccounting)
+                if current_costaccounting is not None:
+                    sel.set_value(current_costaccounting.id)
                 if vertical:
                     sel.set_location(column, row + 1, 2)
                     lbl = XferCompLabelForm('costaccountinglbl')
