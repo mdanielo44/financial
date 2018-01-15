@@ -115,7 +115,7 @@ class EntryAccountList(XferListEditor):
         self.add_component(lbl)
 
 
-@ActionsManage.affect_list(_("Search"), "diacamma.accounting/images/entry.png", close=CLOSE_YES, condition=lambda xfer: xfer.url_text.endswith('AccountList'))
+@ActionsManage.affect_list(_("Search"), "diacamma.accounting/images/entry.png", modal=FORMTYPE_NOMODAL, close=CLOSE_YES, condition=lambda xfer: xfer.url_text.endswith('AccountList'))
 @MenuManage.describ('accounting.change_entryaccount')
 class EntryAccountSearch(XferSavedCriteriaSearchEditor):
     icon = "entry.png"
