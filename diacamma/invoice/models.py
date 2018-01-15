@@ -852,6 +852,16 @@ class Detail(LucteriosModel):
         return ["article", "designation", (_('price'), "price_txt"), "unit", "quantity", (_('reduce'), "reduce_txt"), "storagearea"]
 
     @classmethod
+    def get_print_fields(cls):
+        res = cls.get_default_fields()
+        last = res[-1]
+        del res[-1]
+        res.append((_('reduce amount'), "reduce_amount_txt"))
+        res.append((_('reduce ratio'), "reduce_ratio_txt"))
+        res.append(last)
+        return res
+
+    @classmethod
     def create_for_bill(cls, bill, article, qty=1, reduce=0.0):
         newdetail = cls(
             bill=bill, article=article, designation=article.designation, price=article.price, unit=article.unit, quantity=qty, reduce=reduce)
@@ -878,13 +888,30 @@ class Detail(LucteriosModel):
         return format_devise(self.get_price(), 5)
 
     @property
-    def reduce_txt(self):
+    def reduce_amount_txt(self):
+        if self.reduce > 0.0001:
+            return format_devise(self.get_reduce(), 5)
+        else:
+            return None
+
+    @property
+    def reduce_ratio_txt(self):
         if self.reduce > 0.0001:
             try:
-                red_ratio = "(%.2f%%)" % (100 * self.get_reduce() / (self.get_price() * float(self.quantity)),)
+                red_ratio = "%.2f%%" % (100 * self.get_reduce() / (self.get_price() * float(self.quantity)),)
             except ZeroDivisionError:
                 red_ratio = ''
-            return "%s%s" % (format_devise(self.get_reduce(), 5), red_ratio)
+            return red_ratio
+        else:
+            return None
+
+    @property
+    def reduce_txt(self):
+        if self.reduce > 0.0001:
+            red_ratio = self.reduce_ratio_txt
+            if red_ratio != '':
+                red_ratio = "(%s)" % red_ratio
+            return "%s%s" % (self.reduce_amount_txt, red_ratio)
         else:
             return None
 
@@ -1097,5 +1124,10 @@ def invoice_checkparam():
                                args="{'Multi':False}", value='', meta='("accounting","ChartsAccount", Q(type_of_account=3) & Q(year__is_actif=True), "code", True)')
     Parameter.check_and_create(name='invoice-vat-mode', typeparam=4, title=_("invoice-vat-mode"),
                                args="{'Enum':3}", value='0', param_titles=(_("invoice-vat-mode.0"), _("invoice-vat-mode.1"), _("invoice-vat-mode.2")))
-    Parameter.check_and_create(name="invoice-account-third", typeparam=0, title=_("invoice-account-third"),
-                               args="{'Multi':False}", value='', meta='("accounting","ChartsAccount","import diacamma.accounting.tools;django.db.models.Q(code__regex=diacamma.accounting.tools.current_system_account().get_customer_mask()) & django.db.models.Q(year__is_actif=True)", "code", True)')
+    Parameter.check_and_create(
+        name="invoice-account-third",
+        typeparam=0,
+        title=_("invoice-account-third"),
+        args="{'Multi':False}",
+        value='',
+        meta='("accounting","ChartsAccount","import diacamma.accounting.tools;django.db.models.Q(code__regex=diacamma.accounting.tools.current_system_account().get_customer_mask()) & django.db.models.Q(year__is_actif=True)", "code", True)')
