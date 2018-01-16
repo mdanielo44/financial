@@ -154,15 +154,11 @@ class BillEditor(SupportingEditor):
         details = xfer.get_components('detail')
         if Params.getvalue("invoice-vat-mode") != 0:
             if Params.getvalue("invoice-vat-mode") == 1:
-                details.headers[2] = XferCompHeader(details.headers[2].name, _('price excl. taxes'),
-                                                    details.headers[2].type, details.headers[2].orderable)
-                details.headers[7] = XferCompHeader(details.headers[7].name, _('total excl. taxes'),
-                                                    details.headers[7].type, details.headers[7].orderable)
+                details.headers[2].descript = _('price excl. taxes')
+                details.headers[7].descript = _('total excl. taxes')
             elif Params.getvalue("invoice-vat-mode") == 2:
-                details.headers[2] = XferCompHeader(details.headers[2].name, _('price incl. taxes'),
-                                                    details.headers[2].type, details.headers[2].orderable)
-                details.headers[7] = XferCompHeader(details.headers[7].name, _('total incl. taxes'),
-                                                    details.headers[7].type, details.headers[7].orderable)
+                details.headers[2].descript = _('price incl. taxes')
+                details.headers[7].descript = _('total incl. taxes')
             xfer.get_components('total_excltax').description = _('total excl. taxes')
             xfer.filltab_from_model(1, xfer.get_max_row() + 1, True, [((_('VTA sum'), 'vta_sum'), (_('total incl. taxes'), 'total_incltax'))])
         if self.item.status == 0:

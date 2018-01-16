@@ -130,11 +130,9 @@ class BillList(XferListEditor):
         grid = self.get_components(self.field_id)
         grid.colspan = 3
         if Params.getvalue("invoice-vat-mode") == 1:
-            grid.headers[5] = XferCompHeader(grid.headers[5].name, _('total excl. taxes'),
-                                             grid.headers[5].type, grid.headers[5].orderable)
+            grid.headers[5].descript = _('total excl. taxes')
         elif Params.getvalue("invoice-vat-mode") == 2:
-            grid.headers[5] = XferCompHeader(grid.headers[5].name, _('total incl. taxes'),
-                                             grid.headers[5].type, grid.headers[5].orderable)
+            grid.headers[5].descript = _('total incl. taxes')
 
 
 @MenuManage.describ('invoice.change_bill', FORMTYPE_NOMODAL, 'invoice', _('To find a bill following a set of criteria.'))
