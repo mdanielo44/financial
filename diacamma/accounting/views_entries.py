@@ -93,18 +93,19 @@ class EntryAccountList(XferListEditor):
         self._filter_by_journal()
         self._filter_by_nature()
 
-    def get_items_from_filter(self):
-        items = XferListEditor.get_items_from_filter(self)
-        # items = items.extra(select={'credit':'abs(amount)','debit':'-1*abs(amount)'}).all()
-        return items
-
     def fillresponse_body(self):
+        lineorder = self.getparam('GRID_ORDER%entryline', ())
+        self.params['GRID_ORDER%entryline'] = ','.join([item.replace('entry_account', 'account__code').replace('designation_ref', 'entry__designation') for item in lineorder])
         self.model = EntryLineAccount
         self.field_id = 'entryline'
         XferListEditor.fillresponse_body(self)
         grid = self.get_components('entryline')
+        grid.get_header('entry_account').orderable = 1
+        grid.get_header('designation_ref').orderable = 1
         grid.actions = []
         grid.add_action_notified(self, model=EntryAccount)
+        grid.order_list = lineorder
+        self.params['GRID_ORDER%entryline'] = ','.join(lineorder)
         self.model = EntryAccount
 
     def fillresponse(self):
@@ -129,8 +130,19 @@ class EntryAccountSearch(XferSavedCriteriaSearchEditor):
         XferSavedCriteriaSearchEditor.__init__(self)
 
     def fillresponse(self):
+        lineorder = self.getparam('GRID_ORDER%entryline', ())
+        self.params['GRID_ORDER%entryline'] = ','.join([item.replace('entry_account', 'account__code').replace('designation_ref', 'entry__designation') for item in lineorder])
         XferSavedCriteriaSearchEditor.fillresponse(self)
+        grid = self.get_components('entryline')
+        grid.get_header('entry_account').orderable = 1
+        grid.get_header('designation_ref').orderable = 1
+        grid.actions = []
+        self.item = EntryAccount()
+        self.item.year = FiscalYear()
         self.model = EntryAccount
+        grid.add_action_notified(self, model=EntryAccount)
+        grid.order_list = lineorder
+        self.params['GRID_ORDER%entryline'] = ','.join(lineorder)
         self.actions = []
         for act, opt in ActionsManage.get_actions(ActionsManage.ACTION_IDENT_LIST, self, key=action_list_sorted):
             self.add_action(act, **opt)
