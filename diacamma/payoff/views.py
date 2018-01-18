@@ -137,6 +137,7 @@ class SupportingThird(XferListEditor):
         comp.set_value(contact_filter)
         comp.set_action(self.request, self.get_action(), modal=FORMTYPE_REFRESH, close=CLOSE_NO)
         comp.set_location(0, 2, 2)
+        comp.is_default = True
         comp.description = _('Filtrer by contact')
         self.add_component(comp)
         self.filter = Q(status=0)

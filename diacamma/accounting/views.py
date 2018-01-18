@@ -87,6 +87,7 @@ class ThirdList(XferListEditor):
         comp.set_action(self.request, self.get_action(), modal=FORMTYPE_REFRESH, close=CLOSE_NO)
         comp.set_location(0, 2, 2)
         comp.description = _('Filtrer by contact')
+        comp.is_default = True
         self.add_component(comp)
 
         edt = XferCompSelect("thirdtype")

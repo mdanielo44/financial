@@ -218,6 +218,7 @@ class StorageSituation(XferListEditor):
         edt = XferCompEdit("ref_filter")
         edt.set_value(ref_filter)
         edt.set_location(0, 5)
+        edt.is_default = True
         edt.description = _('ref./designation')
         edt.set_action(self.request, self.get_action(), modal=FORMTYPE_REFRESH, close=CLOSE_NO)
         self.add_component(edt)
@@ -332,6 +333,7 @@ class StorageHistoric(XferListEditor):
         edt = XferCompEdit("ref_filter")
         edt.set_value(ref_filter)
         edt.set_location(0, 5)
+        edt.is_default = True
         edt.description = _('ref./designation')
         edt.set_action(self.request, self.get_action(), modal=FORMTYPE_REFRESH, close=CLOSE_NO)
         self.add_component(edt)

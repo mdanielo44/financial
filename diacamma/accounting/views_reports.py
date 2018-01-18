@@ -193,6 +193,7 @@ class FiscalYearReport(XferContainerCustom):
             filtercode = self.getparam('filtercode', '')
             edt = XferCompEdit('filtercode')
             edt.set_value(filtercode)
+            edt.is_default = True
             edt.description = _("Accounting code starting with")
             edt.set_location(1, 3, 3)
             edt.set_action(self.request, self.__class__.get_action(), close=CLOSE_NO, modal=FORMTYPE_REFRESH)

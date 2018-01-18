@@ -65,6 +65,7 @@ def _add_bill_filter(xfer, row, with_third=False):
         third_filter = xfer.getparam('filter', '')
         comp = XferCompEdit('filter')
         comp.set_value(third_filter)
+        comp.is_default = True
         comp.description = _('Filtrer by third')
         comp.set_action(xfer.request, xfer.get_action(), modal=FORMTYPE_REFRESH, close=CLOSE_NO)
         comp.set_location(0, row)
@@ -391,6 +392,7 @@ class ArticleList(XferListEditor):
         edt = XferCompEdit("ref_filter")
         edt.set_value(ref_filter)
         edt.set_location(0, 4)
+        edt.is_default = True
         edt.description = _('ref./designation')
         edt.set_action(self.request, self.get_action(), modal=FORMTYPE_REFRESH, close=CLOSE_NO)
         self.add_component(edt)
