@@ -507,7 +507,10 @@ class Bill(Supporting):
         return self.date
 
     def entry_links(self):
-        return [self.entry]
+        if self.entry_id is not None:
+            return [self.entry]
+        else:
+            return []
 
     def default_costaccounting(self):
         return self.cost_accounting

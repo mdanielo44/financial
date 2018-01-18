@@ -57,7 +57,7 @@ def remove_accent(text, replace_space=False):
     try:
         import unicodedata
         return ''.join((letter for letter in unicodedata.normalize('NFD', text) if unicodedata.category(letter) != 'Mn'))
-    except:
+    except BaseException:
         return text
 
 
@@ -210,8 +210,22 @@ class Supporting(LucteriosModel):
     def get_current_date(self):
         raise Exception('no implemented!')
 
+    def generate_accountlink(self):
+        if (abs(self.get_total_rest_topay()) < 0.0001) and (self.entry_links() is not None) and (len(self.entry_links()) > 0):
+            try:
+                entryline = []
+                for all_payoff in self.payoff_set.filter(self.payoff_query):
+                    entryline.extend(all_payoff.supporting.entry_links())
+                    entryline.append(all_payoff.entry)
+                entryline = list(set(entryline))
+                AccountLink.create_link(entryline)
+            except LucteriosException:
+                pass
+
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         self.is_revenu = self.get_final_child().payoff_is_revenu()
+        if not force_insert:
+            self.generate_accountlink()
         return LucteriosModel.save(self, force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields)
 
 
@@ -279,16 +293,8 @@ class Payoff(LucteriosModel):
 
     def generate_accountlink(self):
         supporting = self.supporting.get_final_child()
-        if (self.entry is not None) and (abs(supporting.get_total_rest_topay()) < 0.0001) and (supporting.entry_links() is not None) and (len(supporting.entry_links()) > 0):
-            try:
-                entryline = []
-                for all_payoff in supporting.payoff_set.filter(supporting.payoff_query):
-                    entryline.extend(all_payoff.supporting.entry_links())
-                    entryline.append(all_payoff.entry)
-                entryline = list(set(entryline))
-                AccountLink.create_link(entryline)
-            except LucteriosException:
-                pass
+        if self.entry is not None:
+            supporting.generate_accountlink()
 
     def generate_accounting(self, third_amounts, designation=None):
         supporting = self.supporting.get_final_child()
@@ -683,7 +689,7 @@ class PaymentMethod(LucteriosModel):
     def get_paypal_dict(self, absolute_uri, lang, supporting):
         try:
             from urllib.parse import quote_plus
-        except:
+        except BaseException:
             from urllib import quote_plus
         if abs(supporting.get_payable_without_tax()) < 0.0001:
             raise LucteriosException(IMPORTANT, _("This item can't be validated!"))
@@ -807,8 +813,13 @@ def check_payoff_accounting():
 def payoff_checkparam():
     Parameter.check_and_create(name='payoff-bankcharges-account', typeparam=0, title=_("payoff-bankcharges-account"),
                                args="{'Multi':False}", value='', meta='("accounting","ChartsAccount", Q(type_of_account=4) & Q(year__is_actif=True), "code", False)')
-    Parameter.check_and_create(name='payoff-cash-account', typeparam=0, title=_("payoff-cash-account"),
-                               args="{'Multi':False}", value='', meta='("accounting","ChartsAccount","import diacamma.accounting.tools;django.db.models.Q(code__regex=diacamma.accounting.tools.current_system_account().get_cash_mask()) & django.db.models.Q(year__is_actif=True)", "code", True)')
+    Parameter.check_and_create(
+        name='payoff-cash-account',
+        typeparam=0,
+        title=_("payoff-cash-account"),
+        args="{'Multi':False}",
+        value='',
+        meta='("accounting","ChartsAccount","import diacamma.accounting.tools;django.db.models.Q(code__regex=diacamma.accounting.tools.current_system_account().get_cash_mask()) & django.db.models.Q(year__is_actif=True)", "code", True)')
     Parameter.check_and_create(name='payoff-email-message', typeparam=0, title=_("payoff-email-message"),
                                args="{'Multi':True}", value=_('%(name)s\n\nJoint in this email %(doc)s.\n\nRegards'))
     check_payoff_accounting()
