@@ -29,7 +29,7 @@ from lucterios.contacts.tests_contacts import change_ourdetail
 
 from diacamma.accounting.models import Third, AccountThird, FiscalYear, \
     ChartsAccount, EntryAccount, Journal, AccountLink, \
-    CostAccounting, ModelEntry, ModelLineEntry
+    CostAccounting, ModelEntry, ModelLineEntry, Budget
 from lucterios.CORE.models import Parameter
 from lucterios.CORE.parameters import Params
 from diacamma.accounting.tools import clear_system_account
@@ -183,6 +183,11 @@ def fill_entries(yearid):
     _ = add_entry(yearid, 3, '2015-02-21', 'vente 2', '-1|10|0|125.970000|0|None|\n-2|1|5|125.970000|0|None|', True)  # 18 19
     _ = add_entry(yearid, 3, '2015-02-24', 'vente 3', '-1|10|0|34.010000|0|None|\n-2|1|4|34.010000|0|None|')  # 20 21
     _ = add_entry(yearid, 5, '2015-02-20', 'Frais bancaire', '-1|2|0|-12.340000|0|None|\n-2|15|0|12.340000|1|None|', True)  # 22 23 - cost 1
+    Budget.objects.create(year_id=yearid, code='701', amount=67.89)
+    Budget.objects.create(year_id=yearid, code='707', amount=123.45)
+    Budget.objects.create(year_id=yearid, code='601', amount=8.19)
+    Budget.objects.create(year_id=yearid, code='602', amount=7.35)
+    Budget.objects.create(year_id=yearid, code='604', amount=6.24)
     AccountLink.create_link([entry2, entry3])
     AccountLink.create_link([entry4, entry5])
     AccountLink.create_link([entry7, entry8])

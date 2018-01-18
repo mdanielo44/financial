@@ -44,120 +44,8 @@ from diacamma.accounting.models import FiscalYear, format_devise, EntryLineAccou
 from diacamma.accounting.tools import correct_accounting_code,\
     current_system_account
 from lucterios.framework.xferadvance import TITLE_PRINT, TITLE_CLOSE
-
-
-def get_spaces(size):
-    return ''.ljust(size, '-').replace('-', '&#160;')
-
-
-def convert_query_to_account(query1, query2=None, query_budget=None, sign_value=None, with_third=False):
-    def credit_debit_way(data_line):
-        if 'account' in data_line.keys():
-            account = ChartsAccount.objects.get(id=data_line['account'])
-            return account.credit_debit_way()
-        elif 'code' in data_line.keys():
-            account_code = correct_accounting_code(data_line['code'])
-            account = ChartsAccount.get_chart_account(account_code)
-            return account.credit_debit_way()
-        return 0
-
-    def check_account(data_line):
-        if 'account' in data_line.keys():
-            account = ChartsAccount.objects.get(id=data_line['account'])
-            account_code = correct_accounting_code(account.code)
-        elif 'code' in data_line.keys():
-            account_code = correct_accounting_code(data_line['code'])
-        if ('third' in data_line.keys()) and (data_line['third'] is not None):
-            account_code = "%s#%s" % (account_code, data_line['third'])
-        if account_code not in dict_account.keys():
-            account = ChartsAccount.get_chart_account(account_code.split('#')[0])
-            if ('third' in data_line.keys()) and (data_line['third'] is not None):
-                third = Third.objects.get(id=data_line['third'])
-                account_title = "[%s %s]" % (account.code, six.text_type(third))
-            else:
-                account_title = account.get_name()
-            dict_account[account_code] = [account_title, None, None]
-            if isinstance(query_budget, list):
-                for _item in query_budget:
-                    dict_account[account_code].append(None)
-            else:
-                dict_account[account_code].append(None)
-        return account_code
-    total1 = 0
-    total2 = None
-    total3 = None
-    dict_account = {}
-    if with_third:
-        fields = ['account', 'third']
-    else:
-        fields = ['account']
-    for data_line in EntryLineAccount.objects.filter(query1).values(*fields).annotate(data_sum=Sum('amount')):
-        if abs(data_line['data_sum']) > 0.001:
-            if sign_value is None:
-                account_code = check_account(data_line)
-                dict_account[account_code][1] = format_devise(data_line['data_sum'], 5)
-                total1 += data_line['data_sum']
-            elif isinstance(sign_value, bool):
-                spec_sign = 1 if sign_value else -1
-                account_code = check_account(data_line)
-                dict_account[account_code][1] = format_devise(spec_sign * credit_debit_way(data_line) * data_line['data_sum'], 5)
-                total1 += spec_sign * credit_debit_way(data_line) * data_line['data_sum']
-            elif (sign_value * credit_debit_way(data_line) * data_line['data_sum'] > 0):
-                account_code = check_account(data_line)
-                dict_account[account_code][1] = format_devise(abs(data_line['data_sum']), 5)
-                total1 += abs(data_line['data_sum'])
-    if query2 is not None:
-        total2 = 0
-        for data_line in EntryLineAccount.objects.filter(query2).values(*fields).annotate(data_sum=Sum('amount')):
-            if abs(data_line['data_sum']) > 0.001:
-                if sign_value is None:
-                    account_code = check_account(data_line)
-                    dict_account[account_code][2] = format_devise(data_line['data_sum'], 5)
-                    total2 += data_line['data_sum']
-                elif isinstance(sign_value, bool):
-                    spec_sign = 1 if sign_value else -1
-                    account_code = check_account(data_line)
-                    dict_account[account_code][2] = format_devise(spec_sign * credit_debit_way(data_line) * data_line['data_sum'], 5)
-                    total2 += spec_sign * credit_debit_way(data_line) * data_line['data_sum']
-                elif (sign_value * credit_debit_way(data_line) * data_line['data_sum'] > 0):
-                    account_code = check_account(data_line)
-                    dict_account[account_code][2] = format_devise(abs(data_line['data_sum']), 5)
-                    total2 += abs(data_line['data_sum'])
-    if isinstance(query_budget, list):
-        query_budget_list = query_budget
-    else:
-        query_budget_list = [query_budget]
-    total_b = []
-    id_dict = 3
-    for query_budget_item in query_budget_list:
-        total3 = 0
-        if query_budget_item is not None:
-            for data_line in Budget.objects.filter(query_budget_item).values('code').annotate(data_sum=Sum('amount')):
-                if abs(data_line['data_sum']) > 0.001:
-                    if sign_value is None:
-                        account_code = check_account(data_line)
-                        dict_account[account_code][id_dict] = format_devise(data_line['data_sum'], 5)
-                        total3 += data_line['data_sum']
-                    elif isinstance(sign_value, bool):
-                        spec_sign = 1 if sign_value else -1
-                        account_code = check_account(data_line)
-                        dict_account[account_code][id_dict] = format_devise(spec_sign * credit_debit_way(data_line) * data_line['data_sum'], 5)
-                        total3 += spec_sign * credit_debit_way(data_line) * data_line['data_sum']
-                    elif (sign_value * credit_debit_way(data_line) * data_line['data_sum'] > 0):
-                        account_code = check_account(data_line)
-                        dict_account[account_code][id_dict] = format_devise(abs(data_line['data_sum']), 5)
-                        total3 += abs(data_line['data_sum'])
-        id_dict += 1
-        total_b.append(total3)
-    if isinstance(query_budget, list):
-        total3 = total_b
-    else:
-        total3 = total_b[0]
-    res = []
-    keys = sorted(dict_account.keys())
-    for key in keys:
-        res.append(dict_account[key])
-    return res, total1, total2, total3
+from diacamma.accounting.tools_reports import get_spaces,\
+    convert_query_to_account
 
 
 class FiscalYearReport(XferContainerCustom):
@@ -411,27 +299,7 @@ class FiscalYearBalanceSheet(FiscalYearReport):
                 'right_n_1', self.item.last_fiscalyear.get_identify())
 
     def calcul_table(self):
-        cash_filter = Q(account__code__regex=current_system_account().get_cash_mask())
-        data_line_left, total1_lefta, total2_lefta, _b_left = convert_query_to_account(self.filter & cash_filter,
-                                                                                       self.lastfilter & cash_filter if self.lastfilter is not None else None,
-                                                                                       None)
-        left_line_idx = self.fill_grid(0, 'left', data_line_left)
-
-        other_filter = Q(account__type_of_account__in=(0, 1, 2)) & ~cash_filter
-        data_line_left, total1_leftb, total2_leftb, _b_left = convert_query_to_account(self.filter & other_filter,
-                                                                                       self.lastfilter & other_filter if self.lastfilter is not None else None,
-                                                                                       None, sign_value=-1)
-        left_line_idx = self.fill_grid(left_line_idx, 'left', data_line_left)
-        total1_left = total1_lefta + total1_leftb
-        if self.lastfilter is not None:
-            total2_left = total2_lefta + total2_leftb
-        else:
-            total2_left = None
-        data_line_right, total1_right, total2_right, _b_right = convert_query_to_account(self.filter & other_filter,
-                                                                                         self.lastfilter & other_filter if self.lastfilter is not None else None,
-                                                                                         None, sign_value=1)
-        right_line_idx = self.fill_grid(0, 'right', data_line_right)
-        self.add_total_in_grid(False, total1_left, total2_left, 0, total1_right, total2_right, 0, max(left_line_idx, right_line_idx))
+        current_system_account().fill_fiscalyear_balancesheet(self.grid, self.filter, self.lastfilter)
 
 
 @MenuManage.describ('accounting.change_fiscalyear', FORMTYPE_NOMODAL, 'bookkeeping', _('Show income statement for current fiscal year'))

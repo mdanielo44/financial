@@ -29,6 +29,7 @@ from base64 import b64decode
 from datetime import date
 
 from django.utils import six, formats
+from django.db.models import Q
 
 from lucterios.framework.test import LucteriosTest
 from lucterios.framework.xfergraphic import XferContainerAcknowledge
@@ -42,10 +43,11 @@ from diacamma.accounting.views_entries import EntryAccountList, EntryAccountList
 from diacamma.accounting.test_tools import default_compta, initial_thirds, fill_entries
 from diacamma.accounting.views_other import CostAccountingList, CostAccountingClose, CostAccountingAddModify
 from diacamma.accounting.views_reports import FiscalYearBalanceSheet, FiscalYearIncomeStatement, FiscalYearLedger, FiscalYearTrialBalance,\
-    CostAccountingTrialBalance, CostAccountingLedger,\
-    CostAccountingIncomeStatement
+    CostAccountingTrialBalance, CostAccountingLedger, CostAccountingIncomeStatement
 from diacamma.accounting.views_admin import FiscalYearExport
 from diacamma.accounting.models import FiscalYear
+from diacamma.accounting.tools_reports import get_totalaccount_for_query,\
+    get_totalbudget_for_query
 
 
 class CompletedEntryTest(LucteriosTest):
@@ -258,6 +260,46 @@ class CompletedEntryTest(LucteriosTest):
         self.assertEqual(content_csv[3].strip(), '"N°";"date d\'écriture";"date de pièce";"compte";"nom";"débit";"crédit";"lettrage";')
         self.assertEqual(content_csv[4].strip(), '"4";"%s";"21 février 2015";"[707] 707";"vente 1";"";"70.64€";"E";' % formats.date_format(date.today(), "DATE_FORMAT"))
         self.assertEqual(content_csv[6].strip(), '"---";"---";"24 février 2015";"[707] 707";"vente 3";"";"34.01€";"";')
+
+    def test_report_tool(self):
+        values, total = get_totalaccount_for_query(Q(account__type_of_account=0) & Q(entry__year_id=1))
+        self.assertAlmostEqual(1050.66 + 159.98, total, delta=0.0001)
+        self.assertEqual(3, len(values), values)
+        self.assertAlmostEqual(159.98, values['411'][0], delta=0.0001)
+        self.assertAlmostEqual(1130.29, values['512'][0], delta=0.0001)
+        self.assertAlmostEqual(-79.63, values['531'][0], delta=0.0001)
+        self.assertEqual('[411] 411', values['411'][1])
+        self.assertEqual('[512] 512', values['512'][1])
+        self.assertEqual('[531] 531', values['531'][1])
+
+        values, total = get_totalaccount_for_query(Q(account__code__regex=r'^4[0-9][0-9][0-9a-zA-Z]*$') & Q(entry__year_id=1), 1, True)
+        self.assertAlmostEqual(78.24, total, delta=0.0001)
+        self.assertEqual(1, len(values), values)
+        self.assertAlmostEqual(78.24, values['401#2'][0], delta=0.0001)
+        self.assertEqual('[401 Maximum]', values['401#2'][1])
+
+        values, total = get_totalaccount_for_query(Q(account__code__regex=r'^4[0-9][0-9][0-9a-zA-Z]*$') & Q(entry__year_id=1), -1, True)
+        self.assertAlmostEqual(159.98, total, delta=0.0001)
+        self.assertEqual(2, len(values), values)
+        self.assertAlmostEqual(34.01, values['411#4'][0], delta=0.0001)
+        self.assertAlmostEqual(125.97, values['411#5'][0], delta=0.0001)
+        self.assertEqual('[411 Minimum]', values['411#4'][1])
+        self.assertEqual('[411 Dalton William]', values['411#5'][1])
+
+        values, total = get_totalaccount_for_query(Q(account__type_of_account=3) & Q(entry__year_id=1))
+        self.assertAlmostEqual(230.62, total, delta=0.0001)
+        self.assertEqual(1, len(values), values)
+        self.assertAlmostEqual(230.62, values['707'][0], delta=0.0001)
+        self.assertEqual('[707] 707', values['707'][1])
+
+        values, total = get_totalbudget_for_query(Q(code__regex=r'^6.*$') & Q(year_id=1))
+        self.assertAlmostEqual(21.78, total, delta=0.0001)
+        self.assertAlmostEqual(8.19, values['601'][0], delta=0.0001)
+        self.assertEqual('[601] 601', values['601'][1])
+        self.assertAlmostEqual(7.35, values['602'][0], delta=0.0001)
+        self.assertEqual('[602] 602', values['602'][1])
+        self.assertAlmostEqual(6.24, values['604'][0], delta=0.0001)
+        self.assertEqual('[604] 604', values['604'][1])
 
     def test_costaccounting(self):
         self.factory.xfer = EntryAccountEdit()

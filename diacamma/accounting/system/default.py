@@ -236,5 +236,96 @@ class DefaultSystemAccounting(object):
         self._create_report_third(year)
         return
 
+    def fill_fiscalyear_balancesheet(self, grid, currentfilter, lastfilter):
+        from django.db.models import Q
+        from diacamma.accounting.tools_reports import convert_query_to_account, add_cell_in_grid, add_item_in_grid, fill_grid, get_spaces
+        from diacamma.accounting.tools import format_devise
+        cash_filter = Q(account__code__regex=self.get_cash_mask())
+        third_filter = Q(account__code__regex=self.get_third_mask())
+
+        left_line_idx = 0
+        actif1 = Q(account__type_of_account=0) & ~cash_filter & ~third_filter
+        data_line_left, total1_lefta, total2_lefta, _b_left = convert_query_to_account(currentfilter & actif1, lastfilter & actif1 if lastfilter is not None else None, None)
+        if len(data_line_left) > 0:
+            add_cell_in_grid(grid, left_line_idx, 'left', get_spaces(5) + "{[i]}%s{[/i]}" % _('immobilizations & stock'))
+            left_line_idx += 1
+            left_line_idx = fill_grid(grid, left_line_idx, 'left', data_line_left)
+            add_item_in_grid(grid, left_line_idx, 'left', (get_spaces(10) + "%s" % _('Sub-total'), total1_lefta, total2_lefta, None), "{[i]}%s{[/i]}")
+            left_line_idx += 1
+            add_cell_in_grid(grid, left_line_idx, 'left', '')
+            left_line_idx += 1
+
+        actif2 = third_filter
+        data_line_left, total1_leftb, total2_leftb, _b_left = convert_query_to_account(currentfilter & actif2, lastfilter & actif2 if lastfilter is not None else None, None, sign_value=-1)
+        if len(data_line_left) > 0:
+            add_cell_in_grid(grid, left_line_idx, 'left', get_spaces(5) + "{[i]}%s{[/i]}" % _('receivables'))
+            left_line_idx += 1
+            left_line_idx = fill_grid(grid, left_line_idx, 'left', data_line_left)
+            add_item_in_grid(grid, left_line_idx, 'left', (get_spaces(10) + "%s" % _('Sub-total'), total1_leftb, total2_leftb, None), "{[i]}%s{[/i]}")
+            left_line_idx += 1
+            add_cell_in_grid(grid, left_line_idx, 'left', '')
+            left_line_idx += 1
+
+        actif3 = Q(account__type_of_account=0) & cash_filter
+        data_line_left, total1_leftc, total2_leftc, _b_left = convert_query_to_account(currentfilter & actif3, lastfilter & actif3 if lastfilter is not None else None, None)
+        if len(data_line_left) > 0:
+            add_cell_in_grid(grid, left_line_idx, 'left', get_spaces(5) + "{[i]}%s{[/i]}" % _('values & availabilities'))
+            left_line_idx += 1
+            left_line_idx = fill_grid(grid, left_line_idx, 'left', data_line_left)
+            add_item_in_grid(grid, left_line_idx, 'left', (get_spaces(10) + "%s" % _('Sub-total'), total1_leftc, total2_leftc, None), "{[i]}%s{[/i]}")
+            left_line_idx += 1
+            add_cell_in_grid(grid, left_line_idx, 'left', '')
+            left_line_idx += 1
+
+        right_line_idx = 0
+        passif1 = Q(account__type_of_account=2)
+        data_line_right, total1_righta, total2_righta, _b_right = convert_query_to_account(currentfilter & passif1, lastfilter & passif1 if lastfilter is not None else None, None)
+        if len(data_line_right) > 0:
+            add_cell_in_grid(grid, right_line_idx, 'right', get_spaces(5) + "{[i]}%s{[/i]}" % _('capital'))
+            right_line_idx += 1
+            right_line_idx = fill_grid(grid, right_line_idx, 'right', data_line_right)
+            add_item_in_grid(grid, right_line_idx, 'right', (get_spaces(10) + "%s" % _('Sub-total'), total1_righta, total2_righta, None), "{[i]}%s{[/i]}")
+            right_line_idx += 1
+            add_cell_in_grid(grid, right_line_idx, 'right', '')
+            right_line_idx += 1
+
+        right_line_idx = 0
+        passif2 = third_filter
+        data_line_right, total1_rightb, total2_rightb, _b_right = convert_query_to_account(currentfilter & passif2, lastfilter & passif2 if lastfilter is not None else None, None, sign_value=1)
+        if len(data_line_right) > 0:
+            add_cell_in_grid(grid, right_line_idx, 'right', get_spaces(5) + "{[i]}%s{[/i]}" % _('liabilities'))
+            right_line_idx += 1
+            right_line_idx = fill_grid(grid, right_line_idx, 'right', data_line_right)
+            add_item_in_grid(grid, right_line_idx, 'right', (get_spaces(10) + "%s" % _('Sub-total'), total1_rightb, total2_rightb, None), "{[i]}%s{[/i]}")
+            right_line_idx += 1
+            add_cell_in_grid(grid, right_line_idx, 'right', '')
+            right_line_idx += 1
+
+        total1 = max(total1_lefta + total1_leftb + total1_leftc, total1_righta + total1_rightb)
+        total2 = max(total2_lefta + total2_leftb + total2_leftc, total2_righta + total2_rightb)
+        line_idx = max(right_line_idx, left_line_idx)
+
+        show_left = False
+        show_right = False
+        if (total1_lefta + total1_leftb + total1_leftc) < total1:
+            add_cell_in_grid(grid, line_idx, 'left_n', "{[i]}{[b]}%s{[/b]}{[/i]}" % format_devise(total1 - (total1_lefta + total1_leftb + total1_leftc), 5))
+            show_left = True
+        else:
+            add_cell_in_grid(grid, line_idx, 'right_n', "{[i]}{[b]}%s{[/b]}{[/i]}" % format_devise(total1 - total1_righta + total1_rightb, 5))
+            show_right = True
+        if (total2_lefta + total2_leftb + total2_leftc) < total2:
+            add_cell_in_grid(grid, line_idx, 'left_n_1', "{[i]}{[b]}%s{[/b]}{[/i]}" % format_devise(total2 - (total2_lefta + total2_leftb + total2_leftc), 5))
+            show_left = True
+        else:
+            add_cell_in_grid(grid, line_idx, 'right_n_1', "{[i]}{[b]}%s{[/b]}{[/i]}" % format_devise(total2 - total2_righta + total2_rightb, 5))
+            show_right = True
+        if show_left:
+            add_cell_in_grid(grid, line_idx, 'left', get_spaces(5) + "{[i]}{[b]}%s{[/b]}{[/i]}" % _('result (deficit)'))
+        if show_right:
+            add_cell_in_grid(grid, line_idx, 'right', get_spaces(5) + "{[i]}{[b]}%s{[/b]}{[/i]}" % _('result (profit)'))
+
+        add_item_in_grid(grid, line_idx + 1, 'left', (_('Total'), total1, total2, None), "{[u]}{[b]}%s{[/b]}{[/u]}")
+        add_item_in_grid(grid, line_idx + 1, 'right', (_('Total'), total1, total2, None), "{[u]}{[b]}%s{[/b]}{[/u]}")
+
     def get_export_xmlfiles(self):
         return None

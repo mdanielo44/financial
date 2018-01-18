@@ -553,12 +553,9 @@ class CostAccounting(LucteriosModel):
 class ChartsAccount(LucteriosModel):
     code = models.CharField(_('code'), max_length=50, db_index=True)
     name = models.CharField(_('name'), max_length=200)
-    year = models.ForeignKey('FiscalYear', verbose_name=_(
-        'fiscal year'), null=False, on_delete=models.CASCADE, db_index=True)
+    year = models.ForeignKey('FiscalYear', verbose_name=_('fiscal year'), null=False, on_delete=models.CASCADE, db_index=True)
     type_of_account = models.IntegerField(verbose_name=_('type of account'),
-                                          choices=((0, _('Asset')), (1, _('Liability')), (2, _('Equity')), (3, _(
-                                              'Revenue')), (4, _('Expense')), (5, _('Contra-accounts'))),
-                                          null=True, db_index=True)
+                                          choices=((0, _('Asset')), (1, _('Liability')), (2, _('Equity')), (3, _('Revenue')), (4, _('Expense')), (5, _('Contra-accounts'))), null=True, db_index=True)
 
     @classmethod
     def get_default_fields(cls):
@@ -1293,7 +1290,7 @@ class ModelLineEntry(LucteriosModel):
 
 
 class Budget(LucteriosModel):
-    year = models.ForeignKey('FiscalYear', verbose_name=_('fiscal year'), null=True, default=None, on_delete=models.PROTECT)
+    year = models.ForeignKey('FiscalYear', verbose_name=_('fiscal year'), null=True, default=None, on_delete=models.CASCADE)
     cost_accounting = models.ForeignKey('CostAccounting', verbose_name=_('cost accounting'), null=True, default=None, on_delete=models.PROTECT)
     code = models.CharField(_('account'), max_length=50)
     amount = models.FloatField(_('amount'), default=0)

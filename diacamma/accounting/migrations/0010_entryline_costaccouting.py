@@ -22,4 +22,9 @@ class Migration(migrations.Migration):
             name='costaccounting',
             field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.PROTECT, to='accounting.CostAccounting', verbose_name='cost accounting'),
         ),
+        migrations.AlterField(
+            model_name='budget',
+            name='year',
+            field=models.ForeignKey(default=None, null=True, on_delete=django.db.models.deletion.CASCADE, to='accounting.FiscalYear', verbose_name='fiscal year'),
+        ),
     ]
