@@ -36,8 +36,7 @@ from lucterios.framework.xferadvance import XferListEditor, XferAddEditor, XferS
     TITLE_ADD, TITLE_EDIT, TITLE_DELETE, TITLE_OK, TITLE_CANCEL, XferTransition
 from lucterios.framework.xfergraphic import XferContainerAcknowledge
 from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompEdit, XferCompButton, XferCompSelect, XferCompImage, XferCompDate, XferCompGrid
-from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage, FORMTYPE_REFRESH, CLOSE_NO, WrapAction, FORMTYPE_MODAL, SELECT_SINGLE,\
-    SELECT_MULTI, SELECT_NONE
+from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage, FORMTYPE_REFRESH, CLOSE_NO, WrapAction, FORMTYPE_MODAL, SELECT_SINGLE, SELECT_MULTI, SELECT_NONE, CLOSE_YES
 from lucterios.framework.error import LucteriosException
 from lucterios.CORE.xferprint import XferPrintListing
 from lucterios.CORE.editors import XferSavedCriteriaSearchEditor
@@ -195,6 +194,18 @@ class ThirdAdd(ContactSelection):
     select_class = ThirdSave
     model = Third
 
+    def fillresponse(self):
+        ContactSelection.fillresponse(self)
+        grid = self.get_components(self.field_id)
+        for action_idx in range(0,len(grid.actions)):
+            if grid.actions[action_idx][0].icon_path.endswith('images/add.png'):
+                params = grid.actions[action_idx][4]
+                if params is None:
+                    params = {}
+                params['URL_TO_REDIRECT'] = self.select_class.url_text
+                params['pkname'] = self.field_id
+                grid.actions[action_idx] = (grid.actions[action_idx][0], grid.actions[action_idx][1], CLOSE_YES, grid.actions[action_idx][3]
+, params)   
 
 @ActionsManage.affect_show(TITLE_EDIT, "images/edit.png", condition=lambda xfer: len(Third.get_fields_to_show()) > 0)
 @MenuManage.describ('accounting.add_third')

@@ -29,7 +29,7 @@ from django.utils import six
 
 from lucterios.framework.editors import LucteriosEditor
 from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompButton, \
-    XferCompEdit, XferCompMemo, XferCompSelect, XferCompCheck
+    XferCompEdit, XferCompMemo, XferCompSelect, XferCompCheck, XferCompLinkLabel
 from lucterios.CORE.parameters import Params
 from lucterios.framework.tools import ActionsManage, CLOSE_NO, FORMTYPE_REFRESH, FORMTYPE_MODAL, WrapAction
 from lucterios.framework.error import LucteriosException, IMPORTANT
@@ -50,6 +50,19 @@ class SupportingEditor(LucteriosEditor):
         xfer.params['supporting'] = self.item.id
         third = xfer.get_components('third')
         third.colspan -= 1
+        if (self.item.third_id is not None) and (self.item.third.contact.email != ''):
+            xfer.remove_component('third')
+            new_third = XferCompLinkLabel('third')
+            new_third.set_value(six.text_type(self.item.third))
+            new_third.tab = third.tab
+            new_third.col = third.col
+            new_third.row = third.row
+            new_third.colspan = third.colspan
+            new_third.rowspan = third.rowspan
+            new_third.description = third.description
+            new_third.set_link('mailto:' + self.item.third.contact.email)
+            xfer.add_component(new_third)
+            third = new_third
         if WrapAction.is_permission(xfer.request, right):
             btn = XferCompButton('change_third')
             btn.set_is_mini(True)
