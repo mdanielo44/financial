@@ -25,7 +25,7 @@ from __future__ import unicode_literals
 from datetime import date
 
 from django.utils.translation import ugettext_lazy as _
-from django.db.models import Q
+from django.db.models import Q, F
 
 from lucterios.framework.xferadvance import XferShowEditor, XferDelete, XferSave, TITLE_LISTING, TITLE_DELETE, TITLE_OK, TITLE_CANCEL, TITLE_CLOSE, TITLE_MODIFY,\
     TITLE_EDIT, TITLE_ADD
@@ -41,6 +41,8 @@ from lucterios.CORE.editors import XferSavedCriteriaSearchEditor
 from lucterios.CORE.parameters import Params
 
 from diacamma.accounting.models import EntryLineAccount, EntryAccount, FiscalYear, Journal, AccountLink, current_system_account, CostAccounting, ModelEntry
+from django.db.models.expressions import Case, When, ExpressionWrapper
+from django.db.models.fields import DecimalField
 
 
 @MenuManage.describ('accounting.change_entryaccount', FORMTYPE_NOMODAL, 'bookkeeping', _('Edition of accounting entry for current fiscal year'),)
@@ -49,6 +51,12 @@ class EntryAccountList(XferListEditor):
     model = EntryAccount
     field_id = '???'
     caption = _("accounting entries")
+
+    def get_items_from_filter(self):
+        items = XferListEditor.get_items_from_filter(self)
+        items = items.annotate(cdway=Case(When(account__type_of_account__in=(0, 4), then=-1), default=1, output_field=DecimalField()))
+        items = items.annotate(credit_num=ExpressionWrapper(F('amount') * F('cdway'), output_field=DecimalField()), debit_num=ExpressionWrapper(-1 * F('amount') * F('cdway'), output_field=DecimalField()))
+        return items
 
     def _filter_by_year(self):
         select_year = self.getparam('year')
@@ -95,13 +103,15 @@ class EntryAccountList(XferListEditor):
 
     def fillresponse_body(self):
         lineorder = self.getparam('GRID_ORDER%entryline', ())
-        self.params['GRID_ORDER%entryline'] = ','.join([item.replace('entry_account', 'account__code').replace('designation_ref', 'entry__designation') for item in lineorder])
+        self.params['GRID_ORDER%entryline'] = ','.join([item.replace('entry_account', 'account__code').replace('designation_ref', 'entry__designation').replace('debit', 'debit_num').replace('credit', 'credit_num') for item in lineorder])
         self.model = EntryLineAccount
         self.field_id = 'entryline'
         XferListEditor.fillresponse_body(self)
         grid = self.get_components('entryline')
         grid.get_header('entry_account').orderable = 1
         grid.get_header('designation_ref').orderable = 1
+        grid.get_header('debit').orderable = 1
+        grid.get_header('credit').orderable = 1
         grid.actions = []
         grid.add_action_notified(self, model=EntryAccount)
         grid.order_list = lineorder
@@ -129,13 +139,20 @@ class EntryAccountSearch(XferSavedCriteriaSearchEditor):
         self.field_id = 'entryline'
         XferSavedCriteriaSearchEditor.__init__(self)
 
+    def filter_items(self):
+        XferSavedCriteriaSearchEditor.filter_items(self)
+        self.items = self.items.annotate(cdway=Case(When(account__type_of_account__in=(0, 4), then=-1), default=1, output_field=DecimalField()))
+        self.items = self.items.annotate(credit_num=ExpressionWrapper(F('amount') * F('cdway'), output_field=DecimalField()), debit_num=ExpressionWrapper(-1 * F('amount') * F('cdway'), output_field=DecimalField()))
+
     def fillresponse(self):
         lineorder = self.getparam('GRID_ORDER%entryline', ())
-        self.params['GRID_ORDER%entryline'] = ','.join([item.replace('entry_account', 'account__code').replace('designation_ref', 'entry__designation') for item in lineorder])
+        self.params['GRID_ORDER%entryline'] = ','.join([item.replace('entry_account', 'account__code').replace('designation_ref', 'entry__designation').replace('debit', 'debit_num').replace('credit', 'credit_num') for item in lineorder])
         XferSavedCriteriaSearchEditor.fillresponse(self)
         grid = self.get_components('entryline')
         grid.get_header('entry_account').orderable = 1
         grid.get_header('designation_ref').orderable = 1
+        grid.get_header('debit').orderable = 1
+        grid.get_header('credit').orderable = 1
         grid.actions = []
         self.item = EntryAccount()
         self.item.year = FiscalYear()
