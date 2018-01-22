@@ -197,15 +197,15 @@ class ThirdAdd(ContactSelection):
     def fillresponse(self):
         ContactSelection.fillresponse(self)
         grid = self.get_components(self.field_id)
-        for action_idx in range(0,len(grid.actions)):
+        for action_idx in range(0, len(grid.actions)):
             if grid.actions[action_idx][0].icon_path.endswith('images/add.png'):
                 params = grid.actions[action_idx][4]
                 if params is None:
                     params = {}
                 params['URL_TO_REDIRECT'] = self.select_class.url_text
                 params['pkname'] = self.field_id
-                grid.actions[action_idx] = (grid.actions[action_idx][0], grid.actions[action_idx][1], CLOSE_YES, grid.actions[action_idx][3]
-, params)   
+                grid.actions[action_idx] = (grid.actions[action_idx][0], grid.actions[action_idx][1], CLOSE_YES, grid.actions[action_idx][3], params)
+
 
 @ActionsManage.affect_show(TITLE_EDIT, "images/edit.png", condition=lambda xfer: len(Third.get_fields_to_show()) > 0)
 @MenuManage.describ('accounting.add_third')

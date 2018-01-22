@@ -204,21 +204,24 @@ class EntryAccountDel(XferDelete):
 class EntryAccountClose(XferContainerAcknowledge):
     icon = "entry.png"
     model = EntryAccount
-    field_id = '???'
+    field_id = 'entryaccount'
     caption = _("Close accounting entry")
 
     def _search_model(self):
-        if self.getparam('entryline') is not None:
+        if (self.getparam('entryline') is not None) and (self.getparam('entryaccount') is None):
             entryline = self.getparam('entryline', ())
             self.items = EntryAccount.objects.filter(entrylineaccount__id__in=entryline).distinct()
         else:
-            XferDelete._search_model(self)
+            XferContainerAcknowledge._search_model(self)
 
     def fillresponse(self):
         if (len(self.items) > 0) and self.confirme(_("Do you want to close this entry?")):
             for item in self.items:
                 item.closed()
         if (len(self.items) == 1) and (self.getparam('REOPEN') == 'YES'):
+            if 'entryline' in self.params.keys():
+                del self.params['entryline']
+            self.params['entryaccount'] = self.items[0].id
             self.redirect_action(EntryAccountOpenFromLine.get_action())
 
 
@@ -235,7 +238,7 @@ class EntryAccountLink(XferContainerAcknowledge):
             entryline = self.getparam('entryline', ())
             self.items = EntryAccount.objects.filter(entrylineaccount__id__in=entryline).distinct()
         else:
-            XferDelete._search_model(self)
+            XferContainerAcknowledge._search_model(self)
 
     def fillresponse(self):
         if self.items is None:
@@ -257,14 +260,14 @@ class EntryAccountCostAccounting(XferContainerAcknowledge):
     caption = _("cost accounting for entry")
 
     def _search_model(self):
-        if self.getparam('entryline') is not None:
-            entryline = self.getparam('entryline', ())
+        if (self.getparam('entryline') is not None) or (self.getparam('entrylineaccount') is not None):
+            entryline = self.getparam('entryline', self.getparam('entrylineaccount', ()))
             self.model = EntryLineAccount
             self.items = EntryLineAccount.objects.filter(Q(id__in=entryline) & Q(account__type_of_account__in=(3, 4, 5)) & (Q(costaccounting__isnull=True) | Q(costaccounting__status=0)))
             if len(self.items) > 0:
                 self.item = self.items[0]
         else:
-            XferDelete._search_model(self)
+            XferContainerAcknowledge._search_model(self)
 
     def fillresponse(self, cost_accounting_id=0):
         if len(self.items) == 0:
@@ -306,7 +309,7 @@ class EntryAccountCostAccounting(XferContainerAcknowledge):
 class EntryAccountOpenFromLine(XferContainerAcknowledge):
     icon = "entry.png"
     model = EntryAccount
-    field_id = '???'
+    field_id = 'entryaccount'
     caption = _("accounting entries")
 
     def _search_model(self):
@@ -315,7 +318,7 @@ class EntryAccountOpenFromLine(XferContainerAcknowledge):
             self.item = EntryAccount.objects.get(entrylineaccount__id=entryline)
             self.params['entryaccount'] = self.item.id
         else:
-            XferDelete._search_model(self)
+            XferContainerAcknowledge._search_model(self)
 
     def fillresponse(self, field_id='', entryline=0):
         if field_id != '':

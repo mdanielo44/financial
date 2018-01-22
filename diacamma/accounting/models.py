@@ -1099,7 +1099,7 @@ class EntryLineAccount(LucteriosModel):
             new_entry_line.third = None
         else:
             new_entry_line.third = Third.objects.get(id=thirdid)
-        if costaccountingid == 0:
+        if (costaccountingid == 0) or (new_entry_line.account.type_of_account not in (3, 4, 5)):
             new_entry_line.costaccounting = None
         else:
             new_entry_line.costaccounting = CostAccounting.objects.get(id=costaccountingid)
@@ -1121,7 +1121,7 @@ class EntryLineAccount(LucteriosModel):
         else:
             new_entry_line.third = Third.objects.get(id=int(serial_vals[2]))
         new_entry_line.amount = float(serial_vals[3])
-        if int(serial_vals[4]) == 0:
+        if (int(serial_vals[4]) == 0) or (new_entry_line.account.type_of_account not in (3, 4, 5)):
             new_entry_line.costaccounting = None
         else:
             new_entry_line.costaccounting = CostAccounting.objects.get(id=int(serial_vals[4]))
