@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-01-18 21:32+0000\n"
+"POT-Creation-Date: 2018-02-01 15:45+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,23 +21,23 @@ msgstr ""
 msgid "Diacamma payoff"
 msgstr "Diacamma payoff"
 
-#: editors.py:112
+#: editors.py:138
 msgid "payoff null!"
 msgstr "payoff null!"
 
-#: editors.py:127 models.py:405
+#: editors.py:153 models.py:405
 msgid "No-valid selection!"
 msgstr "No-valid selection!"
 
-#: editors.py:152
+#: editors.py:178
 msgid "by ratio"
 msgstr "by ratio"
 
-#: editors.py:152
+#: editors.py:178
 msgid "by date"
 msgstr "by date"
 
-#: editors.py:154
+#: editors.py:180
 msgid "repartition mode"
 msgstr "repartition mode"
 

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-01-18 21:32+0000\n"
+"POT-Creation-Date: 2018-02-01 15:45+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -85,12 +85,12 @@ msgstr "Report à nouveau - Bilan"
 msgid "Retained earnings - Third party debt"
 msgstr "Report à nouveau - Dette tiers"
 
-#: system/default.py:252
+#: system/default.py:250
 msgid "immobilizations & stock"
 msgstr "immobilisatons & stock"
 
-#: system/default.py:255 system/default.py:264 system/default.py:273
-#: system/default.py:283 system/default.py:293
+#: system/default.py:253 system/default.py:264 system/default.py:275
+#: system/default.py:287 system/default.py:299
 msgid "Sub-total"
 msgstr "Sous-total"
 
@@ -98,26 +98,26 @@ msgstr "Sous-total"
 msgid "receivables"
 msgstr "créances"
 
-#: system/default.py:270
+#: system/default.py:272
 msgid "values & availabilities"
 msgstr "Valeurs et disponibilités"
 
-#: system/default.py:280
+#: system/default.py:284
 msgid "capital"
 msgstr "capital"
 
-#: system/default.py:290
+#: system/default.py:296
 msgid "liabilities"
 msgstr "dettes"
 
-#: system/default.py:315
+#: system/default.py:323
 msgid "result (deficit)"
 msgstr "résultat (déficit)"
 
-#: system/default.py:317
+#: system/default.py:325
 msgid "result (profit)"
 msgstr "résultat (bénéfice)"
 
-#: system/default.py:319 system/default.py:320
+#: system/default.py:327 system/default.py:328
 msgid "Total"
 msgstr "Total"

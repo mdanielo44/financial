@@ -263,6 +263,8 @@ class DetailEditor(LucteriosEditor, DetailFilter):
 
         if self.item.article_id is None:
             xfer.remove_component("show_art")
+        elif self.item.article.isInteger:
+            xfer.get_components('quantity').prec = 0
 
         if (self.item.article_id is None) or (self.item.article.stockable == 0):
             xfer.remove_component("storagearea")
@@ -336,5 +338,7 @@ class StorageDetailEditor(LucteriosEditor, DetailFilter):
                 lbl.description = _('max quantity')
                 xfer.add_component(lbl)
                 xfer.get_components('quantity').max = max_qty
+        if (self.item.article_id is not None) and self.item.article.isInteger:
+            xfer.get_components('quantity').prec = 0
         sel_art = xfer.get_components('article')
         DetailFilter.edit_filter(self, xfer, sel_art)

@@ -40,7 +40,7 @@ class Migration(migrations.Migration):
             name='Provider',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('reference', models.CharField(max_length=50, verbose_name='reference')),
+                ('reference', models.CharField(max_length=50, verbose_name='ref. provider')),
                 ('article', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='invoice.Article', verbose_name='article')),
                 ('third', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='accounting.Third', verbose_name='third')),
             ],

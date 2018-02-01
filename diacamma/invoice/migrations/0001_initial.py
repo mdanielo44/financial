@@ -31,7 +31,7 @@ class Migration(migrations.Migration):
                     auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(verbose_name='name', max_length=20)),
                 ('rate', models.DecimalField(validators=[MinValueValidator(0.0), MaxValueValidator(
-                    100.0)], decimal_places=2, max_digits=6, verbose_name='rate', default=10.0)),
+                    99.9)], decimal_places=2, max_digits=6, verbose_name='rate', default=10.0)),
                 ('isactif', models.BooleanField(
                     verbose_name='is actif', default=True)),
             ],

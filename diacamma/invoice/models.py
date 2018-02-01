@@ -141,14 +141,13 @@ class Article(LucteriosModel, CustomizeObject):
                                 default=0.0, validators=[MinValueValidator(0.0),
                                                          MaxValueValidator(9999999.999)])
     unit = models.CharField(_('unit'), null=True, default='', max_length=10)
-    isdisabled = models.BooleanField(
-        verbose_name=_('is disabled'), default=False)
+    isdisabled = models.BooleanField(verbose_name=_('is disabled'), default=False)
     sell_account = models.CharField(_('sell account'), max_length=50)
-    vat = models.ForeignKey(Vat, verbose_name=_('vat'), null=True,
-                            default=None, on_delete=models.PROTECT)
+    vat = models.ForeignKey(Vat, verbose_name=_('vat'), null=True, default=None, on_delete=models.PROTECT)
     stockable = models.IntegerField(verbose_name=_('stockable'),
                                     choices=((0, _('no stockable')), (1, _('stockable')), (2, _('stockable & no marketable'))), null=False, default=0, db_index=True)
     categories = models.ManyToManyField(Category, verbose_name=_('categories'), blank=True)
+    isInteger = models.BooleanField(verbose_name=_('integer quantity'), default=True)
 
     def __str__(self):
         return six.text_type(self.reference)
@@ -174,7 +173,7 @@ class Article(LucteriosModel, CustomizeObject):
 
     @classmethod
     def get_edit_fields(cls):
-        fields = {_('001@Description'): ["reference", "designation", ("price", "unit"), ("sell_account", 'vat'), ("stockable", "isdisabled")]}
+        fields = {_('001@Description'): ["reference", "designation", ("price", "unit"), ("sell_account", 'vat'), ("stockable", "isdisabled"), ("isInteger",)]}
         if len(Category.objects.all()) > 0:
             fields[_('002@Extra')] = ['categories']
         return fields
@@ -182,7 +181,7 @@ class Article(LucteriosModel, CustomizeObject):
     @classmethod
     def get_show_fields(cls):
         fields = {'': ["reference"]}
-        fields_desc = ["designation", ("price", "unit"), ("sell_account", 'vat'), ("stockable", "isdisabled")]
+        fields_desc = ["designation", ("price", "unit"), ("sell_account", 'vat'), ("stockable", "isdisabled"), ("isInteger",)]
         fields_desc.extend(cls.get_fields_to_show())
         if len(Category.objects.all()) > 0:
             fields_desc.append('categories')
@@ -193,7 +192,7 @@ class Article(LucteriosModel, CustomizeObject):
 
     @classmethod
     def get_search_fields(cls):
-        fields = ["reference", "designation", "price", "unit", "sell_account", 'vat', "stockable", "isdisabled"]
+        fields = ["reference", "designation", "price", "unit", "sell_account", 'vat', "stockable", "isdisabled", "isInteger"]
         for cf_name, cf_model in CustomField.get_fields(cls):
             fields.append((cf_name, cf_model.get_field(), 'articlecustomfield__value', Q(articlecustomfield__field__id=cf_model.id)))
         if len(Category.objects.all()) > 0:
@@ -206,7 +205,7 @@ class Article(LucteriosModel, CustomizeObject):
 
     @classmethod
     def get_import_fields(cls):
-        fields = ["reference", "designation", "price", "unit", "sell_account", 'vat', "stockable", "isdisabled"]
+        fields = ["reference", "designation", "price", "unit", "sell_account", 'vat', "stockable", "isdisabled", "isInteger"]
         if len(Category.objects.all()) > 0:
             fields.append('categories')
         if len(Provider().third_query) > 0:
