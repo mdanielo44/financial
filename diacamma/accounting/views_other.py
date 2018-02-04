@@ -57,6 +57,7 @@ class CostAccountingDefault(XferContainerAcknowledge):
     model = CostAccounting
     field_id = 'costaccounting'
     caption = _("Default")
+    readonly = True
 
     def fillresponse(self):
         self.item.change_has_default()

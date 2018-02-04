@@ -447,8 +447,8 @@ class FiscalYearTrialBalance(FiscalYearReport):
             fields = ['account', 'third']
         else:
             fields = ['account']
-        data_line_positifs = list(EntryLineAccount.objects.filter(self.filter & Q(amount__gt=0)).values(*fields).annotate(data_sum=Sum('amount')))
-        data_line_negatifs = list(EntryLineAccount.objects.filter(self.filter & Q(amount__lt=0)).values(*fields).annotate(data_sum=Sum('amount')))
+        data_line_positifs = list(EntryLineAccount.objects.filter(self.filter & Q(amount__gt=0)).order_by(*fields).values(*fields).annotate(data_sum=Sum('amount')))
+        data_line_negatifs = list(EntryLineAccount.objects.filter(self.filter & Q(amount__lt=0)).order_by(*fields).values(*fields).annotate(data_sum=Sum('amount')))
         for data_line in data_line_positifs + data_line_negatifs:
             if abs(data_line['data_sum']) > 0.0001:
                 account = ChartsAccount.objects.get(id=data_line['account'])
