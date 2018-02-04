@@ -687,10 +687,7 @@ class PaymentMethod(LucteriosModel):
         return formTxt
 
     def get_paypal_dict(self, absolute_uri, lang, supporting):
-        try:
-            from urllib.parse import quote_plus
-        except BaseException:
-            from urllib import quote_plus
+        from urllib.parse import quote_plus
         if abs(supporting.get_payable_without_tax()) < 0.0001:
             raise LucteriosException(IMPORTANT, _("This item can't be validated!"))
         abs_url = absolute_uri.split('/')

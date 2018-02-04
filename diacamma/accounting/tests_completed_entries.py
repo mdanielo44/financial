@@ -719,6 +719,21 @@ class CompletedEntryTest(LucteriosTest):
         self.calljson('/diacamma.accounting/fiscalYearBalanceSheet', {}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'fiscalYearBalanceSheet')
         self._check_result()
+        self.assert_count_equal('report_1', 11)
+        self.assert_json_equal('', 'report_1/@1/left', '[411] 411')
+        self.assert_json_equal('', 'report_1/@1/left_n', '159.98€')
+
+        self.assert_json_equal('', 'report_1/@5/left', '[512] 512')
+        self.assert_json_equal('', 'report_1/@5/left_n', '1130.29€')
+
+        self.assert_json_equal('', 'report_1/@6/left', '[531] 531')
+        self.assert_json_equal('', 'report_1/@6/left_n', '-79.63€')
+
+        self.assert_json_equal('', 'report_1/@1/right', '[106] 106')
+        self.assert_json_equal('', 'report_1/@1/right_n', '1250.38€')
+
+        self.assert_json_equal('', 'report_1/@5/right', '[401] 401')
+        self.assert_json_equal('', 'report_1/@5/right_n', '78.24€')
 
     def test_fiscalyear_balancesheet_filter(self):
         self.factory.xfer = FiscalYearBalanceSheet()
@@ -731,6 +746,28 @@ class CompletedEntryTest(LucteriosTest):
         self.calljson('/diacamma.accounting/fiscalYearIncomeStatement', {}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'fiscalYearIncomeStatement')
         self._check_result()
+        self.assert_count_equal('report_1', 8)
+
+        self.assert_json_equal('', 'report_1/@0/left', '[601] 601')
+        self.assert_json_equal('', 'report_1/@0/left_n', '78.24€')
+
+        self.assert_json_equal('', 'report_1/@1/left', '[602] 602')
+        self.assert_json_equal('', 'report_1/@1/left_n', '63.94€')
+
+        self.assert_json_equal('', 'report_1/@2/left', '[604] 604')
+        self.assert_json_equal('', 'report_1/@2/left_n', '0.00€')
+
+        self.assert_json_equal('', 'report_1/@3/left', '[607] 607')
+        self.assert_json_equal('', 'report_1/@3/left_n', '194.08€')
+
+        self.assert_json_equal('', 'report_1/@4/left', '[627] 627')
+        self.assert_json_equal('', 'report_1/@4/left_n', '12.34€')
+
+        self.assert_json_equal('', 'report_1/@0/right', '[701] 701')
+        self.assert_json_equal('', 'report_1/@0/right_n', '0.00€')
+
+        self.assert_json_equal('', 'report_1/@1/right', '[707] 707')
+        self.assert_json_equal('', 'report_1/@1/right_n', '230.62€')
 
     def test_fiscalyear_incomestatement_filter(self):
         self.factory.xfer = FiscalYearIncomeStatement()

@@ -24,6 +24,7 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
 from re import match
+import logging
 from datetime import date
 
 from django.db import models
@@ -41,14 +42,11 @@ from lucterios.framework.error import LucteriosException, IMPORTANT, GRAVE
 from lucterios.framework.signal_and_lock import Signal
 from lucterios.CORE.models import Parameter
 from lucterios.CORE.parameters import Params
-
-from diacamma.accounting.models import FiscalYear, Third, EntryAccount, \
-    CostAccounting, Journal, EntryLineAccount, ChartsAccount, AccountThird
-from diacamma.accounting.tools import current_system_account, format_devise, \
-    currency_round, correct_accounting_code
-from diacamma.payoff.models import Supporting
-import logging
 from lucterios.contacts.models import CustomField, CustomizeObject
+
+from diacamma.accounting.models import FiscalYear, Third, EntryAccount, CostAccounting, Journal, EntryLineAccount, ChartsAccount, AccountThird
+from diacamma.accounting.tools import current_system_account, format_devise, currency_round, correct_accounting_code
+from diacamma.payoff.models import Supporting
 
 
 class Vat(LucteriosModel):

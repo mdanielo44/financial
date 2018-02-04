@@ -289,7 +289,6 @@ class DefaultSystemAccounting(object):
             add_cell_in_grid(grid, right_line_idx, 'right', '')
             right_line_idx += 1
 
-        right_line_idx = 0
         passif2 = third_filter
         data_line_right, total1_rightb, total2_rightb, _b_right = convert_query_to_account(currentfilter & passif2, lastfilter & passif2 if lastfilter is not None else None, None, sign_value=1)
         if len(data_line_right) > 0:
