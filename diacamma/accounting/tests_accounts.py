@@ -34,7 +34,7 @@ from diacamma.accounting.views_accounts import FiscalYearBegin, FiscalYearClose,
 from diacamma.accounting.views_entries import EntryAccountEdit, EntryAccountList
 from diacamma.accounting.models import FiscalYear
 from diacamma.accounting.views import ThirdList
-from diacamma.accounting.views_budget import BudgetList
+from diacamma.accounting.views_budget import BudgetList, BudgetAddModify, BudgetDel
 from diacamma.payoff.test_tools import PaymentTest
 
 
@@ -301,11 +301,79 @@ class ChartsAccountTest(LucteriosTest):
         content_csv = csv_value.split('\n')
         self.assertEqual(len(content_csv), 12, str(content_csv))
 
+    def test_budget(self):
+        self.factory.xfer = BudgetList()
+        self.calljson('/diacamma.accounting/budgetList', {'year': '1'}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'budgetList')
+        self.assert_count_equal('', 6)
+        self.assertEqual(len(self.json_actions), 4)
+        self.assert_count_equal('budget_revenue', 2)
+        self.assert_count_equal('#budget_revenue/actions', 2)
+        self.assert_json_equal('', 'budget_revenue/@0/budget', '[701] 701')
+        self.assert_json_equal('', 'budget_revenue/@0/montant', '{[font color="green"]}Crédit: 67.89€{[/font]}')
+        self.assert_json_equal('', 'budget_revenue/@1/budget', '[707] 707')
+        self.assert_json_equal('', 'budget_revenue/@1/montant', '{[font color="green"]}Crédit: 123.45€{[/font]}')
+        self.assert_count_equal('budget_expense', 3)
+        self.assert_json_equal('', 'budget_expense/@0/budget', '[601] 601')
+        self.assert_json_equal('', 'budget_expense/@0/montant', '{[font color="blue"]}Débit: 8.19€{[/font]}')
+        self.assert_json_equal('', 'budget_expense/@1/budget', '[602] 602')
+        self.assert_json_equal('', 'budget_expense/@1/montant', '{[font color="blue"]}Débit: 7.35€{[/font]}')
+        self.assert_json_equal('', 'budget_expense/@2/budget', '[604] 604')
+        self.assert_json_equal('', 'budget_expense/@2/montant', '{[font color="blue"]}Débit: 6.24€{[/font]}')
+        self.assert_count_equal('#budget_expense/actions', 2)
+        self.assert_json_equal('LABELFORM', 'result', '169.56€')
+
+        self.factory.xfer = BudgetAddModify()
+        self.calljson('/diacamma.accounting/budgetAddModify', {'year': '1', 'budget_expense': 'C602'}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'budgetAddModify')
+        self.assert_count_equal('', 4)
+        self.assertEqual(len(self.json_actions), 2)
+        self.assert_json_equal('', 'code', '602')
+        self.assert_json_equal('', 'debit_val', '7.35')
+        self.assert_json_equal('', 'credit_val', '0.00')
+
+        self.factory.xfer = BudgetAddModify()
+        self.calljson('/diacamma.accounting/budgetAddModify', {'year': '1', 'budget_expense': 'C602', 'code': '602', 'debit_val': '19.64', 'credit_val': '0.00', 'SAVE': 'YES'}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.accounting', 'budgetAddModify')
+
+        self.factory.xfer = BudgetList()
+        self.calljson('/diacamma.accounting/budgetList', {'year': '1'}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'budgetList')
+        self.assert_count_equal('budget_revenue', 2)
+        self.assert_count_equal('budget_expense', 3)
+        self.assert_json_equal('', 'budget_expense/@1/budget', '[602] 602')
+        self.assert_json_equal('', 'budget_expense/@1/montant', '{[font color="blue"]}Débit: 19.64€{[/font]}')
+        self.assert_json_equal('LABELFORM', 'result', '157.27€')
+
+        self.factory.xfer = BudgetAddModify()
+        self.calljson('/diacamma.accounting/budgetAddModify', {'year': '1', 'code': '607', 'debit_val': '92.73', 'credit_val': '0.00', 'SAVE': 'YES'}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.accounting', 'budgetAddModify')
+
+        self.factory.xfer = BudgetList()
+        self.calljson('/diacamma.accounting/budgetList', {'year': '1'}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'budgetList')
+        self.assert_count_equal('budget_revenue', 2)
+        self.assert_count_equal('budget_expense', 4)
+        self.assert_json_equal('', 'budget_expense/@3/budget', '[607] 607')
+        self.assert_json_equal('', 'budget_expense/@3/montant', '{[font color="blue"]}Débit: 92.73€{[/font]}')
+        self.assert_json_equal('LABELFORM', 'result', '64.54€')
+
+        self.factory.xfer = BudgetDel()
+        self.calljson('/diacamma.accounting/budgetDel', {'year': '1', 'budget_expense': 'C604', 'CONFIRME': 'YES'}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.accounting', 'budgetDel')
+
+        self.factory.xfer = BudgetList()
+        self.calljson('/diacamma.accounting/budgetList', {'year': '1'}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'budgetList')
+        self.assert_count_equal('budget_revenue', 2)
+        self.assert_count_equal('budget_expense', 3)
+        self.assert_json_equal('LABELFORM', 'result', '70.78€')
+
 
 class FiscalYearWorkflowTest(PaymentTest):
 
     def setUp(self):
-        BudgetList.url_text
+        # BudgetList.url_text
         self.xfer_class = XferContainerAcknowledge
         LucteriosTest.setUp(self)
         set_accounting_system()

@@ -32,15 +32,14 @@ from lucterios.framework.xfergraphic import XferContainerAcknowledge
 from lucterios.framework.test import LucteriosTest
 from lucterios.framework.filetools import get_user_dir
 from lucterios.CORE.views import StatusMenu
+from lucterios.contacts.views import CustomFieldAddModify
 
-from diacamma.accounting.views import ThirdList, ThirdAdd, ThirdSave, ThirdShow, AccountThirdAddModify, AccountThirdDel, ThirdListing, ThirdDisable,\
-    ThirdEdit
+from diacamma.accounting.views import ThirdList, ThirdAdd, ThirdSave, ThirdShow, AccountThirdAddModify, AccountThirdDel, ThirdListing, ThirdDisable, ThirdEdit, ThirdSearch
 from diacamma.accounting.views_admin import Configuration, JournalAddModify, JournalDel, FiscalYearAddModify, FiscalYearActive, FiscalYearDel
 from diacamma.accounting.views_other import ModelEntryList, ModelEntryAddModify, ModelLineEntryAddModify
 from diacamma.accounting.test_tools import initial_contacts, fill_entries, initial_thirds, create_third, fill_accounts, fill_thirds, default_compta, set_accounting_system, add_models
 from diacamma.accounting.models import FiscalYear, Third
-from diacamma.accounting.system import get_accounting_system,\
-    accounting_system_ident
+from diacamma.accounting.system import get_accounting_system, accounting_system_ident
 from diacamma.accounting.tools import current_system_account, clear_system_account
 from diacamma.accounting.views_entries import EntryAccountModelSelector
 from lucterios.CORE.parameters import Params
@@ -278,7 +277,8 @@ class ThirdTest(LucteriosTest):
         self.assert_count_equal('', 9 + 4 + 4 + 3)
         self.assert_json_equal('SELECT', 'lines_filter', '0')
         self.assert_select_equal('lines_filter', 3)  # nb=3
-        self.assert_grid_equal('entryline', {"entry.num": "N°", "entry.date_entry": "date d'écriture", "entry.date_value": "date de pièce", "designation_ref": "nom", "entry_account": "compte", 'debit': 'débit', 'credit': 'crédit', "costaccounting": "comptabilité analytique", "entry.link": "lettrage"}, 6)
+        self.assert_grid_equal('entryline', {"entry.num": "N°", "entry.date_entry": "date d'écriture", "entry.date_value": "date de pièce", "designation_ref": "nom",
+                                             "entry_account": "compte", 'debit': 'débit', 'credit': 'crédit', "costaccounting": "comptabilité analytique", "entry.link": "lettrage"}, 6)
 
         self.factory.xfer = ThirdShow()
         self.calljson('/diacamma.accounting/thirdShow', {"third": 4, 'lines_filter': 1}, False)
@@ -494,6 +494,24 @@ class ThirdTest(LucteriosTest):
         self.assertEqual("moyen", my_third.get_custom_by_name("categorie"))
         self.assertEqual(27, my_third.get_custom_by_name("value"))
         self.assertEqual(None, my_third.get_custom_by_name("truc"))
+
+    def test_search(self):
+        CustomField.objects.create(modelname='accounting.Third', name='categorie', kind=4, args="{'list':['---','petit','moyen','gros']}")
+        CustomField.objects.create(modelname='accounting.Third', name='value', kind=1, args="{'min':0,'max':100}")
+        search_field_list = Third.get_search_fields()
+        self.assertEqual(8 + 2 + 2, len(search_field_list), search_field_list)
+
+        fill_thirds()
+        self.factory.xfer = ThirdSearch()
+        self.calljson('/diacamma.accounting/thirdSearch', {}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdSearch')
+        self.assert_count_equal('third', 7)
+
+    def test_print_model(self):
+        CustomField.objects.create(modelname='accounting.Third', name='categorie', kind=4, args="{'list':['---','petit','moyen','gros']}")
+        CustomField.objects.create(modelname='accounting.Third', name='value', kind=1, args="{'min':0,'max':100}")
+        print_field_list = Third.get_all_print_fields()
+        self.assertEqual(13, len(print_field_list), print_field_list)
 
 
 class AdminTest(LucteriosTest):
@@ -719,6 +737,22 @@ class AdminTest(LucteriosTest):
         self.assertEqual(current_system_account().__class__.__name__, "DefaultSystemAccounting")
         set_accounting_system()
         self.assertEqual(current_system_account().__class__.__name__, "FrenchSystemAcounting")
+
+    def test_configuration_customfield(self):
+        self.factory.xfer = Configuration()
+        self.calljson('/diacamma.accounting/configuration', {}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'configuration')
+        self.assert_count_equal('custom_field', 0)
+        self.assert_count_equal('#custom_field/actions', 3)
+
+        self.factory.xfer = CustomFieldAddModify()
+        self.calljson('/lucterios.contacts/customFieldAddModify', {"SAVE": "YES", 'name': 'aaa', 'modelname': 'accounting.Third', 'kind': '0', 'args_multi': 'n', 'args_min': '0', 'args_max': '0', 'args_prec': '0', 'args_list': ''}, False)
+        self.assert_observer('core.acknowledge', 'lucterios.contacts', 'customFieldAddModify')
+
+        self.factory.xfer = Configuration()
+        self.calljson('/diacamma.accounting/configuration', {}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'configuration')
+        self.assert_count_equal('custom_field', 1)
 
 
 class ModelTest(LucteriosTest):

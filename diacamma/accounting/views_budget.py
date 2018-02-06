@@ -83,37 +83,26 @@ class BudgetList(XferListEditor):
         self.get_components("title").colspan = 2
         row_id = self.get_max_row() + 1
 
-        lbl = XferCompLabelForm('title_exp')
-        lbl.set_value_as_headername(_("Expense"))
-        lbl.set_location(0, row_id, 3)
-        self.add_component(lbl)
-
         expense_filter = Q(code__regex=current_system_account().get_expence_mask()) | (Q(code__regex=current_system_account().get_annexe_mask()) & Q(amount__lt=0))
-        self.fill_grid(row_id + 1, self.model, 'budget_expense', self.model.objects.filter(self.filter & expense_filter))
+        self.fill_grid(row_id, self.model, 'budget_expense', self.model.objects.filter(self.filter & expense_filter))
         self.get_components("budget_expense").colspan = 3
-
-        lbl = XferCompLabelForm('title_rev')
-        lbl.set_value_as_headername(_("Revenue"))
-        lbl.set_location(0, row_id + 3, 3)
-        self.add_component(lbl)
+        self.get_components("budget_expense").description = _("Expense")
 
         revenue_filter = Q(code__regex=current_system_account().get_revenue_mask()) | (Q(code__regex=current_system_account().get_annexe_mask()) & Q(amount__gte=0))
-        self.fill_grid(row_id + 4, self.model, 'budget_revenue', self.model.objects.filter(self.filter & revenue_filter))
+        self.fill_grid(row_id + 1, self.model, 'budget_revenue', self.model.objects.filter(self.filter & revenue_filter))
         self.get_components("budget_revenue").colspan = 3
+        self.get_components("budget_revenue").description = _("Revenue")
 
         resultat_budget = Budget.get_total(self.getparam('year'), self.getparam('cost_accounting'))
         if abs(resultat_budget) > 0.0001:
             row_id = self.get_max_row() + 1
-            lbl = XferCompLabelForm('title_result')
-            if resultat_budget > 0:
-                lbl.set_value_as_name(_('result (profit)'))
-            else:
-                lbl.set_value_as_name(_('result (deficit)'))
-            lbl.set_location(0, row_id)
-            self.add_component(lbl)
             lbl = XferCompLabelForm('result')
             lbl.set_value(format_devise(resultat_budget, 5))
-            lbl.set_location(1, row_id)
+            lbl.set_location(0, row_id, 2)
+            if resultat_budget > 0:
+                lbl.description = _('result (profit)')
+            else:
+                lbl.description = _('result (deficit)')
             self.add_component(lbl)
 
 

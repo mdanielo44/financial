@@ -93,7 +93,11 @@ class Third(LucteriosModel, CustomizeObject):
 
     @classmethod
     def get_print_fields(cls):
-        return cls.get_other_fields()
+        fields_desc = cls.get_other_fields()
+        for custom_fields in cls.get_fields_to_show():
+            for custom_field in custom_fields:
+                fields_desc.append(custom_field)
+        return fields_desc
 
     @classmethod
     def get_search_fields(cls):
