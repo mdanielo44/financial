@@ -1013,12 +1013,10 @@ class EntryLineAccount(LucteriosModel):
     @classmethod
     def get_search_fields(cls):
         result = ['entry.year', 'entry.date_value', 'account.code']
-        result.append(
-            ('amount', models.FloatField(_('amount')), 'amount__abs', Q()))
-        result.extend(['reference', 'entry.num', 'entry.designation', 'entry.date_entry',
-                       'costaccounting', 'account.name', 'account.type_of_account'])
+        result.append(('amount', models.FloatField(_('amount')), 'amount__abs', Q()))
+        result.extend(['reference', 'entry.num', 'entry.designation', 'entry.date_entry', 'costaccounting', 'account.name', 'account.type_of_account'])
         for fieldname in Third.get_search_fields():
-            result.append("third." + fieldname)
+            result.append(cls.convert_field_for_search('third', fieldname))
         return result
 
     @property
@@ -1298,9 +1296,6 @@ class Budget(LucteriosModel):
     cost_accounting = models.ForeignKey('CostAccounting', verbose_name=_('cost accounting'), null=True, default=None, on_delete=models.PROTECT)
     code = models.CharField(_('account'), max_length=50)
     amount = models.FloatField(_('amount'), default=0)
-
-    def __str__(self):
-        self.budget
 
     @property
     def budget(self):

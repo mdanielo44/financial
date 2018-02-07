@@ -369,6 +369,17 @@ class ChartsAccountTest(LucteriosTest):
         self.assert_count_equal('budget_expense', 3)
         self.assert_json_equal('LABELFORM', 'result', '70.78€')
 
+        self.factory.xfer = BudgetList()
+        self.calljson('/diacamma.accounting/budgetList', {'year': '1', 'readonly': True}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'budgetList')
+        self.assert_count_equal('', 6)
+        self.assertEqual(len(self.json_actions), 2)
+        self.assert_count_equal('budget_revenue', 2)
+        self.assert_count_equal('#budget_revenue/actions', 0)
+        self.assert_count_equal('budget_expense', 3)
+        self.assert_count_equal('#budget_expense/actions', 0)
+        self.assert_json_equal('LABELFORM', 'result', '70.78€')
+
 
 class FiscalYearWorkflowTest(PaymentTest):
 

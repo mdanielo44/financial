@@ -278,7 +278,7 @@ class BudgetImport(XferContainerAcknowledge):
                 if year == 0:
                     year = None
                 values = {}
-                for line in EntryLineAccount.objects.filter(account__type_of_account__in=(3, 4), entry__costaccounting_id=costaccounting):
+                for line in EntryLineAccount.objects.filter(account__type_of_account__in=(3, 4), costaccounting_id=costaccounting):
                     if line.account.code not in values.keys():
                         values[line.account.code] = 0.0
                     values[line.account.code] += line.amount
