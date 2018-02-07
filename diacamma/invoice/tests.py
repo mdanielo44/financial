@@ -35,6 +35,9 @@ from lucterios.framework.xfergraphic import XferContainerAcknowledge
 from lucterios.framework.filetools import get_user_dir
 from lucterios.CORE.models import Parameter
 from lucterios.CORE.parameters import Params
+from lucterios.CORE.views import ObjectMerge
+from lucterios.mailing.tests import configSMTP, TestReceiver, decode_b64
+from lucterios.contacts.models import CustomField
 
 from diacamma.accounting.test_tools import initial_thirds, default_compta
 from diacamma.accounting.views_entries import EntryAccountList
@@ -45,13 +48,11 @@ from diacamma.invoice.views_conf import InvoiceConf, VatAddModify, VatDel, \
     StorageAreaAddModify
 from diacamma.invoice.views import ArticleList, ArticleAddModify, ArticleDel, \
     BillList, BillAddModify, BillShow, DetailAddModify, DetailDel, BillTransition, BillDel, BillFromQuotation, \
-    BillStatistic, BillStatisticPrint, BillPrint, BillMultiPay, ArticleShow,\
-    ArticleSearch
+    BillStatistic, BillStatisticPrint, BillPrint, BillMultiPay, BillSearch, ArticleShow, ArticleSearch
 from diacamma.payoff.views import PayoffAddModify, PayoffDel, SupportingThird, \
     SupportingThirdValid, PayableEmail
 from diacamma.payoff.test_tools import default_bankaccount
-from lucterios.mailing.tests import configSMTP, TestReceiver, decode_b64
-from lucterios.CORE.views import ObjectMerge
+from diacamma.invoice.models import Article, Bill
 
 
 class ConfigTest(LucteriosTest):
@@ -259,6 +260,11 @@ class ConfigTest(LucteriosTest):
     def test_article_merge(self):
         default_categories()
         default_articles(with_storage=True)
+        default_customize()
+        initial_thirds()
+
+        search_field_list = Article.get_search_fields()
+        self.assertEqual(9 + 2 + 2 + 2, len(search_field_list), search_field_list)  # article + art custom + category + provider
 
         self.factory.xfer = ArticleSearch()
         self.calljson('/diacamma.invoice/articleSearch', {}, False)
@@ -305,6 +311,9 @@ class ConfigTest(LucteriosTest):
     def test_article_filter(self):
         default_categories()
         default_articles(with_storage=True)
+        default_customize()
+        initial_thirds()
+
         self.factory.xfer = ArticleList()
         self.calljson('/diacamma.invoice/articleList', {}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'articleList')
@@ -1285,8 +1294,7 @@ class BillTest(InvoiceTest):
 
     def test_statistic(self):
         default_articles()
-        details = [
-            {'article': 0, 'designation': 'article 0', 'price': '20.00', 'quantity': 15}]
+        details = [{'article': 0, 'designation': 'article 0', 'price': '20.00', 'quantity': 15}]
         self._create_bill(details, 0, '2015-04-01', 6, True)  # 59.50
         details = [{'article': 1, 'designation': 'article 1', 'price': '22.00', 'quantity': 3, 'reduce': '5.0'},
                    {'article': 2, 'designation': 'article 2', 'price': '3.25', 'quantity': 7}]
@@ -1300,8 +1308,7 @@ class BillTest(InvoiceTest):
         details = [{'article': 2, 'designation': 'article 2', 'price': '3.30', 'quantity': 5},
                    {'article': 5, 'designation': 'article 5', 'price': '6.35', 'quantity': 4.25, 'reduce': '2.0'}]
         self._create_bill(details, 1, '2015-04-01', 6, True)  # 41.49
-        details = [
-            {'article': 5, 'designation': 'article 5', 'price': '6.33', 'quantity': 1.25}]
+        details = [{'article': 5, 'designation': 'article 5', 'price': '6.33', 'quantity': 1.25}]
         self._create_bill(details, 2, '2015-04-01', 4, True)  # 7.91
 
         self.factory.xfer = BillStatistic()
@@ -1736,3 +1743,35 @@ class BillTest(InvoiceTest):
             self.assertEqual("%PDF".encode('ascii', 'ignore'), b64decode(msg_file.get_payload())[:4])
         finally:
             server.stop()
+
+    def test_search(self):
+        CustomField.objects.create(modelname='accounting.Third', name='categorie', kind=4, args="{'list':['---','petit','moyen','gros']}")
+        CustomField.objects.create(modelname='accounting.Third', name='value', kind=1, args="{'min':0,'max':100}")
+        default_customize()
+        initial_thirds()
+        default_categories()
+        default_articles()
+        details = [{'article': 0, 'designation': 'article 0', 'price': '20.00', 'quantity': 15}]
+        self._create_bill(details, 0, '2015-04-01', 6, True)  # 59.50
+        details = [{'article': 1, 'designation': 'article 1', 'price': '22.00', 'quantity': 3, 'reduce': '5.0'},
+                   {'article': 2, 'designation': 'article 2', 'price': '3.25', 'quantity': 7}]
+        self._create_bill(details, 1, '2015-04-01', 6, True)  # 83.75
+        details = [{'article': 0, 'designation': 'article 0', 'price': '50.00', 'quantity': 2},
+                   {'article': 5, 'designation': 'article 5', 'price': '6.33', 'quantity': 6.75}]
+        self._create_bill(details, 3, '2015-04-01', 4, True)  # 142.73
+        details = [{'article': 1, 'designation': 'article 1', 'price': '23.00', 'quantity': 3},
+                   {'article': 5, 'designation': 'article 5', 'price': '6.33', 'quantity': 3.50}]
+        self._create_bill(details, 1, '2015-04-01', 5, True)  # 91.16
+        details = [{'article': 2, 'designation': 'article 2', 'price': '3.30', 'quantity': 5},
+                   {'article': 5, 'designation': 'article 5', 'price': '6.35', 'quantity': 4.25, 'reduce': '2.0'}]
+        self._create_bill(details, 1, '2015-04-01', 6, True)  # 41.49
+        details = [{'article': 5, 'designation': 'article 5', 'price': '6.33', 'quantity': 1.25}]
+        self._create_bill(details, 2, '2015-04-01', 4, True)  # 7.91
+
+        self.factory.xfer = BillSearch()
+        self.calljson('/diacamma.invoice/billSearch', {}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'billSearch')
+        self.assert_count_equal('bill', 6)
+
+        search_field_list = Bill.get_search_fields()
+        self.assertEqual(6 + 8 + 1 + 2 + 2 + 4 + 9 + 2 + 2 + 2, len(search_field_list), search_field_list)  # bill + contact + custom contact + custom third + third + detail + article  + art custom + category + provider

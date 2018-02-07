@@ -103,8 +103,7 @@ class Third(LucteriosModel, CustomizeObject):
     def get_search_fields(cls):
         result = []
         for field_name in AbstractContact.get_search_fields():
-            if not isinstance(field_name, tuple):
-                result.append("contact." + field_name)
+            result.append(cls.convert_field_for_search('contact', field_name))
         for cf_name, cf_model in CustomField.get_fields(cls):
             result.append((cf_name, cf_model.get_field(), 'thirdcustomfield__value', Q(thirdcustomfield__field__id=cf_model.id)))
         result.extend(["status", "accountthird_set.code"])

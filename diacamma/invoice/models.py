@@ -395,12 +395,11 @@ class Bill(Supporting):
 
     @classmethod
     def get_search_fields(cls):
-        search_fields = [
-            "bill_type", "fiscal_year", "num", "date", "comment", "status"]
+        search_fields = ["bill_type", "fiscal_year", "num", "date", "comment", "status"]
         for fieldname in Third.get_search_fields():
-            search_fields.append("third." + fieldname)
-        for det_field in ["article.reference", "article.designation", "article.sell_account", "article.vat", "designation", "price", "unit", "quantity"]:
-            search_fields.append("detail_set." + det_field)
+            search_fields.append(cls.convert_field_for_search("third", fieldname))
+        for fieldname in Detail.get_search_fields():
+            search_fields.append(cls.convert_field_for_search("detail_set", fieldname))
         return search_fields
 
     @classmethod
@@ -866,6 +865,13 @@ class Detail(LucteriosModel):
         res.append((_('reduce ratio'), "reduce_ratio_txt"))
         res.append(last)
         return res
+
+    @classmethod
+    def get_search_fields(cls):
+        fieldnames = ["designation", "price", "unit", "quantity"]
+        for fieldname in Article.get_search_fields():
+            fieldnames.append(cls.convert_field_for_search("article", fieldname))
+        return fieldnames
 
     @classmethod
     def create_for_bill(cls, bill, article, qty=1, reduce=0.0):
