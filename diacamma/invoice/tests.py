@@ -193,7 +193,7 @@ class ConfigTest(LucteriosTest):
 
         self.factory.xfer = ArticleAddModify()
         self.calljson('/diacamma.invoice/articleAddModify',
-                      {'reference': 'ABC001', 'designation': 'My beautiful article', 'price': '43.72', 'sell_account': '705', 'stockable': '1', 'isInteger': '0', 'SAVE': 'YES'}, False)
+                      {'reference': 'ABC001', 'designation': 'My beautiful article', 'price': '43.72', 'sell_account': '705', 'stockable': '1', 'qtyDecimal': '1', 'SAVE': 'YES'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.invoice', 'articleAddModify')
 
         self.factory.xfer = ArticleList()
@@ -212,7 +212,7 @@ class ConfigTest(LucteriosTest):
         self.calljson('/diacamma.invoice/articleShow', {'article': '1'}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'articleShow')
         self.assert_count_equal('', 14)
-        self.assert_json_equal('', 'isInteger', 'Non')
+        self.assert_json_equal('', 'qtyDecimal', '1')
 
         self.factory.xfer = ArticleDel()
         self.calljson('/diacamma.invoice/articleDel',
@@ -248,7 +248,7 @@ class ConfigTest(LucteriosTest):
         self.calljson('/diacamma.invoice/articleShow', {'article': '1'}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'articleShow')
         self.assert_count_equal('', 15)
-        self.assert_json_equal('', 'isInteger', 'Oui')
+        self.assert_json_equal('', 'qtyDecimal', '0')
 
         self.factory.xfer = ArticleList()
         self.calljson('/diacamma.invoice/articleList', {}, False)
@@ -707,7 +707,7 @@ class BillTest(InvoiceTest):
         self.assert_json_equal('FLOAT', 'quantity', 1.0)
         self.assert_json_equal('', '#quantity/min', 0.0)
         self.assert_json_equal('', '#quantity/max', 9999999.99)
-        self.assert_json_equal('', '#quantity/prec', 2)
+        self.assert_json_equal('', '#quantity/prec', 3)
 
         self.factory.xfer = DetailAddModify()
         self.calljson('/diacamma.invoice/detailAddModify', {'bill': 1, 'article': 1}, False)
@@ -716,7 +716,7 @@ class BillTest(InvoiceTest):
         self.assert_json_equal('FLOAT', 'quantity', 1.0)
         self.assert_json_equal('', '#quantity/min', 0.0)
         self.assert_json_equal('', '#quantity/max', 9999999.99)
-        self.assert_json_equal('', '#quantity/prec', 2)
+        self.assert_json_equal('', '#quantity/prec', 3)
 
         self.factory.xfer = DetailAddModify()
         self.calljson('/diacamma.invoice/detailAddModify', {'bill': 1, 'article': 3}, False)
@@ -744,7 +744,7 @@ class BillTest(InvoiceTest):
         self.assert_json_equal('', 'detail/@0/designation', 'My article')
         self.assert_json_equal('', 'detail/@0/price_txt', '43.72€')
         self.assert_json_equal('', 'detail/@0/unit', '')
-        self.assert_json_equal('', 'detail/@0/quantity', '2.00')
+        self.assert_json_equal('', 'detail/@0/quantity', '2.000')
         self.assert_json_equal('', 'detail/@0/reduce_txt', '---')
         self.assert_json_equal('', 'detail/@0/total', '87.44€')
 

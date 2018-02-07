@@ -145,7 +145,7 @@ class Article(LucteriosModel, CustomizeObject):
     stockable = models.IntegerField(verbose_name=_('stockable'),
                                     choices=((0, _('no stockable')), (1, _('stockable')), (2, _('stockable & no marketable'))), null=False, default=0, db_index=True)
     categories = models.ManyToManyField(Category, verbose_name=_('categories'), blank=True)
-    isInteger = models.BooleanField(verbose_name=_('integer quantity'), default=True)
+    qtyDecimal = models.IntegerField(verbose_name=_('quantity decimal'), default=0, validators=[MinValueValidator(0), MaxValueValidator(3)])
 
     def __str__(self):
         return six.text_type(self.reference)
@@ -171,7 +171,7 @@ class Article(LucteriosModel, CustomizeObject):
 
     @classmethod
     def get_edit_fields(cls):
-        fields = {_('001@Description'): ["reference", "designation", ("price", "unit"), ("sell_account", 'vat'), ("stockable", "isdisabled"), ("isInteger",)]}
+        fields = {_('001@Description'): ["reference", "designation", ("price", "unit"), ("sell_account", 'vat'), ("stockable", "isdisabled"), ("qtyDecimal",)]}
         if len(Category.objects.all()) > 0:
             fields[_('002@Extra')] = ['categories']
         return fields
@@ -179,7 +179,7 @@ class Article(LucteriosModel, CustomizeObject):
     @classmethod
     def get_show_fields(cls):
         fields = {'': ["reference"]}
-        fields_desc = ["designation", ("price", "unit"), ("sell_account", 'vat'), ("stockable", "isdisabled"), ("isInteger",)]
+        fields_desc = ["designation", ("price", "unit"), ("sell_account", 'vat'), ("stockable", "isdisabled"), ("qtyDecimal",)]
         fields_desc.extend(cls.get_fields_to_show())
         if len(Category.objects.all()) > 0:
             fields_desc.append('categories')
@@ -190,7 +190,7 @@ class Article(LucteriosModel, CustomizeObject):
 
     @classmethod
     def get_search_fields(cls):
-        fields = ["reference", "designation", "price", "unit", "sell_account", 'vat', "stockable", "isdisabled", "isInteger"]
+        fields = ["reference", "designation", "price", "unit", "sell_account", 'vat', "stockable", "isdisabled", "qtyDecimal"]
         for cf_name, cf_model in CustomField.get_fields(cls):
             fields.append((cf_name, cf_model.get_field(), 'articlecustomfield__value', Q(articlecustomfield__field__id=cf_model.id)))
         if len(Category.objects.all()) > 0:
@@ -203,7 +203,7 @@ class Article(LucteriosModel, CustomizeObject):
 
     @classmethod
     def get_import_fields(cls):
-        fields = ["reference", "designation", "price", "unit", "sell_account", 'vat', "stockable", "isdisabled", "isInteger"]
+        fields = ["reference", "designation", "price", "unit", "sell_account", 'vat', "stockable", "isdisabled", "qtyDecimal"]
         if len(Category.objects.all()) > 0:
             fields.append('categories')
         if len(Provider().third_query) > 0:
@@ -304,7 +304,8 @@ class Article(LucteriosModel, CustomizeObject):
     def stockage_total(self):
         for val in self.get_stockage_values():
             if val[0] == 0:
-                return val[2]
+                format_txt = "%%.%df" % self.qtyDecimal
+                return format_txt % float(val[2])
         return None
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
@@ -801,8 +802,8 @@ class Detail(LucteriosModel):
         MinValueValidator(0.0), MaxValueValidator(9999999.999)])
     unit = models.CharField(
         verbose_name=_('unit'), null=True, default='', max_length=10)
-    quantity = models.DecimalField(verbose_name=_('quantity'), max_digits=10, decimal_places=2, default=1.0, validators=[
-        MinValueValidator(0.0), MaxValueValidator(9999999.99)])
+    quantity = models.DecimalField(verbose_name=_('quantity'), max_digits=12, decimal_places=3, default=1.0, validators=[
+        MinValueValidator(0.0), MaxValueValidator(9999999.999)])
     reduce = models.DecimalField(verbose_name=_('reduce'), max_digits=10, decimal_places=3, default=0.0, validators=[
         MinValueValidator(0.0), MaxValueValidator(9999999.999)])
     vta_rate = models.DecimalField(_('vta rate'), max_digits=6, decimal_places=4, default=0.0, validators=[
@@ -815,6 +816,11 @@ class Detail(LucteriosModel):
         self.filter_ref = ''
 
     def set_context(self, xfer):
+        qty_field = self.get_field_by_name('quantity')
+        if self.article_id is not None:
+            qty_field.decimal_places = self.article.qtyDecimal
+        else:
+            qty_field.decimal_places = 3
         self.filter_thirdid = xfer.getparam('third', 0)
         self.filter_ref = xfer.getparam('reference', '')
         self.filter_cat = xfer.getparam('cat_filter', ())
@@ -837,7 +843,7 @@ class Detail(LucteriosModel):
         return items
 
     def __str__(self):
-        return "[%s] %s:%f" % (six.text_type(self.reference), six.text_type(self.designation), self.price_txt)
+        return "[%s] %s:%s" % (six.text_type(self.article), six.text_type(self.designation), self.price_txt)
 
     @classmethod
     def get_default_fields(cls):
@@ -1048,11 +1054,11 @@ class StorageDetail(LucteriosModel):
     article = models.ForeignKey(Article, verbose_name=_('article'), null=False, db_index=True, on_delete=models.PROTECT)
     price = models.DecimalField(verbose_name=_('buying price'), max_digits=10, decimal_places=3, default=0.0,
                                 validators=[MinValueValidator(0.0), MaxValueValidator(9999999.999)])
-    quantity = models.DecimalField(verbose_name=_('quantity'), max_digits=10, decimal_places=2, default=1.0,
-                                   validators=[MinValueValidator(0.0), MaxValueValidator(9999999.99)])
+    quantity = models.DecimalField(verbose_name=_('quantity'), max_digits=12, decimal_places=3, default=1.0,
+                                   validators=[MinValueValidator(0.0), MaxValueValidator(9999999.999)])
 
     def __str__(self):
-        return "%s %d" % (six.text_type(self.article), self.quantity)
+        return "%s %d" % (self.article_id, self.quantity)
 
     @classmethod
     def get_default_fields(cls):
@@ -1075,9 +1081,18 @@ class StorageDetail(LucteriosModel):
 
     @property
     def quantity_txt(self):
-        return abs(self.quantity)
+        if self.article_id is not None:
+            format_txt = "%%.%df" % self.article.qtyDecimal
+            return format_txt % float(self.quantity)
+        else:
+            return abs(self.quantity)
 
     def set_context(self, xfer):
+        qty_field = self.get_field_by_name('quantity')
+        if self.article_id is not None:
+            qty_field.decimal_places = self.article.qtyDecimal
+        else:
+            qty_field.decimal_places = 3
         self.filter_thirdid = xfer.getparam('third', 0)
         self.filter_ref = xfer.getparam('reference', '')
         self.filter_cat = xfer.getparam('cat_filter', ())

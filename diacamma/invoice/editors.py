@@ -90,10 +90,11 @@ class ArticleEditor(LucteriosEditor):
             grid.add_header('mean', _('Mean price'))
             grid.set_location(1, 1)
             grid.description = _('quantities')
+            format_txt = "%%.%df" % self.item.qtyDecimal
             for area_id, area, qty, amount in self.item.get_stockage_values():
                 valformat = "{[b]}%s{[/b]}" if area_id == 0 else "%s"
                 grid.set_value(area_id, 'area', valformat % area)
-                grid.set_value(area_id, 'qty', valformat % qty)
+                grid.set_value(area_id, 'qty', valformat % (format_txt % float(qty),))
                 grid.set_value(area_id, 'amount', valformat % format_devise(amount, 5))
                 if abs(qty) > 0.001:
                     grid.set_value(area_id, 'mean', valformat % format_devise(amount / qty, 5))
@@ -263,8 +264,9 @@ class DetailEditor(LucteriosEditor, DetailFilter):
 
         if self.item.article_id is None:
             xfer.remove_component("show_art")
-        elif self.item.article.isInteger:
-            xfer.get_components('quantity').prec = 0
+            xfer.get_components('quantity').prec = 3
+        else:
+            xfer.get_components('quantity').prec = self.item.article.qtyDecimal
 
         if (self.item.article_id is None) or (self.item.article.stockable == 0):
             xfer.remove_component("storagearea")
@@ -273,7 +275,8 @@ class DetailEditor(LucteriosEditor, DetailFilter):
             area_list = []
             for val in self.item.article.get_stockage_values():
                 if (val[0] != 0) and (abs(val[2]) > 0.0001):
-                    area_list.append((val[0], "%s [%s]" % (val[1], val[2])))
+                    format_txt = "%%.%df" % self.item.article.qtyDecimal
+                    area_list.append((val[0], "%s [%s]" % (val[1], format_txt % val[2])))
             sel_area = xfer.get_components('storagearea')
             sel_area.set_needed(True)
             sel_area.set_select(area_list)
@@ -338,7 +341,9 @@ class StorageDetailEditor(LucteriosEditor, DetailFilter):
                 lbl.description = _('max quantity')
                 xfer.add_component(lbl)
                 xfer.get_components('quantity').max = max_qty
-        if (self.item.article_id is not None) and self.item.article.isInteger:
-            xfer.get_components('quantity').prec = 0
+        if self.item.article_id is not None:
+            xfer.get_components('quantity').prec = self.item.article.qtyDecimal
+        else:
+            xfer.get_components('quantity').prec = 3
         sel_art = xfer.get_components('article')
         DetailFilter.edit_filter(self, xfer, sel_art)

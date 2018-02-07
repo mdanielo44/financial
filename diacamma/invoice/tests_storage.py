@@ -24,23 +24,20 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
 from shutil import rmtree
+from _io import StringIO
+from django.utils import six
 
 from lucterios.framework.xfergraphic import XferContainerAcknowledge
 from lucterios.framework.filetools import get_user_dir
 from lucterios.framework.test import LucteriosTest
 
-from diacamma.invoice.test_tools import InvoiceTest, default_area,\
-    default_articles, insert_storage
+from diacamma.invoice.test_tools import InvoiceTest, default_area, default_articles, insert_storage
 from diacamma.accounting.test_tools import initial_thirds, default_compta
 from diacamma.payoff.test_tools import default_bankaccount
-from diacamma.invoice.views import ArticleShow, BillAddModify, DetailAddModify,\
-    BillShow, BillTransition, ArticleList
-from diacamma.invoice.views_storage import StorageSheetList,\
-    StorageSheetAddModify, StorageSheetShow, StorageDetailAddModify,\
+from diacamma.invoice.views import ArticleShow, BillAddModify, DetailAddModify, BillShow, BillTransition, ArticleList
+from diacamma.invoice.views_storage import StorageSheetList, StorageSheetAddModify, StorageSheetShow, StorageDetailAddModify,\
     StorageSheetTransition, StorageDetailImport, StorageDetailDel
 from diacamma.payoff.views import SupportingThirdValid
-from django.utils import six
-from _io import StringIO
 
 
 class StorageTest(InvoiceTest):
@@ -69,7 +66,7 @@ class StorageTest(InvoiceTest):
         self.assert_json_equal('LABELFORM', 'reference', "ABC1")
         self.assert_grid_equal('storage', {"area": "Lieu de stockage", "qty": "Quantité", "amount": "Montant", "mean": "Prix moyen"}, 1)
         self.assert_json_equal('', 'storage/@0/area', "{[b]}Total{[/b]}")
-        self.assert_json_equal('', 'storage/@0/qty', "{[b]}0.0{[/b]}")
+        self.assert_json_equal('', 'storage/@0/qty', "{[b]}0.000{[/b]}")
         self.assert_json_equal('', 'storage/@0/amount', "{[b]}0.00€{[/b]}")
         self.assert_json_equal('', 'storage/@0/mean', '')
         self.assert_count_equal('moving', 0)
@@ -109,7 +106,7 @@ class StorageTest(InvoiceTest):
         self.assert_json_equal('FLOAT', 'quantity', 1.0)
         self.assert_json_equal('', '#quantity/min', 0.0)
         self.assert_json_equal('', '#quantity/max', 9999999.99)
-        self.assert_json_equal('', '#quantity/prec', 2)
+        self.assert_json_equal('', '#quantity/prec', 3)
 
         self.factory.xfer = StorageDetailAddModify()
         self.calljson('/diacamma.invoice/storageDetailAddModify', {'storagesheet': "1", "article": 1}, False)
@@ -118,7 +115,7 @@ class StorageTest(InvoiceTest):
         self.assert_json_equal('FLOAT', 'quantity', 1.0)
         self.assert_json_equal('', '#quantity/min', 0.0)
         self.assert_json_equal('', '#quantity/max', 9999999.99)
-        self.assert_json_equal('', '#quantity/prec', 2)
+        self.assert_json_equal('', '#quantity/prec', 3)
 
         self.factory.xfer = StorageDetailAddModify()
         self.calljson('/diacamma.invoice/storageDetailAddModify', {'storagesheet': "1", "article": 3}, False)
@@ -145,10 +142,10 @@ class StorageTest(InvoiceTest):
         self.assert_count_equal('storagedetail', 2)
         self.assert_json_equal('', 'storagedetail/@0/article', "ABC1")
         self.assert_json_equal('', 'storagedetail/@0/price_txt', "7.25€")
-        self.assert_json_equal('', 'storagedetail/@0/quantity_txt', "10.00")
+        self.assert_json_equal('', 'storagedetail/@0/quantity_txt', "10.000")
         self.assert_json_equal('', 'storagedetail/@1/article', "ABC4")
         self.assert_json_equal('', 'storagedetail/@1/price_txt', "1.00€")
-        self.assert_json_equal('', 'storagedetail/@1/quantity_txt', "25.00")
+        self.assert_json_equal('', 'storagedetail/@1/quantity_txt', "25")
 
         self.factory.xfer = ArticleShow()
         self.calljson('/diacamma.invoice/articleShow', {'article': '1'}, False)
@@ -177,17 +174,17 @@ class StorageTest(InvoiceTest):
         self.assert_json_equal('LABELFORM', 'reference', "ABC1")
         self.assert_count_equal('storage', 2)
         self.assert_json_equal('', 'storage/@0/area', "Lieu 1")
-        self.assert_json_equal('', 'storage/@0/qty', "10.0")
+        self.assert_json_equal('', 'storage/@0/qty', "10.000")
         self.assert_json_equal('', 'storage/@0/amount', "72.50€")
         self.assert_json_equal('', 'storage/@0/mean', "7.25€")
         self.assert_json_equal('', 'storage/@1/area', "{[b]}Total{[/b]}")
-        self.assert_json_equal('', 'storage/@1/qty', "{[b]}10.0{[/b]}")
+        self.assert_json_equal('', 'storage/@1/qty', "{[b]}10.000{[/b]}")
         self.assert_json_equal('', 'storage/@1/amount', "{[b]}72.50€{[/b]}")
 
         self.assert_count_equal('moving', 1)
         self.assert_json_equal('', 'moving/@0/storagesheet.date', "2014-04-01")
         self.assert_json_equal('', 'moving/@0/storagesheet.comment', "arrivage massif!")
-        self.assert_json_equal('', 'moving/@0/quantity', "10.00")
+        self.assert_json_equal('', 'moving/@0/quantity', "10.000")
 
         self.factory.xfer = StorageSheetList()
         self.calljson('/diacamma.invoice/storageSheetList', {'status': -1}, False)
@@ -208,7 +205,7 @@ class StorageTest(InvoiceTest):
         self.assert_json_equal('LABELFORM', 'reference', "ABC1")
         self.assert_grid_equal('storage', {"area": "Lieu de stockage", "qty": "Quantité", "amount": "Montant", "mean": "Prix moyen"}, 1)
         self.assert_json_equal('', 'storage/@0/area', "{[b]}Total{[/b]}")
-        self.assert_json_equal('', 'storage/@0/qty', "{[b]}0.0{[/b]}")
+        self.assert_json_equal('', 'storage/@0/qty', "{[b]}0.000{[/b]}")
         self.assert_json_equal('', 'storage/@0/amount', "{[b]}0.00€{[/b]}")
         self.assert_grid_equal('moving', {"storagesheet.date": "date", "storagesheet.comment": "commentaire", "quantity": "quantité"}, 0)  # nb=3
 
@@ -260,9 +257,9 @@ class StorageTest(InvoiceTest):
         self.assert_json_equal('LABELFORM', 'status', "en création")
         self.assert_count_equal('storagedetail', 2)
         self.assert_json_equal('', 'storagedetail/@0/article', "ABC1")
-        self.assert_json_equal('', 'storagedetail/@0/quantity_txt', "7.00")
+        self.assert_json_equal('', 'storagedetail/@0/quantity_txt', "7.000")
         self.assert_json_equal('', 'storagedetail/@1/article', "ABC4")
-        self.assert_json_equal('', 'storagedetail/@1/quantity_txt', "6.00")
+        self.assert_json_equal('', 'storagedetail/@1/quantity_txt', "6")
         self.assert_json_equal('LABELFORM', 'info',
                                "{[font color=\"red\"]}L'article ABC1 est en quantité insuffisante{[br/]}L'article ABC4 est en quantité insuffisante{[/font]}")
 
@@ -288,21 +285,21 @@ class StorageTest(InvoiceTest):
         self.assert_json_equal('LABELFORM', 'reference', "ABC1")
         self.assert_count_equal('storage', 3)
         self.assert_json_equal('', 'storage/@0/area', "Lieu 1")
-        self.assert_json_equal('', 'storage/@0/qty', "10.0")
+        self.assert_json_equal('', 'storage/@0/qty', "10.000")
         self.assert_json_equal('', 'storage/@0/amount', "50.00€")
         self.assert_json_equal('', 'storage/@1/area', "Lieu 2")
-        self.assert_json_equal('', 'storage/@1/qty', "5.0")
+        self.assert_json_equal('', 'storage/@1/qty', "5.000")
         self.assert_json_equal('', 'storage/@1/amount', "20.00€")
         self.assert_json_equal('', 'storage/@2/area', "{[b]}Total{[/b]}")
-        self.assert_json_equal('', 'storage/@2/qty', "{[b]}15.0{[/b]}")
+        self.assert_json_equal('', 'storage/@2/qty', "{[b]}15.000{[/b]}")
         self.assert_json_equal('', 'storage/@2/amount', "{[b]}70.00€{[/b]}")
         self.assert_count_equal('moving', 2)
         self.assert_json_equal('', 'moving/@0/storagesheet.date', "2014-01-02")
         self.assert_json_equal('', 'moving/@0/storagesheet.comment', "B")
-        self.assert_json_equal('', 'moving/@0/quantity', "5.00")
+        self.assert_json_equal('', 'moving/@0/quantity', "5.000")
         self.assert_json_equal('', 'moving/@1/storagesheet.date', "2014-01-01")
         self.assert_json_equal('', 'moving/@1/storagesheet.comment', "A")
-        self.assert_json_equal('', 'moving/@1/quantity', "10.00")
+        self.assert_json_equal('', 'moving/@1/quantity', "10.000")
 
         self.factory.xfer = StorageSheetShow()
         self.calljson('/diacamma.invoice/storageSheetShow', {'storagesheet': "1"}, False)
@@ -311,9 +308,9 @@ class StorageTest(InvoiceTest):
         self.assert_json_equal('LABELFORM', 'status', "en création")
         self.assert_count_equal('storagedetail', 2)
         self.assert_json_equal('', 'storagedetail/@0/article', "ABC1")
-        self.assert_json_equal('', 'storagedetail/@0/quantity_txt', "7.00")
+        self.assert_json_equal('', 'storagedetail/@0/quantity_txt', "7.000")
         self.assert_json_equal('', 'storagedetail/@1/article', "ABC4")
-        self.assert_json_equal('', 'storagedetail/@1/quantity_txt', "6.00")
+        self.assert_json_equal('', 'storagedetail/@1/quantity_txt', "6")
         self.assert_json_equal('LABELFORM', 'info', "{[font color=\"red\"]}{[/font]}")
 
         self.factory.xfer = StorageSheetTransition()
@@ -335,27 +332,27 @@ class StorageTest(InvoiceTest):
         self.assert_json_equal('LABELFORM', 'reference', "ABC1")
         self.assert_count_equal('storage', 3)
         self.assert_json_equal('', 'storage/@0/area', "Lieu 1")
-        self.assert_json_equal('', 'storage/@0/qty', "3.0")
+        self.assert_json_equal('', 'storage/@0/qty', "3.000")
         self.assert_json_equal('', 'storage/@0/amount', "15.00€")
         self.assert_json_equal('', 'storage/@0/mean', "5.00€")
         self.assert_json_equal('', 'storage/@1/area', "Lieu 2")
-        self.assert_json_equal('', 'storage/@1/qty', "5.0")
+        self.assert_json_equal('', 'storage/@1/qty', "5.000")
         self.assert_json_equal('', 'storage/@1/amount', "20.00€")
         self.assert_json_equal('', 'storage/@1/mean', "4.00€")
         self.assert_json_equal('', 'storage/@2/area', "{[b]}Total{[/b]}")
-        self.assert_json_equal('', 'storage/@2/qty', "{[b]}8.0{[/b]}")
+        self.assert_json_equal('', 'storage/@2/qty', "{[b]}8.000{[/b]}")
         self.assert_json_equal('', 'storage/@2/amount', "{[b]}35.00€{[/b]}")
         self.assert_json_equal('', 'storage/@2/mean', "{[b]}4.38€{[/b]}")
         self.assert_count_equal('moving', 3)
         self.assert_json_equal('', 'moving/@0/storagesheet.date', "2014-04-01")
         self.assert_json_equal('', 'moving/@0/storagesheet.comment', "casses!")
-        self.assert_json_equal('', 'moving/@0/quantity', "-7.00")
+        self.assert_json_equal('', 'moving/@0/quantity', "-7.000")
         self.assert_json_equal('', 'moving/@1/storagesheet.date', "2014-01-02")
         self.assert_json_equal('', 'moving/@1/storagesheet.comment', "B")
-        self.assert_json_equal('', 'moving/@1/quantity', "5.00")
+        self.assert_json_equal('', 'moving/@1/quantity', "5.000")
         self.assert_json_equal('', 'moving/@2/storagesheet.date', "2014-01-01")
         self.assert_json_equal('', 'moving/@2/storagesheet.comment', "A")
-        self.assert_json_equal('', 'moving/@2/quantity', "10.00")
+        self.assert_json_equal('', 'moving/@2/quantity', "10.000")
 
         self.factory.xfer = StorageSheetList()
         self.calljson('/diacamma.invoice/storageSheetList', {'status': -1, 'sheet_type': 1}, False)
@@ -376,7 +373,7 @@ class StorageTest(InvoiceTest):
         self.assert_json_equal('LABELFORM', 'reference', "ABC1")
         self.assert_count_equal('storage', 1)
         self.assert_json_equal('', 'storage/@0/area', "{[b]}Total{[/b]}")
-        self.assert_json_equal('', 'storage/@0/qty', "{[b]}0.0{[/b]}")
+        self.assert_json_equal('', 'storage/@0/qty', "{[b]}0.000{[/b]}")
         self.assert_json_equal('', 'storage/@0/amount', "{[b]}0.00€{[/b]}")
         self.assert_count_equal('moving', 0)
 
@@ -443,30 +440,30 @@ class StorageTest(InvoiceTest):
         self.assert_json_equal('LABELFORM', 'reference', "ABC1")
         self.assert_count_equal('storage', 3)
         self.assert_json_equal('', 'storage/@0/area', "Lieu 1")
-        self.assert_json_equal('', 'storage/@0/qty', "10.0")
+        self.assert_json_equal('', 'storage/@0/qty', "10.000")
         self.assert_json_equal('', 'storage/@0/amount', "50.00€")
         self.assert_json_equal('', 'storage/@0/mean', "5.00€")
         self.assert_json_equal('', 'storage/@1/area', "Lieu 2")
-        self.assert_json_equal('', 'storage/@1/qty', "5.0")
+        self.assert_json_equal('', 'storage/@1/qty', "5.000")
         self.assert_json_equal('', 'storage/@1/amount', "20.00€")
         self.assert_json_equal('', 'storage/@1/mean', "4.00€")
         self.assert_json_equal('', 'storage/@2/area', "{[b]}Total{[/b]}")
-        self.assert_json_equal('', 'storage/@2/qty', "{[b]}15.0{[/b]}")
+        self.assert_json_equal('', 'storage/@2/qty', "{[b]}15.000{[/b]}")
         self.assert_json_equal('', 'storage/@2/amount', "{[b]}70.00€{[/b]}")
         self.assert_json_equal('', 'storage/@2/mean', "{[b]}4.67€{[/b]}")
         self.assert_count_equal('moving', 2)
         self.assert_json_equal('', 'moving/@0/storagesheet.date', "2014-01-02")
         self.assert_json_equal('', 'moving/@0/storagesheet.comment', "B")
-        self.assert_json_equal('', 'moving/@0/quantity', "5.00")
+        self.assert_json_equal('', 'moving/@0/quantity', "5.000")
         self.assert_json_equal('', 'moving/@1/storagesheet.date', "2014-01-01")
         self.assert_json_equal('', 'moving/@1/storagesheet.comment', "A")
-        self.assert_json_equal('', 'moving/@1/quantity', "10.00")
+        self.assert_json_equal('', 'moving/@1/quantity', "10.000")
 
         self.factory.xfer = DetailAddModify()
         self.calljson('/diacamma.invoice/detailAddModify', {'bill': 1, 'article': 1}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'detailAddModify')
         self.assert_count_equal('', 9)
-        self.assert_select_equal('storagearea', {1: "Lieu 1 [10.0]", 2: "Lieu 2 [5.0]"})
+        self.assert_select_equal('storagearea', {1: "Lieu 1 [10.000]", 2: "Lieu 2 [5.000]"})
 
         self.factory.xfer = BillShow()
         self.calljson('/diacamma.invoice/billShow', {'bill': 1}, False)
@@ -486,24 +483,24 @@ class StorageTest(InvoiceTest):
         self.assert_json_equal('LABELFORM', 'reference', "ABC1")
         self.assert_count_equal('storage', 3)
         self.assert_json_equal('', 'storage/@0/area', "Lieu 1")
-        self.assert_json_equal('', 'storage/@0/qty', "5.0")
+        self.assert_json_equal('', 'storage/@0/qty', "5.000")
         self.assert_json_equal('', 'storage/@0/amount', "25.00€")
         self.assert_json_equal('', 'storage/@1/area', "Lieu 2")
-        self.assert_json_equal('', 'storage/@1/qty', "5.0")
+        self.assert_json_equal('', 'storage/@1/qty', "5.000")
         self.assert_json_equal('', 'storage/@1/amount', "20.00€")
         self.assert_json_equal('', 'storage/@2/area', "{[b]}Total{[/b]}")
-        self.assert_json_equal('', 'storage/@2/qty', "{[b]}10.0{[/b]}")
+        self.assert_json_equal('', 'storage/@2/qty', "{[b]}10.000{[/b]}")
         self.assert_json_equal('', 'storage/@2/amount', "{[b]}45.00€{[/b]}")
         self.assert_count_equal('moving', 3)
         self.assert_json_equal('', 'moving/@0/storagesheet.date', "2015-04-01")
         self.assert_json_equal('', 'moving/@0/storagesheet.comment', "facture A-1 - 1 avril 2015")
-        self.assert_json_equal('', 'moving/@0/quantity', "-5.00")
+        self.assert_json_equal('', 'moving/@0/quantity', "-5.000")
         self.assert_json_equal('', 'moving/@1/storagesheet.date', "2014-01-02")
         self.assert_json_equal('', 'moving/@1/storagesheet.comment', "B")
-        self.assert_json_equal('', 'moving/@1/quantity', "5.00")
+        self.assert_json_equal('', 'moving/@1/quantity', "5.000")
         self.assert_json_equal('', 'moving/@2/storagesheet.date', "2014-01-01")
         self.assert_json_equal('', 'moving/@2/storagesheet.comment', "A")
-        self.assert_json_equal('', 'moving/@2/quantity', "10.00")
+        self.assert_json_equal('', 'moving/@2/quantity', "10.000")
 
         self.factory.xfer = StorageSheetList()
         self.calljson('/diacamma.invoice/storageSheetList', {'status': -1, 'sheet_type': 1}, False)
@@ -518,13 +515,13 @@ class StorageTest(InvoiceTest):
         self.assert_grid_equal('article', {"reference": "référence", "designation": "désignation", "price_txt": "prix", "unit": "unité",
                                            "isdisabled": "désactivé ?", "sell_account": "compte de vente", "stockable": "stockable", "stockage_total": "quantités"}, 4)
         self.assert_json_equal('', 'article/@0/reference', "ABC1")
-        self.assert_json_equal('', 'article/@0/stockage_total', "0.0")
+        self.assert_json_equal('', 'article/@0/stockage_total', "0.000")
         self.assert_json_equal('', 'article/@1/reference', "ABC2")
         self.assert_json_equal('', 'article/@1/stockage_total', "0.0")
         self.assert_json_equal('', 'article/@2/reference', "ABC3")
         self.assert_json_equal('', 'article/@2/stockage_total', "---")
         self.assert_json_equal('', 'article/@3/reference', "ABC4")
-        self.assert_json_equal('', 'article/@3/stockage_total', "0.0")
+        self.assert_json_equal('', 'article/@3/stockage_total', "0")
 
         csv_content = """'num','prix','qty'
 'ABC1','1.11','10.00'
@@ -610,10 +607,10 @@ class StorageTest(InvoiceTest):
         self.assert_count_equal('', 6)
         self.assert_count_equal('article', 4)
         self.assert_json_equal('', 'article/@0/reference', "ABC1")
-        self.assert_json_equal('', 'article/@0/stockage_total', "10.0")
+        self.assert_json_equal('', 'article/@0/stockage_total', "10.000")
         self.assert_json_equal('', 'article/@1/reference', "ABC2")
         self.assert_json_equal('', 'article/@1/stockage_total', "5.0")
         self.assert_json_equal('', 'article/@2/reference', "ABC3")
         self.assert_json_equal('', 'article/@2/stockage_total', "---")
         self.assert_json_equal('', 'article/@3/reference', "ABC4")
-        self.assert_json_equal('', 'article/@3/stockage_total', "20.0")
+        self.assert_json_equal('', 'article/@3/stockage_total', "20")
