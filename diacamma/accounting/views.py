@@ -138,20 +138,19 @@ class ThirdSave(XferContainerAcknowledge):
     model = Third
     field_id = ''
 
-    def fillresponse(self, pkname='', new_account=''):
+    def fillresponse(self, pkname='', new_account=[]):
         contact_id = self.getparam(pkname)
-        last_thirds = Third.objects.filter(
-            contact__pk=contact_id)
+        last_thirds = Third.objects.filter(contact__pk=contact_id)
         if len(last_thirds) > 0:
             self.item = last_thirds[0]
         else:
             self.item.contact = AbstractContact.objects.get(id=contact_id)
             self.item.status = 0
             self.item.save()
-        if new_account != '':
-            old_account = self.item.accountthird_set.filter(code=correct_accounting_code(new_account))
+        for item_account in new_account:
+            old_account = self.item.accountthird_set.filter(code=correct_accounting_code(item_account))
             if len(old_account) == 0:
-                AccountThird.objects.create(third=self.item, code=correct_accounting_code(new_account))
+                AccountThird.objects.create(third=self.item, code=correct_accounting_code(item_account))
         self.redirect_action(ThirdShow.get_action(), params={'third': self.item.id})
 
 

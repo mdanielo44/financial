@@ -41,7 +41,7 @@ from lucterios.contacts.models import CustomField
 
 from diacamma.accounting.views_entries import EntryAccountList, EntryAccountListing, EntryAccountEdit, EntryAccountShow, \
     EntryAccountClose, EntryAccountCostAccounting, EntryAccountSearch
-from diacamma.accounting.test_tools import default_compta, initial_thirds, fill_entries
+from diacamma.accounting.test_tools import default_compta, initial_thirds, fill_entries, add_entry
 from diacamma.accounting.views_other import CostAccountingList, CostAccountingClose, CostAccountingAddModify
 from diacamma.accounting.views_reports import FiscalYearBalanceSheet, FiscalYearIncomeStatement, FiscalYearLedger, FiscalYearTrialBalance,\
     CostAccountingTrialBalance, CostAccountingLedger, CostAccountingIncomeStatement
@@ -57,9 +57,10 @@ class CompletedEntryTest(LucteriosTest):
         self.xfer_class = XferContainerAcknowledge
         initial_thirds()
         LucteriosTest.setUp(self)
-        default_compta()
+        default_compta(with8=True)
         rmtree(get_user_dir(), True)
         fill_entries(1)
+        add_entry(1, 5, '2015-12-31', 'Bénévolat', '-1|19|0|-1234.000000|0|None|\n-2|18|0|1234.000000|0|None|', True)
         last_year = FiscalYear.objects.create(begin='2014-01-01', end='2014-12-31', status=2)  # id=2
         current_year = FiscalYear.objects.get(id=1)
         current_year.last_fiscalyear = last_year
@@ -151,7 +152,7 @@ class CompletedEntryTest(LucteriosTest):
         self.assert_json_equal('', 'entryline/@5/entry_account', '[512] 512')
 
     def test_other(self):
-        self._goto_entrylineaccountlist(5, 0, 2)
+        self._goto_entrylineaccountlist(5, 0, 4)
         self.assert_json_equal('', 'entryline/@0/entry.num', '7')
         self.assert_json_equal('', 'entryline/@0/entry.link', '---')
         self.assert_json_equal('', 'entryline/@0/entry_account', '[512] 512')
@@ -165,20 +166,20 @@ class CompletedEntryTest(LucteriosTest):
         return self.assert_json_equal('LABELFORM', 'result', '{[center]}{[b]}Produit :{[/b]} 34.01€ - {[b]}Charge :{[/b]} 0.00€ = {[b]}Résultat :{[/b]} 34.01€{[br/]}{[b]}Trésorerie :{[/b]} 70.64€ - {[b]}Validé :{[/b]} 70.64€{[/center]}')
 
     def test_all(self):
-        self._goto_entrylineaccountlist(-1, 0, 23)
+        self._goto_entrylineaccountlist(-1, 0, 25)
         self._check_result()
 
     def test_noclose(self):
         self._goto_entrylineaccountlist(-1, 1, 8)
 
     def test_close(self):
-        self._goto_entrylineaccountlist(-1, 2, 15)
+        self._goto_entrylineaccountlist(-1, 2, 17)
 
     def test_letter(self):
         self._goto_entrylineaccountlist(-1, 3, 12)
 
     def test_noletter(self):
-        self._goto_entrylineaccountlist(-1, 4, 11)
+        self._goto_entrylineaccountlist(-1, 4, 13)
 
     def test_summary(self):
         self.factory.xfer = StatusMenu()
@@ -197,7 +198,7 @@ class CompletedEntryTest(LucteriosTest):
         self.assert_observer('core.print', 'diacamma.accounting', 'entryAccountListing')
         csv_value = b64decode(six.text_type(self.response_json['print']['content'])).decode("utf-8")
         content_csv = csv_value.split('\n')
-        self.assertEqual(len(content_csv), 30, str(content_csv))
+        self.assertEqual(len(content_csv), 32, str(content_csv))
         self.assertEqual(content_csv[1].strip(), '"Liste d\'écritures"')
         self.assertEqual(content_csv[3].strip(), '"N°";"date d\'écriture";"date de pièce";"compte";"nom";"débit";"crédit";"lettrage";')
         self.assertEqual(content_csv[4].strip(), '"1";"%s";"1 février 2015";"[106] 106";"Report à nouveau";"";"1250.38€";"";' % formats.date_format(date.today(), "DATE_FORMAT"))
@@ -217,7 +218,7 @@ class CompletedEntryTest(LucteriosTest):
         self.assert_observer('core.print', 'diacamma.accounting', 'entryAccountListing')
         csv_value = b64decode(six.text_type(self.response_json['print']['content'])).decode("utf-8")
         content_csv = csv_value.split('\n')
-        self.assertEqual(len(content_csv), 22, str(content_csv))
+        self.assertEqual(len(content_csv), 24, str(content_csv))
 
         self.factory.xfer = EntryAccountListing()
         self.calljson('/diacamma.accounting/entryAccountListing',
@@ -234,7 +235,7 @@ class CompletedEntryTest(LucteriosTest):
         csv_value = b64decode(
             six.text_type(self.response_json['print']['content'])).decode("utf-8")
         content_csv = csv_value.split('\n')
-        self.assertEqual(len(content_csv), 18, str(content_csv))
+        self.assertEqual(len(content_csv), 20, str(content_csv))
 
         self.factory.xfer = EntryAccountListing()
         self.calljson('/diacamma.accounting/entryAccountListing',
@@ -517,7 +518,7 @@ class CompletedEntryTest(LucteriosTest):
         self.assert_json_equal('', 'costaccounting/@2/total_revenue', '70.64€')
         self.assert_json_equal('', 'costaccounting/@2/total_expense', '258.02€')
 
-        self._goto_entrylineaccountlist(-1, 0, 23)
+        self._goto_entrylineaccountlist(-1, 0, 25)
         self.assert_json_equal('', 'entryline/@3/id', '9')
         self.assert_json_equal('', 'entryline/@3/entry.num', '---')
         self.assert_json_equal('', 'entryline/@3/entry_account', '[401 Dalton Avrel]')
@@ -554,7 +555,7 @@ class CompletedEntryTest(LucteriosTest):
         self.calljson('/diacamma.accounting/entryAccountCostAccounting', {"SAVE": "YES", 'entryline': '8;9;12;13;18;19', 'cost_accounting_id': '2'}, False)  # -78.24 / +125.97
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountCostAccounting')
 
-        self._goto_entrylineaccountlist(-1, 0, 23)
+        self._goto_entrylineaccountlist(-1, 0, 25)
         self.assert_json_equal('', 'entryline/@3/id', '9')
         self.assert_json_equal('', 'entryline/@3/entry.num', '---')
         self.assert_json_equal('', 'entryline/@3/entry_account', '[401 Dalton Avrel]')
@@ -596,7 +597,7 @@ class CompletedEntryTest(LucteriosTest):
         self.calljson('/diacamma.accounting/entryAccountCostAccounting', {"SAVE": "YES", 'entryline': '8;9;12;13;18;19', 'cost_accounting_id': '0'}, False)  # - -194.08 / 0
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountCostAccounting')
 
-        self._goto_entrylineaccountlist(-1, 0, 23)
+        self._goto_entrylineaccountlist(-1, 0, 25)
         self.assert_json_equal('', 'entryline/@3/id', '9')
         self.assert_json_equal('', 'entryline/@3/entry.num', '---')
         self.assert_json_equal('', 'entryline/@3/entry_account', '[401 Dalton Avrel]')
@@ -638,7 +639,7 @@ class CompletedEntryTest(LucteriosTest):
         self.calljson('/diacamma.accounting/entryAccountCostAccounting', {"SAVE": "YES", 'entryline': '8;9;12;13;18;19', 'cost_accounting_id': '3'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountCostAccounting')
 
-        self._goto_entrylineaccountlist(-1, 0, 23)
+        self._goto_entrylineaccountlist(-1, 0, 25)
         self.assert_json_equal('', 'entryline/@3/id', '9')
         self.assert_json_equal('', 'entryline/@3/entry.num', '---')
         self.assert_json_equal('', 'entryline/@3/entry_account', '[401 Dalton Avrel]')
@@ -686,7 +687,7 @@ class CompletedEntryTest(LucteriosTest):
         self.calljson('/diacamma.accounting/entryAccountCostAccounting', {"SAVE": "YES", 'entryline': '8;9;12;13;18;19', 'cost_accounting_id': '4'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountCostAccounting')
 
-        self._goto_entrylineaccountlist(-1, 0, 23)
+        self._goto_entrylineaccountlist(-1, 0, 25)
         self.assert_json_equal('', 'entryline/@3/id', '9')
         self.assert_json_equal('', 'entryline/@3/entry.num', '---')
         self.assert_json_equal('', 'entryline/@3/entry_account', '[401 Dalton Avrel]')
@@ -873,7 +874,7 @@ class CompletedEntryTest(LucteriosTest):
         self.calljson('/diacamma.accounting/fiscalYearIncomeStatement', {}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'fiscalYearIncomeStatement')
         self._check_result()
-        self.assert_count_equal('report_1', 8)
+        self.assert_count_equal('report_1', 11)
 
         self.assert_json_equal('', 'report_1/@0/left', '[601] 601')
         self.assert_json_equal('', 'report_1/@0/left_n', '78.24€')
@@ -900,6 +901,11 @@ class CompletedEntryTest(LucteriosTest):
         self.assert_json_equal('', 'report_1/@4/left_n_1', '')
         self.assert_json_equal('', 'report_1/@4/left_b', '')
 
+        self.assert_json_equal('', 'report_1/@8/left', '[870] 870')
+        self.assert_json_equal('', 'report_1/@8/left_n', '1234.00€')
+        self.assert_json_equal('', 'report_1/@8/left_n_1', '')
+        self.assert_json_equal('', 'report_1/@8/left_b', '')
+
         self.assert_json_equal('', 'report_1/@0/right', '[701] 701')
         self.assert_json_equal('', 'report_1/@0/right_n', '0.00€')
         self.assert_json_equal('', 'report_1/@0/right_n_1', '')
@@ -909,6 +915,11 @@ class CompletedEntryTest(LucteriosTest):
         self.assert_json_equal('', 'report_1/@1/right_n', '230.62€')
         self.assert_json_equal('', 'report_1/@1/right_n_1', '')
         self.assert_json_equal('', 'report_1/@1/right_b', '123.45€')
+
+        self.assert_json_equal('', 'report_1/@8/right', '[860] 860')
+        self.assert_json_equal('', 'report_1/@8/right_n', '1234.00€')
+        self.assert_json_equal('', 'report_1/@8/right_n_1', '')
+        self.assert_json_equal('', 'report_1/@8/right_b', '')
 
     def test_fiscalyear_import_budget(self):
         FiscalYear.objects.create(begin='2016-01-01', end='2016-12-31', status=0, last_fiscalyear_id=1)
@@ -964,7 +975,7 @@ class CompletedEntryTest(LucteriosTest):
         self.calljson('/diacamma.accounting/fiscalYearTrialBalance', {}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'fiscalYearTrialBalance')
         self._check_result()
-        self.assert_count_equal('report_1', 10)
+        self.assert_count_equal('report_1', 12)
         self.assert_json_equal('', 'report_1/@0/designation', '[106] 106')
         self.assert_json_equal('', 'report_1/@0/total_debit', '0.00€')
         self.assert_json_equal('', 'report_1/@0/total_credit', '1250.38€')
@@ -1025,6 +1036,18 @@ class CompletedEntryTest(LucteriosTest):
         self.assert_json_equal('', 'report_1/@9/solde_debit', '')
         self.assert_json_equal('', 'report_1/@9/solde_credit', '230.62€')
 
+        self.assert_json_equal('', 'report_1/@10/designation', '[860] 860')
+        self.assert_json_equal('', 'report_1/@10/total_debit', '0.00€')
+        self.assert_json_equal('', 'report_1/@10/total_credit', '1234.00€')
+        self.assert_json_equal('', 'report_1/@10/solde_debit', '')
+        self.assert_json_equal('', 'report_1/@10/solde_credit', '1234.00€')
+
+        self.assert_json_equal('', 'report_1/@11/designation', '[870] 870')
+        self.assert_json_equal('', 'report_1/@11/total_debit', '1234.00€')
+        self.assert_json_equal('', 'report_1/@11/total_credit', '0.00€')
+        self.assert_json_equal('', 'report_1/@11/solde_debit', '1234.00€')
+        self.assert_json_equal('', 'report_1/@11/solde_credit', '')
+
     def test_fiscalyear_trialbalance_filter(self):
         self.factory.xfer = FiscalYearTrialBalance()
         self.calljson('/diacamma.accounting/fiscalYearTrialBalance', {'begin': '2015-02-22', 'end': '2015-02-28'}, False)
@@ -1048,7 +1071,7 @@ class CompletedEntryTest(LucteriosTest):
         self.factory.xfer = EntryAccountSearch()
         self.calljson('/diacamma.accounting/entryAccountSearch', {}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountSearch')
-        self.assert_count_equal('entryline', 23)
+        self.assert_count_equal('entryline', 25)
 
         self.factory.xfer = EntryAccountSearch()
         self.calljson('/diacamma.accounting/entryAccountSearch', {'CRITERIA': 'third.custom_2||1||4'}, False)

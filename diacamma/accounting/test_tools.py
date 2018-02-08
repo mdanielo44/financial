@@ -108,7 +108,7 @@ def initial_thirds():
     fill_thirds()
 
 
-def fill_accounts(year=None, with12=True):
+def fill_accounts(year=None, with12=True, with8=False):
     create_account(['411', '512', '531'], 0, year)  # 1 2 3
     create_account(['401'], 1, year)  # 4
     create_account(['106', '110', '119'], 2, year)  # 5 6 7
@@ -116,6 +116,8 @@ def fill_accounts(year=None, with12=True):
     create_account(['601', '602', '604', '607', '627'], 4, year)  # 11 12 13 14 15
     if with12:
         create_account(['120', '129'], 2, year)  # 16 17
+    if with8:
+        create_account(['860', '870'], 5, year)  # 18 19
 
 
 def default_costaccounting():
@@ -147,12 +149,12 @@ def set_accounting_system():
     signal_and_lock.Signal.call_signal("param_change", ['accounting-system'])
 
 
-def default_compta(status=0, with12=True):
+def default_compta(status=0, with12=True, with8=False):
     from diacamma.payoff.views_conf import paramchange_payoff
     paramchange_payoff([])
     set_accounting_system()
     year = create_year(status)
-    fill_accounts(year, with12)
+    fill_accounts(year, with12, with8)
 
 
 def add_entry(yearid, journalid, date_value, designation, serial_entry, closed=False):
