@@ -908,6 +908,64 @@ class BillTest(InvoiceTest):
         self.assert_count_equal('bill', 1)
         self.assert_count_equal('#bill/actions', 2)
 
+    def test_compta_valid_with_pay(self):
+        default_articles()
+        Parameter.change_value('payoff-bankcharges-account', '627')
+        Params.clear()
+        details = [{'article': 1, 'designation': 'article 1', 'price': '22.50', 'quantity': 3, 'reduce': '5.0'},
+                   {'article': 2, 'designation': 'article 2',
+                       'price': '3.25', 'quantity': 7},
+                   {'article': 0, 'designation': 'article 3',
+                       'price': '11.10', 'quantity': 2}]
+        self._create_bill(details, 1, '2015-04-01', 6)
+
+        self.factory.xfer = BillTransition()
+        self.calljson('/diacamma.invoice/billValid', {'bill': 1, 'TRANSITION': 'valid'}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'billValid')
+        self.assert_count_equal('', 2 + 7 + 0)
+
+        self.factory.xfer = BillTransition()
+        self.calljson('/diacamma.invoice/billValid', {'bill': 1, 'TRANSITION': 'valid', 'mode': 1}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'billValid')
+        self.assert_count_equal('', 2 + 9 + 0)
+
+        configSMTP('localhost', 2025)
+
+        self.factory.xfer = BillTransition()
+        self.calljson('/diacamma.invoice/billValid', {'bill': 1, 'TRANSITION': 'valid', 'mode': 1}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'billValid')
+        self.assert_count_equal('', 2 + 9 + 4)
+        self.assert_json_equal('', 'withpayoff', False)
+        self.assert_json_equal('', 'amount', '107.45')
+        self.assert_json_equal('', 'sendemail', False)
+
+        self.factory.xfer = BillTransition()
+        self.calljson('/diacamma.invoice/billValid', {'bill': 1, 'TRANSITION': 'valid', 'CONFIRME': 'YES',
+                                                      'withpayoff': True, 'mode': 1, 'amount': '107.45', 'date_payoff': '2015-04-07', 'mode': 1, 'reference': 'abc123', 'bank_account': 1, 'payer': "Ma'a Dalton", 'bank_fee': '1.08',
+                                                      'sendemail': True, 'subject': 'my bill', 'message': 'this is a bill.', 'model': 8}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'billValid')
+        self.assert_action_equal(self.response_json['action'], ("", None, "diacamma.payoff", "payableEmail", 1, 1, 1))
+
+        self.factory.xfer = EntryAccountList()
+        self.calljson('/diacamma.accounting/entryAccountList',
+                      {'year': '1', 'journal': '-1', 'filter': '0'}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
+        self.assert_count_equal('entryline', 5 + 3)
+
+        self.assert_json_equal('', 'entryline/@5/entry.num', '---')
+        self.assert_json_equal('', 'entryline/@5/entry.date_entry', '---')
+        self.assert_json_equal('', 'entryline/@5/entry.date_value', '2015-04-07')
+        self.assert_json_equal('', 'entryline/@5/designation_ref', 'règlement de facture - 1 avril 2015')
+        self.assert_json_equal('', 'entryline/@5/entry_account', '[411 Dalton Jack]')
+        self.assert_json_equal('', 'entryline/@5/credit', '{[font color="green"]}107.45€{[/font]}')
+        self.assert_json_equal('', 'entryline/@5/costaccounting', '---')
+        self.assert_json_equal('', 'entryline/@6/entry_account', '[512] 512')
+        self.assert_json_equal('', 'entryline/@6/debit', '{[font color="blue"]}106.37€{[/font]}')
+        self.assert_json_equal('', 'entryline/@6/costaccounting', '---')
+        self.assert_json_equal('', 'entryline/@7/entry_account', '[627] 627')
+        self.assert_json_equal('', 'entryline/@7/debit', '{[font color="blue"]}1.08€{[/font]}')
+        self.assert_json_equal('', 'entryline/@7/costaccounting', '---')
+
     def test_compta_bill(self):
         default_articles()
         details = [{'article': 1, 'designation': 'article 1', 'price': '22.50', 'quantity': 3, 'reduce': '5.0'},
@@ -1291,6 +1349,56 @@ class BillTest(InvoiceTest):
         self.calljson('/diacamma.invoice/billList', {}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'billList')
         self.assert_grid_equal('bill', {"bill_type": "type de facture", "num_txt": "N°", "date": "date", "third": "tiers", "comment": "commentaire", "total": "total HT", "status": "status"}, 1)  # nb=7
+
+    def test_list_sorted(self):
+        default_articles()
+        details = [{'article': 0, 'designation': 'article 0', 'price': '20.00', 'quantity': 15}]
+        self._create_bill(details, 0, '2015-04-01', 6, True)  # 59.50
+        details = [{'article': 1, 'designation': 'article 1', 'price': '22.00', 'quantity': 3, 'reduce': '5.0'},
+                   {'article': 2, 'designation': 'article 2', 'price': '3.25', 'quantity': 7}]
+        self._create_bill(details, 1, '2015-04-01', 6, True)  # 83.75
+        details = [{'article': 0, 'designation': 'article 0', 'price': '50.00', 'quantity': 2},
+                   {'article': 5, 'designation': 'article 5', 'price': '6.33', 'quantity': 6.75}]
+        self._create_bill(details, 3, '2015-04-01', 4, True)  # 142.73
+        details = [{'article': 1, 'designation': 'article 1', 'price': '23.00', 'quantity': 3},
+                   {'article': 5, 'designation': 'article 5', 'price': '6.33', 'quantity': 3.50}]
+        self._create_bill(details, 1, '2015-04-01', 5, True)  # 91.16
+        details = [{'article': 2, 'designation': 'article 2', 'price': '3.30', 'quantity': 5},
+                   {'article': 5, 'designation': 'article 5', 'price': '6.35', 'quantity': 4.25, 'reduce': '2.0'}]
+        self._create_bill(details, 1, '2015-04-01', 6, True)  # 41.49
+        details = [{'article': 5, 'designation': 'article 5', 'price': '6.33', 'quantity': 1.25}]
+        self._create_bill(details, 2, '2015-04-01', 4, True)  # 7.91
+
+        self.factory.xfer = BillList()
+        self.calljson('/diacamma.invoice/billList', {}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'billList')
+        self.assert_count_equal('bill', 6)
+        self.assert_json_equal('', 'bill/@0/third', 'Dalton Jack')
+        self.assert_json_equal('', 'bill/@1/third', 'Dalton Jack')
+        self.assert_json_equal('', 'bill/@2/third', 'Minimum')
+        self.assert_json_equal('', 'bill/@3/third', 'Dalton William')
+        self.assert_json_equal('', 'bill/@4/third', 'Dalton Jack')
+        self.assert_json_equal('', 'bill/@5/third', 'Minimum')
+
+        self.factory.xfer = BillList()
+        self.calljson('/diacamma.invoice/billList', {'GRID_ORDER%bill': 'third'}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'billList')
+        self.assert_json_equal('', 'bill/@0/third', 'Dalton Jack')
+        self.assert_json_equal('', 'bill/@1/third', 'Dalton Jack')
+        self.assert_json_equal('', 'bill/@2/third', 'Dalton Jack')
+        self.assert_json_equal('', 'bill/@3/third', 'Dalton William')
+        self.assert_json_equal('', 'bill/@4/third', 'Minimum')
+        self.assert_json_equal('', 'bill/@5/third', 'Minimum')
+
+        self.factory.xfer = BillList()
+        self.calljson('/diacamma.invoice/billList', {'GRID_ORDER%bill': 'third', 'GRID_ORDER%bill_third': '+'}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'billList')
+        self.assert_json_equal('', 'bill/@5/third', 'Dalton Jack')
+        self.assert_json_equal('', 'bill/@4/third', 'Dalton Jack')
+        self.assert_json_equal('', 'bill/@3/third', 'Dalton Jack')
+        self.assert_json_equal('', 'bill/@2/third', 'Dalton William')
+        self.assert_json_equal('', 'bill/@1/third', 'Minimum')
+        self.assert_json_equal('', 'bill/@0/third', 'Minimum')
 
     def test_statistic(self):
         default_articles()

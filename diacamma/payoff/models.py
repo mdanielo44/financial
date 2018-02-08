@@ -392,7 +392,7 @@ class Payoff(LucteriosModel):
         new_entry.unlink()
 
     @classmethod
-    def multi_save(cls, supportings, amount, mode, payer, reference, bank_account, date, repartition):
+    def multi_save(cls, supportings, amount, mode, payer, reference, bank_account, date, bank_fee, repartition):
         supporting_list = []
         amount_sum = 0
         amount_max = 0
@@ -409,7 +409,8 @@ class Payoff(LucteriosModel):
         amount_rest = float(amount)
         paypoff_list = []
         for supporting in supporting_list:
-            new_paypoff = Payoff(supporting=supporting, date=date, payer=payer, mode=mode, reference=reference)
+            new_paypoff = Payoff(supporting=supporting, date=date, payer=payer, mode=mode, reference=reference, bank_fee=bank_fee)
+            bank_fee = 0
             if (bank_account != 0) and (mode != 0):
                 new_paypoff.bank_account = BankAccount.objects.get(id=bank_account)
             if repartition == 0:

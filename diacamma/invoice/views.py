@@ -261,7 +261,7 @@ class BillTransition(XferTransition):
         else:
             if (self.item.bill_type != 0) and withpayoff:
                 Payoff.multi_save((self.item.id,), self.getparam('amount', 0.0), self.getparam('mode', 0), self.getparam('payer'),
-                                  self.getparam('reference'), self.getparam('bank_account', 0), self.getparam('date_payoff'), repartition=0)
+                                  self.getparam('reference'), self.getparam('bank_account', 0), self.getparam('date_payoff'), self.getparam('bank_fee', 0.0), repartition=0)
             XferTransition.fill_confirm(self, transition, trans)
             if sendemail:
                 self.redirect_action(PayableEmail.get_action("", ""), params={"item_name": self.field_id, "OK": "YES"})

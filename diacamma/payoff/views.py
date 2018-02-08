@@ -67,9 +67,8 @@ class PayoffAddModify(XferAddEditor):
 
     def fillresponse_multisave(self, supportings=(), amount=0.0,
                                mode=0, payer='', reference='',
-                               bank_account=0, date=None, repartition=0):
-        Payoff.multi_save(
-            supportings, amount, mode, payer, reference, bank_account, date, repartition)
+                               bank_account=0, date=None, fee_bank=0.0, repartition=0):
+        Payoff.multi_save(supportings, amount, mode, payer, reference, bank_account, date, fee_bank, repartition)
 
     def run_save(self, request, *args, **kwargs):
         supportings = self.getparam('supportings', ())
