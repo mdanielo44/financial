@@ -37,7 +37,8 @@ from lucterios.CORE.views import ParamEdit, ObjectImport
 from lucterios.CORE.models import Parameter
 
 from diacamma.accounting.tools import correct_accounting_code
-from diacamma.invoice.models import Vat, Article, Category, StorageArea
+from diacamma.invoice.models import Vat, Article, Category, StorageArea,\
+    AccountPosting
 from diacamma.accounting.system import accounting_system_ident
 from lucterios.contacts.models import CustomField
 
@@ -67,6 +68,8 @@ class InvoiceConf(XferListEditor):
         fill_params(self)
         self.new_tab(_('Categories'))
         self.fill_grid(self.get_max_row(), Category, 'category', Category.objects.all())
+        self.new_tab(_('Account posting codes'))
+        self.fill_grid(self.get_max_row(), AccountPosting, 'accountposting', AccountPosting.objects.all())
         self.new_tab(_("Custom field"))
         self.fill_grid(0, CustomField, "custom_field", CustomField.get_filter(Article))
         grid_custom = self.get_components('custom_field')
@@ -74,6 +77,26 @@ class InvoiceConf(XferListEditor):
         self.new_tab(_('Storage area'))
         self.fill_grid(self.get_max_row(), StorageArea, 'storagearea', StorageArea.objects.all())
         self.new_tab(_('VAT'))
+
+
+@ActionsManage.affect_grid(TITLE_ADD, "images/add.png")
+@ActionsManage.affect_grid(TITLE_MODIFY, "images/edit.png", unique=SELECT_SINGLE)
+@MenuManage.describ('invoice.add_vat')
+class AccountPostingAddModify(XferAddEditor):
+    icon = "invoice_conf.png"
+    model = AccountPosting
+    field_id = 'accountposting'
+    caption_add = _("Add account posting code")
+    caption_modify = _("Modify account posting code")
+
+
+@ActionsManage.affect_grid(TITLE_DELETE, "images/delete.png", unique=SELECT_MULTI)
+@MenuManage.describ('invoice.delete_vat')
+class AccountPostingDel(XferDelete):
+    icon = "invoice_conf.png"
+    model = AccountPosting
+    field_id = 'accountposting'
+    caption = _("Delete account posting code")
 
 
 @ActionsManage.affect_grid(TITLE_ADD, "images/add.png")

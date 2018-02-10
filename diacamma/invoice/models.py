@@ -129,6 +129,36 @@ class ArticleCustomField(LucteriosModel):
         default_permissions = []
 
 
+class AccountPosting(LucteriosModel):
+    name = models.CharField(_('name'), max_length=100, blank=False)
+    sell_account = models.CharField(_('sell account'), max_length=50, blank=True)
+    cost_accounting = models.ForeignKey(CostAccounting, verbose_name=_('cost accounting'), null=True, default=None, on_delete=models.PROTECT)
+
+    def __str__(self):
+        return self.name
+
+    @classmethod
+    def get_default_fields(cls):
+        return ["name", "sell_account", "cost_accounting"]
+
+    @classmethod
+    def get_edit_fields(cls):
+        return ["name", "sell_account", "cost_accounting"]
+
+    @classmethod
+    def get_show_fields(cls):
+        return ["name", "sell_account", "cost_accounting"]
+
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+        self.sell_account = correct_accounting_code(self.sell_account)
+        return LucteriosModel.save(self, force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields)
+
+    class Meta(object):
+        verbose_name = _('account posting code')
+        verbose_name_plural = _('account posting codes')
+        default_permissions = []
+
+
 class Article(LucteriosModel, CustomizeObject):
     CustomFieldClass = ArticleCustomField
     FieldName = 'article'
@@ -146,6 +176,7 @@ class Article(LucteriosModel, CustomizeObject):
                                     choices=((0, _('no stockable')), (1, _('stockable')), (2, _('stockable & no marketable'))), null=False, default=0, db_index=True)
     categories = models.ManyToManyField(Category, verbose_name=_('categories'), blank=True)
     qtyDecimal = models.IntegerField(verbose_name=_('quantity decimal'), default=0, validators=[MinValueValidator(0), MaxValueValidator(3)])
+    accountposting = models.ForeignKey(AccountPosting, verbose_name=_('account posting code'), null=True, default=None, on_delete=models.PROTECT)
 
     def __str__(self):
         return six.text_type(self.reference)
@@ -162,7 +193,7 @@ class Article(LucteriosModel, CustomizeObject):
 
     @classmethod
     def get_default_fields(cls):
-        fields = ["reference", "designation", (_('price'), "price_txt"), 'unit', "isdisabled", 'sell_account', "stockable"]
+        fields = ["reference", "designation", (_('price'), "price_txt"), 'unit', "isdisabled", 'accountposting', "stockable"]
         if len(Category.objects.all()) > 0:
             fields.append('categories')
         if len(StorageArea.objects.all()) > 0:
@@ -171,7 +202,7 @@ class Article(LucteriosModel, CustomizeObject):
 
     @classmethod
     def get_edit_fields(cls):
-        fields = {_('001@Description'): ["reference", "designation", ("price", "unit"), ("sell_account", 'vat'), ("stockable", "isdisabled"), ("qtyDecimal",)]}
+        fields = {_('001@Description'): ["reference", "designation", ("price", "unit"), ("accountposting", 'vat'), ("stockable", "isdisabled"), ("qtyDecimal",)]}
         if len(Category.objects.all()) > 0:
             fields[_('002@Extra')] = ['categories']
         return fields
@@ -179,7 +210,7 @@ class Article(LucteriosModel, CustomizeObject):
     @classmethod
     def get_show_fields(cls):
         fields = {'': ["reference"]}
-        fields_desc = ["designation", ("price", "unit"), ("sell_account", 'vat'), ("stockable", "isdisabled"), ("qtyDecimal",)]
+        fields_desc = ["designation", ("price", "unit"), ("accountposting", 'vat'), ("stockable", "isdisabled"), ("qtyDecimal",)]
         fields_desc.extend(cls.get_fields_to_show())
         if len(Category.objects.all()) > 0:
             fields_desc.append('categories')
@@ -190,7 +221,7 @@ class Article(LucteriosModel, CustomizeObject):
 
     @classmethod
     def get_search_fields(cls):
-        fields = ["reference", "designation", "price", "unit", "sell_account", 'vat', "stockable", "isdisabled", "qtyDecimal"]
+        fields = ["reference", "designation", "price", "unit", "accountposting", 'vat', "stockable", "isdisabled", "qtyDecimal"]
         for cf_name, cf_model in CustomField.get_fields(cls):
             fields.append((cf_name, cf_model.get_field(), 'articlecustomfield__value', Q(articlecustomfield__field__id=cf_model.id)))
         if len(Category.objects.all()) > 0:
@@ -203,7 +234,7 @@ class Article(LucteriosModel, CustomizeObject):
 
     @classmethod
     def get_import_fields(cls):
-        fields = ["reference", "designation", "price", "unit", "sell_account", 'vat', "stockable", "isdisabled", "qtyDecimal"]
+        fields = ["reference", "designation", "price", "unit", "accountposting", 'vat', "stockable", "isdisabled", "qtyDecimal"]
         if len(Category.objects.all()) > 0:
             fields.append('categories')
         if len(Provider().third_query) > 0:
@@ -308,10 +339,6 @@ class Article(LucteriosModel, CustomizeObject):
                 return format_txt % float(val[2])
         return None
 
-    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
-        self.sell_account = correct_accounting_code(self.sell_account)
-        return LucteriosModel.save(self, force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields)
-
     class Meta(object):
         verbose_name = _('article')
         verbose_name_plural = _('articles')
@@ -391,7 +418,7 @@ class Bill(Supporting):
 
     @classmethod
     def get_edit_fields(cls):
-        return ["bill_type", "cost_accounting", "date", "comment"]
+        return ["bill_type", "date", "comment"]
 
     @classmethod
     def get_search_fields(cls):
@@ -404,7 +431,7 @@ class Bill(Supporting):
 
     @classmethod
     def get_show_fields(cls):
-        return [((_('numeros'), "num_txt"), "date"), "third", "detail_set", "comment", "cost_accounting", ("status", (_('total'), 'total_excltax'))]
+        return [((_('numeros'), "num_txt"), "date"), "third", "detail_set", "comment", ("status", (_('total'), 'total_excltax'))]
 
     @classmethod
     def get_print_fields(cls):
@@ -509,9 +536,6 @@ class Bill(Supporting):
         else:
             return []
 
-    def default_costaccounting(self):
-        return self.cost_accounting
-
     def get_info_state(self):
         info = []
         if self.status == 0:
@@ -526,14 +550,16 @@ class Bill(Supporting):
                     info.append(_("Article %s is not sufficiently stocked") % six.text_type(detail.article))
             for detail in details:
                 if detail.article is not None:
-                    detail_code = detail.article.sell_account
+                    if detail.article.accountposting is None:
+                        detail_code = ""
+                    else:
+                        detail_code = detail.article.accountposting.sell_account
                 else:
                     detail_code = Params.getvalue("invoice-default-sell-account")
                 detail_account = None
                 if match(current_system_account().get_revenue_mask(), detail_code) is not None:
                     try:
-                        detail_account = ChartsAccount.get_account(
-                            detail_code, FiscalYear.get_current())
+                        detail_account = ChartsAccount.get_account(detail_code, FiscalYear.get_current())
                     except LucteriosException:
                         break
                 if detail_account is None:
@@ -578,31 +604,39 @@ class Bill(Supporting):
                                                  journal=Journal.objects.get(id=3))
         if abs(self.get_total_incltax()) > 0.0001:
             EntryLineAccount.objects.create(account=third_account, amount=is_bill * self.get_total_incltax(), third=self.third, entry=self.entry)
-        remise_total = 0
+        remise_account = None
         detail_list = {}
         for detail in self.detail_set.all():
+            detail_cost = None
             if detail.article is not None:
-                detail_code = detail.article.sell_account
+                if detail.article.accountposting is None:
+                    detail_code = ""
+                else:
+                    detail_code = detail.article.accountposting.sell_account
+                    detail_cost = detail.article.accountposting.cost_accounting_id
             else:
                 detail_code = Params.getvalue("invoice-default-sell-account")
-            detail_account = ChartsAccount.get_account(
-                detail_code, self.fiscal_year)
+            detail_account = ChartsAccount.get_account(detail_code, self.fiscal_year)
             if detail_account is None:
                 raise LucteriosException(IMPORTANT, _("article has code account unknown!"))
-            if detail_account.id not in detail_list.keys():
-                detail_list[detail_account.id] = [detail_account, 0]
-            detail_list[detail_account.id][1] += detail.get_total_excltax() + detail.get_reduce_excltax()
-            remise_total += detail.get_reduce_excltax()
-        if remise_total > 0.001:
-            remise_code = Params.getvalue("invoice-reduce-account")
-            remise_account = ChartsAccount.get_account(
-                remise_code, self.fiscal_year)
-            if remise_account is None:
-                raise LucteriosException(IMPORTANT, _("reduce-account is not defined!"))
-            EntryLineAccount.objects.create(account=remise_account, amount=-1 * is_bill * remise_total, entry=self.entry, costaccounting=self.cost_accounting)
-        for detail_item in detail_list.values():
+            if (detail_code, detail_cost) not in detail_list.keys():
+                detail_list[(detail_code, detail_cost)] = [detail_account, 0, detail_cost]
+            detail_list[(detail_code, detail_cost)][1] += detail.get_total_excltax() + detail.get_reduce_excltax()
+            if detail.get_reduce_excltax() > 0.001:
+                if remise_account is None:
+                    remise_code = Params.getvalue("invoice-reduce-account")
+                    remise_account = ChartsAccount.get_account(remise_code, self.fiscal_year)
+                    if remise_account is None:
+                        raise LucteriosException(IMPORTANT, _("reduce-account is not defined!"))
+                if (remise_code, detail_cost) not in detail_list.keys():
+                    detail_list[(remise_code, detail_cost)] = [remise_account, 0, detail_cost]
+                detail_list[(remise_code, detail_cost)][1] -= detail.get_reduce_excltax()
+        detail_keys = list(detail_list.keys())
+        detail_keys.sort(key=lambda item: "%s__%s" % item)
+        for detail_key in detail_keys:
+            detail_item = detail_list[detail_key]
             if abs(detail_item[1]) > 0.0001:
-                EntryLineAccount.objects.create(account=detail_item[0], amount=is_bill * detail_item[1], entry=self.entry, costaccounting=self.cost_accounting)
+                EntryLineAccount.objects.create(account=detail_item[0], amount=is_bill * detail_item[1], entry=self.entry, costaccounting_id=detail_item[2])
         if Params.getvalue("invoice-vat-mode") != 0:
             vat_val = {}
             for detail in self.detail_set.all():
@@ -1152,10 +1186,14 @@ def invoice_checkparam():
                                args="{'Multi':False}", value='', meta='("accounting","ChartsAccount", Q(type_of_account=3) & Q(year__is_actif=True), "code", True)')
     Parameter.check_and_create(name='invoice-vat-mode', typeparam=4, title=_("invoice-vat-mode"),
                                args="{'Enum':3}", value='0', param_titles=(_("invoice-vat-mode.0"), _("invoice-vat-mode.1"), _("invoice-vat-mode.2")))
-    Parameter.check_and_create(
-        name="invoice-account-third",
-        typeparam=0,
-        title=_("invoice-account-third"),
-        args="{'Multi':False}",
-        value='',
-        meta='("accounting","ChartsAccount","import diacamma.accounting.tools;django.db.models.Q(code__regex=diacamma.accounting.tools.current_system_account().get_customer_mask()) & django.db.models.Q(year__is_actif=True)", "code", True)')
+    Parameter.check_and_create(name="invoice-account-third", typeparam=0, title=_("invoice-account-third"), args="{'Multi':False}", value='',
+                               meta='("accounting","ChartsAccount","import diacamma.accounting.tools;django.db.models.Q(code__regex=diacamma.accounting.tools.current_system_account().get_customer_mask()) & django.db.models.Q(year__is_actif=True)", "code", True)')
+    for art in Article.objects.filter(Q(accountposting__isnull=True) & ~Q(sell_account='')):
+        accout_post, created = AccountPosting.objects.get_or_create(sell_account=art.sell_account)
+        if created:
+            account = ChartsAccount.get_chart_account(accout_post.sell_account)
+            accout_post.name = account.name[:100]
+            accout_post.save()
+        art.accountposting = accout_post
+        art.sell_account = ''
+        art.save()

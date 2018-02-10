@@ -94,9 +94,6 @@ class Supporting(LucteriosModel):
     def default_date(self):
         return date.today()
 
-    def default_costaccounting(self):
-        return None
-
     def entry_links(self):
         return None
 
@@ -310,8 +307,7 @@ class Payoff(LucteriosModel):
         if designation is None:
             designation = _("payoff for %s") % six.text_type(supporting)
         new_entry = EntryAccount.objects.create(
-            year=fiscal_year, date_value=self.date, designation=designation,
-            journal=Journal.objects.get(id=4), costaccounting=supporting.default_costaccounting())
+            year=fiscal_year, date_value=self.date, designation=designation, journal=Journal.objects.get(id=4))
         amount_to_bank = 0
         for third, amount in third_amounts:
             third_account = third.get_account(fiscal_year, supporting.get_third_mask())
@@ -370,13 +366,8 @@ class Payoff(LucteriosModel):
         else:
             is_liability = -1
         first_entry_line = EntryLineAccount.objects.get(account=first_third_account, entry=new_entry, third=first_supporting.third)
-        cost_accouting = new_entry.costaccounting
         for item_paypoff in paypoff_list:
             item_supporting = item_paypoff.supporting.get_final_child()
-            if (cost_accouting is not None) and (item_supporting.default_costaccounting != cost_accouting):
-                new_entry.costaccounting = None
-                new_entry.save()
-                cost_accouting = None
             item_third_account = item_supporting.third.get_account(fiscal_year, item_supporting.get_third_mask())
             if item_third_account != first_third_account:
                 try:

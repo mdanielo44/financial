@@ -23,25 +23,23 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
 from __future__ import unicode_literals
+from datetime import date
 
 from django.utils.translation import ugettext_lazy as _
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
+from django.utils import six
 
 from lucterios.framework.editors import LucteriosEditor
-from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompHeader, XferCompSelect, XferCompCheckList,\
-    XferCompGrid, XferCompButton, XferCompEdit
-from lucterios.framework.tools import CLOSE_NO, FORMTYPE_REFRESH, ActionsManage,\
-    FORMTYPE_MODAL
+from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompSelect, XferCompCheckList, XferCompGrid, XferCompButton, XferCompEdit
+from lucterios.framework.tools import CLOSE_NO, FORMTYPE_REFRESH, ActionsManage, FORMTYPE_MODAL
 from lucterios.framework.models import get_value_if_choices
 from lucterios.CORE.parameters import Params
 
 from diacamma.accounting.tools import current_system_account, format_devise
 from diacamma.accounting.models import CostAccounting, FiscalYear, Third
 from diacamma.payoff.editors import SupportingEditor
-from django.utils import six
 from diacamma.invoice.models import Provider, Category, CustomField
-from datetime import date
 
 
 class VatEditor(LucteriosEditor):
@@ -59,11 +57,9 @@ class VatEditor(LucteriosEditor):
         xfer.add_component(sel_code)
 
 
-class ArticleEditor(LucteriosEditor):
+class AccountPostingEditor(LucteriosEditor):
 
     def edit(self, xfer):
-        currency_decimal = Params.getvalue("accounting-devise-prec")
-        xfer.get_components('price').prec = currency_decimal
         old_account = xfer.get_components("sell_account")
         xfer.tab = old_account.tab
         xfer.remove_component("sell_account")
@@ -74,7 +70,18 @@ class ArticleEditor(LucteriosEditor):
             sel_code.select_list.append((item.code, six.text_type(item)))
         sel_code.set_value(self.item.sell_account)
         xfer.add_component(sel_code)
-        CustomField.edit_fields(xfer, sel_code.col)
+        comp = xfer.get_components("cost_accounting")
+        comp.set_needed(False)
+        comp.set_select_query(CostAccounting.objects.filter(Q(status=0) & (Q(year=None) | Q(year=FiscalYear.get_current()))))
+
+
+class ArticleEditor(LucteriosEditor):
+
+    def edit(self, xfer):
+        currency_decimal = Params.getvalue("accounting-devise-prec")
+        xfer.get_components('price').prec = currency_decimal
+        accountposting = xfer.get_components("accountposting")
+        CustomField.edit_fields(xfer, accountposting.col)
 
     def saving(self, xfer):
         LucteriosEditor.saving(self, xfer)
@@ -124,20 +131,6 @@ class BillEditor(SupportingEditor):
         comp_comment.set_size(100, 375)
         com_type = xfer.get_components('bill_type')
         com_type.set_action(xfer.request, xfer.get_action(), close=CLOSE_NO, modal=FORMTYPE_REFRESH)
-        if xfer.item.bill_type == 0:
-            xfer.remove_component("cost_accounting")
-        else:
-            comp = xfer.get_components("cost_accounting")
-            comp.set_needed(False)
-            comp.set_select_query(CostAccounting.objects.filter(Q(status=0) & (Q(year=None) | Q(year=FiscalYear.get_current()))))
-            if xfer.item.id is None:
-                comp.set_value(xfer.item.cost_accounting_id)
-            else:
-                cost_acc = CostAccounting.objects.filter(is_default=True)
-                if len(cost_acc) > 0:
-                    comp.set_value(cost_acc[0].id)
-                else:
-                    comp.set_value(0)
 
     def show(self, xfer):
         try:

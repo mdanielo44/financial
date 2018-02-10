@@ -30,29 +30,37 @@ from diacamma.accounting.models import FiscalYear
 from diacamma.accounting.test_tools import create_account, default_costaccounting
 
 from diacamma.invoice.models import Article, Vat, Category, Provider,\
-    StorageArea, StorageSheet, StorageDetail
+    StorageArea, StorageSheet, StorageDetail, AccountPosting
 from diacamma.invoice.views import BillTransition, DetailAddModify, BillAddModify
 from diacamma.payoff.views import SupportingThirdValid
 from lucterios.contacts.models import CustomField
 
 
+def default_accountPosting():
+    AccountPosting.objects.create(name="code1", sell_account="701")
+    AccountPosting.objects.create(name="code2", sell_account="707")
+    AccountPosting.objects.create(name="code3", sell_account="601")
+    AccountPosting.objects.create(name="code4", sell_account="708")
+
+
 def default_articles(with_provider=False, with_storage=False):
     default_costaccounting()
+    default_accountPosting()
 
     create_account(['709'], 3, FiscalYear.get_current())
     create_account(['4455'], 1, FiscalYear.get_current())
     vat1 = Vat.objects.create(name="5%", rate=5.0, account='4455', isactif=True)
     vat2 = Vat.objects.create(name="20%", rate=20.0, account='4455', isactif=True)
     art1 = Article.objects.create(reference='ABC1', designation="Article 01",
-                                  price="12.34", unit="kg", isdisabled=False, sell_account="701", vat=None, stockable=1 if with_storage else 0, qtyDecimal=3)
+                                  price="12.34", unit="kg", isdisabled=False, accountposting_id=1, vat=None, stockable=1 if with_storage else 0, qtyDecimal=3)
     art2 = Article.objects.create(reference='ABC2', designation="Article 02",
-                                  price="56.78", unit="l", isdisabled=False, sell_account="707", vat=vat1, stockable=1 if with_storage else 0, qtyDecimal=1)
+                                  price="56.78", unit="l", isdisabled=False, accountposting_id=2, vat=vat1, stockable=1 if with_storage else 0, qtyDecimal=1)
     art3 = Article.objects.create(reference='ABC3', designation="Article 03",
-                                  price="324.97", unit="", isdisabled=False, sell_account="601" if not with_storage else "701", vat=None, stockable=0, qtyDecimal=0)
+                                  price="324.97", unit="", isdisabled=False, accountposting_id=3 if not with_storage else 1, vat=None, stockable=0, qtyDecimal=0)
     art4 = Article.objects.create(reference='ABC4', designation="Article 04",
-                                  price="1.31", unit="", isdisabled=False, sell_account="708", vat=None, stockable=2 if with_storage else 0, qtyDecimal=0)
+                                  price="1.31", unit="", isdisabled=False, accountposting_id=4, vat=None, stockable=2 if with_storage else 0, qtyDecimal=0)
     art5 = Article.objects.create(reference='ABC5', designation="Article 05",
-                                  price="64.10", unit="m", isdisabled=True, sell_account="701", vat=vat2, stockable=0, qtyDecimal=2)
+                                  price="64.10", unit="m", isdisabled=True, accountposting_id=1, vat=vat2, stockable=0, qtyDecimal=2)
     cat_list = Category.objects.all()
     if len(cat_list) > 0:
         art1.categories = cat_list.filter(id__in=(1,))

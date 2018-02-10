@@ -121,10 +121,8 @@ def fill_accounts(year=None, with12=True, with8=False):
 
 
 def default_costaccounting():
-    CostAccounting.objects.create(
-        name='close', description='Close cost', status=1, is_default=False)
-    CostAccounting.objects.create(
-        name='open', description='Open cost', status=0, is_default=True)
+    CostAccounting.objects.create(name='close', description='Close cost', status=1, is_default=False)
+    CostAccounting.objects.create(name='open', description='Open cost', status=0, is_default=True)
 
 
 def add_models():
@@ -169,9 +167,8 @@ def add_entry(yearid, journalid, date_value, designation, serial_entry, closed=F
 
 def fill_entries(yearid):
 
-    CostAccounting.objects.create(name='close', description='Close cost', status=1, is_default=False)
+    default_costaccounting()
     # cost id=1: dep=12.34 / rec=0.00 => res=-12.34
-    CostAccounting.objects.create(name='open', description='Open cost', status=0, is_default=True)
     # cost id=2: dep=258.02 / rec=70.64 => res=-187.38
 
     _ = add_entry(yearid, 1, '2015-02-01', 'Report à nouveau', '-1|5|0|1250.380000|0|None|\n-2|2|0|1135.930000|0|None|\n-3|3|0|114.450000|0|None|', True)  # 1 2 3

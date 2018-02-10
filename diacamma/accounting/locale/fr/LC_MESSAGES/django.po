@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-02-10 14:40+0000\n"
+"POT-Creation-Date: 2018-02-10 16:05+0000\n"
 "PO-Revision-Date: 2016-01-11 23:01+0000\n"
 "Last-Translator: b'Paul ARULATEDA <paul531@orange.fr>'\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -187,11 +187,11 @@ msgstr "Ce compte n'est pas soldé !"
 msgid "accounts"
 msgstr "comptes"
 
-#: models.py:218
+#: models.py:218 views_reports.py:596
 msgid "begin"
 msgstr "début"
 
-#: models.py:219
+#: models.py:219 views_reports.py:603
 msgid "end"
 msgstr "fin"
 
@@ -1187,7 +1187,7 @@ msgstr "total avec annexe"
 msgid "Show ledger for current fiscal year"
 msgstr "Consulter le grand livre pour l'exercice courant"
 
-#: views_reports.py:368 views_reports.py:677
+#: views_reports.py:368 views_reports.py:699
 msgid "Ledger"
 msgstr "Grand livre"
 
@@ -1195,7 +1195,7 @@ msgstr "Grand livre"
 msgid "Show trial balance for current fiscal year"
 msgstr "Consulter la balance pour l'exercice courant"
 
-#: views_reports.py:422 views_reports.py:696
+#: views_reports.py:422 views_reports.py:718
 msgid "Trial balance"
 msgstr "Balance"
 
@@ -1239,30 +1239,30 @@ msgstr "Précédente"
 msgid "Revenues"
 msgstr "Produits"
 
-#: views_reports.py:598
+#: views_reports.py:618
 msgid "Report"
 msgstr "Rapport"
 
-#: views_reports.py:601
+#: views_reports.py:621
 msgid "Income statement of cost accounting"
 msgstr "Compte de résultat de comptabilité analytique"
 
-#: views_reports.py:638
+#: views_reports.py:660
 msgid "general result (profit)"
 msgstr "résultat général (bénéfice)"
 
-#: views_reports.py:639
+#: views_reports.py:661
 msgid "general result (deficit)"
 msgstr "résultat général(déficit)"
 
-#: views_reports.py:652 views_reports.py:656
+#: views_reports.py:674 views_reports.py:678
 msgid "general total"
 msgstr "total général"
 
-#: views_reports.py:680
+#: views_reports.py:702
 msgid "Ledger of cost accounting"
 msgstr "Bilan de comptabilité analytique"
 
-#: views_reports.py:699
+#: views_reports.py:721
 msgid "Trial balance of cost accounting"
 msgstr "Compte de résultat de comptabilité analytique"
