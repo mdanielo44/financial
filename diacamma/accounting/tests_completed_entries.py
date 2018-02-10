@@ -779,14 +779,23 @@ class CompletedEntryTest(LucteriosTest):
         self.factory.xfer = CostAccountingIncomeStatement()
         self.calljson('/diacamma.accounting/costAccountingIncomeStatement', {'costaccounting': '1;2'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'costAccountingIncomeStatement')
+        self.assert_count_equal('', 5)
         self.assertFalse('__tab_1' in self.json_data.keys(), self.json_data.keys())
         self.assert_grid_equal('report_2', {"name": "Comptabilit\u00e9 analytique", "left": "Charges", "left_n": "Valeur", "left_b": "Budget", "space": "", "right": "Produits", "right_n": "Valeur", "right_b": "Budget"}, 5 + 6 + 2)
 
         self.factory.xfer = CostAccountingIncomeStatement()
         self.calljson('/diacamma.accounting/costAccountingIncomeStatement', {'costaccounting': '1'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'costAccountingIncomeStatement')
+        self.assert_count_equal('', 5)
         self.assertFalse('__tab_1' in self.json_data.keys(), self.json_data.keys())
         self.assert_grid_equal('report_1', {"left": "Charges", "left_n": "Valeur", "left_b": "Budget", "space": "", "right": "Produits", "right_n": "Valeur", "right_b": "Budget"}, 5)
+
+        self.factory.xfer = CostAccountingIncomeStatement()
+        self.calljson('/diacamma.accounting/costAccountingIncomeStatement', {'costaccounting': '2', 'begin_date': '2015-02-14', 'end_date': '2015-02-20'}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'costAccountingIncomeStatement')
+        self.assert_count_equal('', 5)
+        self.assertFalse('__tab_1' in self.json_data.keys(), self.json_data.keys())
+        self.assert_grid_equal('report_2', {"left": "Charges", "left_n": "Valeur", "left_b": "Budget", "space": "", "right": "Produits", "right_n": "Valeur", "right_b": "Budget"}, 5)
 
     def test_costaccounting_importbudget(self):
         FiscalYear.objects.create(begin='2016-01-01', end='2016-12-31', status=0, last_fiscalyear_id=1)
@@ -823,19 +832,37 @@ class CompletedEntryTest(LucteriosTest):
         self.factory.xfer = CostAccountingLedger()
         self.calljson('/diacamma.accounting/costAccountingLedger', {'costaccounting': '1;2'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'costAccountingLedger')
+        self.assert_count_equal('', 5 + 2 * 2)
         self.assertTrue('__tab_2' in self.json_data.keys(), self.json_data.keys())
         self.assertFalse('__tab_3' in self.json_data.keys(), self.json_data.keys())
         self.assert_count_equal('report_1', 3 * 4)
         self.assert_count_equal('report_2', 3 * 4)
 
+        self.factory.xfer = CostAccountingLedger()
+        self.calljson('/diacamma.accounting/costAccountingLedger', {'costaccounting': '2', 'begin_date': '2015-02-14', 'end_date': '2015-02-20'}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'costAccountingLedger')
+        self.assert_count_equal('', 5 + 2 * 1)
+        self.assertTrue('__tab_1' in self.json_data.keys(), self.json_data.keys())
+        self.assertFalse('__tab_2' in self.json_data.keys(), self.json_data.keys())
+        self.assert_count_equal('report_2', 1 * 4)
+
     def test_costaccounting_trialbalance(self):
         self.factory.xfer = CostAccountingTrialBalance()
         self.calljson('/diacamma.accounting/costAccountingTrialBalance', {'costaccounting': '1;2'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'costAccountingTrialBalance')
+        self.assert_count_equal('', 5 + 2 * 2)
         self.assertTrue('__tab_2' in self.json_data.keys(), self.json_data.keys())
         self.assertFalse('__tab_3' in self.json_data.keys(), self.json_data.keys())
         self.assert_count_equal('report_1', 1 + 2)
         self.assert_count_equal('report_2', 1 + 2)
+
+        self.factory.xfer = CostAccountingTrialBalance()
+        self.calljson('/diacamma.accounting/costAccountingTrialBalance', {'costaccounting': '2', 'begin_date': '2015-02-14', 'end_date': '2015-02-20'}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'costAccountingTrialBalance')
+        self.assert_count_equal('', 5 + 2 * 1)
+        self.assertTrue('__tab_1' in self.json_data.keys(), self.json_data.keys())
+        self.assertFalse('__tab_2' in self.json_data.keys(), self.json_data.keys())
+        self.assert_count_equal('report_2', 1)
 
     def test_fiscalyear_balancesheet(self):
         self.factory.xfer = FiscalYearBalanceSheet()
