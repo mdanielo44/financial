@@ -314,6 +314,7 @@ class StorageSheetEditor(LucteriosEditor):
             xfer.remove_component("provider")
             xfer.remove_component("bill_reference")
             xfer.remove_component("bill_date")
+            xfer.remove_component("total")
             storagedetail = xfer.get_components("storagedetail")
             storagedetail.delete_header("price_txt")
         if int(self.item.status) == 0:

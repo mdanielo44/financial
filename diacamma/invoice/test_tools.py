@@ -92,7 +92,7 @@ def default_area():
     StorageArea.objects.create(name='Lieu 3', designation="CCC")
 
 
-def insert_storage():
+def insert_storage(complet=False):
     sheet1 = StorageSheet.objects.create(sheet_type=0, date='2014-01-01', storagearea_id=1, comment="A")
     StorageDetail.objects.create(storagesheet=sheet1, article_id=1, price=5.00, quantity=10.0)
     StorageDetail.objects.create(storagesheet=sheet1, article_id=2, price=4.00, quantity=15.0)
@@ -103,6 +103,14 @@ def insert_storage():
     StorageDetail.objects.create(storagesheet=sheet2, article_id=2, price=3.00, quantity=10.0)
     StorageDetail.objects.create(storagesheet=sheet2, article_id=4, price=2.00, quantity=15.0)
     sheet2.valid()
+    if complet:
+        sheet3 = StorageSheet.objects.create(sheet_type=1, date='2014-01-05', storagearea_id=1, comment="C")
+        StorageDetail.objects.create(storagesheet=sheet3, article_id=1, quantity=1.0)
+        StorageDetail.objects.create(storagesheet=sheet3, article_id=2, quantity=2.0)
+        StorageDetail.objects.create(storagesheet=sheet3, article_id=4, quantity=3.0)
+        sheet3.valid()
+        sheet4 = StorageSheet.objects.create(sheet_type=1, date='2014-01-10', storagearea_id=2, comment="D")
+        StorageDetail.objects.create(storagesheet=sheet4, article_id=4, quantity=10.0)
 
 
 class InvoiceTest(LucteriosTest):

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-02-01 15:45+0000\n"
+"POT-Creation-Date: 2018-02-10 14:40+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -90,7 +90,7 @@ msgid "immobilizations & stock"
 msgstr "immobilisatons & stock"
 
 #: system/default.py:253 system/default.py:264 system/default.py:275
-#: system/default.py:287 system/default.py:299
+#: system/default.py:287 system/default.py:298
 msgid "Sub-total"
 msgstr "Sous-total"
 
@@ -106,18 +106,18 @@ msgstr "Valeurs et disponibilités"
 msgid "capital"
 msgstr "capital"
 
-#: system/default.py:296
+#: system/default.py:295
 msgid "liabilities"
 msgstr "dettes"
 
-#: system/default.py:323
+#: system/default.py:322
 msgid "result (deficit)"
 msgstr "résultat (déficit)"
 
-#: system/default.py:325
+#: system/default.py:324
 msgid "result (profit)"
 msgstr "résultat (bénéfice)"
 
-#: system/default.py:327 system/default.py:328
+#: system/default.py:326 system/default.py:327
 msgid "Total"
 msgstr "Total"

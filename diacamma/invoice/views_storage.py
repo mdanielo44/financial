@@ -249,23 +249,33 @@ class StorageSituation(XferListEditor):
         grid.add_header('mean', _('Mean price'))
         six.print_(self.items)
         item_id = 0
+        total_val = 0.0
         for item in self.get_items_from_filter():
             if item['data_sum'] > 0:
                 item_id += 1
                 area_id = item['storagesheet__storagearea']
                 art = Article.objects.get(id=item['article'])
+                format_txt = "%%.%df" % art.qtyDecimal
                 qty = float(item['data_sum'])
                 amount = float(art.get_amount_from_area(qty, area_id))
+                total_val += amount
                 grid.set_value(item_id, "article", six.text_type(art))
                 grid.set_value(item_id, "designation", six.text_type(art.designation))
                 grid.set_value(item_id, 'storagesheet__storagearea', six.text_type(StorageArea.objects.get(id=area_id)))
-                grid.set_value(item_id, 'qty', qty)
+                grid.set_value(item_id, 'qty', format_txt % qty)
                 grid.set_value(item_id, 'amount', format_devise(amount, 5))
                 if abs(qty) > 0.0001:
                     grid.set_value(item_id, 'mean', format_devise(amount / qty, 5))
         grid.set_location(0, self.get_max_row() + 1, 2)
         grid.set_size(200, 500)
         self.add_component(grid)
+
+        lbl = XferCompLabelForm("total")
+        lbl.set_value(format_devise(total_val, 5))
+        lbl.set_location(0, self.get_max_row() + 1, 2)
+        lbl.description = _('total amount')
+        self.add_component(lbl)
+
         self.add_action(StorageSituationPrint.get_action(TITLE_PRINT, "images/print.png"), close=CLOSE_NO)
         self.add_action(WrapAction(TITLE_CLOSE, 'images/close.png'))
 
@@ -347,7 +357,7 @@ class StorageHistoric(XferListEditor):
             edt.description = _('categories')
             edt.set_action(self.request, self.get_action(), modal=FORMTYPE_REFRESH, close=CLOSE_NO)
             self.add_component(edt)
-        self.filter = Q()
+        self.filter = Q(storagesheet__status=1)
         if show_storagearea != 0:
             self.filter &= Q(storagesheet__storagearea=show_storagearea)
         if (date_begin is not None) and (date_begin != NULL_VALUE):

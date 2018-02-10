@@ -1021,7 +1021,7 @@ class StorageSheet(LucteriosModel):
 
     @classmethod
     def get_show_fields(cls):
-        return [("sheet_type", "status"), ("date", "storagearea"), ("provider", "bill_date"), ("bill_reference"), ("comment", ), ("storagedetail_set", )]
+        return [("sheet_type", "status"), ("date", "storagearea"), ("provider", "bill_date"), ("bill_reference"), ("comment", ), ("storagedetail_set", ), ((_('total amount'), 'total'),)]
 
     @property
     def provider_query(self):
@@ -1032,6 +1032,13 @@ class StorageSheet(LucteriosModel):
         if self.status > 0:
             return _('"%s" cannot be deleted!') % six.text_type(self)
         return ''
+
+    @property
+    def total(self):
+        value = 0.0
+        for detail in self.storagedetail_set.all():
+            value += float(detail.quantity) * float(detail.price)
+        return format_devise(value, 5)
 
     def get_info_state(self):
         info = []
