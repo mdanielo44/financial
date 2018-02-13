@@ -66,6 +66,11 @@ def get_totalaccount_for_query(query, sign_value=None, with_third=False):
             amount = None
             if sign_value is None:
                 amount = data_line['data_sum']
+            elif isinstance(sign_value, bool):
+                if sign_value:
+                    amount = credit_debit_way(data_line) * data_line['data_sum']
+                else:
+                    amount = -1 * credit_debit_way(data_line) * data_line['data_sum']
             else:
                 amount = sign_value * credit_debit_way(data_line) * data_line['data_sum']
                 if (amount < 0):
