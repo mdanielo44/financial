@@ -995,6 +995,9 @@ class EntryLineAccount(LucteriosModel):
         return ['entry.num', 'entry.date_entry', 'entry.date_value', (_('name'), 'designation_ref'), (_('account'), 'entry_account'),
                 (_('debit'), 'debit'), (_('credit'), 'credit'), 'costaccounting', 'entry.link']
 
+    def get_color_ref(self):
+        return self.entry_id
+
     @classmethod
     def get_edit_fields(cls):
         return ['entry.date_entry', 'entry.date_value', 'entry.designation',
