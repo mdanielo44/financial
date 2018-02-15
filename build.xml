@@ -9,7 +9,7 @@
 	<property name="project.pythonpath" value="${core.path}:${asso.path}:${contact.path}:${env.PYTHONPATH}" />
 	<property name="project.modules" value="lucterios.contacts,lucterios.mailing,diacamma.accounting,diacamma.invoice,diacamma.payoff" />
 	<property name="project.appli" value="diacamma.asso" />
-	<property name="project.test.source" value="diacamma" />
+	<property name="project.test.source" value="${basedir}/diacamma" />
 	<property name="project.test.omit" value="${core.path}/lucterios/install/*" />
 	<property name="project.test.include" value="${core.path}/lucterios/CORE/*.py,${core.path}/lucterios/framework/*.py" />
 	<import file="${core.path}/utils/lib_build.xml" />
