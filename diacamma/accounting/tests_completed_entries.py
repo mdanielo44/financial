@@ -748,8 +748,6 @@ class CompletedEntryTest(LucteriosTest):
         self.assert_count_equal('costaccounting', 4)
 
     def test_costaccounting_needed(self):
-        Parameter.change_value('accounting-needcost', '1')
-        Params.clear()
         FiscalYear.objects.create(begin='2016-01-01', end='2016-12-31', status=0, last_fiscalyear_id=1)
 
         self.factory.xfer = CostAccountingAddModify()
@@ -772,8 +770,35 @@ class CompletedEntryTest(LucteriosTest):
         self.calljson('/diacamma.accounting/entryAccountCostAccounting', {'entryline': '8;9;12;13;18;19'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountCostAccounting')
         self.assert_count_equal('', 3)
+        self.assert_select_equal('cost_accounting_id', {0: None, 2: 'open', 3: 'aaa'})  # nb=3
+        self.assert_json_equal('SELECT', 'cost_accounting_id', '2')
+
+        Parameter.change_value('accounting-needcost', '1')
+        Params.clear()
+
+        self.factory.xfer = EntryAccountClose()
+        self.calljson('/diacamma.accounting/entryAccountClose', {'CONFIRME': 'YES', 'year': '1', 'journal': '2', 'entryline': '10;11'}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountClose')
+
+        self.factory.xfer = EntryAccountClose()
+        self.calljson('/diacamma.accounting/entryAccountClose', {'CONFIRME': 'YES', 'year': '1', 'journal': '2', 'entryline': '8;9;12;13;18;19'}, False)
+        self.assert_observer('core.exception', 'diacamma.accounting', 'entryAccountClose')
+        self.assert_json_equal('', 'message', 'La comptabilité analytique est obligatoire !')
+
+        self.factory.xfer = EntryAccountCostAccounting()
+        self.calljson('/diacamma.accounting/entryAccountCostAccounting', {'entryline': '8;9;12;13;18;19'}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountCostAccounting')
+        self.assert_count_equal('', 3)
         self.assert_select_equal('cost_accounting_id', {2: 'open', 3: 'aaa'})  # nb=2
         self.assert_json_equal('SELECT', 'cost_accounting_id', '2')
+
+        self.factory.xfer = EntryAccountCostAccounting()
+        self.calljson('/diacamma.accounting/entryAccountCostAccounting', {"SAVE": "YES", 'entryline': '8;9;12;13;18;19', 'cost_accounting_id': '2'}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountCostAccounting')
+
+        self.factory.xfer = EntryAccountClose()
+        self.calljson('/diacamma.accounting/entryAccountClose', {'CONFIRME': 'YES', 'year': '1', 'journal': '2', 'entryline': '8;9;12;13;18;19'}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountClose')
 
     def test_costaccounting_incomestatement(self):
         self.factory.xfer = CostAccountingIncomeStatement()

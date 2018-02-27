@@ -893,8 +893,10 @@ class EntryAccount(LucteriosModel):
                 _no_change, debit_rest, credit_rest = self.serial_control(self.get_serial())
                 if abs(debit_rest - credit_rest) > 0.0001:
                     raise LucteriosException(GRAVE, "Account entry not balanced: sum credit=%.3f / sum debit=%.3f" % (debit_rest, credit_rest))
-            if Params.getvalue("accounting-needcost") and (self.costaccounting_id is None):
-                raise LucteriosException(IMPORTANT, _("Cost accounting is mandatory !"))
+            if Params.getvalue("accounting-needcost"):
+                for entryline in self.entrylineaccount_set.all():
+                    if (entryline.account.type_of_account in (3, 4, 5)) and (entryline.costaccounting_id is None):
+                        raise LucteriosException(IMPORTANT, _("Cost accounting is mandatory !"))
             self.close = True
             val = self.year.entryaccount_set.all().aggregate(Max('num'))
             if val['num__max'] is None:
