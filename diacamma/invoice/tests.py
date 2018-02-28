@@ -33,7 +33,7 @@ from django.utils import formats, six
 from lucterios.framework.test import LucteriosTest
 from lucterios.framework.xfergraphic import XferContainerAcknowledge
 from lucterios.framework.filetools import get_user_dir
-from lucterios.CORE.models import Parameter
+from lucterios.CORE.models import Parameter, SavedCriteria
 from lucterios.CORE.parameters import Params
 from lucterios.CORE.views import ObjectMerge
 from lucterios.mailing.tests import configSMTP, TestReceiver, decode_b64
@@ -45,8 +45,8 @@ from diacamma.payoff.views import PayoffAddModify, PayoffDel, SupportingThird, S
 from diacamma.payoff.test_tools import default_bankaccount
 from diacamma.invoice.models import Article, Bill, AccountPosting
 from diacamma.invoice.test_tools import default_articles, InvoiceTest, default_categories, default_customize, default_accountPosting
-from diacamma.invoice.views_conf import InvoiceConf, VatAddModify, VatDel, CategoryAddModify, CategoryDel, ArticleImport, StorageAreaDel,\
-    StorageAreaAddModify, AccountPostingAddModify, AccountPostingDel
+from diacamma.invoice.views_conf import InvoiceConfFinancial, InvoiceConfCommercial, VatAddModify, VatDel, CategoryAddModify, CategoryDel, ArticleImport, StorageAreaDel,\
+    StorageAreaAddModify, AccountPostingAddModify, AccountPostingDel, AutomaticReduceAddModify, AutomaticReduceDel
 from diacamma.invoice.views import ArticleList, ArticleAddModify, ArticleDel, \
     BillList, BillAddModify, BillShow, DetailAddModify, DetailDel, BillTransition, BillDel, BillFromQuotation, \
     BillStatistic, BillStatisticPrint, BillPrint, BillMultiPay, BillSearch, ArticleShow, ArticleSearch
@@ -62,12 +62,12 @@ class ConfigTest(LucteriosTest):
         rmtree(get_user_dir(), True)
 
     def test_vat(self):
-        self.factory.xfer = InvoiceConf()
-        self.calljson('/diacamma.invoice/invoiceConf', {}, False)
-        self.assert_observer('core.custom', 'diacamma.invoice', 'invoiceConf')
-        self.assertTrue('__tab_6' in self.json_data.keys(), self.json_data.keys())
-        self.assertFalse('__tab_7' in self.json_data.keys(), self.json_data.keys())
-        self.assert_count_equal('', 2 + 5 + 5 + 2 + 2 + 2)
+        self.factory.xfer = InvoiceConfFinancial()
+        self.calljson('/diacamma.invoice/invoiceConfFinancial', {}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'invoiceConfFinancial')
+        self.assertTrue('__tab_3' in self.json_data.keys(), self.json_data.keys())
+        self.assertFalse('__tab_4' in self.json_data.keys(), self.json_data.keys())
+        self.assert_count_equal('', 2 + 6 + 2 + 2)
 
         self.assert_grid_equal('vat', {'name': "nom", 'rate': "taux", 'account': "compte de TVA", 'isactif': "actif ?"}, 0)
 
@@ -81,8 +81,8 @@ class ConfigTest(LucteriosTest):
                       {'name': 'my vat', 'rate': '11.57', 'account': '4455', 'isactif': 1, 'SAVE': 'YES'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.invoice', 'vatAddModify')
 
-        self.factory.xfer = InvoiceConf()
-        self.calljson('/diacamma.invoice/invoiceConf', {}, False)
+        self.factory.xfer = InvoiceConfFinancial()
+        self.calljson('/diacamma.invoice/invoiceConfFinancial', {}, False)
         self.assert_count_equal('vat', 1)
         self.assert_json_equal('', 'vat/@0/name', 'my vat')
         self.assert_json_equal('', 'vat/@0/rate', '11.57')
@@ -93,17 +93,17 @@ class ConfigTest(LucteriosTest):
         self.calljson('/diacamma.invoice/vatDel', {'vat': 1, 'CONFIRME': 'YES'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.invoice', 'vatDel')
 
-        self.factory.xfer = InvoiceConf()
-        self.calljson('/diacamma.invoice/invoiceConf', {}, False)
+        self.factory.xfer = InvoiceConfFinancial()
+        self.calljson('/diacamma.invoice/invoiceConfFinancial', {}, False)
         self.assert_count_equal('vat', 0)
 
     def test_category(self):
-        self.factory.xfer = InvoiceConf()
-        self.calljson('/diacamma.invoice/invoiceConf', {}, False)
-        self.assert_observer('core.custom', 'diacamma.invoice', 'invoiceConf')
-        self.assertTrue('__tab_6' in self.json_data.keys(), self.json_data.keys())
-        self.assertFalse('__tab_7' in self.json_data.keys(), self.json_data.keys())
-        self.assert_count_equal('', 2 + 5 + 5 + 2 + 2 + 2)
+        self.factory.xfer = InvoiceConfCommercial()
+        self.calljson('/diacamma.invoice/invoiceConfCommercial', {}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'invoiceConfCommercial')
+        self.assertTrue('__tab_4' in self.json_data.keys(), self.json_data.keys())
+        self.assertFalse('__tab_5' in self.json_data.keys(), self.json_data.keys())
+        self.assert_count_equal('', 2 + 2 + 2 + 2 + 2)
 
         self.assert_grid_equal('category', {'name': "nom", 'designation': "désignation"}, 0)
 
@@ -117,8 +117,8 @@ class ConfigTest(LucteriosTest):
                       {'name': 'my category', 'designation': "bla bla bla", 'SAVE': 'YES'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.invoice', 'categoryAddModify')
 
-        self.factory.xfer = InvoiceConf()
-        self.calljson('/diacamma.invoice/invoiceConf', {}, False)
+        self.factory.xfer = InvoiceConfCommercial()
+        self.calljson('/diacamma.invoice/invoiceConfCommercial', {}, False)
         self.assert_count_equal('category', 1)
         self.assert_json_equal('', 'category/@0/name', 'my category')
         self.assert_json_equal('', 'category/@0/designation', 'bla bla bla')
@@ -127,15 +127,15 @@ class ConfigTest(LucteriosTest):
         self.calljson('/diacamma.invoice/categoryDel', {'category': 1, 'CONFIRME': 'YES'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.invoice', 'categoryDel')
 
-        self.factory.xfer = InvoiceConf()
-        self.calljson('/diacamma.invoice/invoiceConf', {}, False)
+        self.factory.xfer = InvoiceConfCommercial()
+        self.calljson('/diacamma.invoice/invoiceConfCommercial', {}, False)
         self.assert_count_equal('category', 0)
 
     def test_accountposting(self):
         default_costaccounting()
-        self.factory.xfer = InvoiceConf()
-        self.calljson('/diacamma.invoice/invoiceConf', {}, False)
-        self.assert_observer('core.custom', 'diacamma.invoice', 'invoiceConf')
+        self.factory.xfer = InvoiceConfFinancial()
+        self.calljson('/diacamma.invoice/invoiceConfFinancial', {}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'invoiceConfFinancial')
         self.assert_grid_equal('accountposting', {'name': "nom", 'sell_account': "compte de vente", 'cost_accounting': 'comptabilité analytique'}, 0)
 
         self.factory.xfer = AccountPostingAddModify()
@@ -149,27 +149,63 @@ class ConfigTest(LucteriosTest):
         self.calljson('/diacamma.invoice/accountPostingAddModify', {'name': 'aaa', 'sell_account': '601', 'cost_accounting': 2, 'SAVE': 'YES'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.invoice', 'accountPostingAddModify')
 
-        self.factory.xfer = InvoiceConf()
-        self.calljson('/diacamma.invoice/invoiceConf', {}, False)
-        self.assert_observer('core.custom', 'diacamma.invoice', 'invoiceConf')
+        self.factory.xfer = InvoiceConfFinancial()
+        self.calljson('/diacamma.invoice/invoiceConfFinancial', {}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'invoiceConfFinancial')
         self.assert_count_equal('accountposting', 1)
 
         self.factory.xfer = AccountPostingDel()
         self.calljson('/diacamma.invoice/accountPostingDel', {'accountposting': 1, 'CONFIRME': 'YES'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.invoice', 'accountPostingDel')
 
-        self.factory.xfer = InvoiceConf()
-        self.calljson('/diacamma.invoice/invoiceConf', {}, False)
-        self.assert_observer('core.custom', 'diacamma.invoice', 'invoiceConf')
+        self.factory.xfer = InvoiceConfFinancial()
+        self.calljson('/diacamma.invoice/invoiceConfFinancial', {}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'invoiceConfFinancial')
         self.assert_count_equal('accountposting', 0)
+
+    def test_automaticreduce(self):
+        default_categories()
+        SavedCriteria.objects.create(name='my filter', modelname='accounting.Third', criteria='azerty')
+        SavedCriteria.objects.create(name='other filter', modelname='contacts.EntityLegal', criteria='qwerty')
+
+        self.factory.xfer = InvoiceConfCommercial()
+        self.calljson('/diacamma.invoice/invoiceConfCommercial', {}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'invoiceConfCommercial')
+        self.assert_grid_equal('automaticreduce', {'name': "nom", 'category': "catégorie", 'mode': 'mode', 'amount_txt': 'montant', 'occurency': 'occurence', 'filtercriteria': 'critère de filtrage'}, 0)
+
+        self.factory.xfer = AutomaticReduceAddModify()
+        self.calljson('/diacamma.invoice/automaticReduceAddModify', {}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'automaticReduceAddModify')
+        self.assert_count_equal('', 7)
+        self.assert_select_equal('category', 3)
+        self.assert_select_equal('filtercriteria', {0: None, 1: 'my filter'})
+
+        self.factory.xfer = AutomaticReduceAddModify()
+        self.calljson('/diacamma.invoice/automaticReduceAddModify', {'name': "abc", 'category': 2, 'mode': 1, 'amount': '10.0', 'filtercriteria': '1', 'SAVE': 'YES'}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'automaticReduceAddModify')
+
+        self.factory.xfer = InvoiceConfCommercial()
+        self.calljson('/diacamma.invoice/invoiceConfCommercial', {}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'invoiceConfCommercial')
+        self.assert_count_equal('automaticreduce', 1)
+
+        self.factory.xfer = AutomaticReduceDel()
+        self.calljson('/diacamma.invoice/automaticReduceDel', {'automaticreduce': 1, 'CONFIRME': 'YES'}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'automaticReduceDel')
+
+        self.factory.xfer = InvoiceConfCommercial()
+        self.calljson('/diacamma.invoice/invoiceConfCommercial', {}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'invoiceConfCommercial')
+        self.assert_count_equal('automaticreduce', 0)
 
     def test_customize(self):
         default_customize()
-        self.factory.xfer = InvoiceConf()
-        self.calljson('/diacamma.invoice/invoiceConf', {}, False)
-        self.assert_observer('core.custom', 'diacamma.invoice', 'invoiceConf')
-        self.assertTrue('__tab_5' in self.json_data.keys(), self.json_data.keys())
-        self.assert_count_equal('', 2 + 5 + 5 + 2 + 2 + 2)
+        self.factory.xfer = InvoiceConfCommercial()
+        self.calljson('/diacamma.invoice/invoiceConfCommercial', {}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'invoiceConfCommercial')
+        self.assertTrue('__tab_4' in self.json_data.keys(), self.json_data.keys())
+        self.assertFalse('__tab_5' in self.json_data.keys(), self.json_data.keys())
+        self.assert_count_equal('', 2 + 2 + 2 + 2 + 2)
 
         self.assert_grid_equal('custom_field', {'name': "nom", 'kind_txt': "type"}, 2)
         self.assert_json_equal('', 'custom_field/@0/name', 'couleur')
@@ -178,12 +214,12 @@ class ConfigTest(LucteriosTest):
         self.assert_json_equal('', 'custom_field/@1/kind_txt', 'Entier [0;100]')
 
     def test_storagearea(self):
-        self.factory.xfer = InvoiceConf()
-        self.calljson('/diacamma.invoice/invoiceConf', {}, False)
-        self.assert_observer('core.custom', 'diacamma.invoice', 'invoiceConf')
-        self.assertTrue('__tab_6' in self.json_data.keys(), self.json_data.keys())
-        self.assertFalse('__tab_7' in self.json_data.keys(), self.json_data.keys())
-        self.assert_count_equal('', 2 + 5 + 5 + 2 + 2 + 2)
+        self.factory.xfer = InvoiceConfCommercial()
+        self.calljson('/diacamma.invoice/invoiceConfCommercial', {}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'invoiceConfCommercial')
+        self.assertTrue('__tab_4' in self.json_data.keys(), self.json_data.keys())
+        self.assertFalse('__tab_5' in self.json_data.keys(), self.json_data.keys())
+        self.assert_count_equal('', 2 + 2 + 2 + 2 + 2)
 
         self.assert_grid_equal('storagearea', {'name': "nom", 'designation': "désignation"}, 0)
 
@@ -197,8 +233,8 @@ class ConfigTest(LucteriosTest):
                       {'name': 'my category', 'designation': "bla bla bla", 'SAVE': 'YES'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.invoice', 'storageAreaAddModify')
 
-        self.factory.xfer = InvoiceConf()
-        self.calljson('/diacamma.invoice/invoiceConf', {}, False)
+        self.factory.xfer = InvoiceConfCommercial()
+        self.calljson('/diacamma.invoice/invoiceConfCommercial', {}, False)
         self.assert_count_equal('storagearea', 1)
         self.assert_json_equal('', 'storagearea/@0/name', 'my category')
         self.assert_json_equal('', 'storagearea/@0/designation', 'bla bla bla')
@@ -207,8 +243,8 @@ class ConfigTest(LucteriosTest):
         self.calljson('/diacamma.invoice/storageAreaDel', {'storagearea': 1, 'CONFIRME': 'YES'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.invoice', 'storageAreaDel')
 
-        self.factory.xfer = InvoiceConf()
-        self.calljson('/diacamma.invoice/invoiceConf', {}, False)
+        self.factory.xfer = InvoiceConfCommercial()
+        self.calljson('/diacamma.invoice/invoiceConfCommercial', {}, False)
         self.assert_count_equal('storagearea', 0)
 
     def test_article(self):

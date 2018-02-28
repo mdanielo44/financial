@@ -40,7 +40,7 @@ from django_fsm import FSMIntegerField, transition
 from lucterios.framework.models import LucteriosModel, get_value_if_choices, get_value_converted, get_obj_contains
 from lucterios.framework.error import LucteriosException, IMPORTANT, GRAVE
 from lucterios.framework.signal_and_lock import Signal
-from lucterios.CORE.models import Parameter
+from lucterios.CORE.models import Parameter, SavedCriteria
 from lucterios.CORE.parameters import Params
 from lucterios.contacts.models import CustomField, CustomizeObject
 
@@ -1167,6 +1167,46 @@ class StorageDetail(LucteriosModel):
         default_permissions = []
 
 
+class AutomaticReduce(LucteriosModel):
+    name = models.CharField(_('name'), max_length=250, blank=False)
+    category = models.ForeignKey(Category, verbose_name=_('category'), null=False, on_delete=models.PROTECT)
+    mode = models.IntegerField(verbose_name=_('mode'), choices=((0, _('by value')), (1, _('by percentage')), (2, _('by overall percentage sold'))), null=False, default=0)
+    amount = models.DecimalField(verbose_name=_('amount'), max_digits=10, decimal_places=3, default=0.0, validators=[MinValueValidator(0.0), MaxValueValidator(9999999.999)])
+    occurency = models.IntegerField(verbose_name=_('occurency'), default=0, validators=[MinValueValidator(0), MaxValueValidator(1000)])
+    filtercriteria = models.ForeignKey(SavedCriteria, verbose_name=_('filter criteria'), null=True, on_delete=models.PROTECT)
+
+    def __str__(self):
+        return self.name
+
+    @classmethod
+    def get_default_fields(cls):
+        return ["name", "category", "mode", (_('amount'), "amount_txt"), "occurency", "filtercriteria"]
+
+    @classmethod
+    def get_edit_fields(cls):
+        return ["name", "category", "mode", "amount", "occurency", "filtercriteria"]
+
+    @classmethod
+    def get_show_fields(cls):
+        return ["name", "category", "mode", (_('amount'), "amount_txt"), "occurency", "filtercriteria"]
+
+    @property
+    def filtercriteria_query(self):
+        return SavedCriteria.objects.filter(modelname=Third.get_long_name())
+
+    @property
+    def amount_txt(self):
+        if self.mode == 0:
+            return format_devise(self.amount, 5)
+        else:
+            return "%.2f%%" % self.amount
+
+    class Meta(object):
+        verbose_name = _('automatic reduce')
+        verbose_name_plural = _('automatic reduces')
+        default_permissions = []
+
+
 def get_or_create_customer(contact_id):
     try:
         third = Third.objects.get(contact_id=contact_id)
@@ -1186,8 +1226,13 @@ def invoice_checkparam():
                                args="{'Multi':False}", value='', meta='("accounting","ChartsAccount", Q(type_of_account=3) & Q(year__is_actif=True), "code", True)')
     Parameter.check_and_create(name='invoice-vat-mode', typeparam=4, title=_("invoice-vat-mode"),
                                args="{'Enum':3}", value='0', param_titles=(_("invoice-vat-mode.0"), _("invoice-vat-mode.1"), _("invoice-vat-mode.2")))
-    Parameter.check_and_create(name="invoice-account-third", typeparam=0, title=_("invoice-account-third"), args="{'Multi':False}", value='',
-                               meta='("accounting","ChartsAccount","import diacamma.accounting.tools;django.db.models.Q(code__regex=diacamma.accounting.tools.current_system_account().get_customer_mask()) & django.db.models.Q(year__is_actif=True)", "code", True)')
+    Parameter.check_and_create(
+        name="invoice-account-third",
+        typeparam=0,
+        title=_("invoice-account-third"),
+        args="{'Multi':False}",
+        value='',
+        meta='("accounting","ChartsAccount","import diacamma.accounting.tools;django.db.models.Q(code__regex=diacamma.accounting.tools.current_system_account().get_customer_mask()) & django.db.models.Q(year__is_actif=True)", "code", True)')
     for art in Article.objects.filter(Q(accountposting__isnull=True) & ~Q(sell_account='')):
         accout_post, created = AccountPosting.objects.get_or_create(sell_account=art.sell_account)
         if created:

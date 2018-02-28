@@ -38,7 +38,7 @@ from lucterios.CORE.models import Parameter
 
 from diacamma.accounting.tools import correct_accounting_code
 from diacamma.invoice.models import Vat, Article, Category, StorageArea,\
-    AccountPosting
+    AccountPosting, AutomaticReduce
 from diacamma.accounting.system import accounting_system_ident
 from lucterios.contacts.models import CustomField
 
@@ -55,28 +55,39 @@ def fill_params(xfer, param_lists=None, is_mini=False):
     xfer.add_component(btn)
 
 
-@MenuManage.describ('invoice.change_vat', FORMTYPE_NOMODAL, 'financial.conf', _('Management of parameters and configuration of invoice'))
-class InvoiceConf(XferListEditor):
+@MenuManage.describ('invoice.change_vat', FORMTYPE_NOMODAL, 'financial.conf', _('Management of parameters and financial configuration of invoice'))
+class InvoiceConfFinancial(XferListEditor):
     icon = "invoice_conf.png"
     model = Vat
     field_id = 'vat'
-    caption = _("Invoice configuration")
+    caption = _("Invoice financial configuration")
+
+    def fillresponse_header(self):
+        self.new_tab(_('Parameters'))
+        fill_params(self)
+        self.new_tab(_('Account posting codes'))
+        self.fill_grid(self.get_max_row(), AccountPosting, 'accountposting', AccountPosting.objects.all())
+        self.new_tab(_('VAT'))
+
+
+@MenuManage.describ('invoice.change_vat', FORMTYPE_NOMODAL, 'financial.conf', _('Management of commercial configuration of invoice'))
+class InvoiceConfCommercial(XferListEditor):
+    icon = "invoice_conf.png"
+    model = AutomaticReduce
+    field_id = 'automaticreduce'
+    caption = _("Invoice commercial configuration")
 
     def fillresponse_header(self):
         self.params['basic_model'] = 'invoice.Article'
-        self.new_tab(_('Parameters'))
-        fill_params(self)
         self.new_tab(_('Categories'))
         self.fill_grid(self.get_max_row(), Category, 'category', Category.objects.all())
-        self.new_tab(_('Account posting codes'))
-        self.fill_grid(self.get_max_row(), AccountPosting, 'accountposting', AccountPosting.objects.all())
         self.new_tab(_("Custom field"))
         self.fill_grid(0, CustomField, "custom_field", CustomField.get_filter(Article))
         grid_custom = self.get_components('custom_field')
         grid_custom.delete_header('model_title')
         self.new_tab(_('Storage area'))
         self.fill_grid(self.get_max_row(), StorageArea, 'storagearea', StorageArea.objects.all())
-        self.new_tab(_('VAT'))
+        self.new_tab(_('Automatic reduce'))
 
 
 @ActionsManage.affect_grid(TITLE_ADD, "images/add.png")
@@ -97,6 +108,26 @@ class AccountPostingDel(XferDelete):
     model = AccountPosting
     field_id = 'accountposting'
     caption = _("Delete account posting code")
+
+
+@ActionsManage.affect_grid(TITLE_ADD, "images/add.png")
+@ActionsManage.affect_grid(TITLE_MODIFY, "images/edit.png", unique=SELECT_SINGLE)
+@MenuManage.describ('invoice.add_vat')
+class AutomaticReduceAddModify(XferAddEditor):
+    icon = "invoice_conf.png"
+    model = AutomaticReduce
+    field_id = 'automaticreduce'
+    caption_add = _("Add automatic reduce")
+    caption_modify = _("Modify automatic reduce")
+
+
+@ActionsManage.affect_grid(TITLE_DELETE, "images/delete.png", unique=SELECT_MULTI)
+@MenuManage.describ('invoice.delete_vat')
+class AutomaticReduceDel(XferDelete):
+    icon = "invoice_conf.png"
+    model = AutomaticReduce
+    field_id = 'automaticreduce'
+    caption = _("Delete automatic reduce")
 
 
 @ActionsManage.affect_grid(TITLE_ADD, "images/add.png")
