@@ -53,661 +53,6 @@ from diacamma.invoice.views import ArticleList, ArticleAddModify, ArticleDel, \
 from diacamma.accounting.models import CostAccounting
 
 
-class ConfigTest(LucteriosTest):
-
-    def setUp(self):
-        self.xfer_class = XferContainerAcknowledge
-        LucteriosTest.setUp(self)
-        default_compta()
-        rmtree(get_user_dir(), True)
-
-    def test_vat(self):
-        self.factory.xfer = InvoiceConfFinancial()
-        self.calljson('/diacamma.invoice/invoiceConfFinancial', {}, False)
-        self.assert_observer('core.custom', 'diacamma.invoice', 'invoiceConfFinancial')
-        self.assertTrue('__tab_3' in self.json_data.keys(), self.json_data.keys())
-        self.assertFalse('__tab_4' in self.json_data.keys(), self.json_data.keys())
-        self.assert_count_equal('', 2 + 6 + 2 + 2)
-
-        self.assert_grid_equal('vat', {'name': "nom", 'rate': "taux", 'account': "compte de TVA", 'isactif': "actif ?"}, 0)
-
-        self.factory.xfer = VatAddModify()
-        self.calljson('/diacamma.invoice/vatAddModify', {}, False)
-        self.assert_observer('core.custom', 'diacamma.invoice', 'vatAddModify')
-        self.assert_count_equal('', 5)
-
-        self.factory.xfer = VatAddModify()
-        self.calljson('/diacamma.invoice/vatAddModify',
-                      {'name': 'my vat', 'rate': '11.57', 'account': '4455', 'isactif': 1, 'SAVE': 'YES'}, False)
-        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'vatAddModify')
-
-        self.factory.xfer = InvoiceConfFinancial()
-        self.calljson('/diacamma.invoice/invoiceConfFinancial', {}, False)
-        self.assert_count_equal('vat', 1)
-        self.assert_json_equal('', 'vat/@0/name', 'my vat')
-        self.assert_json_equal('', 'vat/@0/rate', '11.57')
-        self.assert_json_equal('', 'vat/@0/account', '4455')
-        self.assert_json_equal('', 'vat/@0/isactif', '1')
-
-        self.factory.xfer = VatDel()
-        self.calljson('/diacamma.invoice/vatDel', {'vat': 1, 'CONFIRME': 'YES'}, False)
-        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'vatDel')
-
-        self.factory.xfer = InvoiceConfFinancial()
-        self.calljson('/diacamma.invoice/invoiceConfFinancial', {}, False)
-        self.assert_count_equal('vat', 0)
-
-    def test_category(self):
-        self.factory.xfer = InvoiceConfCommercial()
-        self.calljson('/diacamma.invoice/invoiceConfCommercial', {}, False)
-        self.assert_observer('core.custom', 'diacamma.invoice', 'invoiceConfCommercial')
-        self.assertTrue('__tab_4' in self.json_data.keys(), self.json_data.keys())
-        self.assertFalse('__tab_5' in self.json_data.keys(), self.json_data.keys())
-        self.assert_count_equal('', 2 + 2 + 2 + 2 + 2)
-
-        self.assert_grid_equal('category', {'name': "nom", 'designation': "désignation"}, 0)
-
-        self.factory.xfer = CategoryAddModify()
-        self.calljson('/diacamma.invoice/categoryAddModify', {}, False)
-        self.assert_observer('core.custom', 'diacamma.invoice', 'categoryAddModify')
-        self.assert_count_equal('', 3)
-
-        self.factory.xfer = CategoryAddModify()
-        self.calljson('/diacamma.invoice/categoryAddModify',
-                      {'name': 'my category', 'designation': "bla bla bla", 'SAVE': 'YES'}, False)
-        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'categoryAddModify')
-
-        self.factory.xfer = InvoiceConfCommercial()
-        self.calljson('/diacamma.invoice/invoiceConfCommercial', {}, False)
-        self.assert_count_equal('category', 1)
-        self.assert_json_equal('', 'category/@0/name', 'my category')
-        self.assert_json_equal('', 'category/@0/designation', 'bla bla bla')
-
-        self.factory.xfer = CategoryDel()
-        self.calljson('/diacamma.invoice/categoryDel', {'category': 1, 'CONFIRME': 'YES'}, False)
-        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'categoryDel')
-
-        self.factory.xfer = InvoiceConfCommercial()
-        self.calljson('/diacamma.invoice/invoiceConfCommercial', {}, False)
-        self.assert_count_equal('category', 0)
-
-    def test_accountposting(self):
-        default_costaccounting()
-        self.factory.xfer = InvoiceConfFinancial()
-        self.calljson('/diacamma.invoice/invoiceConfFinancial', {}, False)
-        self.assert_observer('core.custom', 'diacamma.invoice', 'invoiceConfFinancial')
-        self.assert_grid_equal('accountposting', {'name': "nom", 'sell_account': "compte de vente", 'cost_accounting': 'comptabilité analytique'}, 0)
-
-        self.factory.xfer = AccountPostingAddModify()
-        self.calljson('/diacamma.invoice/accountPostingAddModify', {}, False)
-        self.assert_observer('core.custom', 'diacamma.invoice', 'accountPostingAddModify')
-        self.assert_count_equal('', 4)
-        self.assert_select_equal('sell_account', 3)
-        self.assert_select_equal('cost_accounting', {0: None, 2: 'open'})
-
-        self.factory.xfer = AccountPostingAddModify()
-        self.calljson('/diacamma.invoice/accountPostingAddModify', {'name': 'aaa', 'sell_account': '601', 'cost_accounting': 2, 'SAVE': 'YES'}, False)
-        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'accountPostingAddModify')
-
-        self.factory.xfer = InvoiceConfFinancial()
-        self.calljson('/diacamma.invoice/invoiceConfFinancial', {}, False)
-        self.assert_observer('core.custom', 'diacamma.invoice', 'invoiceConfFinancial')
-        self.assert_count_equal('accountposting', 1)
-
-        self.factory.xfer = AccountPostingDel()
-        self.calljson('/diacamma.invoice/accountPostingDel', {'accountposting': 1, 'CONFIRME': 'YES'}, False)
-        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'accountPostingDel')
-
-        self.factory.xfer = InvoiceConfFinancial()
-        self.calljson('/diacamma.invoice/invoiceConfFinancial', {}, False)
-        self.assert_observer('core.custom', 'diacamma.invoice', 'invoiceConfFinancial')
-        self.assert_count_equal('accountposting', 0)
-
-    def test_automaticreduce(self):
-        default_categories()
-        SavedCriteria.objects.create(name='my filter', modelname='accounting.Third', criteria='azerty')
-        SavedCriteria.objects.create(name='other filter', modelname='contacts.EntityLegal', criteria='qwerty')
-
-        self.factory.xfer = InvoiceConfCommercial()
-        self.calljson('/diacamma.invoice/invoiceConfCommercial', {}, False)
-        self.assert_observer('core.custom', 'diacamma.invoice', 'invoiceConfCommercial')
-        self.assert_grid_equal('automaticreduce', {'name': "nom", 'category': "catégorie", 'mode': 'mode', 'amount_txt': 'montant', 'occurency': 'occurence', 'filtercriteria': 'critère de filtrage'}, 0)
-
-        self.factory.xfer = AutomaticReduceAddModify()
-        self.calljson('/diacamma.invoice/automaticReduceAddModify', {}, False)
-        self.assert_observer('core.custom', 'diacamma.invoice', 'automaticReduceAddModify')
-        self.assert_count_equal('', 7)
-        self.assert_select_equal('category', 3)
-        self.assert_select_equal('filtercriteria', {0: None, 1: 'my filter'})
-
-        self.factory.xfer = AutomaticReduceAddModify()
-        self.calljson('/diacamma.invoice/automaticReduceAddModify', {'name': "abc", 'category': 2, 'mode': 1, 'amount': '10.0', 'filtercriteria': '1', 'SAVE': 'YES'}, False)
-        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'automaticReduceAddModify')
-
-        self.factory.xfer = InvoiceConfCommercial()
-        self.calljson('/diacamma.invoice/invoiceConfCommercial', {}, False)
-        self.assert_observer('core.custom', 'diacamma.invoice', 'invoiceConfCommercial')
-        self.assert_count_equal('automaticreduce', 1)
-
-        self.factory.xfer = AutomaticReduceDel()
-        self.calljson('/diacamma.invoice/automaticReduceDel', {'automaticreduce': 1, 'CONFIRME': 'YES'}, False)
-        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'automaticReduceDel')
-
-        self.factory.xfer = InvoiceConfCommercial()
-        self.calljson('/diacamma.invoice/invoiceConfCommercial', {}, False)
-        self.assert_observer('core.custom', 'diacamma.invoice', 'invoiceConfCommercial')
-        self.assert_count_equal('automaticreduce', 0)
-
-    def test_customize(self):
-        default_customize()
-        self.factory.xfer = InvoiceConfCommercial()
-        self.calljson('/diacamma.invoice/invoiceConfCommercial', {}, False)
-        self.assert_observer('core.custom', 'diacamma.invoice', 'invoiceConfCommercial')
-        self.assertTrue('__tab_4' in self.json_data.keys(), self.json_data.keys())
-        self.assertFalse('__tab_5' in self.json_data.keys(), self.json_data.keys())
-        self.assert_count_equal('', 2 + 2 + 2 + 2 + 2)
-
-        self.assert_grid_equal('custom_field', {'name': "nom", 'kind_txt': "type"}, 2)
-        self.assert_json_equal('', 'custom_field/@0/name', 'couleur')
-        self.assert_json_equal('', 'custom_field/@0/kind_txt', 'Sélection (---,noir,blanc,rouge,bleu,jaune)')
-        self.assert_json_equal('', 'custom_field/@1/name', 'taille')
-        self.assert_json_equal('', 'custom_field/@1/kind_txt', 'Entier [0;100]')
-
-    def test_storagearea(self):
-        self.factory.xfer = InvoiceConfCommercial()
-        self.calljson('/diacamma.invoice/invoiceConfCommercial', {}, False)
-        self.assert_observer('core.custom', 'diacamma.invoice', 'invoiceConfCommercial')
-        self.assertTrue('__tab_4' in self.json_data.keys(), self.json_data.keys())
-        self.assertFalse('__tab_5' in self.json_data.keys(), self.json_data.keys())
-        self.assert_count_equal('', 2 + 2 + 2 + 2 + 2)
-
-        self.assert_grid_equal('storagearea', {'name': "nom", 'designation': "désignation"}, 0)
-
-        self.factory.xfer = StorageAreaAddModify()
-        self.calljson('/diacamma.invoice/storageAreaAddModify', {}, False)
-        self.assert_observer('core.custom', 'diacamma.invoice', 'storageAreaAddModify')
-        self.assert_count_equal('', 3)
-
-        self.factory.xfer = StorageAreaAddModify()
-        self.calljson('/diacamma.invoice/storageAreaAddModify',
-                      {'name': 'my category', 'designation': "bla bla bla", 'SAVE': 'YES'}, False)
-        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'storageAreaAddModify')
-
-        self.factory.xfer = InvoiceConfCommercial()
-        self.calljson('/diacamma.invoice/invoiceConfCommercial', {}, False)
-        self.assert_count_equal('storagearea', 1)
-        self.assert_json_equal('', 'storagearea/@0/name', 'my category')
-        self.assert_json_equal('', 'storagearea/@0/designation', 'bla bla bla')
-
-        self.factory.xfer = StorageAreaDel()
-        self.calljson('/diacamma.invoice/storageAreaDel', {'storagearea': 1, 'CONFIRME': 'YES'}, False)
-        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'storageAreaDel')
-
-        self.factory.xfer = InvoiceConfCommercial()
-        self.calljson('/diacamma.invoice/invoiceConfCommercial', {}, False)
-        self.assert_count_equal('storagearea', 0)
-
-    def test_article(self):
-        default_accountPosting()
-        self.factory.xfer = ArticleList()
-        self.calljson('/diacamma.invoice/articleList', {}, False)
-        self.assert_observer('core.custom', 'diacamma.invoice', 'articleList')
-        self.assert_count_equal('', 6)
-        self.assert_select_equal('stockable', 4)  # nb=4
-        self.assert_grid_equal('article', {'reference': "référence", 'designation': "désignation", 'price_txt': "prix", 'unit': "unité", 'isdisabled': "désactivé ?", 'accountposting': "code d'imputation comptable", 'stockable': "stockable"}, 0)
-        self.assert_count_equal('#article/actions', 3)
-
-        self.factory.xfer = ArticleAddModify()
-        self.calljson('/diacamma.invoice/articleAddModify', {}, False)
-        self.assert_observer('core.custom', 'diacamma.invoice', 'articleAddModify')
-        self.assert_count_equal('', 11)
-
-        self.factory.xfer = ArticleAddModify()
-        self.calljson('/diacamma.invoice/articleAddModify',
-                      {'reference': 'ABC001', 'designation': 'My beautiful article', 'price': '43.72', 'accountposting': 4, 'stockable': '1', 'qtyDecimal': '1', 'SAVE': 'YES'}, False)
-        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'articleAddModify')
-
-        self.factory.xfer = ArticleList()
-        self.calljson('/diacamma.invoice/articleList', {}, False)
-        self.assert_observer('core.custom', 'diacamma.invoice', 'articleList')
-        self.assert_count_equal('article', 1)
-        self.assert_json_equal('', 'article/@0/reference', "ABC001")
-        self.assert_json_equal('', 'article/@0/designation', "My beautiful article")
-        self.assert_json_equal('', 'article/@0/price_txt', "43.72€")
-        self.assert_json_equal('', 'article/@0/unit', '')
-        self.assert_json_equal('', 'article/@0/isdisabled', "0")
-        self.assert_json_equal('', 'article/@0/accountposting', "code4")
-        self.assert_json_equal('', 'article/@0/stockable', "stockable")
-
-        self.factory.xfer = ArticleShow()
-        self.calljson('/diacamma.invoice/articleShow', {'article': '1'}, False)
-        self.assert_observer('core.custom', 'diacamma.invoice', 'articleShow')
-        self.assert_count_equal('', 14)
-        self.assert_json_equal('', 'qtyDecimal', '1')
-
-        self.factory.xfer = ArticleDel()
-        self.calljson('/diacamma.invoice/articleDel',
-                      {'article': '1', 'CONFIRME': 'YES'}, False)
-        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'articleDel')
-
-        self.factory.xfer = ArticleList()
-        self.calljson('/diacamma.invoice/articleList', {}, False)
-        self.assert_observer('core.custom', 'diacamma.invoice', 'articleList')
-        self.assert_count_equal('article', 0)
-
-    def test_article_with_cat(self):
-        default_categories()
-        self.factory.xfer = ArticleList()
-        self.calljson('/diacamma.invoice/articleList', {}, False)
-        self.assert_observer('core.custom', 'diacamma.invoice', 'articleList')
-        self.assert_count_equal('', 7)
-        self.assert_select_equal("cat_filter", 3, True)
-        self.assert_grid_equal('article', {"reference": "référence", "designation": "désignation", "price_txt": "prix", "unit": "unité",
-                                           "isdisabled": "désactivé ?", "accountposting": "code d'imputation comptable", "stockable": "stockable", "categories": "catégories"}, 0)
-
-        self.factory.xfer = ArticleAddModify()
-        self.calljson('/diacamma.invoice/articleAddModify', {}, False)
-        self.assert_observer('core.custom', 'diacamma.invoice', 'articleAddModify')
-        self.assert_count_equal('', 13)
-
-        self.factory.xfer = ArticleAddModify()
-        self.calljson('/diacamma.invoice/articleAddModify',
-                      {'reference': 'ABC001', 'designation': 'My beautiful article', 'price': '43.72', 'sell_account': '705', 'stockable': '1', 'categories': '2;3', 'SAVE': 'YES'}, False)
-        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'articleAddModify')
-
-        self.factory.xfer = ArticleShow()
-        self.calljson('/diacamma.invoice/articleShow', {'article': '1'}, False)
-        self.assert_observer('core.custom', 'diacamma.invoice', 'articleShow')
-        self.assert_count_equal('', 15)
-        self.assert_json_equal('', 'qtyDecimal', '0')
-
-        self.factory.xfer = ArticleList()
-        self.calljson('/diacamma.invoice/articleList', {}, False)
-        self.assert_observer('core.custom', 'diacamma.invoice', 'articleList')
-        self.assert_count_equal('article', 1)
-        self.assert_json_equal('', 'article/@0/categories', "cat 2{[br/]}cat 3")
-
-    def test_article_merge(self):
-        default_categories()
-        default_articles(with_storage=True)
-        default_customize()
-        initial_thirds()
-
-        search_field_list = Article.get_search_fields()
-        self.assertEqual(9 + 2 + 2 + 2, len(search_field_list), search_field_list)  # article + art custom + category + provider
-
-        self.factory.xfer = ArticleSearch()
-        self.calljson('/diacamma.invoice/articleSearch', {}, False)
-        self.assert_observer('core.custom', 'diacamma.invoice', 'articleSearch')
-        self.assert_count_equal('article', 5)
-        self.assert_json_equal('', 'article/@0/reference', "ABC1")
-        self.assert_json_equal('', 'article/@1/reference', "ABC2")
-        self.assert_json_equal('', 'article/@2/reference', "ABC3")
-        self.assert_json_equal('', 'article/@3/reference', "ABC4")
-        self.assert_json_equal('', 'article/@4/reference', "ABC5")
-        self.assert_json_equal('', 'article/@0/categories', "cat 1")
-        self.assert_json_equal('', 'article/@1/categories', "cat 2")
-        self.assert_json_equal('', 'article/@2/categories', "cat 2{[br/]}cat 3")
-        self.assert_json_equal('', 'article/@3/categories', "cat 3")
-        self.assert_json_equal('', 'article/@4/categories', "cat 1{[br/]}cat 2{[br/]}cat 3")
-        self.assert_count_equal('#article/actions', 4)
-        self.assert_action_equal('#article/actions/@3', ('Fusion', 'images/clone.png', 'CORE', 'objectMerge', 0, 1, 2,
-                                                         {'modelname': 'invoice.Article', 'field_id': 'article'}))
-
-        self.factory.xfer = ObjectMerge()
-        self.calljson('/CORE/objectMerge', {'modelname': 'invoice.Article', 'field_id': 'article', 'article': '1;3;5'}, False)
-        self.assert_observer('core.custom', 'CORE', 'objectMerge')
-        self.assert_count_equal('mrg_object', 3)
-        self.assert_json_equal('', 'mrg_object/@0/value', "ABC1")
-        self.assert_json_equal('', 'mrg_object/@1/value', "ABC3")
-        self.assert_json_equal('', 'mrg_object/@2/value', "ABC5")
-
-        self.factory.xfer = ObjectMerge()
-        self.calljson('/CORE/objectMerge', {'modelname': 'invoice.Article', 'field_id': 'article', 'article': '1;3;5', 'CONFIRME': 'YES', 'mrg_object': '3'}, False)
-        self.assert_observer('core.acknowledge', 'CORE', 'objectMerge')
-        self.assert_action_equal(self.response_json['action'], ('Editer', 'images/show.png', 'diacamma.invoice', 'articleShow', 1, 1, 1, {'article': '3'}))
-
-        self.factory.xfer = ArticleSearch()
-        self.calljson('/diacamma.invoice/articleSearch', {}, False)
-        self.assert_observer('core.custom', 'diacamma.invoice', 'articleSearch')
-        self.assert_count_equal('article', 3)
-        self.assert_json_equal('', 'article/@0/reference', "ABC2")
-        self.assert_json_equal('', 'article/@1/reference', "ABC3")
-        self.assert_json_equal('', 'article/@2/reference', "ABC4")
-        self.assert_json_equal('', 'article/@0/categories', "cat 2")
-        self.assert_json_equal('', 'article/@1/categories', "cat 1{[br/]}cat 2{[br/]}cat 3")
-        self.assert_json_equal('', 'article/@2/categories', "cat 3")
-
-    def test_article_filter(self):
-        default_categories()
-        default_articles(with_storage=True)
-        default_customize()
-        initial_thirds()
-
-        self.factory.xfer = ArticleList()
-        self.calljson('/diacamma.invoice/articleList', {}, False)
-        self.assert_observer('core.custom', 'diacamma.invoice', 'articleList')
-        self.assert_count_equal('', 7)
-        self.assert_count_equal('article', 4)
-
-        self.factory.xfer = ArticleList()
-        self.calljson('/diacamma.invoice/articleList', {'show_filter': 1}, False)
-        self.assert_observer('core.custom', 'diacamma.invoice', 'articleList')
-        self.assert_count_equal('', 7)
-        self.assert_count_equal('article', 5)
-
-        self.factory.xfer = ArticleList()
-        self.calljson('/diacamma.invoice/articleList', {'show_filter': 1, 'stockable': 0}, False)
-        self.assert_observer('core.custom', 'diacamma.invoice', 'articleList')
-        self.assert_count_equal('', 7)
-        self.assert_count_equal('article', 2)
-
-        self.factory.xfer = ArticleList()
-        self.calljson('/diacamma.invoice/articleList', {'show_filter': 1, 'stockable': 1}, False)
-        self.assert_observer('core.custom', 'diacamma.invoice', 'articleList')
-        self.assert_count_equal('', 7)
-        self.assert_count_equal('article', 2)
-
-        self.factory.xfer = ArticleList()
-        self.calljson('/diacamma.invoice/articleList', {'show_filter': 1, 'stockable': 2}, False)
-        self.assert_observer('core.custom', 'diacamma.invoice', 'articleList')
-        self.assert_count_equal('', 7)
-        self.assert_count_equal('article', 1)
-
-        self.factory.xfer = ArticleList()
-        self.calljson('/diacamma.invoice/articleList', {'show_filter': 1, 'cat_filter': '2'}, False)
-        self.assert_observer('core.custom', 'diacamma.invoice', 'articleList')
-        self.assert_count_equal('', 7)
-        self.assert_count_equal('article', 3)
-
-        self.factory.xfer = ArticleList()
-        self.calljson('/diacamma.invoice/articleList', {'show_filter': 1, 'cat_filter': '2;3'}, False)
-        self.assert_observer('core.custom', 'diacamma.invoice', 'articleList')
-        self.assert_count_equal('', 7)
-        self.assert_count_equal('article', 2)
-
-        self.factory.xfer = ArticleList()
-        self.calljson('/diacamma.invoice/articleList', {'show_filter': 1, 'cat_filter': '1;2;3'}, False)
-        self.assert_observer('core.custom', 'diacamma.invoice', 'articleList')
-        self.assert_count_equal('', 7)
-        self.assert_count_equal('article', 1)
-
-    def test_article_import1(self):
-        initial_thirds()
-        default_categories()
-        default_accountPosting()
-        csv_content = """'num','comment','prix','unité','compte','stock?','categorie','fournisseur','ref'
-'A123','article N°1','','Kg','code1','stockable','cat 2','Dalton Avrel','POIYT'
-'B234','article N°2','23,56','L','code1','stockable','cat 3','',''
-'C345','article N°3','45.74','','code2','non stockable','cat 1','Dalton Avrel','MLKJH'
-'D456','article N°4','56,89','m','code1','stockable & non vendable','','Maximum','987654'
-'A123','article N°1','13.57','Kg','code1','stockable','cat 3','',''
-'A123','article N°1','16,95','Kg','code1','stockable','','Maximum','654321'
-"""
-
-        self.factory.xfer = ArticleList()
-        self.calljson('/diacamma.invoice/articleList', {'show_filter': 1}, False)
-        self.assert_observer('core.custom', 'diacamma.invoice', 'articleList')
-        self.assert_count_equal('article', 0)
-
-        self.factory.xfer = ArticleImport()
-        self.calljson('/diacamma.invoice/articleImport', {'step': 1, 'modelname': 'invoice.Article', 'quotechar': "'",
-                                                          'delimiter': ',', 'encoding': 'utf-8', 'dateformat': '%d/%m/%Y', 'csvcontent': StringIO(csv_content)}, False)
-        self.assert_observer('core.custom', 'diacamma.invoice', 'articleImport')
-        self.assert_count_equal('', 6 + 12)
-        self.assert_select_equal('fld_reference', 9)  # nb=9
-        self.assert_select_equal('fld_categories', 10)  # nb=10
-        self.assert_count_equal('CSV', 6)
-        self.assert_count_equal('#CSV/actions', 0)
-        self.assertEqual(len(self.json_actions), 3)
-        self.assert_action_equal(self.json_actions[0], (six.text_type('Retour'), 'images/left.png', 'diacamma.invoice', 'articleImport', 0, 2, 1, {'step': '0'}))
-        self.assert_action_equal(self.json_actions[1], (six.text_type('Ok'), 'images/ok.png', 'diacamma.invoice', 'articleImport', 0, 2, 1, {'step': '2'}))
-        self.assertEqual(len(self.json_context), 8)
-
-        self.factory.xfer = ArticleImport()
-        self.calljson('/diacamma.invoice/articleImport', {'step': 2, 'modelname': 'invoice.Article', 'quotechar': "'", 'delimiter': ',',
-                                                          'encoding': 'utf-8', 'dateformat': '%d/%m/%Y', 'csvcontent0': csv_content,
-                                                          "fld_reference": "num", "fld_designation": "comment", "fld_price": "prix",
-                                                          "fld_unit": "unité", "fld_isdisabled": "", "fld_accountposting": "compte",
-                                                          "fld_vat": "", "fld_stockable": "stock?", 'fld_categories': 'categorie',
-                                                          'fld_provider.third.contact': 'fournisseur', 'fld_provider.reference': 'ref', }, False)
-        self.assert_observer('core.custom', 'diacamma.invoice', 'articleImport')
-        self.assert_count_equal('', 4)
-        self.assert_count_equal('CSV', 6)
-        self.assert_count_equal('#CSV/actions', 0)
-        self.assertEqual(len(self.json_actions), 3)
-        self.assert_action_equal(self.json_actions[1], (six.text_type('Ok'), 'images/ok.png', 'diacamma.invoice', 'articleImport', 0, 2, 1, {'step': '3'}))
-
-        self.factory.xfer = ArticleImport()
-        self.calljson('/diacamma.invoice/articleImport', {'step': 3, 'modelname': 'invoice.Article', 'quotechar': "'", 'delimiter': ',',
-                                                          'encoding': 'utf-8', 'dateformat': '%d/%m/%Y', 'csvcontent0': csv_content,
-                                                          "fld_reference": "num", "fld_designation": "comment", "fld_price": "prix",
-                                                          "fld_unit": "unité", "fld_isdisabled": "", "fld_accountposting": "compte",
-                                                          "fld_vat": "", "fld_stockable": "stock?", 'fld_categories': 'categorie',
-                                                          'fld_provider.third.contact': 'fournisseur', 'fld_provider.reference': 'ref', }, False)
-        self.assert_observer('core.custom', 'diacamma.invoice', 'articleImport')
-        self.assert_count_equal('', 2)
-        self.assert_json_equal('LABELFORM', 'result', "{[center]}{[i]}4 éléments ont été importés{[/i]}{[/center]}")
-        self.assertEqual(len(self.json_actions), 1)
-
-        self.factory.xfer = ArticleList()
-        self.calljson('/diacamma.invoice/articleList', {'show_filter': 1}, False)
-        self.assert_observer('core.custom', 'diacamma.invoice', 'articleList')
-        self.assert_count_equal('article', 4)
-        self.assert_json_equal('', 'article/@0/reference', "A123")
-        self.assert_json_equal('', 'article/@0/designation', "article N°1")
-        self.assert_json_equal('', 'article/@0/price_txt', "16.95€")
-        self.assert_json_equal('', 'article/@0/unit', 'Kg')
-        self.assert_json_equal('', 'article/@0/isdisabled', "0")
-        self.assert_json_equal('', 'article/@0/accountposting', "code1")
-        self.assert_json_equal('', 'article/@0/stockable', "stockable")
-        self.assert_json_equal('', 'article/@0/categories', "cat 2{[br/]}cat 3")
-
-        self.assert_json_equal('', 'article/@1/reference', "B234")
-        self.assert_json_equal('', 'article/@1/designation', "article N°2")
-        self.assert_json_equal('', 'article/@1/price_txt', "23.56€")
-        self.assert_json_equal('', 'article/@1/unit', 'L')
-        self.assert_json_equal('', 'article/@1/isdisabled', "0")
-        self.assert_json_equal('', 'article/@1/accountposting', "code1")
-        self.assert_json_equal('', 'article/@1/stockable', "stockable")
-        self.assert_json_equal('', 'article/@1/categories', "cat 3")
-
-        self.assert_json_equal('', 'article/@2/reference', "C345")
-        self.assert_json_equal('', 'article/@2/designation', "article N°3")
-        self.assert_json_equal('', 'article/@2/price_txt', "45.74€")
-        self.assert_json_equal('', 'article/@2/unit', '')
-        self.assert_json_equal('', 'article/@2/isdisabled', "0")
-        self.assert_json_equal('', 'article/@2/accountposting', "code2")
-        self.assert_json_equal('', 'article/@2/stockable', "non stockable")
-        self.assert_json_equal('', 'article/@2/categories', "cat 1")
-
-        self.assert_json_equal('', 'article/@3/reference', "D456")
-        self.assert_json_equal('', 'article/@3/designation', "article N°4")
-        self.assert_json_equal('', 'article/@3/price_txt', "56.89€")
-        self.assert_json_equal('', 'article/@3/unit', 'm')
-        self.assert_json_equal('', 'article/@3/isdisabled', "0")
-        self.assert_json_equal('', 'article/@3/accountposting', "code1")
-        self.assert_json_equal('', 'article/@3/stockable', "stockable & non vendable")
-        self.assert_json_equal('', 'article/@3/categories', '')
-
-        self.factory.xfer = ArticleShow()
-        self.calljson('/diacamma.invoice/articleShow', {'article': '1'}, False)
-        self.assert_observer('core.custom', 'diacamma.invoice', 'articleShow')
-        self.assert_count_equal('', 17)
-        self.assert_json_equal('LABELFORM', 'reference', "A123")
-        self.assert_json_equal('LABELFORM', 'categories', "cat 2{[br/]}cat 3")
-        self.assert_count_equal('provider', 2)
-        self.assert_json_equal('', 'provider/@0/third', "Dalton Avrel")
-        self.assert_json_equal('', 'provider/@0/reference', "POIYT")
-        self.assert_json_equal('', 'provider/@1/third', "Maximum")
-        self.assert_json_equal('', 'provider/@1/reference', "654321")
-
-        self.factory.xfer = ArticleImport()
-        self.calljson('/diacamma.invoice/articleImport', {'step': 3, 'modelname': 'invoice.Article', 'quotechar': "'", 'delimiter': ',',
-                                                          'encoding': 'utf-8', 'dateformat': '%d/%m/%Y', 'csvcontent0': csv_content,
-                                                          "fld_reference": "num", "fld_designation": "comment", "fld_price": "prix",
-                                                          "fld_unit": "unité", "fld_isdisabled": "", "fld_accountposting": "compte",
-                                                          "fld_vat": "", "fld_stockable": "stock?", 'fld_categories': 'categorie',
-                                                          'fld_provider.third.contact': 'fournisseur', 'fld_provider.reference': 'ref', }, False)
-        self.assert_observer('core.custom', 'diacamma.invoice', 'articleImport')
-        self.assert_count_equal('', 2)
-        self.assert_json_equal('LABELFORM', 'result', "{[center]}{[i]}4 éléments ont été importés{[/i]}{[/center]}")
-        self.assertEqual(len(self.json_actions), 1)
-
-        self.factory.xfer = ArticleShow()
-        self.calljson('/diacamma.invoice/articleShow', {'article': '1'}, False)
-        self.assert_observer('core.custom', 'diacamma.invoice', 'articleShow')
-        self.assert_count_equal('', 17)
-        self.assert_json_equal('LABELFORM', 'reference', "A123")
-        self.assert_json_equal('LABELFORM', 'categories', "cat 2{[br/]}cat 3")
-        self.assert_count_equal('provider', 2)
-        self.assert_json_equal('', 'provider/@0/third', "Dalton Avrel")
-        self.assert_json_equal('', 'provider/@0/reference', "POIYT")
-        self.assert_json_equal('', 'provider/@1/third', "Maximum")
-        self.assert_json_equal('', 'provider/@1/reference', "654321")
-
-    def test_article_import2(self):
-        initial_thirds()
-        default_categories()
-        default_accountPosting()
-        csv_content = """'num','comment','prix','unité','compte','stock?','categorie','fournisseur','ref'
-'A123','article N°1','ssdqs','Kg','code1','stockable','cat 2','Avrel','POIYT'
-'B234','article N°2','23.56','L','code1','stockable','cat 3','',''
-'C345','article N°3','45.74','','code2','non stockable','cat 1','Avrel','MLKJH'
-'D456','article N°4','56.89','m','code1','stockable & non vendable','','Maximum','987654'
-'A123','article N°1','13.57','Kg','code1','stockable','cat 3','',''
-'A123','article N°1','16.95','Kg','code1','stockable','','Maximum','654321'
-"""
-
-        self.factory.xfer = ArticleImport()
-        self.calljson('/diacamma.invoice/articleImport', {'step': 3, 'modelname': 'invoice.Article', 'quotechar': "'", 'delimiter': ',',
-                                                          'encoding': 'utf-8', 'dateformat': '%d/%m/%Y', 'csvcontent0': csv_content,
-                                                          "fld_reference": "num", "fld_designation": "comment", "fld_price": "prix",
-                                                          "fld_unit": "unité", "fld_isdisabled": "", "fld_accountposting": "compte",
-                                                          "fld_vat": "", "fld_stockable": "stock?", 'fld_categories': '',
-                                                          'fld_provider.third.contact': '', 'fld_provider.reference': '', }, False)
-        self.assert_observer('core.custom', 'diacamma.invoice', 'articleImport')
-        self.assert_count_equal('', 2)
-        self.assert_json_equal('LABELFORM', 'result', "{[center]}{[i]}4 éléments ont été importés{[/i]}{[/center]}")
-        self.assertEqual(len(self.json_actions), 1)
-
-        self.factory.xfer = ArticleList()
-        self.calljson('/diacamma.invoice/articleList', {'show_filter': 1}, False)
-        self.assert_observer('core.custom', 'diacamma.invoice', 'articleList')
-        self.assert_count_equal('article', 4)
-        self.assert_json_equal('', 'article/@0/reference', "A123")
-        self.assert_json_equal('', 'article/@0/designation', "article N°1")
-        self.assert_json_equal('', 'article/@0/price_txt', "16.95€")
-        self.assert_json_equal('', 'article/@0/unit', 'Kg')
-        self.assert_json_equal('', 'article/@0/isdisabled', "0")
-        self.assert_json_equal('', 'article/@0/accountposting', "code1")
-        self.assert_json_equal('', 'article/@0/stockable', "stockable")
-        self.assert_json_equal('', 'article/@0/categories', '')
-
-        self.assert_json_equal('', 'article/@1/reference', "B234")
-        self.assert_json_equal('', 'article/@1/designation', "article N°2")
-        self.assert_json_equal('', 'article/@1/price_txt', "23.56€")
-        self.assert_json_equal('', 'article/@1/unit', 'L')
-        self.assert_json_equal('', 'article/@1/isdisabled', "0")
-        self.assert_json_equal('', 'article/@1/accountposting', "code1")
-        self.assert_json_equal('', 'article/@1/stockable', "stockable")
-        self.assert_json_equal('', 'article/@1/categories', '')
-
-        self.assert_json_equal('', 'article/@2/reference', "C345")
-        self.assert_json_equal('', 'article/@2/designation', "article N°3")
-        self.assert_json_equal('', 'article/@2/price_txt', "45.74€")
-        self.assert_json_equal('', 'article/@2/unit', '')
-        self.assert_json_equal('', 'article/@2/isdisabled', "0")
-        self.assert_json_equal('', 'article/@2/accountposting', "code2")
-        self.assert_json_equal('', 'article/@2/stockable', "non stockable")
-        self.assert_json_equal('', 'article/@2/categories', '')
-
-        self.assert_json_equal('', 'article/@3/reference', "D456")
-        self.assert_json_equal('', 'article/@3/designation', "article N°4")
-        self.assert_json_equal('', 'article/@3/price_txt', "56.89€")
-        self.assert_json_equal('', 'article/@3/unit', 'm')
-        self.assert_json_equal('', 'article/@3/isdisabled', "0")
-        self.assert_json_equal('', 'article/@3/accountposting', "code1")
-        self.assert_json_equal('', 'article/@3/stockable', "stockable & non vendable")
-        self.assert_json_equal('', 'article/@3/categories', '')
-
-        self.factory.xfer = ArticleShow()
-        self.calljson('/diacamma.invoice/articleShow', {'article': '1'}, False)
-        self.assert_observer('core.custom', 'diacamma.invoice', 'articleShow')
-        self.assert_count_equal('', 17)
-        self.assert_json_equal('LABELFORM', 'reference', "A123")
-        self.assert_json_equal('LABELFORM', 'categories', '')
-        self.assert_count_equal('provider', 0)
-
-    def test_article_import3(self):
-        default_customize()
-        default_accountPosting()
-        csv_content = """'num','comment','prix','unité','compte','stock?','categorie','fournisseur','ref','color','size'
-'A123','article N°1','12.45','Kg','code1','stockable','cat 2','Avrel','POIYT','---','10'
-'B234','article N°2','23.56','L','code1','stockable','cat 3','','','noir','25'
-'C345','article N°3','45.74','','code2','non stockable','cat 1','Avrel','MLKJH','rouge','75'
-'D456','article N°4','56.89','m','code1','stockable & non vendable','','Maximum','987654','blanc','1'
-'A123','article N°1','13.57','Kg','code1','stockable','cat 3','','','bleu','10'
-'A123','article N°1','16.95','Kg','code1','stockable','','Maximum','654321','bleu','15'
-"""
-
-        self.factory.xfer = ArticleImport()
-        self.calljson('/diacamma.invoice/articleImport', {'step': 3, 'modelname': 'invoice.Article', 'quotechar': "'", 'delimiter': ',',
-                                                          'encoding': 'utf-8', 'dateformat': '%d/%m/%Y', 'csvcontent0': csv_content,
-                                                          "fld_reference": "num", "fld_designation": "comment", "fld_price": "prix",
-                                                          "fld_unit": "unité", "fld_isdisabled": "", "fld_accountposting": "compte",
-                                                          "fld_vat": "", "fld_stockable": "stock?",
-                                                          "fld_custom_1": "color", "fld_custom_2": "size", }, False)
-        self.assert_observer('core.custom', 'diacamma.invoice', 'articleImport')
-        self.assert_count_equal('', 2)
-        self.assert_json_equal('LABELFORM', 'result', "{[center]}{[i]}4 éléments ont été importés{[/i]}{[/center]}")
-        self.assertEqual(len(self.json_actions), 1)
-
-        self.factory.xfer = ArticleList()
-        self.calljson('/diacamma.invoice/articleList', {'show_filter': 1}, False)
-        self.assert_observer('core.custom', 'diacamma.invoice', 'articleList')
-        self.assert_count_equal('article', 4)
-        self.assert_json_equal('', 'article/@0/reference', "A123")
-        self.assert_json_equal('', 'article/@0/designation', "article N°1")
-        self.assert_json_equal('', 'article/@0/price_txt', "16.95€")
-        self.assert_json_equal('', 'article/@0/unit', 'Kg')
-        self.assert_json_equal('', 'article/@0/isdisabled', "0")
-        self.assert_json_equal('', 'article/@0/accountposting', "code1")
-        self.assert_json_equal('', 'article/@0/stockable', "stockable")
-
-        self.assert_json_equal('', 'article/@1/reference', "B234")
-        self.assert_json_equal('', 'article/@1/designation', "article N°2")
-        self.assert_json_equal('', 'article/@1/price_txt', "23.56€")
-        self.assert_json_equal('', 'article/@1/unit', 'L')
-        self.assert_json_equal('', 'article/@1/isdisabled', "0")
-        self.assert_json_equal('', 'article/@1/accountposting', "code1")
-        self.assert_json_equal('', 'article/@1/stockable', "stockable")
-
-        self.assert_json_equal('', 'article/@2/reference', "C345")
-        self.assert_json_equal('', 'article/@2/designation', "article N°3")
-        self.assert_json_equal('', 'article/@2/price_txt', "45.74€")
-        self.assert_json_equal('', 'article/@2/unit', '')
-        self.assert_json_equal('', 'article/@2/isdisabled', "0")
-        self.assert_json_equal('', 'article/@2/accountposting', "code2")
-        self.assert_json_equal('', 'article/@2/stockable', "non stockable")
-
-        self.assert_json_equal('', 'article/@3/reference', "D456")
-        self.assert_json_equal('', 'article/@3/designation', "article N°4")
-        self.assert_json_equal('', 'article/@3/price_txt', "56.89€")
-        self.assert_json_equal('', 'article/@3/unit', 'm')
-        self.assert_json_equal('', 'article/@3/isdisabled', "0")
-        self.assert_json_equal('', 'article/@3/accountposting', "code1")
-        self.assert_json_equal('', 'article/@3/stockable', "stockable & non vendable")
-
-        self.factory.xfer = ArticleShow()
-        self.calljson('/diacamma.invoice/articleShow', {'article': '1'}, False)
-        self.assert_observer('core.custom', 'diacamma.invoice', 'articleShow')
-        self.assert_count_equal('', 16)
-        self.assert_json_equal('LABELFORM', 'reference', "A123")
-        self.assert_json_equal('LABELFORM', 'custom_1', "bleu")
-        self.assert_json_equal('LABELFORM', 'custom_2', "15")
-
-
 class BillTest(InvoiceTest):
 
     def setUp(self):
@@ -1959,3 +1304,134 @@ class BillTest(InvoiceTest):
 
         search_field_list = Bill.get_search_fields()
         self.assertEqual(6 + 8 + 1 + 2 + 2 + 4 + 9 + 2 + 2 + 2, len(search_field_list), search_field_list)  # bill + contact + custom contact + custom third + third + detail + article  + art custom + category + provider
+
+    def test_autoreduce1(self):
+        initial_thirds()
+        default_categories()
+        default_articles()
+
+        self.factory.xfer = AutomaticReduceAddModify()
+        self.calljson('/diacamma.invoice/automaticReduceAddModify', {'name': "reduct #1a", 'category': 2, 'mode': 0, 'amount': '20.0', 'occurency': '3', 'filtercriteria': '0', 'SAVE': 'YES'}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'automaticReduceAddModify')
+
+        self.factory.xfer = AutomaticReduceAddModify()
+        self.calljson('/diacamma.invoice/automaticReduceAddModify', {'name': "reduct #1b", 'category': 2, 'mode': 0, 'amount': '30.0', 'occurency': '4', 'filtercriteria': '0', 'SAVE': 'YES'}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'automaticReduceAddModify')
+
+        self.factory.xfer = BillList()
+        self.calljson('/diacamma.invoice/billList', {'status_filter': 1}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'billList')
+        self.assert_count_equal('bill', 0)
+
+        self._create_bill([{'article': 5, 'designation': 'article 5', 'price': '100', 'quantity': 1}], 1, '2015-04-01', 6, True)  # 100
+        self._create_bill([{'article': 5, 'designation': 'article 5', 'price': '100', 'quantity': 1}], 3, '2015-04-02', 6, True)  # 100
+        self._create_bill([{'article': 5, 'designation': 'article 5', 'price': '100', 'quantity': 1}], 1, '2015-04-03', 6, True)  # 80
+        self._create_bill([{'article': 5, 'designation': 'article 5', 'price': '100', 'quantity': 1}], 0, '2015-04-04', 6, True)  # 70
+        self._create_bill([{'article': 5, 'designation': 'article 5', 'price': '100', 'quantity': 1}], 1, '2015-04-05', 6, False)  # 70
+        self._create_bill([{'article': 5, 'designation': 'article 5', 'price': '100', 'quantity': 1}], 1, '2015-04-06', 5, True)  # 100
+        self._create_bill([{'article': 1, 'designation': 'article 1', 'price': '100', 'quantity': 1}], 1, '2015-04-07', 6, True)  # 100
+
+        self.factory.xfer = BillList()
+        self.calljson('/diacamma.invoice/billList', {'status_filter': -2, 'GRID_ORDER%bill': 'id'}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'billList')
+        self.assert_count_equal('bill', 7)
+        self.assert_json_equal('', 'bill/@0/third', 'Dalton Jack')
+        self.assert_json_equal('', 'bill/@0/total', '100.00€')
+        self.assert_json_equal('', 'bill/@0/date', '2015-04-01')
+        self.assert_json_equal('', 'bill/@1/third', 'Dalton Jack')
+        self.assert_json_equal('', 'bill/@1/total', '100.00€')
+        self.assert_json_equal('', 'bill/@1/date', '2015-04-02')
+        self.assert_json_equal('', 'bill/@2/third', 'Dalton Jack')
+        self.assert_json_equal('', 'bill/@2/total', '80.00€')
+        self.assert_json_equal('', 'bill/@2/date', '2015-04-03')
+        self.assert_json_equal('', 'bill/@3/third', 'Dalton Jack')
+        self.assert_json_equal('', 'bill/@3/total', '70.00€')
+        self.assert_json_equal('', 'bill/@3/date', '2015-04-04')
+        self.assert_json_equal('', 'bill/@4/third', 'Dalton Jack')
+        self.assert_json_equal('', 'bill/@4/total', '70.00€')
+        self.assert_json_equal('', 'bill/@4/date', '2015-04-05')
+        self.assert_json_equal('', 'bill/@5/third', 'Dalton William')
+        self.assert_json_equal('', 'bill/@5/total', '100.00€')
+        self.assert_json_equal('', 'bill/@5/date', '2015-04-06')
+        self.assert_json_equal('', 'bill/@6/third', 'Dalton Jack')
+        self.assert_json_equal('', 'bill/@6/total', '100.00€')
+        self.assert_json_equal('', 'bill/@6/date', '2015-04-07')
+
+    def testt_autoreduce2(self):
+        initial_thirds()
+        default_categories()
+        default_articles()
+        SavedCriteria.objects.create(name='my filter', modelname='accounting.Third', criteria="contact.city||1||LE PRECHEUR")
+
+        self.factory.xfer = AutomaticReduceAddModify()
+        self.calljson('/diacamma.invoice/automaticReduceAddModify', {'name': "reduct #2", 'category': 2, 'mode': 1, 'amount': '10.0', 'occurency': '0', 'filtercriteria': '1', 'SAVE': 'YES'}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'automaticReduceAddModify')
+
+        self.factory.xfer = BillList()
+        self.calljson('/diacamma.invoice/billList', {'status_filter': 1}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'billList')
+        self.assert_count_equal('bill', 0)
+
+        self._create_bill([{'article': 5, 'designation': 'article 5', 'price': '200', 'quantity': 1}], 1, '2015-04-01', 6, True)  # 180
+        self._create_bill([{'article': 5, 'designation': 'article 5', 'price': '50', 'quantity': 1}], 0, '2015-04-02', 5, True)  # 45
+        self._create_bill([{'article': 5, 'designation': 'article 5', 'price': '100', 'quantity': 1}], 1, '2015-04-03', 4, True)  # 100
+        self._create_bill([{'article': 1, 'designation': 'article 1', 'price': '100', 'quantity': 1}], 1, '2015-04-04', 6, True)  # 100
+        self._create_bill([{'article': 5, 'designation': 'article 5', 'price': '75', 'quantity': 2}], 3, '2015-04-05', 0, False)  # 150
+
+        self.factory.xfer = BillList()
+        self.calljson('/diacamma.invoice/billList', {'status_filter': -2, 'GRID_ORDER%bill': 'id'}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'billList')
+        self.assert_count_equal('bill', 5)
+        self.assert_json_equal('', 'bill/@0/third', 'Dalton Jack')
+        self.assert_json_equal('', 'bill/@0/total', '180.00€')
+        self.assert_json_equal('', 'bill/@1/third', 'Dalton William')
+        self.assert_json_equal('', 'bill/@1/total', '45.00€')
+        self.assert_json_equal('', 'bill/@2/third', 'Minimum')
+        self.assert_json_equal('', 'bill/@2/total', '100.00€')
+        self.assert_json_equal('', 'bill/@3/third', 'Dalton Jack')
+        self.assert_json_equal('', 'bill/@3/total', '100.00€')
+        self.assert_json_equal('', 'bill/@4/third', '---')
+        self.assert_json_equal('', 'bill/@4/total', '150.00€')
+
+        self.factory.xfer = SupportingThirdValid()
+        self.calljson('/diacamma.payoff/supportingThirdValid', {'supporting': 5, 'third': 6}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.payoff', 'supportingThirdValid')
+
+        self.factory.xfer = BillList()
+        self.calljson('/diacamma.invoice/billList', {'status_filter': -2, 'GRID_ORDER%bill': 'id'}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'billList')
+        self.assert_count_equal('bill', 5)
+        self.assert_json_equal('', 'bill/@4/third', 'Dalton Jack')
+        self.assert_json_equal('', 'bill/@4/total', '135.00€')
+
+    def testt_autoreduce3(self):
+        initial_thirds()
+        default_categories()
+        default_articles()
+
+        self.factory.xfer = AutomaticReduceAddModify()
+        self.calljson('/diacamma.invoice/automaticReduceAddModify', {'name': "reduct #3", 'category': 2, 'mode': 2, 'amount': '25.0', 'occurency': '10', 'filtercriteria': '0', 'SAVE': 'YES'}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'automaticReduceAddModify')
+
+        self.factory.xfer = BillList()
+        self.calljson('/diacamma.invoice/billList', {'status_filter': 1}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'billList')
+        self.assert_count_equal('bill', 0)
+
+        self._create_bill([{'article': 5, 'designation': 'article 5', 'price': '15', 'quantity': 5}], 1, '2015-04-01', 6, True)  # 75
+        self._create_bill([{'article': 5, 'designation': 'article 5', 'price': '15', 'quantity': 7}], 1, '2015-04-01', 6, True)  # 60
+        self._create_bill([{'article': 5, 'designation': 'article 5', 'price': '15', 'quantity': 2}], 1, '2015-04-01', 6, True)  # 22.5
+        self._create_bill([{'article': 1, 'designation': 'article 1', 'price': '15', 'quantity': 20}], 1, '2015-04-01', 6, True)  # 300
+
+        self.factory.xfer = BillList()
+        self.calljson('/diacamma.invoice/billList', {'status_filter': 1}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'billList')
+        self.assert_count_equal('bill', 4)
+        self.assert_json_equal('', 'bill/@0/third', 'Dalton Jack')
+        self.assert_json_equal('', 'bill/@0/total', '75.00€')
+        self.assert_json_equal('', 'bill/@1/third', 'Dalton Jack')
+        self.assert_json_equal('', 'bill/@1/total', '60.00€')
+        self.assert_json_equal('', 'bill/@2/third', 'Dalton Jack')
+        self.assert_json_equal('', 'bill/@2/total', '22.50€')
+        self.assert_json_equal('', 'bill/@3/third', 'Dalton Jack')
+        self.assert_json_equal('', 'bill/@3/total', '300.00€')
