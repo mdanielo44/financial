@@ -1211,10 +1211,10 @@ class AutomaticReduce(LucteriosModel):
     def filtercriteria_query(self):
         return SavedCriteria.objects.filter(modelname=Third.get_long_name())
 
-    def _get_nb_sold(self, detail):
+    def _get_nb_sold(self, reduce_query, detail):
         nb_sold = 0.0
         if self.occurency != 0:
-            qty_val = Detail.objects.filter(Q(bill__third=detail.bill.third) & Q(article__categories=self.category) & Q(bill__bill_type__in=(0, 1, 3)) & Q(bill__status__in=(0, 1, 3))).aggregate(data_sum=Sum('quantity'))
+            qty_val = Detail.objects.filter(reduce_query).aggregate(data_sum=Sum('quantity'))
             if qty_val['data_sum'] is not None:
                 nb_sold = float(qty_val['data_sum'])
             if detail.id is None:
@@ -1224,13 +1224,13 @@ class AutomaticReduce(LucteriosModel):
             self.occurency = 1
         return nb_sold
 
-    def _reduce_for_mode2(self, detail):
+    def _reduce_for_mode2(self, reduce_query, detail):
         amount_sold = 0.0
-        amount_val = Detail.objects.filter(Q(bill__third=detail.bill.third) & Q(article__categories=self.category) & Q(bill__bill_type__in=(0, 1, 3)) & Q(bill__status__in=(0, 1, 3))).aggregate(data_sum=Sum(F('quantity') * F('price')))
+        amount_val = Detail.objects.filter(reduce_query).aggregate(data_sum=Sum(F('quantity') * F('price')))
         if amount_val['data_sum'] is not None:
             amount_sold = float(amount_val['data_sum'])
         reduce_sold = 0.0
-        reduce_val = Detail.objects.filter(Q(bill__third=detail.bill.third) & Q(article__categories=self.category) & Q(bill__bill_type__in=(0, 1, 3)) & Q(bill__status__in=(0, 1, 3))).aggregate(data_sum=Sum('reduce'))
+        reduce_val = Detail.objects.filter(reduce_query).aggregate(data_sum=Sum('reduce'))
         if reduce_val['data_sum'] is not None:
             reduce_sold = float(reduce_val['data_sum'])
         if detail.id is None:
@@ -1246,18 +1246,21 @@ class AutomaticReduce(LucteriosModel):
         return True
 
     def calcul_reduce(self, detail):
-        if (detail.bill.third_id is not None) and (detail.bill.bill_type in (0, 1, 3)) and (detail.bill.status in (0, 1, 3)) and (
+        val_reduce = 0.0
+        if (detail.bill.third_id is not None) and (detail.bill.bill_type in (0, 1, 3)) and (detail.bill.status in (0, 1)) and (
                 detail.article_id is not None) and self.category.article_set.filter(id=detail.article_id).exists() and self.check_filtercriteria(detail):
-            nb_sold = self._get_nb_sold(detail)
+            current_year = FiscalYear.get_current()
+            reduce_query = Q(bill__third=detail.bill.third) & Q(bill__bill_type__in=(0, 1, 3)) & Q(bill__status__in=(0, 1, 3)) & Q(article__categories=self.category) & Q(bill__date__gte=current_year.begin) & Q(bill__date__lte=current_year.end)
+            nb_sold = self._get_nb_sold(reduce_query, detail)
             if self.occurency <= nb_sold:
                 qty_reduce = min(float(detail.quantity), nb_sold - self.occurency + 1)
                 if self.mode == 0:
-                    return qty_reduce * float(self.amount)
+                    val_reduce = qty_reduce * float(self.amount)
                 elif self.mode == 1:
-                    return qty_reduce * float(detail.price) * float(self.amount) / 100.0
+                    val_reduce = qty_reduce * float(detail.price) * float(self.amount) / 100.0
                 else:
-                    return self._reduce_for_mode2(detail)
-        return 0
+                    val_reduce = self._reduce_for_mode2(reduce_query, detail)
+        return min(val_reduce, float(detail.quantity) * float(detail.price))
 
     @property
     def amount_txt(self):

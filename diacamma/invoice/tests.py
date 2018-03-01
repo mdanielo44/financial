@@ -50,7 +50,7 @@ from diacamma.invoice.views_conf import InvoiceConfFinancial, InvoiceConfCommerc
 from diacamma.invoice.views import ArticleList, ArticleAddModify, ArticleDel, \
     BillList, BillAddModify, BillShow, DetailAddModify, DetailDel, BillTransition, BillDel, BillFromQuotation, \
     BillStatistic, BillStatisticPrint, BillPrint, BillMultiPay, BillSearch, ArticleShow, ArticleSearch
-from diacamma.accounting.models import CostAccounting
+from diacamma.accounting.models import CostAccounting, FiscalYear
 
 
 class BillTest(InvoiceTest):
@@ -1330,11 +1330,12 @@ class BillTest(InvoiceTest):
         self._create_bill([{'article': 5, 'designation': 'article 5', 'price': '100', 'quantity': 1}], 1, '2015-04-05', 6, False)  # 70
         self._create_bill([{'article': 5, 'designation': 'article 5', 'price': '100', 'quantity': 1}], 1, '2015-04-06', 5, True)  # 100
         self._create_bill([{'article': 1, 'designation': 'article 1', 'price': '100', 'quantity': 1}], 1, '2015-04-07', 6, True)  # 100
+        self._create_bill([{'article': 5, 'designation': 'article 5', 'price': '15', 'quantity': 1}], 1, '2015-04-08', 6, True)  # 0
 
         self.factory.xfer = BillList()
         self.calljson('/diacamma.invoice/billList', {'status_filter': -2, 'GRID_ORDER%bill': 'id'}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'billList')
-        self.assert_count_equal('bill', 7)
+        self.assert_count_equal('bill', 8)
         self.assert_json_equal('', 'bill/@0/third', 'Dalton Jack')
         self.assert_json_equal('', 'bill/@0/total', '100.00€')
         self.assert_json_equal('', 'bill/@0/date', '2015-04-01')
@@ -1356,6 +1357,9 @@ class BillTest(InvoiceTest):
         self.assert_json_equal('', 'bill/@6/third', 'Dalton Jack')
         self.assert_json_equal('', 'bill/@6/total', '100.00€')
         self.assert_json_equal('', 'bill/@6/date', '2015-04-07')
+        self.assert_json_equal('', 'bill/@7/third', 'Dalton Jack')
+        self.assert_json_equal('', 'bill/@7/total', '0.00€')
+        self.assert_json_equal('', 'bill/@7/date', '2015-04-08')
 
     def testt_autoreduce2(self):
         initial_thirds()
@@ -1377,11 +1381,12 @@ class BillTest(InvoiceTest):
         self._create_bill([{'article': 5, 'designation': 'article 5', 'price': '100', 'quantity': 1}], 1, '2015-04-03', 4, True)  # 100
         self._create_bill([{'article': 1, 'designation': 'article 1', 'price': '100', 'quantity': 1}], 1, '2015-04-04', 6, True)  # 100
         self._create_bill([{'article': 5, 'designation': 'article 5', 'price': '75', 'quantity': 2}], 3, '2015-04-05', 0, False)  # 150
+        self._create_bill([{'article': 0, 'designation': 'article 0', 'price': '45', 'quantity': 3}], 1, '2015-04-05', 6, False)  # 135
 
         self.factory.xfer = BillList()
         self.calljson('/diacamma.invoice/billList', {'status_filter': -2, 'GRID_ORDER%bill': 'id'}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'billList')
-        self.assert_count_equal('bill', 5)
+        self.assert_count_equal('bill', 6)
         self.assert_json_equal('', 'bill/@0/third', 'Dalton Jack')
         self.assert_json_equal('', 'bill/@0/total', '180.00€')
         self.assert_json_equal('', 'bill/@1/third', 'Dalton William')
@@ -1392,6 +1397,8 @@ class BillTest(InvoiceTest):
         self.assert_json_equal('', 'bill/@3/total', '100.00€')
         self.assert_json_equal('', 'bill/@4/third', '---')
         self.assert_json_equal('', 'bill/@4/total', '150.00€')
+        self.assert_json_equal('', 'bill/@5/third', 'Dalton Jack')
+        self.assert_json_equal('', 'bill/@5/total', '135.00€')
 
         self.factory.xfer = SupportingThirdValid()
         self.calljson('/diacamma.payoff/supportingThirdValid', {'supporting': 5, 'third': 6}, False)
@@ -1400,7 +1407,7 @@ class BillTest(InvoiceTest):
         self.factory.xfer = BillList()
         self.calljson('/diacamma.invoice/billList', {'status_filter': -2, 'GRID_ORDER%bill': 'id'}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'billList')
-        self.assert_count_equal('bill', 5)
+        self.assert_count_equal('bill', 6)
         self.assert_json_equal('', 'bill/@4/third', 'Dalton Jack')
         self.assert_json_equal('', 'bill/@4/total', '135.00€')
 
@@ -1419,19 +1426,36 @@ class BillTest(InvoiceTest):
         self.assert_count_equal('bill', 0)
 
         self._create_bill([{'article': 5, 'designation': 'article 5', 'price': '15', 'quantity': 5}], 1, '2015-04-01', 6, True)  # 75
-        self._create_bill([{'article': 5, 'designation': 'article 5', 'price': '15', 'quantity': 7}], 1, '2015-04-01', 6, True)  # 60
-        self._create_bill([{'article': 5, 'designation': 'article 5', 'price': '15', 'quantity': 2}], 1, '2015-04-01', 6, True)  # 22.5
-        self._create_bill([{'article': 1, 'designation': 'article 1', 'price': '15', 'quantity': 20}], 1, '2015-04-01', 6, True)  # 300
+        self._create_bill([{'article': 5, 'designation': 'article 5', 'price': '15', 'quantity': 7}], 1, '2015-04-02', 6, True)  # 60
+        self._create_bill([{'article': 5, 'designation': 'article 5', 'price': '15', 'quantity': 2}], 1, '2015-04-03', 6, True)  # 22.5
+        self._create_bill([{'article': 1, 'designation': 'article 1', 'price': '15', 'quantity': 20}], 1, '2015-04-04', 6, True)  # 300
 
         self.factory.xfer = BillList()
-        self.calljson('/diacamma.invoice/billList', {'status_filter': 1}, False)
+        self.calljson('/diacamma.invoice/billList', {'status_filter': -2, 'GRID_ORDER%bill': 'id'}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'billList')
         self.assert_count_equal('bill', 4)
         self.assert_json_equal('', 'bill/@0/third', 'Dalton Jack')
         self.assert_json_equal('', 'bill/@0/total', '75.00€')
+        self.assert_json_equal('', 'bill/@0/date', '2015-04-01')
         self.assert_json_equal('', 'bill/@1/third', 'Dalton Jack')
         self.assert_json_equal('', 'bill/@1/total', '60.00€')
+        self.assert_json_equal('', 'bill/@1/date', '2015-04-02')
         self.assert_json_equal('', 'bill/@2/third', 'Dalton Jack')
         self.assert_json_equal('', 'bill/@2/total', '22.50€')
+        self.assert_json_equal('', 'bill/@2/date', '2015-04-03')
         self.assert_json_equal('', 'bill/@3/third', 'Dalton Jack')
         self.assert_json_equal('', 'bill/@3/total', '300.00€')
+        self.assert_json_equal('', 'bill/@3/date', '2015-04-04')
+
+        new_year = FiscalYear.objects.create(begin='2016-01-01', end='2016-12-31', status=0, last_fiscalyear_id=1)
+        new_year.set_has_actif()
+        self.assertEquals(FiscalYear.get_current().id, 2)
+
+        self._create_bill([{'article': 5, 'designation': 'article 5', 'price': '15', 'quantity': 3}], 1, '2016-04-01', 6, False)  # 45
+        self.factory.xfer = BillList()
+        self.calljson('/diacamma.invoice/billList', {'status_filter': -2, 'GRID_ORDER%bill': 'id'}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'billList')
+        self.assert_count_equal('bill', 5)
+        self.assert_json_equal('', 'bill/@4/third', 'Dalton Jack')
+        self.assert_json_equal('', 'bill/@4/total', '45.00€')
+        self.assert_json_equal('', 'bill/@4/date', '2016-04-01')
