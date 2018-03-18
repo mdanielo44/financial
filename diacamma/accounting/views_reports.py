@@ -322,39 +322,41 @@ class FiscalYearIncomeStatement(FiscalYearReport):
                                                                                                      self.lastfilter & other_filter if self.lastfilter is not None else None,
                                                                                                      budgetfilter & budget_other,
                                                                                                      sign_value=-1)
-        left_line_idx = fill_grid(self.grid, line_idx + 2, 'left', data_line_left)
         data_line_right, anx_total1_right, anx_total2_right, anx_totalb_right = convert_query_to_account(self.filter & other_filter,
                                                                                                          self.lastfilter & other_filter if self.lastfilter is not None else None,
                                                                                                          budgetfilter & budget_other,
                                                                                                          sign_value=1)
-        right_line_idx = fill_grid(self.grid, line_idx + 2, 'right', data_line_right)
-        if (left_line_idx != line_idx + 2) or (right_line_idx != line_idx + 2):
-            max_line_idx = max(left_line_idx, right_line_idx)
+        if (len(data_line_left) > 0) or (len(data_line_right) > 0):
             add_cell_in_grid(self.grid, self.line_offset + line_idx + 1, 'left', get_spaces(20) + "{[i]}%s{[/i]}" % _('annexe'))
             add_cell_in_grid(self.grid, self.line_offset + line_idx + 1, 'right', get_spaces(20) + "{[i]}%s{[/i]}" % _('annexe'))
-            left_line_idx += 1
+            left_line_idx = fill_grid(self.grid, self.line_offset + line_idx + 2, 'left', data_line_left)
+            right_line_idx = fill_grid(self.grid, self.line_offset + line_idx + 2, 'right', data_line_right)
+            max_line_idx = max(left_line_idx, right_line_idx)
             total1_left, total2_left, totalb_left = self.total_summary
             total1_right, total2_right, totalb_right = self.total_summary
-            add_cell_in_grid(self.grid, self.line_offset + max_line_idx, 'left', get_spaces(10) + "{[u]}{[b]}%s{[/b]}{[/u]}" % _('total with annexe'))
+            add_cell_in_grid(self.grid, max_line_idx, 'left', get_spaces(10) + "{[u]}{[b]}%s{[/b]}{[/u]}" % _('total with annexe'))
             total1_left += anx_total1_left
-            add_cell_in_grid(self.grid, self.line_offset + max_line_idx, 'left_n', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(total1_left, total1_right), 5))
+            add_cell_in_grid(self.grid, max_line_idx, 'left_n', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(total1_left, total1_right), 5))
             if self.lastfilter is not None:
                 total2_left += anx_total2_left
-                add_cell_in_grid(self.grid, self.line_offset + max_line_idx, 'left_n_1', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(total2_left, total2_right), 5))
+                add_cell_in_grid(self.grid, max_line_idx, 'left_n_1', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(total2_left, total2_right), 5))
             if self.budgetfilter_left is not None:
                 totalb_left += anx_totalb_left
-                add_cell_in_grid(self.grid, self.line_offset + max_line_idx, 'left_b', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(totalb_left, totalb_right), 5))
-            add_cell_in_grid(self.grid, self.line_offset + max_line_idx, 'right', get_spaces(10) + "{[u]}{[b]}%s{[/b]}{[/u]}" % _('total with annexe'))
+                add_cell_in_grid(self.grid, max_line_idx, 'left_b', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(totalb_left, totalb_right), 5))
+            add_cell_in_grid(self.grid, max_line_idx, 'right', get_spaces(10) + "{[u]}{[b]}%s{[/b]}{[/u]}" % _('total with annexe'))
             total1_right += anx_total1_right
-            add_cell_in_grid(self.grid, self.line_offset + max_line_idx, 'right_n', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(total1_left, total1_right), 5))
+            add_cell_in_grid(self.grid, max_line_idx, 'right_n', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(total1_left, total1_right), 5))
             if self.lastfilter is not None:
                 total2_right += anx_total2_right
-                add_cell_in_grid(self.grid, self.line_offset + max_line_idx, 'right_n_1', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(total2_left, total2_right), 5))
+                add_cell_in_grid(self.grid, max_line_idx, 'right_n_1', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(total2_left, total2_right), 5))
             if self.budgetfilter_right is not None:
                 totalb_right += anx_totalb_right
-                add_cell_in_grid(self.grid, self.line_offset + max_line_idx, 'right_b', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(totalb_left, totalb_right), 5))
-            add_cell_in_grid(self.grid, self.line_offset + max_line_idx + 1, 'left', '')
-            add_cell_in_grid(self.grid, self.line_offset + max_line_idx + 1, 'right', '')
+                add_cell_in_grid(self.grid, max_line_idx, 'right_b', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(totalb_left, totalb_right), 5))
+            add_cell_in_grid(self.grid, max_line_idx + 1, 'left', '')
+            add_cell_in_grid(self.grid, max_line_idx + 1, 'right', '')
+        else:
+            max_line_idx = self.line_offset-1
+        return max_line_idx + 1 - self.line_offset
 
     def calcul_table(self):
         self.budgetfilter_right = Q(year=self.item) & Q(code__regex=current_system_account().get_revenue_mask())
