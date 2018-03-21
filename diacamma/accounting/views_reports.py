@@ -355,7 +355,7 @@ class FiscalYearIncomeStatement(FiscalYearReport):
             add_cell_in_grid(self.grid, max_line_idx + 1, 'left', '')
             add_cell_in_grid(self.grid, max_line_idx + 1, 'right', '')
         else:
-            max_line_idx = self.line_offset-1
+            max_line_idx = self.line_offset - 1
         return max_line_idx + 1 - self.line_offset
 
     def calcul_table(self):
@@ -389,8 +389,10 @@ class FiscalYearLedger(FiscalYearReport):
     def _add_total_account(self):
         if self.last_account is not None:
             add_cell_in_grid(self.grid, self.line_offset + self.line_idx, 'entry.designation', get_spaces(30) + "{[i]}%s{[/i]}" % _('total'))
-            add_cell_in_grid(self.grid, self.line_offset + self.line_idx, 'debit', "{[i]}%s{[/i]}" % format_devise(max((0, -1 * self.last_account.credit_debit_way() * self.last_total)), 0))
-            add_cell_in_grid(self.grid, self.line_offset + self.line_idx, 'credit', "{[i]}%s{[/i]}" % format_devise(max((0, self.last_account.credit_debit_way() * self.last_total)), 0))
+            add_cell_in_grid(self.grid, self.line_offset + self.line_idx, 'debit', "{[i]}%s{[/i]}" %
+                             format_devise(max((0, -1 * self.last_account.credit_debit_way() * self.last_total)), 0))
+            add_cell_in_grid(self.grid, self.line_offset + self.line_idx, 'credit', "{[i]}%s{[/i]}" %
+                             format_devise(max((0, self.last_account.credit_debit_way() * self.last_total)), 0))
             self.line_idx += 1
             add_cell_in_grid(self.grid, self.line_offset + self.line_idx, 'entry.designation', '{[br/]}')
             self.line_idx += 1

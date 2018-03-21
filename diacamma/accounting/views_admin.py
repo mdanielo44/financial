@@ -169,7 +169,7 @@ class FiscalYearExport(XferContainerCustom):
     caption = _("Export")
 
     def fillresponse(self):
-        if self.getparam("year") is None:
+        if self.item.id is None:
             self.item = FiscalYear.get_current()
         destination_file = self.item.get_xml_export()
         img = XferCompImage('img')

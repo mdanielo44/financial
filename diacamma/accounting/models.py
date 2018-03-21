@@ -389,18 +389,18 @@ class FiscalYear(LucteriosModel):
     def get_context(self):
         entries_by_journal = []
         for journal in Journal.objects.all():
-            entries = self.entryaccount_set.filter(
-                journal=journal, close=True)
+            entries = self.entryaccount_set.filter(journal=journal, close=True)
             if len(entries) > 0:
                 entries_by_journal.append((journal, entries))
+        if len(entries_by_journal) == 0:
+            raise LucteriosException(IMPORTANT, _('This fiscal year has no validated entrie !'))
         return {'year': self, 'entries_by_journal': entries_by_journal}
 
     def get_xml_export(self):
         file_name = "fiscalyear_export_%s.xml" % six.text_type(self.id)
         xmlfiles = current_system_account().get_export_xmlfiles()
         if xmlfiles is None:
-            raise LucteriosException(
-                IMPORTANT, _('No export for this accounting system!'))
+            raise LucteriosException(IMPORTANT, _('No export for this accounting system!'))
         xml_file, xsd_file = xmlfiles
         template = engines['django'].from_string(read_file(xml_file))
         fiscal_year_xml = six.text_type(template.render(self.get_context()))

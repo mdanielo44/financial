@@ -806,21 +806,24 @@ class CompletedEntryTest(LucteriosTest):
         self.assert_observer('core.custom', 'diacamma.accounting', 'costAccountingIncomeStatement')
         self.assert_count_equal('', 5)
         self.assertFalse('__tab_1' in self.json_data.keys(), self.json_data.keys())
-        self.assert_grid_equal('report_2', {"name": "Comptabilit\u00e9 analytique", "left": "Charges", "left_n": "Valeur", "left_b": "Budget", "space": "", "right": "Produits", "right_n": "Valeur", "right_b": "Budget"}, 5 + 6 + 2)
+        self.assert_grid_equal('report_2', {"name": "Comptabilit\u00e9 analytique", "left": "Charges", "left_n": "Valeur",
+                                            "left_b": "Budget", "space": "", "right": "Produits", "right_n": "Valeur", "right_b": "Budget"}, 5 + 6 + 2)
 
         self.factory.xfer = CostAccountingIncomeStatement()
         self.calljson('/diacamma.accounting/costAccountingIncomeStatement', {'costaccounting': '1'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'costAccountingIncomeStatement')
         self.assert_count_equal('', 5)
         self.assertFalse('__tab_1' in self.json_data.keys(), self.json_data.keys())
-        self.assert_grid_equal('report_1', {"left": "Charges", "left_n": "Valeur", "left_b": "Budget", "space": "", "right": "Produits", "right_n": "Valeur", "right_b": "Budget"}, 5)
+        self.assert_grid_equal('report_1', {"left": "Charges", "left_n": "Valeur", "left_b": "Budget",
+                                            "space": "", "right": "Produits", "right_n": "Valeur", "right_b": "Budget"}, 5)
 
         self.factory.xfer = CostAccountingIncomeStatement()
         self.calljson('/diacamma.accounting/costAccountingIncomeStatement', {'costaccounting': '2', 'begin_date': '2015-02-14', 'end_date': '2015-02-20'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'costAccountingIncomeStatement')
         self.assert_count_equal('', 5)
         self.assertFalse('__tab_1' in self.json_data.keys(), self.json_data.keys())
-        self.assert_grid_equal('report_2', {"left": "Charges", "left_n": "Valeur", "left_b": "Budget", "space": "", "right": "Produits", "right_n": "Valeur", "right_b": "Budget"}, 5)
+        self.assert_grid_equal('report_2', {"left": "Charges", "left_n": "Valeur", "left_b": "Budget",
+                                            "space": "", "right": "Produits", "right_n": "Valeur", "right_b": "Budget"}, 5)
 
     def test_costaccounting_importbudget(self):
         FiscalYear.objects.create(begin='2016-01-01', end='2016-12-31', status=0, last_fiscalyear_id=1)
@@ -1107,14 +1110,21 @@ class CompletedEntryTest(LucteriosTest):
         self._check_result_with_filter()
 
     def test_export(self):
-        self.assertFalse(
-            exists(get_user_path('accounting', 'fiscalyear_export_1.xml')))
+        self.assertFalse(exists(get_user_path('accounting', 'fiscalyear_export_1.xml')))
         self.factory.xfer = FiscalYearExport()
         self.calljson('/diacamma.accounting/fiscalYearExport', {}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'fiscalYearExport')
         self.assertTrue(exists(get_user_path('accounting', 'fiscalyear_export_1.xml')))
 
-    def test_search(self):
+        self.assertFalse(exists(get_user_path('accounting', 'fiscalyear_export_2.xml')))
+        self.factory.xfer = FiscalYearExport()
+        self.calljson('/diacamma.accounting/fiscalYearExport', {'fiscalyear': '2'}, False)
+        self.assert_observer('core.exception', 'diacamma.accounting', 'fiscalYearExport')
+        self.assertFalse(exists(get_user_path('accounting', 'fiscalyear_export_2.xml')))
+        self.assert_json_equal('', 'code', '3')
+        self.assert_json_equal('', 'message', "Cet exercice n'a pas d'écriture validée !")
+
+    def test_search_advanced(self):
         CustomField.objects.create(modelname='accounting.Third', name='categorie', kind=4, args="{'list':['---','petit','moyen','gros']}")
         CustomField.objects.create(modelname='accounting.Third', name='value', kind=1, args="{'min':0,'max':100}")
         third = Third.objects.get(id=7)
