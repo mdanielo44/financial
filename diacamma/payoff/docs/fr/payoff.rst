@@ -17,4 +17,11 @@ Il est aussi possible d'effectuer un seul règlement sur plusieurs document fina
 
     .. image:: multi-payoff.png
 
-Ce paiement multiple sera automatique ventilé sur document financier au prorata de leur montant. Une seule écriture comptable d'encaissement sera alors réalisée.
+Suivant le type de document sur lequel ce paiement est associé, vous pouvez avoir plusieurs modes de répartition:
+
+ - Par date
+   Ce paiement est d'abort ventilé sur le document financier le plus ancien, puis le suivant, etc.
+ - Par prorata
+   Ce paiement multiple sera automatique ventilé sur document financier au prorata de leur montant. 
+
+Dans tout les cas, une seule écriture comptable d'encaissement sera alors réalisée.

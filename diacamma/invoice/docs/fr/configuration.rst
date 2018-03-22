@@ -1,8 +1,63 @@
 Configuration et paramétrage
 ============================
 
+Catégories
+----------
+
+Le menu *Administration/Modules (conf.)/Configuration commercial du facturier*, onglet *Catégorie*
+
+Vous pouvez définir des catégories afin de classer vos articles.
+Chaque article peut être associé à plusieurs catégories.
+
+Champ personnalisé
+------------------
+
+Le menu *Administration/Modules (conf.)/Configuration commercial du facturier*, onglet *Champ personnalisé*
+
+Comme pour les contacts, vous pouvez ici définir des champs personnalisés.
+
+Lieu de stockage
+----------------
+
+Le menu *Administration/Modules (conf.)/Configuration commercial du facturier*, onglet *Lieu de stockage*
+
+Si vous voulez gérer une centrale d'achat, vous pouvez ici définir les différents espace de vos articles stockables.
+
+Réduction automatique
+---------------------
+
+Le menu *Administration/Modules (conf.)/Configuration commercial du facturier*, onglet *Réduction automatique*
+
+Ce tableau de gestion de réductions comporte les champs suivants:
+ - La catégorie d'article impacté.
+ - Le type de réduction: en valeur, en pourcentage, en pourcentage global déjà vendu.
+ - Le montant de la réduction (en valeur ou pourcentage suivant le type).
+ - Le nombre d'occurrence déclenchant la réduction.
+ - Un critère de filtrage du tiers à qui cette réduction s'applique. (Optionnel)
+
+Au moment d'ajout d'un article dans une facture, si le client de cette facture et ce nouvel article répond à aux critères d'une réduction,
+celle-ci s'applique alors automatiquement dans la facture.
+Si plusieurs réductions remplissent leurs conditions, c'est la réduction octroyant la plus grande réduction qui sera utilisé.
+Un article peut se retrouver vendu gratuitement, mais jamais négativement (qui reviendrait à un remboursement)
+Ce mécanisme sera également appliqué lors de la création automatique des factures (cotisation, participation à un événement)
+Ce mécanisme vérifie le critère que pour des opérations réalisés sur l'exercice financier courant de l'association (les réductions ne se cumule pas d'une année à l'autre)
+
+Codes d'imputations comptable
+-----------------------------
+
+Menu *Administration/Modules (conf.)/Configuration financière du facturier*, onglet *Codes d'imputations comptable*
+
+Un "Code d'imputation comptable" contiens:
+ - un code comptable de vente
+ - un code analytique (optionnel) 
+Chaque article peut être associé à un code d'imputation comptable (si non précisé, l'article n'est pas vendable).
+Ce mécanisme permet de centraliser à un seul endroit les configurations comptables des articles.
+Au changement d'exercice, si ces configurations doivent changées, il est plus simple de modifier cette configuration que l'ensemble des articles.
+
 Codes comptables par défaut
 ---------------------------
+
+Menu *Administration/Modules (conf.)/Configuration financière du facturier*, onglet *Paramètres*
 
 Ce module est intimement lié au module de gestion comptable, un certain nombre de codes comptables par défaut sont nécessaires.
 
@@ -14,7 +69,9 @@ Dans le cas de règlement en liquide, il vous faut préciser le code comptable d
 La configuration de la TVA
 --------------------------
 
-Depuis le menu *administration/Modules (conf.)/Configuration du facturier*, vous pouvez complètement configurer la gestion de votre soumission à la TVA.
+Menu *Administration/Modules (conf.)/Configuration financière du facturier*, onglet *TVA*
+
+Vous pouvez complètement configurer la gestion de votre soumission à la TVA.
 
 .. image:: vat.png
 
@@ -30,12 +87,3 @@ Pour commencer, vous devez définir les modalités de soumission en sélectionna
 Précisez également le compte comptable d'imputation de ces taxes.
 
 Définissez l'ensemble des taux de taxes auxquels vos ventes sont soumises. La taxe par défaut sera celle appliquée à l'article libre (sans référence).
-
-La facture avec TVA
--------------------
-
-Si vous êtes soumis à la TVA, l'édition de la facture change un peu
-
-En plus de préciser si les articles sont en montant HT ou TTC, vous avez en bas de l'écran le total de la facture hors-taxe, taxes comprises ainsi que le montant total des taxes.
-
-De plus, dans l'impression de la facture, un sous-détail des taxes apparait par taux de TVA.

@@ -33,6 +33,12 @@ liste des exercices. Pour en continuer la création, il vous faudra le
 sélectionner dans la liste et cliquer sur le bouton Activer afin de
 pouvoir travailler dessus par défaut.
 
+Depuis ce même écran de configuration, vous pouvez également modifier 
+ou ajouter des journaux. 
+Vous pouvez également créer des champs personnalisés (comme pour la fiche de contacte)
+pour la fiche de tiers. Ceci peut être interessant si vous voulez réaliser des recherches/filtrages
+sur des informations propres à votre fonctionnement.  
+
 Fermez maintenant la liste des exercices afin de vous rendre dans la comptabilité et
 pouvoir créer le plan comptable de l'exercice ainsi qu'affecter le
 report à nouveau avant de pouvoir commencer éà saisir des écritures.
