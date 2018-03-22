@@ -22,7 +22,9 @@
 				<ligne>
 					<CompteNum>{{line.account.code}}</CompteNum>
 					<CompteLib>{{line.account.name}}</CompteLib>
+					{% if line.third != None %}
 					<CompAuxLib>{{line.third}}</CompAuxLib>
+					{% endif %}
 					{% if line.debit != '' %}
 					<Debit>{{line.get_debit|unlocalize}}</Debit>
 					{% endif %}
@@ -31,6 +33,12 @@
 					{% endif %}
 				</ligne>
 				{% endfor %}
+				{% if entry.entrylineaccount_set.all|length == 1 %}
+				<ligne>
+					<CompteLib></CompteLib>
+					<Debit>0</Debit>
+				</ligne>
+				{% endif %}
 			</ecriture>
 			{% endfor %}
 		</journal>
