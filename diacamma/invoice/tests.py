@@ -1303,7 +1303,7 @@ class BillTest(InvoiceTest):
         self.assert_count_equal('bill', 6)
 
         search_field_list = Bill.get_search_fields()
-        self.assertEqual(6 + 8 + 1 + 2 + 2 + 4 + 9 + 2 + 2 + 2, len(search_field_list), search_field_list)  # bill + contact + custom contact + custom third + third + detail + article  + art custom + category + provider
+        self.assertEqual(6 + 8 + 1 + 2 + 2 + 4 + 9 + 2 + 2 + 2 + 1, len(search_field_list), search_field_list)  # bill + contact + custom contact + custom third + third + detail + article  + art custom + category + provider
 
     def test_autoreduce1(self):
         initial_thirds()

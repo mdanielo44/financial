@@ -517,7 +517,7 @@ class StorageTest(InvoiceTest):
         self.factory.xfer = ArticleList()
         self.calljson('/diacamma.invoice/articleList', {}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'articleList')
-        self.assert_count_equal('', 7)
+        self.assert_count_equal('', 8)
         self.assert_grid_equal('article', {"reference": "référence", "designation": "désignation", "price_txt": "prix", "unit": "unité",
                                            "isdisabled": "désactivé ?", "accountposting": "code d'imputation comptable", "stockable": "stockable", "categories": "catégories", "stockage_total": "quantités"}, 4)
         self.assert_json_equal('', 'article/@0/reference', "ABC1")
@@ -610,7 +610,7 @@ class StorageTest(InvoiceTest):
         self.factory.xfer = ArticleList()
         self.calljson('/diacamma.invoice/articleList', {}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'articleList')
-        self.assert_count_equal('', 7)
+        self.assert_count_equal('', 8)
         self.assert_count_equal('article', 4)
         self.assert_json_equal('', 'article/@0/reference', "ABC1")
         self.assert_json_equal('', 'article/@0/stockage_total', "10.000")

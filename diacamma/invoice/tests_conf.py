@@ -334,7 +334,7 @@ class ConfigTest(LucteriosTest):
         initial_thirds()
 
         search_field_list = Article.get_search_fields()
-        self.assertEqual(9 + 2 + 2 + 2, len(search_field_list), search_field_list)  # article + art custom + category + provider
+        self.assertEqual(9 + 2 + 2 + 2 + 1, len(search_field_list), search_field_list)  # article + art custom + category + provider
 
         self.factory.xfer = ArticleSearch()
         self.calljson('/diacamma.invoice/articleSearch', {}, False)

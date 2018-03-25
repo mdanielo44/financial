@@ -24,7 +24,7 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
 import sys
-from datetime import date
+from datetime import date, datetime
 
 from django.utils.translation import ugettext_lazy as _
 from django.db.models import Q
@@ -33,8 +33,9 @@ from django.utils import six, formats
 
 from lucterios.framework.tools import MenuManage, FORMTYPE_NOMODAL, CLOSE_NO, FORMTYPE_REFRESH, WrapAction, convert_date, ActionsManage, SELECT_MULTI
 from lucterios.framework.xfergraphic import XferContainerCustom
-from lucterios.framework.xfercomponents import XferCompImage, XferCompSelect, XferCompLabelForm, XferCompGrid, XferCompEdit, XferCompCheck, XferCompDate
+from lucterios.framework.xfercomponents import XferCompImage, XferCompSelect, XferCompLabelForm, XferCompGrid, XferCompEdit, XferCompCheck
 from lucterios.framework.xferadvance import TITLE_PRINT, TITLE_CLOSE
+from lucterios.framework.models import get_value_converted
 from lucterios.contacts.models import LegalEntity
 from lucterios.CORE.xferprint import XferPrintAction
 
@@ -578,8 +579,8 @@ class CostAccountingReport(FiscalYearReport):
         pass
 
     def fill_header(self):
-        self.date_begin = self.getparam("begin_date", '2000-01-01')
-        self.date_end = self.getparam("end_date", date.today())
+        self.date_begin = self.getparam("begin_date")
+        self.date_end = self.getparam("end_date")
         img = XferCompImage('img')
         img.set_value(self.icon_path())
         img.set_location(0, 0, 1, 3)
@@ -593,24 +594,23 @@ class CostAccountingReport(FiscalYearReport):
         lbl.description = self.model._meta.verbose_name
         self.add_component(lbl)
 
-        begin_filter = XferCompDate('begin_date')
-        begin_filter.set_location(1, 4)
-        begin_filter.set_needed(True)
-        begin_filter.set_value(self.date_begin)
-        begin_filter.description = _('begin')
-        begin_filter.set_action(self.request, self.__class__.get_action(), close=CLOSE_NO, modal=FORMTYPE_REFRESH)
-        self.add_component(begin_filter)
-        end_filter = XferCompDate('end_date')
-        end_filter.set_location(2, 4)
-        end_filter.set_needed(True)
-        end_filter.set_value(self.date_end)
-        end_filter.description = _('end')
-        end_filter.set_action(self.request, self.__class__.get_action(), close=CLOSE_NO, modal=FORMTYPE_REFRESH)
-        self.add_component(end_filter)
-
         self.filter = Q(costaccounting=self.item)
-        self.filter &= Q(entry__date_value__gte=self.date_begin)
-        self.filter &= Q(entry__date_value__lte=self.date_end)
+        if self.date_begin is not None:
+            begin_filter = XferCompLabelForm('begin_date')
+            begin_filter.set_location(1, 4)
+            begin_filter.set_needed(True)
+            begin_filter.set_value(get_value_converted(datetime.strptime(self.date_begin, "%Y-%m-%d").date()))
+            begin_filter.description = _('begin')
+            self.add_component(begin_filter)
+            self.filter &= Q(entry__date_value__gte=self.date_begin)
+        if self.date_end is not None:
+            end_filter = XferCompLabelForm('end_date')
+            end_filter.set_location(2, 4)
+            end_filter.set_needed(True)
+            end_filter.set_value(get_value_converted(datetime.strptime(self.date_end, "%Y-%m-%d").date()))
+            end_filter.description = _('end')
+            self.add_component(end_filter)
+            self.filter &= Q(entry__date_value__lte=self.date_end)
         self.fill_filterCode()
 
     def fill_buttons(self):
@@ -639,8 +639,10 @@ class CostAccountingIncomeStatement(CostAccountingReport, FiscalYearIncomeStatem
             add_cell_in_grid(self.grid, self.line_offset, 'name', '{[b]}{[u]}%s{[/u]}{[/b]}' % self.item)
             self.line_offset += 1
             self.filter = Q(costaccounting=self.item)
-            self.filter &= Q(entry__date_value__gte=self.date_begin)
-            self.filter &= Q(entry__date_value__lte=self.date_end)
+            if self.date_begin is not None:
+                self.filter &= Q(entry__date_value__gte=self.date_begin)
+            if self.date_end is not None:
+                self.filter &= Q(entry__date_value__lte=self.date_end)
             self.fill_filterheader()
             all_have_last = all_have_last or (self.lastfilter is not None)
             self.calcul_table()
@@ -694,8 +696,17 @@ class CostAccountingIncomeStatement(CostAccountingReport, FiscalYearIncomeStatem
             self.lastfilter = None
 
     def calcul_table(self):
-        self.budgetfilter_right = Q(cost_accounting=self.item) & Q(code__regex=current_system_account().get_revenue_mask())
-        self.budgetfilter_left = Q(cost_accounting=self.item) & Q(code__regex=current_system_account().get_expence_mask())
+        if (self.date_begin is not None) or (self.date_end is not None):
+            self.budgetfilter_right = None
+            self.budgetfilter_left = None
+            self.lastfilter = None
+            self.grid.delete_header('left_b')
+            self.grid.delete_header('left_n_1')
+            self.grid.delete_header('right_b')
+            self.grid.delete_header('right_n_1')
+        else:
+            self.budgetfilter_right = Q(cost_accounting=self.item) & Q(code__regex=current_system_account().get_revenue_mask())
+            self.budgetfilter_left = Q(cost_accounting=self.item) & Q(code__regex=current_system_account().get_expence_mask())
         line_idx = self._add_left_right_accounting(Q(account__type_of_account=4), Q(account__type_of_account=3), True)
         self.show_annexe(line_idx, Q(cost_accounting=self.item))
 

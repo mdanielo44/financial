@@ -4,14 +4,21 @@ from __future__ import unicode_literals
 from django.utils.translation import ugettext_lazy as _
 from django.db.models import Q
 
-from lucterios.framework.xferadvance import XferDelete, XferShowEditor, TITLE_ADD, TITLE_MODIFY, TITLE_DELETE, TITLE_EDIT
-from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage, SELECT_SINGLE, FORMTYPE_REFRESH, SELECT_MULTI, SELECT_NONE, CLOSE_NO, CLOSE_YES
+from lucterios.framework.xferadvance import XferDelete, XferShowEditor, TITLE_ADD, TITLE_MODIFY, TITLE_DELETE, TITLE_EDIT,\
+    TITLE_CANCEL, TITLE_OK
+from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage, SELECT_SINGLE, FORMTYPE_REFRESH, SELECT_MULTI, SELECT_NONE, CLOSE_NO, CLOSE_YES,\
+    WrapAction
 from lucterios.framework.xferadvance import XferListEditor
 from lucterios.framework.xferadvance import XferAddEditor
 from lucterios.framework.xfergraphic import XferContainerAcknowledge
 from lucterios.framework.error import LucteriosException, IMPORTANT
 
-from diacamma.accounting.models import CostAccounting, ModelLineEntry, ModelEntry
+from diacamma.accounting.models import CostAccounting, ModelLineEntry, ModelEntry,\
+    FiscalYear
+from lucterios.framework.xfercomponents import XferCompImage, XferCompLabelForm,\
+    XferCompDate
+from diacamma.accounting.views_reports import CostAccountingIncomeStatement
+import six
 
 
 @MenuManage.describ('accounting.change_entryaccount', FORMTYPE_NOMODAL, 'bookkeeping', _('Edition of costs accounting'))
@@ -48,6 +55,52 @@ class CostAccountingList(XferListEditor):
         XferListEditor.fillresponse(self)
         self.get_components('title').colspan += 1
         self.get_components('costaccounting').colspan += 1
+
+
+@ActionsManage.affect_list(_("By date"), "images/print.png")
+@MenuManage.describ('accounting.add_fiscalyear')
+class CostAccountingReportByDate(XferContainerAcknowledge):
+    icon = "costAccounting.png"
+    model = CostAccounting
+    field_id = 'costaccounting'
+    caption = _("Print by date")
+
+    def fillresponse(self):
+        begin_date = self.getparam('begin_date')
+        end_date = self.getparam('end_date')
+        if (begin_date is None) or (end_date is None):
+            year = FiscalYear.get_current()
+            dlg = self.create_custom()
+            img = XferCompImage('img')
+            img.set_value(self.icon_path())
+            img.set_location(0, 0)
+            dlg.add_component(img)
+            lbl = XferCompLabelForm('title')
+            lbl.set_value_as_title(_('Define date range to determine accounting cost list.'))
+            lbl.set_location(1, 0, 2)
+            begin_filter = XferCompDate('begin_date')
+            begin_filter.set_location(1, 1)
+            begin_filter.set_needed(True)
+            begin_filter.set_value(year.begin)
+            begin_filter.description = _('begin')
+            dlg.add_component(begin_filter)
+            end_filter = XferCompDate('end_date')
+            end_filter.set_location(2, 1)
+            end_filter.set_needed(True)
+            end_filter.set_value(year.end)
+            end_filter.description = _('end')
+            dlg.add_component(end_filter)
+            dlg.add_component(lbl)
+            dlg.add_action(self.get_action(TITLE_OK, 'images/ok.png'))
+            dlg.add_action(WrapAction(TITLE_CANCEL, 'images/cancel.png'))
+        else:
+            list_cost = []
+            for cost_item in CostAccounting.objects.filter(Q(entrylineaccount__entry__date_value__gte=begin_date) & Q(entrylineaccount__entry__date_value__lte=end_date)):
+                list_cost.append(six.text_type(cost_item.id))
+            list_cost = set(list_cost)
+            if len(list_cost) == 0:
+                raise LucteriosException(IMPORTANT, _("No cost accounting finds for this range !"))
+            self.redirect_action(CostAccountingIncomeStatement.get_action(), close=CLOSE_YES, params={'begin_date': begin_date, 'end_date': end_date, 'costaccounting': ";".join(list_cost)})
 
 
 @ActionsManage.affect_grid(_("Default"), "", unique=SELECT_SINGLE, condition=lambda xfer, gridname='': xfer.getparam('status', 0) != 1)

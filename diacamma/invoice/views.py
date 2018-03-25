@@ -29,32 +29,31 @@ from django.utils.translation import ugettext_lazy as _
 from django.utils import formats, six
 from django.db.models.functions import Concat
 from django.db.models import Q, Value
+from django.db.models.query import QuerySet
 
-from lucterios.framework.xferadvance import XferListEditor, XferShowEditor, TITLE_PRINT, TITLE_CLOSE, TITLE_DELETE, TITLE_MODIFY, TITLE_ADD, TITLE_CANCEL, TITLE_OK, TITLE_EDIT,\
-    XferTransition
-from lucterios.framework.xferadvance import XferAddEditor
-from lucterios.framework.xferadvance import XferDelete
-from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompSelect, XferCompHeader, XferCompImage, XferCompGrid, XferCompCheck, XferCompEdit, XferCompCheckList, XferCompMemo
+from lucterios.framework.xferadvance import TITLE_PRINT, TITLE_CLOSE, TITLE_DELETE, TITLE_MODIFY, TITLE_ADD, TITLE_CANCEL, TITLE_OK, TITLE_EDIT
+from lucterios.framework.xferadvance import XferListEditor, XferShowEditor, XferAddEditor, XferDelete, XferTransition
+from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompSelect, XferCompImage, XferCompGrid, XferCompCheck, XferCompEdit, XferCompCheckList, XferCompMemo
 from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage, FORMTYPE_MODAL, CLOSE_YES, SELECT_SINGLE, FORMTYPE_REFRESH, CLOSE_NO, SELECT_MULTI, WrapAction
 from lucterios.framework.xfergraphic import XferContainerAcknowledge, XferContainerCustom
 from lucterios.framework.error import LucteriosException, IMPORTANT
 from lucterios.framework import signal_and_lock
 
-from lucterios.CORE.xferprint import XferPrintAction, XferPrintReporting
+from lucterios.CORE.xferprint import XferPrintAction, XferPrintReporting, XferPrintListing
 from lucterios.CORE.parameters import Params
 from lucterios.CORE.editors import XferSavedCriteriaSearchEditor
+from lucterios.CORE.models import PrintModel
+from lucterios.CORE.views import ObjectMerge
 
 from lucterios.contacts.models import Individual, LegalEntity
 
-from diacamma.invoice.models import Article, Bill, Detail, Category, Provider
-from diacamma.accounting.models import FiscalYear, Third
+from diacamma.invoice.models import Article, Bill, Detail, Category, Provider,\
+    StorageArea
 from diacamma.payoff.views import PayoffAddModify, PayableEmail, can_send_email
 from diacamma.payoff.models import Payoff
-from django.db.models.query import QuerySet
+from diacamma.accounting.models import FiscalYear
 from diacamma.accounting.views import get_main_third
 from diacamma.accounting.tools import current_system_account
-from lucterios.CORE.models import PrintModel
-from lucterios.CORE.views import ObjectMerge
 
 MenuManage.add_sub("invoice", None, "diacamma.invoice/images/invoice.png", _("invoice"), _("Manage of billing"), 45)
 
@@ -380,6 +379,7 @@ class ArticleList(XferListEditor):
         show_stockable = self.getparam('stockable', -1)
         ref_filter = self.getparam('ref_filter', '')
         self.categories_filter = self.getparam('cat_filter', ())
+        show_storagearea = self.getparam('storagearea', 0)
 
         edt = XferCompSelect("show_filter")
         edt.set_select([(0, _('Only activate')), (1, _('All'))])
@@ -412,6 +412,17 @@ class ArticleList(XferListEditor):
             edt.description = _('categories')
             edt.set_action(self.request, self.get_action(), modal=FORMTYPE_REFRESH, close=CLOSE_NO)
             self.add_component(edt)
+
+        sel_stock = XferCompSelect('storagearea')
+        sel_stock.set_needed(False)
+        sel_stock.set_select_query(StorageArea.objects.all())
+        sel_stock.set_value(show_storagearea)
+        sel_stock.set_action(self.request, self.get_action(), modal=FORMTYPE_REFRESH, close=CLOSE_NO)
+        sel_stock.set_location(0, 6)
+        sel_stock.description = StorageArea._meta.verbose_name
+        if len(sel_stock.select_list) > 1:
+            self.add_component(sel_stock)
+
         self.filter = Q()
         if ref_filter != '':
             self.filter &= Q(reference__icontains=ref_filter) | Q(designation__icontains=ref_filter)
@@ -419,7 +430,41 @@ class ArticleList(XferListEditor):
             self.filter &= Q(isdisabled=False)
         if show_stockable != -1:
             self.filter &= Q(stockable=show_stockable)
+        if show_storagearea != 0:
+            self.filter &= Q(storagedetail__storagesheet__storagearea=show_storagearea)
         self.add_action(ArticleSearch.get_action(_("Search"), "diacamma.invoice/images/article.png"), modal=FORMTYPE_NOMODAL, close=CLOSE_YES)
+
+
+@ActionsManage.affect_list(_("Print"), "images/print.png", close=CLOSE_NO)
+@MenuManage.describ('invoice.change_article')
+class ArticlePrint(XferPrintListing):
+    icon = "article.png"
+    model = Article
+    field_id = 'article'
+    caption = _("Print articles")
+
+    def filter_callback(self, items):
+        categories_filter = self.getparam('cat_filter', ())
+        if len(categories_filter) > 0:
+            for cat_item in Category.objects.filter(id__in=categories_filter):
+                items = items.filter(categories__in=[cat_item])
+        return items
+
+    def get_filter(self):
+        show_filter = self.getparam('show_filter', 0)
+        show_stockable = self.getparam('stockable', -1)
+        ref_filter = self.getparam('ref_filter', '')
+        show_storagearea = self.getparam('storagearea', 0)
+        new_filter = Q()
+        if ref_filter != '':
+            new_filter &= Q(reference__icontains=ref_filter) | Q(designation__icontains=ref_filter)
+        if show_filter == 0:
+            new_filter &= Q(isdisabled=False)
+        if show_stockable != -1:
+            new_filter &= Q(stockable=show_stockable)
+        if show_storagearea != 0:
+            new_filter &= Q(storagedetail__storagesheet__storagearea=show_storagearea)
+        return new_filter
 
 
 @MenuManage.describ('accounting.change_article')

@@ -178,6 +178,10 @@ class Article(LucteriosModel, CustomizeObject):
     qtyDecimal = models.IntegerField(verbose_name=_('quantity decimal'), default=0, validators=[MinValueValidator(0), MaxValueValidator(3)])
     accountposting = models.ForeignKey(AccountPosting, verbose_name=_('account posting code'), null=True, default=None, on_delete=models.PROTECT)
 
+    def __init__(self, *args, **kwargs):
+        LucteriosModel.__init__(self, *args, **kwargs)
+        self.show_storagearea = 0
+
     def __str__(self):
         return six.text_type(self.reference)
 
@@ -230,6 +234,7 @@ class Article(LucteriosModel, CustomizeObject):
         if len(Provider().third_query) > 0:
             fields.append('provider_set.third')
             fields.append('provider_set.reference')
+        fields.append('storagedetail_set.storagesheet.storagearea')
         return fields
 
     @classmethod
@@ -303,11 +308,17 @@ class Article(LucteriosModel, CustomizeObject):
                 break
         return sum_amount
 
+    def set_context(self, xfer):
+        self.show_storagearea = xfer.getparam('storagearea', 0)
+
     def get_stockage_values(self):
         stock_list = []
+        detail_filter = Q(storagesheet__status=1)
+        if self.show_storagearea != 0:
+            detail_filter &= Q(storagesheet__storagearea=self.show_storagearea)
         if self.stockable != 0:
             stock = {}
-            for val in self.storagedetail_set.filter(storagesheet__status=1).values('storagesheet__storagearea').annotate(data_sum=Sum('quantity')):
+            for val in self.storagedetail_set.filter(detail_filter).values('storagesheet__storagearea').annotate(data_sum=Sum('quantity')):
                 if abs(val['data_sum']) > 0.001:
                     if not val['storagesheet__storagearea'] in stock.keys():
                         stock[val['storagesheet__storagearea']] = [six.text_type(StorageArea.objects.get(id=val['storagesheet__storagearea'])), 0.0]
