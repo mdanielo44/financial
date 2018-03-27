@@ -2,23 +2,20 @@
 from __future__ import unicode_literals
 
 from django.utils.translation import ugettext_lazy as _
+from django.utils import six
 from django.db.models import Q
 
-from lucterios.framework.xferadvance import XferDelete, XferShowEditor, TITLE_ADD, TITLE_MODIFY, TITLE_DELETE, TITLE_EDIT,\
-    TITLE_CANCEL, TITLE_OK
-from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage, SELECT_SINGLE, FORMTYPE_REFRESH, SELECT_MULTI, SELECT_NONE, CLOSE_NO, CLOSE_YES,\
-    WrapAction
+from lucterios.framework.xferadvance import XferDelete, XferShowEditor, TITLE_ADD, TITLE_MODIFY, TITLE_DELETE, TITLE_EDIT, TITLE_CANCEL, TITLE_OK
+from lucterios.framework.tools import FORMTYPE_NOMODAL, SELECT_SINGLE, FORMTYPE_REFRESH, SELECT_MULTI, SELECT_NONE, CLOSE_NO, CLOSE_YES
+from lucterios.framework.tools import ActionsManage, MenuManage, WrapAction
+from lucterios.framework.xfercomponents import XferCompImage, XferCompLabelForm, XferCompDate
 from lucterios.framework.xferadvance import XferListEditor
 from lucterios.framework.xferadvance import XferAddEditor
 from lucterios.framework.xfergraphic import XferContainerAcknowledge
 from lucterios.framework.error import LucteriosException, IMPORTANT
 
-from diacamma.accounting.models import CostAccounting, ModelLineEntry, ModelEntry,\
-    FiscalYear
-from lucterios.framework.xfercomponents import XferCompImage, XferCompLabelForm,\
-    XferCompDate
+from diacamma.accounting.models import CostAccounting, ModelLineEntry, ModelEntry, FiscalYear
 from diacamma.accounting.views_reports import CostAccountingIncomeStatement
-import six
 
 
 @MenuManage.describ('accounting.change_entryaccount', FORMTYPE_NOMODAL, 'bookkeeping', _('Edition of costs accounting'))
