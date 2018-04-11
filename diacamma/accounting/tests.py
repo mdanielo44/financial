@@ -248,16 +248,16 @@ class ThirdTest(LucteriosTest):
 
         self.assert_json_equal('SELECT', 'lines_filter', '0')
         self.assert_select_equal('lines_filter', 3)  # nb=3
-        self.assert_count_equal('entryline', 6)
+        self.assert_count_equal('entryline', 3)
         self.assert_json_equal('', 'entryline/@0/entry.num', '2')
         self.assert_json_equal('', 'entryline/@0/entry.link', 'A')
         self.assert_json_equal('', 'entryline/@0/credit', '{[font color="green"]}63.94€{[/font]}')
-        self.assert_json_equal('', 'entryline/@2/entry.num', '3')
-        self.assert_json_equal('', 'entryline/@2/entry.link', 'A')
-        self.assert_json_equal('', 'entryline/@2/debit', '{[font color="blue"]}63.94€{[/font]}')
-        self.assert_json_equal('', 'entryline/@4/entry.num', '---')
-        self.assert_json_equal('', 'entryline/@4/entry.link', '---')
-        self.assert_json_equal('', 'entryline/@4/debit', '{[font color="blue"]}34.01€{[/font]}')
+        self.assert_json_equal('', 'entryline/@1/entry.num', '3')
+        self.assert_json_equal('', 'entryline/@1/entry.link', 'A')
+        self.assert_json_equal('', 'entryline/@1/debit', '{[font color="blue"]}63.94€{[/font]}')
+        self.assert_json_equal('', 'entryline/@2/entry.num', '---')
+        self.assert_json_equal('', 'entryline/@2/entry.link', '---')
+        self.assert_json_equal('', 'entryline/@2/debit', '{[font color="blue"]}34.01€{[/font]}')
 
         self.factory.xfer = AccountThirdDel()
         self.calljson('/diacamma.accounting/accountThirdDel', {"accountthird": 5}, False)
@@ -281,7 +281,7 @@ class ThirdTest(LucteriosTest):
         self.assert_json_equal('SELECT', 'lines_filter', '0')
         self.assert_select_equal('lines_filter', 3)  # nb=3
         self.assert_grid_equal('entryline', {"entry.num": "N°", "entry.date_entry": "date d'écriture", "entry.date_value": "date de pièce", "designation_ref": "nom",
-                                             "entry_account": "compte", 'debit': 'débit', 'credit': 'crédit', "costaccounting": "comptabilité analytique", "entry.link": "lettrage"}, 6)
+                                             "entry_account": "compte", 'debit': 'débit', 'credit': 'crédit', "costaccounting": "comptabilité analytique", "entry.link": "lettrage"}, 3)
 
         self.factory.xfer = ThirdShow()
         self.calljson('/diacamma.accounting/thirdShow', {"third": 4, 'lines_filter': 1}, False)
@@ -290,7 +290,7 @@ class ThirdTest(LucteriosTest):
         self.assert_count_equal('', 9 + 4 + 4 + 3)
         self.assert_json_equal('SELECT', 'lines_filter', '1')
         self.assert_select_equal('lines_filter', 3)  # nb=3
-        self.assert_count_equal('entryline', 2)
+        self.assert_count_equal('entryline', 1)
 
         default_compta()
 
@@ -310,7 +310,7 @@ class ThirdTest(LucteriosTest):
         self.assert_count_equal('', 9 + 4 + 4 + 3)
         self.assert_json_equal('SELECT', 'lines_filter', '2')
         self.assert_select_equal('lines_filter', 3)  # nb=3
-        self.assert_count_equal('entryline', 6)
+        self.assert_count_equal('entryline', 3)
 
     def test_list(self):
         fill_thirds()

@@ -383,7 +383,7 @@ def show_contact_accounting(contact, xfer):
 def thirdaddon_accounting(item, xfer):
     if WrapAction.is_permission(xfer.request, 'accounting.change_entryaccount'):
         try:
-            entry_lines_filter = Q(entry__entrylineaccount__third=item)
+            entry_lines_filter = Q(third=item)
             lines_filter = xfer.getparam('lines_filter', 0)
             if lines_filter == 0:
                 entry_lines_filter &= Q(entry__year=FiscalYear.get_current())
