@@ -757,6 +757,10 @@ class EntryAccount(LucteriosModel):
         return ['num', 'journal', 'date_entry', 'date_value', 'designation']
 
     @classmethod
+    def get_print_fields(cls):
+        return cls.get_show_fields()
+
+    @classmethod
     def get_search_fields(cls):
         result = ['year', 'date_value', 'num', 'designation', 'date_entry', 'entrylineaccount_set.costaccounting']
         result.append(('entrylineaccount_set.amount', models.DecimalField(_('amount')), 'entrylineaccount__amount__abs', Q()))
@@ -1012,7 +1016,7 @@ class EntryLineAccount(LucteriosModel):
 
     @classmethod
     def get_print_fields(cls):
-        return ['entry', (_('account'), 'entry_account'), (_('debit'), 'debit'), (_('credit'), 'credit'), 'reference', 'third', 'costaccounting']
+        return ['entry', (_('account'), 'entry_account'), (_('debit'), 'debit'), (_('credit'), 'credit'), 'reference', 'third.contact.str', 'costaccounting.name']
 
     @classmethod
     def get_search_fields(cls):
