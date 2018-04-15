@@ -300,31 +300,33 @@ class DefaultSystemAccounting(object):
             add_cell_in_grid(grid, right_line_idx, 'right', '')
             right_line_idx += 1
 
-        total1 = max(total1_lefta + total1_leftb + total1_leftc, total1_righta + total1_rightb)
-        total2 = max(total2_lefta + total2_leftb + total2_leftc, total2_righta + total2_rightb)
+        total1left = total1_lefta + total1_leftb + total1_leftc
+        total1right = total1_righta + total1_rightb
+        total2left = total2_lefta + total2_leftb + total2_leftc
+        total2right = total2_righta + total2_rightb
+
         line_idx = max(right_line_idx, left_line_idx)
+        add_item_in_grid(grid, line_idx + 1, 'left', (_('Total'), total1left, total2left, None), "{[u]}{[b]}%s{[/b]}{[/u]}")
+        add_item_in_grid(grid, line_idx + 1, 'right', (_('Total'), total1right, total2right, None), "{[u]}{[b]}%s{[/b]}{[/u]}")
 
         show_left = False
         show_right = False
-        if (total1_lefta + total1_leftb + total1_leftc) < total1:
-            add_cell_in_grid(grid, line_idx, 'left_n', "{[i]}{[b]}%s{[/b]}{[/i]}" % format_devise(total1 - (total1_lefta + total1_leftb + total1_leftc), 5))
+        if total1left < total1right:
+            add_cell_in_grid(grid, line_idx, 'left_n', "{[i]}{[b]}%s{[/b]}{[/i]}" % format_devise(total1right - total1left, 5))
             show_left = True
         else:
-            add_cell_in_grid(grid, line_idx, 'right_n', "{[i]}{[b]}%s{[/b]}{[/i]}" % format_devise(total1 - total1_righta + total1_rightb, 5))
+            add_cell_in_grid(grid, line_idx, 'right_n', "{[i]}{[b]}%s{[/b]}{[/i]}" % format_devise(total1left - total1right, 5))
             show_right = True
-        if (total2_lefta + total2_leftb + total2_leftc) < total2:
-            add_cell_in_grid(grid, line_idx, 'left_n_1', "{[i]}{[b]}%s{[/b]}{[/i]}" % format_devise(total2 - (total2_lefta + total2_leftb + total2_leftc), 5))
+        if total2left < total2right:
+            add_cell_in_grid(grid, line_idx, 'left_n_1', "{[i]}{[b]}%s{[/b]}{[/i]}" % format_devise(total2right - total2left, 5))
             show_left = True
         else:
-            add_cell_in_grid(grid, line_idx, 'right_n_1', "{[i]}{[b]}%s{[/b]}{[/i]}" % format_devise(total2 - total2_righta + total2_rightb, 5))
+            add_cell_in_grid(grid, line_idx, 'right_n_1', "{[i]}{[b]}%s{[/b]}{[/i]}" % format_devise(total2left - total2right, 5))
             show_right = True
         if show_left:
             add_cell_in_grid(grid, line_idx, 'left', get_spaces(5) + "{[i]}{[b]}%s{[/b]}{[/i]}" % _('result (deficit)'))
         if show_right:
             add_cell_in_grid(grid, line_idx, 'right', get_spaces(5) + "{[i]}{[b]}%s{[/b]}{[/i]}" % _('result (profit)'))
-
-        add_item_in_grid(grid, line_idx + 1, 'left', (_('Total'), total1, total2, None), "{[u]}{[b]}%s{[/b]}{[/u]}")
-        add_item_in_grid(grid, line_idx + 1, 'right', (_('Total'), total1, total2, None), "{[u]}{[b]}%s{[/b]}{[/u]}")
 
     def get_export_xmlfiles(self):
         return None

@@ -129,7 +129,22 @@ class FiscalYearReport(XferContainerCustom):
         else:
             self.total_summary = (max(total1_left, total1_right), max(total2_left, total2_right), max(totalb_left, totalb_right))
         line_idx += 1
+        add_cell_in_grid(self.grid, self.line_offset + line_idx, 'left', '')
+        line_idx += 1
+        add_cell_in_grid(self.grid, self.line_offset + line_idx, 'left', get_spaces(10) + "{[u]}{[b]}%s{[/b]}{[/u]}" % _('total'))
+        add_cell_in_grid(self.grid, self.line_offset + line_idx, 'left_n', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(total1_left, 5))
+        if self.lastfilter is not None:
+            add_cell_in_grid(self.grid, self.line_offset + line_idx, 'left_n_1', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(total2_left, 5))
+        if self.budgetfilter_left is not None:
+            add_cell_in_grid(self.grid, self.line_offset + line_idx, 'left_b', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(totalb_left, 5))
+        add_cell_in_grid(self.grid, self.line_offset + line_idx, 'right', get_spaces(10) + "{[u]}{[b]}%s{[/b]}{[/u]}" % _('total'))
+        add_cell_in_grid(self.grid, self.line_offset + line_idx, 'right_n', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(total1_right, 5))
+        if self.lastfilter is not None:
+            add_cell_in_grid(self.grid, self.line_offset + line_idx, 'right_n_1', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(total2_right, 5))
+        if self.budgetfilter_right is not None:
+            add_cell_in_grid(self.grid, self.line_offset + line_idx, 'right_b', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(totalb_right, 5))
         if (abs(total1_left - total1_right) > 0.0001) or ((total2_left is not None) and (total2_right is not None) and (abs(total2_left - total2_right) > 0.0001)):
+            line_idx += 1
             if total_in_left:
                 add_cell_in_grid(self.grid, self.line_offset + line_idx, 'left', get_spaces(5) + "{[i]}%s{[/i]}" % _('result (profit)'))
                 add_cell_in_grid(self.grid, self.line_offset + line_idx, 'right', get_spaces(5) + "{[i]}%s{[/i]}" % _('result (deficit)'))
@@ -193,19 +208,6 @@ class FiscalYearReport(XferContainerCustom):
                 add_cell_in_grid(self.grid, self.line_offset + line_idx, 'left', '')
             if (pos_n != 'right_n') and (pos_n_1 != 'right_n_1') and (pos_b != 'right_b'):
                 add_cell_in_grid(self.grid, self.line_offset + line_idx, 'right', '')
-            line_idx += 1
-        add_cell_in_grid(self.grid, self.line_offset + line_idx, 'left', get_spaces(10) + "{[u]}{[b]}%s{[/b]}{[/u]}" % _('total'))
-        add_cell_in_grid(self.grid, self.line_offset + line_idx, 'left_n', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(total1_left, total1_right), 5))
-        if self.lastfilter is not None:
-            add_cell_in_grid(self.grid, self.line_offset + line_idx, 'left_n_1', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(total2_left, total2_right), 5))
-        if self.budgetfilter_left is not None:
-            add_cell_in_grid(self.grid, self.line_offset + line_idx, 'left_b', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(totalb_left, totalb_right), 5))
-        add_cell_in_grid(self.grid, self.line_offset + line_idx, 'right', get_spaces(10) + "{[u]}{[b]}%s{[/b]}{[/u]}" % _('total'))
-        add_cell_in_grid(self.grid, self.line_offset + line_idx, 'right_n', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(total1_left, total1_right), 5))
-        if self.lastfilter is not None:
-            add_cell_in_grid(self.grid, self.line_offset + line_idx, 'right_n_1', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(total2_left, total2_right), 5))
-        if self.budgetfilter_right is not None:
-            add_cell_in_grid(self.grid, self.line_offset + line_idx, 'right_b', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(totalb_left, totalb_right), 5))
         return line_idx
 
     def _add_left_right_accounting(self, left_filter, rigth_filter, total_in_left):
@@ -552,6 +554,7 @@ class CostAccountingReport(FiscalYearReport):
         self.fill_header()
         self.addNameCol = False
         for self.item in self.items:
+            self.filter = Q(costaccounting=self.item)
             self.new_tab(six.text_type(self.item))
             self.define_gridheader()
             self.fill_filterheader()
@@ -585,14 +588,12 @@ class CostAccountingReport(FiscalYearReport):
         img.set_value(self.icon_path())
         img.set_location(0, 0, 1, 3)
         self.add_component(img)
-        lbl = XferCompLabelForm('name')
-        names = []
-        for self.item in self.items:
-            names.append(six.text_type(self.item))
-        lbl.set_value('{[br/]}'.join(names))
-        lbl.set_location(1, 2, 4)
-        lbl.description = self.model._meta.verbose_name
-        self.add_component(lbl)
+        if len(self.items) == 1:
+            lbl = XferCompLabelForm('name')
+            lbl.set_value(six.text_type(self.items[0]))
+            lbl.set_location(1, 2, 4)
+            lbl.description = self.model._meta.verbose_name
+            self.add_component(lbl)
 
         self.filter = Q(costaccounting=self.item)
         if self.date_begin is not None:
@@ -634,6 +635,7 @@ class CostAccountingIncomeStatement(CostAccountingReport, FiscalYearIncomeStatem
         res1, res2, resb = (0, 0, 0)
         self.addNameCol = True
         self.lastfilter = True
+        self.item = self.items[len(self.items) - 1]
         self.define_gridheader()
         for self.item in self.items:
             add_cell_in_grid(self.grid, self.line_offset, 'name', '{[b]}{[u]}%s{[/u]}{[/b]}' % self.item)

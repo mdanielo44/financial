@@ -6,7 +6,8 @@ from django.utils import six
 from django.db.models import Q
 
 from lucterios.framework.xferadvance import XferDelete, XferShowEditor, TITLE_ADD, TITLE_MODIFY, TITLE_DELETE, TITLE_EDIT, TITLE_CANCEL, TITLE_OK
-from lucterios.framework.tools import FORMTYPE_NOMODAL, SELECT_SINGLE, FORMTYPE_REFRESH, SELECT_MULTI, SELECT_NONE, CLOSE_NO, CLOSE_YES
+from lucterios.framework.tools import FORMTYPE_NOMODAL, SELECT_SINGLE, FORMTYPE_REFRESH, SELECT_MULTI, SELECT_NONE, CLOSE_NO, CLOSE_YES,\
+    FORMTYPE_MODAL
 from lucterios.framework.tools import ActionsManage, MenuManage, WrapAction
 from lucterios.framework.xfercomponents import XferCompImage, XferCompLabelForm, XferCompDate
 from lucterios.framework.xferadvance import XferListEditor
@@ -97,7 +98,7 @@ class CostAccountingReportByDate(XferContainerAcknowledge):
             list_cost = set(list_cost)
             if len(list_cost) == 0:
                 raise LucteriosException(IMPORTANT, _("No cost accounting finds for this range !"))
-            self.redirect_action(CostAccountingIncomeStatement.get_action(), close=CLOSE_YES, params={'begin_date': begin_date, 'end_date': end_date, 'costaccounting': ";".join(list_cost)})
+            self.redirect_action(CostAccountingIncomeStatement.get_action(), modal=FORMTYPE_NOMODAL, close=CLOSE_YES, params={'begin_date': begin_date, 'end_date': end_date, 'costaccounting': ";".join(list_cost)})
 
 
 @ActionsManage.affect_grid(_("Default"), "", unique=SELECT_SINGLE, condition=lambda xfer, gridname='': xfer.getparam('status', 0) != 1)
