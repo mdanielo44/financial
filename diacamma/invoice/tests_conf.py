@@ -39,10 +39,10 @@ from lucterios.CORE.views import ObjectMerge
 from lucterios.mailing.tests import configSMTP, TestReceiver, decode_b64
 from lucterios.contacts.models import CustomField
 
-from diacamma.accounting.test_tools import initial_thirds, default_compta, default_costaccounting
+from diacamma.accounting.test_tools import initial_thirds_fr, default_compta_fr, default_costaccounting
 from diacamma.accounting.views_entries import EntryAccountList
 from diacamma.payoff.views import PayoffAddModify, PayoffDel, SupportingThird, SupportingThirdValid, PayableEmail
-from diacamma.payoff.test_tools import default_bankaccount
+from diacamma.payoff.test_tools import default_bankaccount_fr
 from diacamma.invoice.models import Article, Bill, AccountPosting
 from diacamma.invoice.test_tools import default_articles, InvoiceTest, default_categories, default_customize, default_accountPosting
 from diacamma.invoice.views_conf import InvoiceConfFinancial, InvoiceConfCommercial, VatAddModify, VatDel, CategoryAddModify, CategoryDel, ArticleImport, StorageAreaDel,\
@@ -58,7 +58,7 @@ class ConfigTest(LucteriosTest):
     def setUp(self):
         self.xfer_class = XferContainerAcknowledge
         LucteriosTest.setUp(self)
-        default_compta()
+        default_compta_fr()
         rmtree(get_user_dir(), True)
 
     def test_vat(self):
@@ -331,7 +331,7 @@ class ConfigTest(LucteriosTest):
         default_categories()
         default_articles(with_storage=True)
         default_customize()
-        initial_thirds()
+        initial_thirds_fr()
 
         search_field_list = Article.get_search_fields()
         self.assertEqual(9 + 2 + 2 + 2 + 1, len(search_field_list), search_field_list)  # article + art custom + category + provider
@@ -382,7 +382,7 @@ class ConfigTest(LucteriosTest):
         default_categories()
         default_articles(with_storage=True)
         default_customize()
-        initial_thirds()
+        initial_thirds_fr()
 
         self.factory.xfer = ArticleList()
         self.calljson('/diacamma.invoice/articleList', {}, False)
@@ -433,7 +433,7 @@ class ConfigTest(LucteriosTest):
         self.assert_count_equal('article', 1)
 
     def test_article_import1(self):
-        initial_thirds()
+        initial_thirds_fr()
         default_categories()
         default_accountPosting()
         csv_content = """'num','comment','prix','unité','compte','stock?','categorie','fournisseur','ref'
@@ -567,7 +567,7 @@ class ConfigTest(LucteriosTest):
         self.assert_json_equal('', 'provider/@1/reference', "654321")
 
     def test_article_import2(self):
-        initial_thirds()
+        initial_thirds_fr()
         default_categories()
         default_accountPosting()
         csv_content = """'num','comment','prix','unité','compte','stock?','categorie','fournisseur','ref'

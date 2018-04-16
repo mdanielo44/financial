@@ -33,8 +33,8 @@ from lucterios.framework.test import LucteriosTest
 
 from diacamma.invoice.test_tools import InvoiceTest, default_area, default_articles, insert_storage,\
     default_categories
-from diacamma.accounting.test_tools import initial_thirds, default_compta
-from diacamma.payoff.test_tools import default_bankaccount
+from diacamma.accounting.test_tools import initial_thirds_fr, default_compta_fr
+from diacamma.payoff.test_tools import default_bankaccount_fr
 from diacamma.invoice.views import ArticleShow, BillAddModify, DetailAddModify, BillShow, BillTransition, ArticleList
 from diacamma.invoice.views_storage import StorageSheetList, StorageSheetAddModify, StorageSheetShow, StorageDetailAddModify,\
     StorageSheetTransition, StorageDetailImport, StorageDetailDel,\
@@ -46,10 +46,10 @@ class StorageTest(InvoiceTest):
 
     def setUp(self):
         self.xfer_class = XferContainerAcknowledge
-        initial_thirds()
+        initial_thirds_fr()
         LucteriosTest.setUp(self)
-        default_compta()
-        default_bankaccount()
+        default_compta_fr()
+        default_bankaccount_fr()
         rmtree(get_user_dir(), True)
         default_area()
         default_categories()

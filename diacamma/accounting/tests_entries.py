@@ -38,8 +38,8 @@ from diacamma.accounting.views_entries import EntryAccountList, \
     EntryAccountReverse, EntryAccountCreateLinked, EntryAccountLink, \
     EntryAccountDel, EntryAccountOpenFromLine, EntryAccountShow, \
     EntryLineAccountDel, EntryAccountUnlock
-from diacamma.accounting.test_tools import default_compta, initial_thirds,\
-    fill_entries
+from diacamma.accounting.test_tools import default_compta_fr, initial_thirds_fr,\
+    fill_entries_fr
 from diacamma.accounting.models import EntryAccount, CostAccounting
 from diacamma.accounting.views_other import CostAccountingAddModify
 
@@ -47,10 +47,10 @@ from diacamma.accounting.views_other import CostAccountingAddModify
 class EntryTest(LucteriosTest):
 
     def setUp(self):
-        initial_thirds()
+        initial_thirds_fr()
         self.xfer_class = XferContainerAcknowledge
         LucteriosTest.setUp(self)
-        default_compta()
+        default_compta_fr()
         rmtree(get_user_dir(), True)
 
     def test_empty_list(self):
@@ -532,7 +532,7 @@ class EntryTest(LucteriosTest):
         self.assertEqual(len(self.json_actions), 2)
 
     def test_show_close_cost(self):
-        fill_entries(1)
+        fill_entries_fr(1)
         self.factory.xfer = EntryAccountOpenFromLine()
         self.calljson('/diacamma.accounting/entryAccountOpenFromLine',
                       {'year': '1', 'journal': '-1', 'filter': '0', 'entryline': '23'}, False)

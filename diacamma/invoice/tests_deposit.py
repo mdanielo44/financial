@@ -31,13 +31,13 @@ from lucterios.CORE.parameters import Params
 from lucterios.framework.xfergraphic import XferContainerAcknowledge
 from lucterios.framework.filetools import get_user_dir
 
-from diacamma.accounting.test_tools import initial_thirds, default_compta
+from diacamma.accounting.test_tools import initial_thirds_fr, default_compta_fr
 from diacamma.accounting.views_entries import EntryAccountList
 from diacamma.invoice.test_tools import default_articles, InvoiceTest
 from diacamma.payoff.views_deposit import DepositSlipList, DepositSlipAddModify,\
     DepositSlipShow, DepositDetailAddModify, DepositDetailSave, DepositSlipTransition
 from diacamma.payoff.views import PayoffAddModify, PayableShow, PayableEmail
-from diacamma.payoff.test_tools import default_bankaccount,\
+from diacamma.payoff.test_tools import default_bankaccount_fr,\
     default_paymentmethod, PaymentTest
 from diacamma.invoice.views import BillShow
 from django.utils import six
@@ -50,11 +50,11 @@ class DepositTest(InvoiceTest):
 
     def setUp(self):
         self.xfer_class = XferContainerAcknowledge
-        initial_thirds()
+        initial_thirds_fr()
         InvoiceTest.setUp(self)
-        default_compta()
+        default_compta_fr()
         default_articles()
-        default_bankaccount()
+        default_bankaccount_fr()
         rmtree(get_user_dir(), True)
         self.add_bills()
 
@@ -300,11 +300,11 @@ class MethodTest(InvoiceTest, PaymentTest):
 
     def setUp(self):
         self.xfer_class = XferContainerAcknowledge
-        initial_thirds()
+        initial_thirds_fr()
         InvoiceTest.setUp(self)
-        default_compta()
+        default_compta_fr()
         default_articles()
-        default_bankaccount()
+        default_bankaccount_fr()
         default_paymentmethod()
         rmtree(get_user_dir(), True)
         self.add_bills()

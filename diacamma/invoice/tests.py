@@ -39,10 +39,10 @@ from lucterios.CORE.views import ObjectMerge
 from lucterios.mailing.tests import configSMTP, TestReceiver, decode_b64
 from lucterios.contacts.models import CustomField
 
-from diacamma.accounting.test_tools import initial_thirds, default_compta, default_costaccounting
+from diacamma.accounting.test_tools import initial_thirds_fr, default_compta_fr, default_costaccounting
 from diacamma.accounting.views_entries import EntryAccountList
 from diacamma.payoff.views import PayoffAddModify, PayoffDel, SupportingThird, SupportingThirdValid, PayableEmail
-from diacamma.payoff.test_tools import default_bankaccount
+from diacamma.payoff.test_tools import default_bankaccount_fr
 from diacamma.invoice.models import Article, Bill, AccountPosting
 from diacamma.invoice.test_tools import default_articles, InvoiceTest, default_categories, default_customize, default_accountPosting
 from diacamma.invoice.views_conf import InvoiceConfFinancial, InvoiceConfCommercial, VatAddModify, VatDel, CategoryAddModify, CategoryDel, ArticleImport, StorageAreaDel,\
@@ -57,10 +57,10 @@ class BillTest(InvoiceTest):
 
     def setUp(self):
         self.xfer_class = XferContainerAcknowledge
-        initial_thirds()
+        initial_thirds_fr()
         LucteriosTest.setUp(self)
-        default_compta()
-        default_bankaccount()
+        default_compta_fr()
+        default_bankaccount_fr()
         rmtree(get_user_dir(), True)
 
     def test_add_bill(self):
@@ -1277,7 +1277,7 @@ class BillTest(InvoiceTest):
         CustomField.objects.create(modelname='accounting.Third', name='categorie', kind=4, args="{'list':['---','petit','moyen','gros']}")
         CustomField.objects.create(modelname='accounting.Third', name='value', kind=1, args="{'min':0,'max':100}")
         default_customize()
-        initial_thirds()
+        initial_thirds_fr()
         default_categories()
         default_articles()
         details = [{'article': 0, 'designation': 'article 0', 'price': '20.00', 'quantity': 15}]
@@ -1306,7 +1306,7 @@ class BillTest(InvoiceTest):
         self.assertEqual(6 + 8 + 1 + 2 + 2 + 4 + 9 + 2 + 2 + 2 + 1, len(search_field_list), search_field_list)  # bill + contact + custom contact + custom third + third + detail + article  + art custom + category + provider
 
     def test_autoreduce1(self):
-        initial_thirds()
+        initial_thirds_fr()
         default_categories()
         default_articles()
 
@@ -1362,7 +1362,7 @@ class BillTest(InvoiceTest):
         self.assert_json_equal('', 'bill/@7/date', '2015-04-08')
 
     def testt_autoreduce2(self):
-        initial_thirds()
+        initial_thirds_fr()
         default_categories()
         default_articles()
         SavedCriteria.objects.create(name='my filter', modelname='accounting.Third', criteria="contact.city||1||LE PRECHEUR")
@@ -1412,7 +1412,7 @@ class BillTest(InvoiceTest):
         self.assert_json_equal('', 'bill/@4/total', '135.00€')
 
     def testt_autoreduce3(self):
-        initial_thirds()
+        initial_thirds_fr()
         default_categories()
         default_articles()
 

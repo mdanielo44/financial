@@ -25,14 +25,8 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import unicode_literals
 from re import match
 from django.core.exceptions import ObjectDoesNotExist
-try:
-    from urllib.parse import urlsplit, parse_qsl
-except BaseException:
-    from urlparse import urlsplit, parse_qsl
-try:
-    from http.server import BaseHTTPRequestHandler, HTTPServer
-except BaseException:
-    from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
+from urllib.parse import urlsplit, parse_qsl
+from http.server import BaseHTTPRequestHandler, HTTPServer
 from threading import Thread
 
 from django.utils import six
@@ -46,21 +40,22 @@ from diacamma.payoff.models import BankAccount, PaymentMethod
 from diacamma.payoff.views_deposit import BankTransactionList, BankTransactionShow
 
 
-def default_bankaccount():
+def default_bankaccount_fr():
     create_account(['581'], 0, FiscalYear.get_current())
-    BankAccount.objects.create(
-        designation="My bank", reference="0123 456789 321654 12", account_code="512")
-    BankAccount.objects.create(
-        designation="PayPal", reference="paypal@moi.com", account_code="581")
+    BankAccount.objects.create(designation="My bank", reference="0123 456789 321654 12", account_code="512")
+    BankAccount.objects.create(designation="PayPal", reference="paypal@moi.com", account_code="581")
+
+
+def default_bankaccount_be():
+    create_account(['552'], 0, FiscalYear.get_current())
+    BankAccount.objects.create(designation="My bank", reference="0123 456789 321654 12", account_code="550")
+    BankAccount.objects.create(designation="PayPal", reference="paypal@moi.com", account_code="552")
 
 
 def default_paymentmethod():
-    PaymentMethod.objects.create(
-        paytype=0, bank_account_id=1, extra_data='123456789\nAABBCCDD')
-    PaymentMethod.objects.create(
-        paytype=1, bank_account_id=1, extra_data='Truc\n1 rue de la Paix{[newline]}99000 LA-BAS')
-    PaymentMethod.objects.create(
-        paytype=2, bank_account_id=2, extra_data='monney@truc.org')
+    PaymentMethod.objects.create(paytype=0, bank_account_id=1, extra_data='123456789\nAABBCCDD')
+    PaymentMethod.objects.create(paytype=1, bank_account_id=1, extra_data='Truc\n1 rue de la Paix{[newline]}99000 LA-BAS')
+    PaymentMethod.objects.create(paytype=2, bank_account_id=2, extra_data='monney@truc.org')
 
 
 class PaymentTest(LucteriosTest):

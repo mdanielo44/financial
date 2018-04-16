@@ -33,7 +33,7 @@ from lucterios.contacts.tests_contacts import change_ourdetail
 
 from diacamma.payoff.views_conf import PayoffConf, BankAccountAddModify,\
     BankAccountDelete, PaymentMethodAddModify
-from diacamma.accounting.test_tools import default_compta
+from diacamma.accounting.test_tools import default_compta_fr
 
 
 class PayoffTest(LucteriosTest):
@@ -43,7 +43,7 @@ class PayoffTest(LucteriosTest):
         LucteriosTest.setUp(self)
         rmtree(get_user_dir(), True)
         change_ourdetail()
-        default_compta()
+        default_compta_fr()
 
     def test_bank(self):
         self.factory.xfer = PayoffConf()

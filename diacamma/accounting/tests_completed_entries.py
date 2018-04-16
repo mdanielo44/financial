@@ -41,7 +41,7 @@ from lucterios.contacts.models import CustomField
 
 from diacamma.accounting.views_entries import EntryAccountList, EntryAccountListing, EntryAccountEdit, EntryAccountShow, \
     EntryAccountClose, EntryAccountCostAccounting, EntryAccountSearch
-from diacamma.accounting.test_tools import default_compta, initial_thirds, fill_entries, add_entry
+from diacamma.accounting.test_tools import default_compta_fr, initial_thirds_fr, fill_entries_fr, add_entry
 from diacamma.accounting.views_other import CostAccountingList, CostAccountingClose, CostAccountingAddModify
 from diacamma.accounting.views_reports import FiscalYearBalanceSheet, FiscalYearIncomeStatement, FiscalYearLedger, FiscalYearTrialBalance,\
     CostAccountingTrialBalance, CostAccountingLedger, CostAccountingIncomeStatement
@@ -55,11 +55,11 @@ class CompletedEntryTest(LucteriosTest):
 
     def setUp(self):
         self.xfer_class = XferContainerAcknowledge
-        initial_thirds()
+        initial_thirds_fr()
         LucteriosTest.setUp(self)
-        default_compta(with8=True)
+        default_compta_fr(with8=True)
         rmtree(get_user_dir(), True)
-        fill_entries(1)
+        fill_entries_fr(1)
         add_entry(1, 5, '2015-12-31', 'Bénévolat', '-1|19|0|-1234.000000|0|None|\n-2|18|0|1234.000000|0|None|', True)
         last_year = FiscalYear.objects.create(begin='2014-01-01', end='2014-12-31', status=2)  # id=2
         current_year = FiscalYear.objects.get(id=1)

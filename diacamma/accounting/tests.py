@@ -37,7 +37,7 @@ from lucterios.contacts.views import CustomFieldAddModify
 from diacamma.accounting.views import ThirdList, ThirdAdd, ThirdSave, ThirdShow, AccountThirdAddModify, AccountThirdDel, ThirdListing, ThirdDisable, ThirdEdit, ThirdSearch
 from diacamma.accounting.views_admin import Configuration, ConfigurationAccountingSystem, JournalAddModify, JournalDel, FiscalYearAddModify, FiscalYearActive, FiscalYearDel
 from diacamma.accounting.views_other import ModelEntryList, ModelEntryAddModify, ModelLineEntryAddModify
-from diacamma.accounting.test_tools import initial_contacts, fill_entries, initial_thirds, create_third, fill_accounts, fill_thirds, default_compta, set_accounting_system, add_models
+from diacamma.accounting.test_tools import initial_contacts, fill_entries_fr, initial_thirds_fr, create_third, fill_accounts_fr, fill_thirds_fr, default_compta_fr, set_accounting_system, add_models
 from diacamma.accounting.models import FiscalYear, Third
 from diacamma.accounting.system import get_accounting_system, accounting_system_ident
 from diacamma.accounting.tools import current_system_account, clear_system_account
@@ -217,8 +217,8 @@ class ThirdTest(LucteriosTest):
         self.assert_observer('core.custom', 'diacamma.accounting', 'thirdShow')
         self.assert_count_equal('accountthird', 0)
 
-        fill_thirds()
-        default_compta()
+        fill_thirds_fr()
+        default_compta_fr()
 
         self.factory.xfer = AccountThirdAddModify()
         self.calljson('/diacamma.accounting/accountThirdAddModify', {"third": 1}, False)
@@ -227,9 +227,9 @@ class ThirdTest(LucteriosTest):
         self.assert_json_equal('SELECT', 'code', '401')
 
     def test_show_withdata(self):
-        fill_thirds()
-        default_compta()
-        fill_entries(1)
+        fill_thirds_fr()
+        default_compta_fr()
+        fill_entries_fr(1)
         self.factory.xfer = ThirdShow()
         self.calljson('/diacamma.accounting/thirdShow', {"third": 4}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'thirdShow')
@@ -269,9 +269,9 @@ class ThirdTest(LucteriosTest):
         self.assert_observer('core.dialogbox', 'diacamma.accounting', 'accountThirdDel')
 
     def test_show_withdata_linesfilter(self):
-        fill_thirds()
-        default_compta()
-        fill_entries(1)
+        fill_thirds_fr()
+        default_compta_fr()
+        fill_entries_fr(1)
 
         self.factory.xfer = ThirdShow()
         self.calljson('/diacamma.accounting/thirdShow', {"third": 4, 'lines_filter': 0}, False)
@@ -292,7 +292,7 @@ class ThirdTest(LucteriosTest):
         self.assert_select_equal('lines_filter', 3)  # nb=3
         self.assert_count_equal('entryline', 1)
 
-        default_compta()
+        default_compta_fr()
 
         self.factory.xfer = ThirdShow()
         self.calljson('/diacamma.accounting/thirdShow', {"third": 4, 'lines_filter': 0}, False)
@@ -313,7 +313,7 @@ class ThirdTest(LucteriosTest):
         self.assert_count_equal('entryline', 3)
 
     def test_list(self):
-        fill_thirds()
+        fill_thirds_fr()
         self.factory.xfer = ThirdSave()
         self.calljson('/diacamma.accounting/thirdSave', {'pkname': 'legal_entity', 'legal_entity': 7, 'new_account': '421;451'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'thirdSave')
@@ -366,9 +366,9 @@ class ThirdTest(LucteriosTest):
         self.assert_json_equal('', 'third/@0/contact', 'Minimum')
 
     def test_list_withfilter(self):
-        fill_thirds()
-        default_compta()
-        fill_entries(1)
+        fill_thirds_fr()
+        default_compta_fr()
+        fill_entries_fr(1)
 
         self.factory.xfer = ThirdSave()
         self.calljson('/diacamma.accounting/thirdSave', {'pkname': 'legal_entity', 'legal_entity': 7, 'new_account': '421;451'}, False)
@@ -406,9 +406,9 @@ class ThirdTest(LucteriosTest):
         self.assert_count_equal('third', 2)
 
     def test_list_display(self):
-        fill_thirds()
-        default_compta()
-        fill_entries(1)
+        fill_thirds_fr()
+        default_compta_fr()
+        fill_entries_fr(1)
         self.factory.xfer = ThirdList()
         self.calljson('/diacamma.accounting/thirdListing', {'show_filter': '1'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'thirdListing')
@@ -441,9 +441,9 @@ class ThirdTest(LucteriosTest):
         self.assert_json_equal('', 'third/@2/total', '-34.01€')
 
     def test_listing(self):
-        fill_thirds()
-        default_compta()
-        fill_entries(1)
+        fill_thirds_fr()
+        default_compta_fr()
+        fill_entries_fr(1)
         self.factory.xfer = ThirdListing()
         self.calljson('/diacamma.accounting/thirdListing', {}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'thirdListing')
@@ -494,9 +494,9 @@ class ThirdTest(LucteriosTest):
         self.assertEqual(content_csv[6].strip(), '"Minimum";"411 401";"-34.01€";')
 
     def test_list_disable(self):
-        fill_thirds()
-        default_compta()
-        fill_entries(1)
+        fill_thirds_fr()
+        default_compta_fr()
+        fill_entries_fr(1)
         self.factory.xfer = ThirdList()
         self.calljson('/diacamma.accounting/thirdListing', {'show_filter': '1'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'thirdListing')
@@ -564,7 +564,7 @@ class ThirdTest(LucteriosTest):
         search_field_list = Third.get_search_fields()
         self.assertEqual(8 + 2 + 2, len(search_field_list), search_field_list)
 
-        fill_thirds()
+        fill_thirds_fr()
         self.factory.xfer = ThirdSearch()
         self.calljson('/diacamma.accounting/thirdSearch', {}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'thirdSearch')
@@ -764,9 +764,9 @@ class AdminTest(LucteriosTest):
         FiscalYear.objects.create(begin='2016-07-01', end='2017-06-30', status=0,
                                   is_actif=True, last_fiscalyear=year2)
         set_accounting_system()
-        initial_thirds()
-        fill_accounts()
-        fill_entries(3)
+        initial_thirds_fr()
+        fill_accounts_fr()
+        fill_entries_fr(3)
 
         self.factory.xfer = Configuration()
         self.calljson('/diacamma.accounting/configuration', {}, False)
@@ -842,10 +842,10 @@ class ModelTest(LucteriosTest):
     def setUp(self):
         self.xfer_class = XferContainerAcknowledge
         LucteriosTest.setUp(self)
-        initial_thirds()
+        initial_thirds_fr()
         rmtree(get_user_dir(), True)
         clear_system_account()
-        default_compta()
+        default_compta_fr()
 
     def test_add(self):
         self.factory.xfer = ModelEntryList()

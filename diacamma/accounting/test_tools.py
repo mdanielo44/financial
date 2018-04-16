@@ -75,12 +75,10 @@ def initial_contacts():
 
 def create_third(abstractids, codes=None):
     for abstractid in abstractids:
-        new_third = Third.objects.create(contact=AbstractContact.objects.get(
-            id=abstractid), status=0)
+        new_third = Third.objects.create(contact=AbstractContact.objects.get(id=abstractid), status=0)
         if codes is not None:
             for code in codes:
-                AccountThird.objects.create(
-                    third=new_third, code=code)
+                AccountThird.objects.create(third=new_third, code=code)
 
 
 def create_year(status=0):
@@ -93,22 +91,32 @@ def create_account(codes, type_of_account, year=None):
     if year is None:
         year = FiscalYear.get_current()
     for code in codes:
-        ChartsAccount.objects.create(
-            code=code, name=code, type_of_account=type_of_account, year=year)
+        ChartsAccount.objects.create(code=code, name=code, type_of_account=type_of_account, year=year)
 
 
-def fill_thirds():
+def fill_thirds_fr():
     create_third([2, 8], ['401'])  # 1 2
     create_third([6, 7], ['411', '401'])  # 3 4
     create_third([3, 4, 5], ['411'])  # 5 6 7
 
 
-def initial_thirds():
+def initial_thirds_fr():
     initial_contacts()
-    fill_thirds()
+    fill_thirds_fr()
 
 
-def fill_accounts(year=None, with12=True, with8=False):
+def fill_thirds_be():
+    create_third([2, 8], ['440'])  # 1 2
+    create_third([6, 7], ['400', '440'])  # 3 4
+    create_third([3, 4, 5], ['400'])  # 5 6 7
+
+
+def initial_thirds_be():
+    initial_contacts()
+    fill_thirds_be()
+
+
+def fill_accounts_fr(year=None, with12=True, with8=False):
     create_account(['411', '512', '531'], 0, year)  # 1 2 3
     create_account(['401'], 1, year)  # 4
     create_account(['106', '110', '119'], 2, year)  # 5 6 7
@@ -118,6 +126,16 @@ def fill_accounts(year=None, with12=True, with8=False):
         create_account(['120', '129'], 2, year)  # 16 17
     if with8:
         create_account(['860', '870'], 5, year)  # 18 19
+
+
+def fill_accounts_be(year=None, with12=True, with8=False):
+    create_account(['400', '550', '570'], 0, year)  # 1 2 3
+    create_account(['440'], 1, year)  # 4
+
+    create_account(['130', '140', '141'], 2, year)  # 5 6 7
+    create_account(['700', '701', '705'], 3, year)  # 8 9 10
+    create_account(['600', '601', '602', '603', '604'], 4, year)  # 11 12 13 14 15
+    # TODO: add account for with12 & with8
 
 
 def default_costaccounting():
@@ -140,19 +158,28 @@ def add_models():
         model=model2, code='531', amount=68.47)
 
 
-def set_accounting_system():
-    Parameter.change_value('accounting-system', 'diacamma.accounting.system.french.FrenchSystemAcounting')
+def set_accounting_system(country='FR'):
+    country_list = {'FR': 'diacamma.accounting.system.french.FrenchSystemAcounting', 'BE': 'diacamma.accounting.system.belgium.BelgiumSystemAcounting'}
+    Parameter.change_value('accounting-system', country_list[country])
     Params.clear()
     clear_system_account()
     signal_and_lock.Signal.call_signal("param_change", ['accounting-system'])
 
 
-def default_compta(status=0, with12=True, with8=False):
+def default_compta_fr(status=0, with12=True, with8=False):
     from diacamma.payoff.views_conf import paramchange_payoff
     paramchange_payoff([])
-    set_accounting_system()
+    set_accounting_system('FR')
     year = create_year(status)
-    fill_accounts(year, with12, with8)
+    fill_accounts_fr(year, with12, with8)
+
+
+def default_compta_be(status=0, with12=True, with8=False):
+    from diacamma.payoff.views_conf import paramchange_payoff
+    paramchange_payoff([])
+    set_accounting_system('BE')
+    year = create_year(status)
+    fill_accounts_be(year, with12, with8)
 
 
 def add_entry(yearid, journalid, date_value, designation, serial_entry, closed=False):
@@ -165,7 +192,7 @@ def add_entry(yearid, journalid, date_value, designation, serial_entry, closed=F
     return new_entry
 
 
-def fill_entries(yearid):
+def fill_entries_fr(yearid):
 
     default_costaccounting()
     # cost id=1: dep=12.34 / rec=0.00 => res=-12.34

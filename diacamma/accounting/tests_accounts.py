@@ -28,7 +28,7 @@ from lucterios.framework.test import LucteriosTest
 from lucterios.framework.xfergraphic import XferContainerAcknowledge
 from lucterios.framework.filetools import get_user_dir
 
-from diacamma.accounting.test_tools import initial_thirds, default_compta, fill_entries, set_accounting_system, add_entry
+from diacamma.accounting.test_tools import initial_thirds_fr, default_compta_fr, fill_entries_fr, set_accounting_system, add_entry
 from diacamma.accounting.views_accounts import ChartsAccountList, ChartsAccountDel, ChartsAccountShow, ChartsAccountAddModify, ChartsAccountListing, ChartsAccountImportFiscalYear
 from diacamma.accounting.views_accounts import FiscalYearBegin, FiscalYearClose, FiscalYearReportLastYear
 from diacamma.accounting.views_entries import EntryAccountEdit, EntryAccountList
@@ -44,9 +44,9 @@ class ChartsAccountTest(LucteriosTest):
         self.xfer_class = XferContainerAcknowledge
         LucteriosTest.setUp(self)
         set_accounting_system()
-        initial_thirds()
-        default_compta()
-        fill_entries(1)
+        initial_thirds_fr()
+        default_compta_fr()
+        fill_entries_fr(1)
         rmtree(get_user_dir(), True)
 
     def test_all(self):
@@ -388,9 +388,9 @@ class FiscalYearWorkflowTest(PaymentTest):
         self.xfer_class = XferContainerAcknowledge
         LucteriosTest.setUp(self)
         set_accounting_system()
-        initial_thirds()
-        default_compta()
-        fill_entries(1)
+        initial_thirds_fr()
+        default_compta_fr()
+        fill_entries_fr(1)
         rmtree(get_user_dir(), True)
 
     def test_begin_simple(self):
