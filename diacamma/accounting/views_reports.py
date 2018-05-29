@@ -124,6 +124,7 @@ class FiscalYearReport(XferContainerCustom):
         self.define_gridheader()
 
     def add_total_in_grid(self, total_in_left, total1_left, total2_left, totalb_left, total1_right, total2_right, totalb_right, line_idx):
+        self.result = (0.0, 0.0, 0.0)
         if (total2_left is None) or (total2_right is None):
             self.total_summary = (max(total1_left, total1_right), None, max(totalb_left, totalb_right))
         else:

@@ -889,13 +889,13 @@ class EntryAccount(LucteriosModel):
             for idx in range(len(serial)):
                 total_credit += serial[idx].get_credit()
                 total_debit += serial[idx].get_debit()
-        return no_change, max(0, total_credit - total_debit), max(0, total_debit - total_credit)
+        return no_change, currency_round(max(0, total_credit - total_debit)), currency_round(max(0, total_debit - total_credit))
 
     def closed(self, check_balance=True):
         if (self.year.status != 2) and not self.close:
             if check_balance:
                 _no_change, debit_rest, credit_rest = self.serial_control(self.get_serial())
-                if abs(debit_rest - credit_rest) > 0.0001:
+                if abs(debit_rest - credit_rest) >= 0.001:
                     raise LucteriosException(GRAVE, "Account entry not balanced: sum credit=%.3f / sum debit=%.3f" % (debit_rest, credit_rest))
             if Params.getvalue("accounting-needcost"):
                 for entryline in self.entrylineaccount_set.all():
