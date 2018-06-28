@@ -288,14 +288,15 @@ class CheckPaymentPaypal(XferContainerAbstract):
     icon = "payments.png"
 
     def get_post(self, request, *args, **kwargs):
+        self._initialize(request, *args, **kwargs)
+        root_url = self.getparam("url", self.request.META.get('HTTP_REFERER', self.request.build_absolute_uri()))
         try:
-            self._initialize(request, *args, **kwargs)
             payid = self.getparam("payid", 0)
             payment_meth_list = PaymentMethod.objects.filter(paytype=2)
             payment_meth = payment_meth_list[0]
             support = Supporting.objects.get(id=payid).get_final_child()
             paypal_url = getattr(settings, 'DIACAMMA_PAYOFF_PAYPAL_URL', 'https://www.paypal.com/cgi-bin/webscr')
-            paypal_dict = payment_meth.get_paypal_dict(self.request.META.get('HTTP_REFERER', self.request.build_absolute_uri()), self.language, support)
+            paypal_dict = payment_meth.get_paypal_dict(root_url, self.language, support)
             return HttpResponseRedirect("%s?%s" % (paypal_url, paypal_dict))
         except Exception:
             logging.getLogger('diacamma.payoff').exception("CheckPaymentPaypal")

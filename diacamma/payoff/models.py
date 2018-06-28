@@ -706,9 +706,12 @@ class PaymentMethod(LucteriosModel):
     def __get_show_pay_paypal(self, absolute_uri, lang, supporting):
         items = self.get_items()
         if (items[1] == 'o') or (items[1] == 'True'):
+            import urllib.parse
             abs_url = absolute_uri.split('/')
+            root_url = '/'.join(abs_url[:-2])
             formTxt = "{[center]}"
-            formTxt += "{[a href='%s/%s?payid=%d' target='_blank']}" % ('/'.join(abs_url[:-2]), 'diacamma.payoff/checkPaymentPaypal', supporting.id)
+            formTxt += "{[a href='%s/%s?payid=%d&url=%s' target='_blank']}" % (root_url, 'diacamma.payoff/checkPaymentPaypal',
+                                                                               supporting.id, urllib.parse.quote(root_url + '/diacamma.payoff/checkPaymentPaypal'))
             formTxt += "{[img src='https://www.paypalobjects.com/webstatic/mktg/logo/pp_cc_mark_74x46.jpg' title='PayPal' alt='PayPal' /]}"
             formTxt += "{[/a]}"
             formTxt += "{[/center]}"
