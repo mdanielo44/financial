@@ -925,9 +925,9 @@ class Detail(LucteriosModel):
         return fieldnames
 
     @classmethod
-    def create_for_bill(cls, bill, article, qty=1, reduce=0.0):
-        newdetail = cls(
-            bill=bill, article=article, designation=article.designation, price=article.price, unit=article.unit, quantity=qty, reduce=reduce)
+    def create_for_bill(cls, bill, article, qty=1, reduce=0.0, designation=None):
+        newdetail = cls(bill=bill, article=article, designation=article.designation if (designation is None) else designation,
+                        price=article.price, unit=article.unit, quantity=qty, reduce=reduce)
         newdetail.editor.before_save(None)
         newdetail.save()
         return newdetail
