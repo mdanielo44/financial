@@ -402,7 +402,7 @@ class FiscalYear(LucteriosModel):
         if xmlfiles is None:
             raise LucteriosException(IMPORTANT, _('No export for this accounting system!'))
         xml_file, xsd_file = xmlfiles
-        template = engines['django'].from_string(read_file(xml_file))
+        template = engines['django'].from_string(read_file(xml_file).decode('utf-8'))
         fiscal_year_xml = six.text_type(template.render(self.get_context()))
         res_val = xml_validator(fiscal_year_xml, xsd_file)
         if res_val is not None:

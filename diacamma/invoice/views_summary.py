@@ -40,7 +40,7 @@ from diacamma.payoff.views import PayableShow
 
 def current_bill_right(request):
     right = False
-    if not request.user.is_anonymous():
+    if not request.user.is_anonymous:
         contacts = Individual.objects.filter(user=request.user)
         right = len(contacts) > 0
     return right

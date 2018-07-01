@@ -613,7 +613,7 @@ class BillStatisticPrint(XferPrintAction):
 def situation_invoice(xfer):
     if not hasattr(xfer, 'add_component'):
         contacts = []
-        if not xfer.user.is_anonymous():
+        if not xfer.user.is_anonymous:
             for contact in Individual.objects.filter(user=xfer.user):
                 contacts.append(contact.id)
             for contact in LegalEntity.objects.filter(responsability__individual__user=xfer.user):
@@ -621,7 +621,7 @@ def situation_invoice(xfer):
         return len(contacts) > 0
     else:
         contacts = []
-        if not xfer.request.user.is_anonymous():
+        if not xfer.request.user.is_anonymous:
             for contact in Individual.objects.filter(user=xfer.request.user):
                 contacts.append(contact.id)
             for contact in LegalEntity.objects.filter(responsability__individual__user=xfer.request.user):

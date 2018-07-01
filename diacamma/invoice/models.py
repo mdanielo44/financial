@@ -261,7 +261,7 @@ class Article(LucteriosModel, CustomizeObject):
                         cat_ids = [cat[0].id]
                         for cat_item in new_item.categories.all():
                             cat_ids.append(cat_item.id)
-                        new_item.categories = Category.objects.filter(id__in=cat_ids)
+                        new_item.categories.set(Category.objects.filter(id__in=cat_ids))
                         new_item.save()
                 if ('provider.third.contact' in rowdata.keys()) and (rowdata['provider.third.contact'] is not None) and (rowdata['provider.third.contact'] != ''):
                     if ('provider.reference' in rowdata.keys()) and (rowdata['provider.reference'] is not None):
