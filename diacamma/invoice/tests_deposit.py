@@ -49,7 +49,6 @@ from diacamma.invoice.models import Bill
 class DepositTest(InvoiceTest):
 
     def setUp(self):
-        self.xfer_class = XferContainerAcknowledge
         initial_thirds_fr()
         InvoiceTest.setUp(self)
         default_compta_fr()
@@ -299,7 +298,6 @@ class DepositTest(InvoiceTest):
 class MethodTest(InvoiceTest, PaymentTest):
 
     def setUp(self):
-        self.xfer_class = XferContainerAcknowledge
         initial_thirds_fr()
         InvoiceTest.setUp(self)
         default_compta_fr()
@@ -331,8 +329,8 @@ class MethodTest(InvoiceTest, PaymentTest):
         self.assertEqual(len(self.json_actions), 3)
 
         self.factory.xfer = PayableShow()
-        self.calljson('/diacamma.payoff/supportingPaymentMethod', {'bill': 3, 'item_name': 'bill'}, False)
-        self.assert_observer('core.exception', 'diacamma.payoff', 'supportingPaymentMethod')
+        self.calljson('/diacamma.payoff/payableShow', {'bill': 3, 'item_name': 'bill'}, False)
+        self.assert_observer('core.exception', 'diacamma.payoff', 'payableShow')
 
     def test_payment_building(self):
         self.factory.xfer = BillShow()
@@ -343,8 +341,8 @@ class MethodTest(InvoiceTest, PaymentTest):
         self.assertEqual(len(self.json_actions), 3)
 
         self.factory.xfer = PayableShow()
-        self.calljson('/diacamma.payoff/supportingPaymentMethod', {'bill': 5, 'item_name': 'bill'}, False)
-        self.assert_observer('core.exception', 'diacamma.payoff', 'supportingPaymentMethod')
+        self.calljson('/diacamma.payoff/payableShow', {'bill': 5, 'item_name': 'bill'}, False)
+        self.assert_observer('core.exception', 'diacamma.payoff', 'payableShow')
 
     def test_payment_cotation(self):
         self.factory.xfer = BillShow()
@@ -356,8 +354,8 @@ class MethodTest(InvoiceTest, PaymentTest):
         self.assert_action_equal(self.json_actions[0], (six.text_type('Règlement'), 'diacamma.payoff/images/payments.png', 'diacamma.payoff', 'payableShow', 0, 1, 1))
 
         self.factory.xfer = PayableShow()
-        self.calljson('/diacamma.payoff/supportingPaymentMethod', {'bill': 1, 'item_name': 'bill'}, False)
-        self.assert_observer('core.custom', 'diacamma.payoff', 'supportingPaymentMethod')
+        self.calljson('/diacamma.payoff/payableShow', {'bill': 1, 'item_name': 'bill'}, False)
+        self.assert_observer('core.custom', 'diacamma.payoff', 'payableShow')
         self.assert_count_equal('', 14)
         self.assert_json_equal('LABELFORM', 'num_txt', 'A-1')
         self.check_payment(1, 'devis A-1 - 1 avril 2015')
@@ -373,8 +371,8 @@ class MethodTest(InvoiceTest, PaymentTest):
         self.assert_action_equal(self.json_actions[0], (six.text_type('Règlement'), 'diacamma.payoff/images/payments.png', 'diacamma.payoff', 'payableShow', 0, 1, 1))
 
         self.factory.xfer = PayableShow()
-        self.calljson('/diacamma.payoff/supportingPaymentMethod', {'bill': 2, 'item_name': 'bill'}, False)
-        self.assert_observer('core.custom', 'diacamma.payoff', 'supportingPaymentMethod')
+        self.calljson('/diacamma.payoff/payableShow', {'bill': 2, 'item_name': 'bill'}, False)
+        self.assert_observer('core.custom', 'diacamma.payoff', 'payableShow')
         self.assert_count_equal('', 14)
         self.assert_json_equal('LABELFORM', 'num_txt', 'A-1')
         self.check_payment(2, 'facture A-1 - 1 avril 2015')
@@ -429,8 +427,8 @@ class MethodTest(InvoiceTest, PaymentTest):
         self.assert_action_equal(self.json_actions[0], (six.text_type('Règlement'), 'diacamma.payoff/images/payments.png', 'diacamma.payoff', 'payableShow', 0, 1, 1))
 
         self.factory.xfer = PayableShow()
-        self.calljson('/diacamma.payoff/supportingPaymentMethod', {'bill': 6, 'item_name': 'bill'}, False)
-        self.assert_observer('core.custom', 'diacamma.payoff', 'supportingPaymentMethod')
+        self.calljson('/diacamma.payoff/payableShow', {'bill': 6, 'item_name': 'bill'}, False)
+        self.assert_observer('core.custom', 'diacamma.payoff', 'payableShow')
         self.assert_json_equal('LABELFORM', 'num_txt', 'A-2')
         self.check_payment(6, 'facture A-2 - 2 avril 2015', '95.24', '4.76')
 
@@ -455,8 +453,8 @@ class MethodTest(InvoiceTest, PaymentTest):
         self.assert_action_equal(self.json_actions[0], (six.text_type('Règlement'), 'diacamma.payoff/images/payments.png', 'diacamma.payoff', 'payableShow', 0, 1, 1))
 
         self.factory.xfer = PayableShow()
-        self.calljson('/diacamma.payoff/supportingPaymentMethod', {'bill': 6, 'item_name': 'bill'}, False)
-        self.assert_observer('core.custom', 'diacamma.payoff', 'supportingPaymentMethod')
+        self.calljson('/diacamma.payoff/payableShow', {'bill': 6, 'item_name': 'bill'}, False)
+        self.assert_observer('core.custom', 'diacamma.payoff', 'payableShow')
         self.assert_json_equal('LABELFORM', 'num_txt', 'A-2')
         self.check_payment(6, 'facture A-2 - 2 avril 2015', '38.1', '1.9')
 
@@ -471,8 +469,8 @@ class MethodTest(InvoiceTest, PaymentTest):
         self.assert_action_equal(self.json_actions[0], (six.text_type('Règlement'), 'diacamma.payoff/images/payments.png', 'diacamma.payoff', 'payableShow', 0, 1, 1))
 
         self.factory.xfer = PayableShow()
-        self.calljson('/diacamma.payoff/supportingPaymentMethod', {'bill': 4, 'item_name': 'bill'}, False)
-        self.assert_observer('core.custom', 'diacamma.payoff', 'supportingPaymentMethod')
+        self.calljson('/diacamma.payoff/payableShow', {'bill': 4, 'item_name': 'bill'}, False)
+        self.assert_observer('core.custom', 'diacamma.payoff', 'payableShow')
         self.check_payment(4, 'recu A-1 - 1 avril 2015')
 
     def test_payment_paypal_bill(self):

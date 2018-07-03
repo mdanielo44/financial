@@ -39,7 +39,6 @@ from diacamma.accounting.test_tools import default_compta_fr
 class PayoffTest(LucteriosTest):
 
     def setUp(self):
-        self.xfer_class = XferContainerAcknowledge
         LucteriosTest.setUp(self)
         rmtree(get_user_dir(), True)
         change_ourdetail()

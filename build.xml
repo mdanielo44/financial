@@ -7,7 +7,7 @@
 	<property name="project.name" value="diacamma" />
 	<property name="project.packname" value="diacamma_financial.egg-info" />
 	<property name="project.pythonpath" value="${core.path}:${asso.path}:${contact.path}:${env.PYTHONPATH}" />
-	<property name="project.modules" value="lucterios.contacts,lucterios.mailing,diacamma.accounting,diacamma.invoice,diacamma.payoff" />
+	<property name="project.modules" value="lucterios.contacts,lucterios.mailing,lucterios.documents,diacamma.accounting,diacamma.invoice,diacamma.payoff" />
 	<property name="project.appli" value="diacamma.asso" />
 	<property name="project.test.source" value="${basedir}/diacamma" />
 	<property name="project.test.omit" value="${core.path}/lucterios/install/*" />

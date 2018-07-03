@@ -45,7 +45,6 @@ from diacamma.payoff.views import SupportingThirdValid
 class StorageTest(InvoiceTest):
 
     def setUp(self):
-        self.xfer_class = XferContainerAcknowledge
         initial_thirds_fr()
         LucteriosTest.setUp(self)
         default_compta_fr()

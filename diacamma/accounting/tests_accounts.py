@@ -41,7 +41,6 @@ from diacamma.payoff.test_tools import PaymentTest
 class ChartsAccountTest(LucteriosTest):
 
     def setUp(self):
-        self.xfer_class = XferContainerAcknowledge
         LucteriosTest.setUp(self)
         set_accounting_system()
         initial_thirds_fr()
@@ -385,7 +384,6 @@ class FiscalYearWorkflowTest(PaymentTest):
 
     def setUp(self):
         # BudgetList.url_text
-        self.xfer_class = XferContainerAcknowledge
         LucteriosTest.setUp(self)
         set_accounting_system()
         initial_thirds_fr()
@@ -554,9 +552,9 @@ class FiscalYearWorkflowTest(PaymentTest):
         self.assertEqual(
             FiscalYear.objects.get(id=1).status, 0)
         self.factory.xfer = FiscalYearClose()
-        self.calljson('/diacamma.accounting/fiscalYearImport',
+        self.calljson('/diacamma.accounting/fiscalYearClose',
                       {'year': '1', 'type_of_account': '-1'}, False)
-        self.assert_observer('core.exception', 'diacamma.accounting', 'fiscalYearImport')
+        self.assert_observer('core.exception', 'diacamma.accounting', 'fiscalYearClose')
         self.assert_json_equal('', 'message', "Cet exercice n'est pas 'en cours' !")
 
         self.factory.xfer = FiscalYearBegin()
@@ -565,8 +563,8 @@ class FiscalYearWorkflowTest(PaymentTest):
         self.assertEqual(FiscalYear.objects.get(id=1).status, 1)
 
         self.factory.xfer = ThirdList()
-        self.calljson('/diacamma.accounting/thirdListing', {'show_filter': '1'}, False)
-        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdListing')
+        self.calljson('/diacamma.accounting/thirdList', {'show_filter': '1'}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdList')
         self.assert_json_equal('', 'third/@1/contact', 'Dalton Jack')
         self.assert_json_equal('', 'third/@1/total', '0.00€')
         self.assert_json_equal('', 'third/@3/contact', 'Dalton William')
@@ -577,9 +575,9 @@ class FiscalYearWorkflowTest(PaymentTest):
         self.check_account(1, '401', 78.24)
 
         self.factory.xfer = FiscalYearClose()
-        self.calljson('/diacamma.accounting/fiscalYearImport',
+        self.calljson('/diacamma.accounting/fiscalYearClose',
                       {'year': '1', 'type_of_account': '-1'}, False)
-        self.assert_observer('core.exception', 'diacamma.accounting', 'fiscalYearImport')
+        self.assert_observer('core.exception', 'diacamma.accounting', 'fiscalYearClose')
         self.assert_json_equal('', 'message', "Cet exercice a des écritures non-validées et pas d'exercice suivant !")
 
         FiscalYear.objects.create(begin='2016-01-01', end='2016-12-31', status=0,

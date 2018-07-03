@@ -56,7 +56,6 @@ from diacamma.accounting.models import CostAccounting
 class ConfigTest(LucteriosTest):
 
     def setUp(self):
-        self.xfer_class = XferContainerAcknowledge
         LucteriosTest.setUp(self)
         default_compta_fr()
         rmtree(get_user_dir(), True)

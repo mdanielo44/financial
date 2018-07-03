@@ -56,7 +56,6 @@ from diacamma.accounting.models import CostAccounting, FiscalYear
 class BillTest(InvoiceTest):
 
     def setUp(self):
-        self.xfer_class = XferContainerAcknowledge
         initial_thirds_fr()
         LucteriosTest.setUp(self)
         default_compta_fr()
@@ -311,9 +310,9 @@ class BillTest(InvoiceTest):
         self.assert_observer('core.exception', 'diacamma.invoice', 'billDel')
 
         self.factory.xfer = BillTransition()
-        self.calljson('/diacamma.invoice/billArchive',
+        self.calljson('/diacamma.invoice/billTransition',
                       {'CONFIRME': 'YES', 'bill': 1, 'TRANSITION': 'archive'}, False)
-        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'billArchive')
+        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'billTransition')
 
         self.factory.xfer = BillList()
         self.calljson('/diacamma.invoice/billList', {'status_filter': -1}, False)
@@ -337,30 +336,30 @@ class BillTest(InvoiceTest):
         self._create_bill(details, 1, '2015-04-01', 6)
 
         self.factory.xfer = BillTransition()
-        self.calljson('/diacamma.invoice/billValid', {'bill': 1, 'TRANSITION': 'valid'}, False)
-        self.assert_observer('core.custom', 'diacamma.invoice', 'billValid')
+        self.calljson('/diacamma.invoice/billTransition', {'bill': 1, 'TRANSITION': 'valid'}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'billTransition')
         self.assert_count_equal('', 2 + 7 + 0)
 
         self.factory.xfer = BillTransition()
-        self.calljson('/diacamma.invoice/billValid', {'bill': 1, 'TRANSITION': 'valid', 'mode': 1}, False)
-        self.assert_observer('core.custom', 'diacamma.invoice', 'billValid')
+        self.calljson('/diacamma.invoice/billTransition', {'bill': 1, 'TRANSITION': 'valid', 'mode': 1}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'billTransition')
         self.assert_count_equal('', 2 + 9 + 0)
 
         configSMTP('localhost', 2025)
 
         self.factory.xfer = BillTransition()
-        self.calljson('/diacamma.invoice/billValid', {'bill': 1, 'TRANSITION': 'valid', 'mode': 1}, False)
-        self.assert_observer('core.custom', 'diacamma.invoice', 'billValid')
+        self.calljson('/diacamma.invoice/billTransition', {'bill': 1, 'TRANSITION': 'valid', 'mode': 1}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'billTransition')
         self.assert_count_equal('', 2 + 9 + 4)
         self.assert_json_equal('', 'withpayoff', False)
         self.assert_json_equal('', 'amount', '107.45')
         self.assert_json_equal('', 'sendemail', False)
 
         self.factory.xfer = BillTransition()
-        self.calljson('/diacamma.invoice/billValid', {'bill': 1, 'TRANSITION': 'valid', 'CONFIRME': 'YES',
+        self.calljson('/diacamma.invoice/billTransition', {'bill': 1, 'TRANSITION': 'valid', 'CONFIRME': 'YES',
                                                       'withpayoff': True, 'mode': 1, 'amount': '107.45', 'date_payoff': '2015-04-07', 'mode': 1, 'reference': 'abc123', 'bank_account': 1, 'payer': "Ma'a Dalton", 'bank_fee': '1.08',
                                                       'sendemail': True, 'subject': 'my bill', 'message': 'this is a bill.', 'model': 8}, False)
-        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'billValid')
+        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'billTransition')
         self.assert_action_equal(self.response_json['action'], ("", None, "diacamma.payoff", "payableEmail", 1, 1, 1))
 
         self.factory.xfer = EntryAccountList()
@@ -412,9 +411,9 @@ class BillTest(InvoiceTest):
         self.assert_count_equal('entryline', 0)
 
         self.factory.xfer = BillTransition()
-        self.calljson('/diacamma.invoice/billValid',
+        self.calljson('/diacamma.invoice/billTransition',
                       {'CONFIRME': 'YES', 'bill': 1, 'withpayoff': False, 'TRANSITION': 'valid'}, False)
-        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'billValid')
+        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'billTransition')
 
         self.factory.xfer = BillShow()
         self.calljson('/diacamma.invoice/billShow', {'bill': 1}, False)
@@ -464,9 +463,9 @@ class BillTest(InvoiceTest):
         self.assert_count_equal('bill', 1)
 
         self.factory.xfer = BillTransition()
-        self.calljson('/diacamma.invoice/billCancel',
+        self.calljson('/diacamma.invoice/billTransition',
                       {'CONFIRME': 'YES', 'bill': 1, 'TRANSITION': 'cancel'}, False)
-        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'billCancel')
+        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'billTransition')
         self.assertEqual(self.response_json['action']['id'], "diacamma.invoice/billShow")
         self.assertEqual(len(self.response_json['action']['params']), 1)
         self.assertEqual(self.response_json['action']['params']['bill'], 2)
@@ -509,9 +508,9 @@ class BillTest(InvoiceTest):
         self.assert_json_equal('LABELFORM', 'info', "{[font color=\"red\"]}{[/font]}")
 
         self.factory.xfer = BillTransition()
-        self.calljson('/diacamma.invoice/billValid',
+        self.calljson('/diacamma.invoice/billTransition',
                       {'CONFIRME': 'YES', 'bill': 2, 'withpayoff': False, 'TRANSITION': 'valid'}, False)
-        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'billValid')
+        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'billTransition')
 
         self.factory.xfer = EntryAccountList()
         self.calljson('/diacamma.accounting/entryAccountList',
@@ -526,9 +525,9 @@ class BillTest(InvoiceTest):
                             'price': '22.50', 'quantity': 3, 'reduce': '5.0'}], 0, '2015-04-01', 6)
 
         self.factory.xfer = BillTransition()
-        self.calljson('/diacamma.invoice/billValid',
+        self.calljson('/diacamma.invoice/billTransition',
                       {'CONFIRME': 'YES', 'bill': 1, 'withpayoff': False, 'TRANSITION': 'valid'}, False)
-        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'billValid')
+        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'billTransition')
 
         self.factory.xfer = BillShow()
         self.calljson('/diacamma.invoice/billShow', {'bill': 1}, False)
@@ -598,9 +597,9 @@ class BillTest(InvoiceTest):
         self.assert_count_equal('entryline', 0)
 
         self.factory.xfer = BillTransition()
-        self.calljson('/diacamma.invoice/billValid',
+        self.calljson('/diacamma.invoice/billTransition',
                       {'CONFIRME': 'YES', 'bill': 1, 'withpayoff': False, 'TRANSITION': 'valid'}, False)
-        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'billValid')
+        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'billTransition')
 
         self.factory.xfer = BillShow()
         self.calljson('/diacamma.invoice/billShow', {'bill': 1}, False)
@@ -641,9 +640,9 @@ class BillTest(InvoiceTest):
         self.assert_count_equal('entryline', 0)
 
         self.factory.xfer = BillTransition()
-        self.calljson('/diacamma.invoice/billValid',
+        self.calljson('/diacamma.invoice/billTransition',
                       {'CONFIRME': 'YES', 'bill': 1, 'withpayoff': False, 'TRANSITION': 'valid'}, False)
-        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'billValid')
+        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'billTransition')
 
         self.factory.xfer = BillShow()
         self.calljson('/diacamma.invoice/billShow', {'bill': 1}, False)
@@ -697,9 +696,9 @@ class BillTest(InvoiceTest):
         self.assertEqual(len(self.json_actions), 3)
 
         self.factory.xfer = BillTransition()
-        self.calljson('/diacamma.invoice/billValid',
+        self.calljson('/diacamma.invoice/billTransition',
                       {'CONFIRME': 'YES', 'bill': 1, 'withpayoff': False, 'TRANSITION': 'valid'}, False)
-        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'billValid')
+        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'billTransition')
 
         self.factory.xfer = EntryAccountList()
         self.calljson('/diacamma.accounting/entryAccountList',
@@ -743,9 +742,9 @@ class BillTest(InvoiceTest):
         self.assertEqual(len(self.json_actions), 3)
 
         self.factory.xfer = BillTransition()
-        self.calljson('/diacamma.invoice/billValid',
+        self.calljson('/diacamma.invoice/billTransition',
                       {'CONFIRME': 'YES', 'bill': 1, 'withpayoff': False, 'TRANSITION': 'valid'}, False)
-        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'billValid')
+        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'billTransition')
 
         self.factory.xfer = EntryAccountList()
         self.calljson('/diacamma.accounting/entryAccountList',

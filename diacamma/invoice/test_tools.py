@@ -134,7 +134,7 @@ class InvoiceTest(LucteriosTest):
         self.assert_observer('core.acknowledge', 'diacamma.invoice', 'billAddModify')
         bill_id = self.response_json['action']['params']['bill']
         self.factory.xfer = SupportingThirdValid()
-        self.calljson('/diacamma.invoice/supportingThirdValid',
+        self.calljson('/diacamma.payoff/supportingThirdValid',
                       {'supporting': bill_id, 'third': bill_third}, False)
         for detail in details:
             detail['SAVE'] = 'YES'

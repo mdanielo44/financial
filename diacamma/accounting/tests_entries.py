@@ -48,7 +48,6 @@ class EntryTest(LucteriosTest):
 
     def setUp(self):
         initial_thirds_fr()
-        self.xfer_class = XferContainerAcknowledge
         LucteriosTest.setUp(self)
         default_compta_fr()
         rmtree(get_user_dir(), True)
@@ -801,9 +800,9 @@ class EntryTest(LucteriosTest):
         self.assert_json_equal('LABELFORM', 'result', '{[center]}{[b]}Produit :{[/b]} 364.91€ - {[b]}Charge :{[/b]} 0.00€ = {[b]}Résultat :{[/b]} 364.91€{[br/]}{[b]}Trésorerie :{[/b]} 364.91€ - {[b]}Validé :{[/b]} 0.00€{[/center]}')
 
         self.factory.xfer = EntryAccountLink()
-        self.calljson('/diacamma.accounting/entryAccountValidate',
+        self.calljson('/diacamma.accounting/entryAccountLink',
                       {'year': '1', 'journal': '-1', 'filter': '0', 'entryline': '1;4'}, False)
-        self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountValidate')
+        self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountLink')
         self.factory.xfer = EntryAccountList()
         self.calljson('/diacamma.accounting/entryAccountList',
                       {'year': '1', 'journal': '-1', 'filter': '0'}, False)

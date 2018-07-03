@@ -54,7 +54,6 @@ from diacamma.accounting.views_budget import BudgetList, BudgetAddModify, Budget
 class CompletedEntryTest(LucteriosTest):
 
     def setUp(self):
-        self.xfer_class = XferContainerAcknowledge
         initial_thirds_fr()
         LucteriosTest.setUp(self)
         default_compta_fr(with8=True)

@@ -49,7 +49,6 @@ from lucterios.contacts.models import CustomField
 class ThirdTest(LucteriosTest):
 
     def setUp(self):
-        self.xfer_class = XferContainerAcknowledge
         LucteriosTest.setUp(self)
         initial_contacts()
         rmtree(get_user_dir(), True)
@@ -57,8 +56,8 @@ class ThirdTest(LucteriosTest):
 
     def test_add_abstract(self):
         self.factory.xfer = ThirdList()
-        self.calljson('/diacamma.accounting/thirdListing', {}, False)
-        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdListing')
+        self.calljson('/diacamma.accounting/thirdList', {}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdList')
         self.assert_count_equal('third', 0)
 
         self.factory.xfer = ThirdAdd()
@@ -75,16 +74,16 @@ class ThirdTest(LucteriosTest):
         self.assertEqual(self.response_json['action']['params']['third'], 1)
 
         self.factory.xfer = ThirdList()
-        self.calljson('/diacamma.accounting/thirdListing', {}, False)
-        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdListing')
+        self.calljson('/diacamma.accounting/thirdList', {}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdList')
         self.assert_count_equal('third', 1)
         self.assert_json_equal('', 'third/@0/contact', 'Dalton Joe')
         self.assert_json_equal('', 'third/@0/accountthird_set', '')
 
     def test_add_legalentity(self):
         self.factory.xfer = ThirdList()
-        self.calljson('/diacamma.accounting/thirdListing', {}, False)
-        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdListing')
+        self.calljson('/diacamma.accounting/thirdList', {}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdList')
         self.assert_count_equal('third', 0)
 
         self.factory.xfer = ThirdAdd()
@@ -100,8 +99,8 @@ class ThirdTest(LucteriosTest):
         self.assertEqual(self.response_json['action']['params']['third'], 1)
 
         self.factory.xfer = ThirdList()
-        self.calljson('/diacamma.accounting/thirdListing', {}, False)
-        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdListing')
+        self.calljson('/diacamma.accounting/thirdList', {}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdList')
         self.assert_count_equal('third', 1)
         self.assert_json_equal('', 'third/@0/contact', 'Minimum')
         self.assert_json_equal('', 'third/@0/accountthird_set', '401')
@@ -116,8 +115,8 @@ class ThirdTest(LucteriosTest):
 
     def test_add_individual(self):
         self.factory.xfer = ThirdList()
-        self.calljson('/diacamma.accounting/thirdListing', {}, False)
-        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdListing')
+        self.calljson('/diacamma.accounting/thirdList', {}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdList')
         self.assert_count_equal('third', 0)
 
         self.factory.xfer = ThirdAdd()
@@ -133,8 +132,8 @@ class ThirdTest(LucteriosTest):
         self.assertEqual(self.response_json['action']['params']['third'], 1)
 
         self.factory.xfer = ThirdList()
-        self.calljson('/diacamma.accounting/thirdListing', {}, False)
-        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdListing')
+        self.calljson('/diacamma.accounting/thirdList', {}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdList')
         self.assert_count_equal('third', 1)
         self.assert_json_equal('', 'third/@0/contact', 'Dalton William')
         self.assert_json_equal('', 'third/@0/accountthird_set', '401{[br/]}411')
@@ -149,8 +148,8 @@ class ThirdTest(LucteriosTest):
 
     def test_check_double(self):
         self.factory.xfer = ThirdList()
-        self.calljson('/diacamma.accounting/thirdListing', {}, False)
-        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdListing')
+        self.calljson('/diacamma.accounting/thirdList', {}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdList')
         self.assert_count_equal('third', 0)
 
         self.factory.xfer = ThirdSave()
@@ -172,8 +171,8 @@ class ThirdTest(LucteriosTest):
         self.assertEqual(self.response_json['action']['params']['third'], 1)
 
         self.factory.xfer = ThirdList()
-        self.calljson('/diacamma.accounting/thirdListing', {}, False)
-        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdListing')
+        self.calljson('/diacamma.accounting/thirdList', {}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdList')
         self.assert_count_equal('third', 1)
 
     def test_show(self):
@@ -322,8 +321,8 @@ class ThirdTest(LucteriosTest):
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'thirdSave')
 
         self.factory.xfer = ThirdList()
-        self.calljson('/diacamma.accounting/thirdListing', {}, False)
-        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdListing')
+        self.calljson('/diacamma.accounting/thirdList', {}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdList')
         self.assert_count_equal('', 6)
         self.assert_grid_equal('third', {'contact': "contact", 'accountthird_set': "compte"}, 7)  # nb=2
         self.assert_json_equal('', 'third/@0/contact', 'Dalton Avrel')
@@ -342,8 +341,8 @@ class ThirdTest(LucteriosTest):
         self.assert_json_equal('', 'third/@6/accountthird_set', '411{[br/]}401{[br/]}421{[br/]}451')
 
         self.factory.xfer = ThirdList()
-        self.calljson('/diacamma.accounting/thirdListing', {'GRID_ORDER%third': '1', 'GRID_ORDER%third+': '-'}, False)
-        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdListing')
+        self.calljson('/diacamma.accounting/thirdList', {'GRID_ORDER%third': '1', 'GRID_ORDER%third+': '-'}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdList')
         self.assert_count_equal('third', 7)
         self.assert_json_equal('', 'third/@0/contact', 'Dalton Avrel')
         self.assert_json_equal('', 'third/@1/contact', 'Dalton Jack')
@@ -354,8 +353,8 @@ class ThirdTest(LucteriosTest):
         self.assert_json_equal('', 'third/@6/contact', 'Minimum')
 
         self.factory.xfer = ThirdList()
-        self.calljson('/diacamma.accounting/thirdListing', {'GRID_ORDER%third': '1', 'GRID_ORDER%third+': '+'}, False)
-        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdListing')
+        self.calljson('/diacamma.accounting/thirdList', {'GRID_ORDER%third': '1', 'GRID_ORDER%third+': '+'}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdList')
         self.assert_count_equal('third', 7)
         self.assert_json_equal('', 'third/@6/contact', 'Dalton Avrel')
         self.assert_json_equal('', 'third/@5/contact', 'Dalton Jack')
@@ -378,31 +377,31 @@ class ThirdTest(LucteriosTest):
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'thirdSave')
 
         self.factory.xfer = ThirdList()
-        self.calljson('/diacamma.accounting/thirdListing', {'filter': 'dalton joe'}, False)
-        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdListing')
+        self.calljson('/diacamma.accounting/thirdList', {'filter': 'dalton joe'}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdList')
         self.assert_count_equal('', 6)
         self.assert_grid_equal('third', {'contact': "contact", 'accountthird_set': "compte"}, 1)  # nb=2
         self.assert_json_equal('', 'third/@0/contact', 'Dalton Joe')
         self.assert_json_equal('', 'third/@0/accountthird_set', '411')
 
         self.factory.xfer = ThirdList()
-        self.calljson('/diacamma.accounting/thirdListing', {'thirdtype': 1}, False)
-        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdListing')
+        self.calljson('/diacamma.accounting/thirdList', {'thirdtype': 1}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdList')
         self.assert_count_equal('third', 5)
 
         self.factory.xfer = ThirdList()
-        self.calljson('/diacamma.accounting/thirdListing', {'thirdtype': 2}, False)
-        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdListing')
+        self.calljson('/diacamma.accounting/thirdList', {'thirdtype': 2}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdList')
         self.assert_count_equal('third', 4)
 
         self.factory.xfer = ThirdList()
-        self.calljson('/diacamma.accounting/thirdListing', {'thirdtype': 3}, False)
-        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdListing')
+        self.calljson('/diacamma.accounting/thirdList', {'thirdtype': 3}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdList')
         self.assert_count_equal('third', 1)
 
         self.factory.xfer = ThirdList()
-        self.calljson('/diacamma.accounting/thirdListing', {'thirdtype': 4}, False)
-        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdListing')
+        self.calljson('/diacamma.accounting/thirdList', {'thirdtype': 4}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdList')
         self.assert_count_equal('third', 2)
 
     def test_list_display(self):
@@ -410,8 +409,8 @@ class ThirdTest(LucteriosTest):
         default_compta_fr()
         fill_entries_fr(1)
         self.factory.xfer = ThirdList()
-        self.calljson('/diacamma.accounting/thirdListing', {'show_filter': '1'}, False)
-        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdListing')
+        self.calljson('/diacamma.accounting/thirdList', {'show_filter': '1'}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdList')
         self.assert_count_equal('', 6)
         self.assert_grid_equal('third', {'contact': "contact", 'accountthird_set': "compte", 'total': "total"}, 7)  # nb=3
         self.assert_count_equal('third', 7)
@@ -426,8 +425,8 @@ class ThirdTest(LucteriosTest):
         self.assert_json_equal('', 'third/@6/total', '-34.01€')
 
         self.factory.xfer = ThirdList()
-        self.calljson('/diacamma.accounting/thirdListing', {'show_filter': '2'}, False)
-        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdListing')
+        self.calljson('/diacamma.accounting/thirdList', {'show_filter': '2'}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdList')
         self.assert_count_equal('', 6)
         self.assert_grid_equal('third', {'contact': "contact", 'accountthird_set': "compte", 'total': "total"}, 3)  # nb=3
         self.assert_json_equal('', 'third/@0/contact', 'Dalton William')
@@ -472,8 +471,8 @@ class ThirdTest(LucteriosTest):
         self.assertEqual(content_csv[10].strip(), '"Minimum";"411 401";"-34.01€";')
 
         self.factory.xfer = ThirdListing()
-        self.calljson('/diacamma.accounting/individualListing', {'PRINT_MODE': '4', 'MODEL': 5, 'filter': 'joe'}, False)
-        self.assert_observer('core.print', 'diacamma.accounting', 'individualListing')
+        self.calljson('/diacamma.accounting/thirdListing', {'PRINT_MODE': '4', 'MODEL': 5, 'filter': 'joe'}, False)
+        self.assert_observer('core.print', 'diacamma.accounting', 'thirdListing')
         csv_value = b64decode(six.text_type(self.response_json['print']['content'])).decode("utf-8")
         content_csv = csv_value.split('\n')
         self.assertEqual(len(content_csv), 8, str(content_csv))
@@ -482,8 +481,8 @@ class ThirdTest(LucteriosTest):
         self.assertEqual(content_csv[4].strip(), '"Dalton Joe";"411";"0.00€";')
 
         self.factory.xfer = ThirdListing()
-        self.calljson('/diacamma.accounting/individualListing', {'PRINT_MODE': '4', 'MODEL': 5, 'show_filter': '2'}, False)
-        self.assert_observer('core.print', 'diacamma.accounting', 'individualListing')
+        self.calljson('/diacamma.accounting/thirdListing', {'PRINT_MODE': '4', 'MODEL': 5, 'show_filter': '2'}, False)
+        self.assert_observer('core.print', 'diacamma.accounting', 'thirdListing')
         csv_value = b64decode(six.text_type(self.response_json['print']['content'])).decode("utf-8")
         content_csv = csv_value.split('\n')
         self.assertEqual(len(content_csv), 10, str(content_csv))
@@ -498,8 +497,8 @@ class ThirdTest(LucteriosTest):
         default_compta_fr()
         fill_entries_fr(1)
         self.factory.xfer = ThirdList()
-        self.calljson('/diacamma.accounting/thirdListing', {'show_filter': '1'}, False)
-        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdListing')
+        self.calljson('/diacamma.accounting/thirdList', {'show_filter': '1'}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdList')
         self.assert_count_equal('third', 7)
 
         self.factory.xfer = ThirdDisable()
@@ -512,8 +511,8 @@ class ThirdTest(LucteriosTest):
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'thirdDisable')
 
         self.factory.xfer = ThirdList()
-        self.calljson('/diacamma.accounting/thirdListing', {'show_filter': '1'}, False)
-        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdListing')
+        self.calljson('/diacamma.accounting/thirdList', {'show_filter': '1'}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdList')
         self.assert_count_equal('third', 4)
 
     def test_with_customize(self):
@@ -580,7 +579,6 @@ class ThirdTest(LucteriosTest):
 class AdminTest(LucteriosTest):
 
     def setUp(self):
-        self.xfer_class = XferContainerAcknowledge
         LucteriosTest.setUp(self)
         rmtree(get_user_dir(), True)
 
@@ -663,13 +661,13 @@ class AdminTest(LucteriosTest):
         self.assert_json_equal('', 'journal/@5/name', 'Caisse')
 
         self.factory.xfer = JournalDel()
-        self.calljson('/diacamma.accounting/journalAddModify', {'journal': '2'}, False)
-        self.assert_observer('core.exception', 'diacamma.accounting', 'journalAddModify')
+        self.calljson('/diacamma.accounting/journalDel', {'journal': '2'}, False)
+        self.assert_observer('core.exception', 'diacamma.accounting', 'journalDel')
         self.assert_json_equal('', 'message', 'journal réservé !')
 
         self.factory.xfer = JournalDel()
-        self.calljson('/diacamma.accounting/journalAddModify', {'CONFIRME': 'YES', 'journal': '6'}, False)
-        self.assert_observer('core.acknowledge', 'diacamma.accounting', 'journalAddModify')
+        self.calljson('/diacamma.accounting/journalDel', {'CONFIRME': 'YES', 'journal': '6'}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.accounting', 'journalDel')
 
         self.factory.xfer = Configuration()
         self.calljson('/diacamma.accounting/configuration', {}, False)
@@ -840,7 +838,6 @@ class AdminTest(LucteriosTest):
 class ModelTest(LucteriosTest):
 
     def setUp(self):
-        self.xfer_class = XferContainerAcknowledge
         LucteriosTest.setUp(self)
         initial_thirds_fr()
         rmtree(get_user_dir(), True)
