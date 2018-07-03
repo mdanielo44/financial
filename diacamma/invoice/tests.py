@@ -357,8 +357,8 @@ class BillTest(InvoiceTest):
 
         self.factory.xfer = BillTransition()
         self.calljson('/diacamma.invoice/billTransition', {'bill': 1, 'TRANSITION': 'valid', 'CONFIRME': 'YES',
-                                                      'withpayoff': True, 'mode': 1, 'amount': '107.45', 'date_payoff': '2015-04-07', 'mode': 1, 'reference': 'abc123', 'bank_account': 1, 'payer': "Ma'a Dalton", 'bank_fee': '1.08',
-                                                      'sendemail': True, 'subject': 'my bill', 'message': 'this is a bill.', 'model': 8}, False)
+                                                           'withpayoff': True, 'mode': 1, 'amount': '107.45', 'date_payoff': '2015-04-07', 'mode': 1, 'reference': 'abc123', 'bank_account': 1, 'payer': "Ma'a Dalton", 'bank_fee': '1.08',
+                                                           'sendemail': True, 'subject': 'my bill', 'message': 'this is a bill.', 'model': 8}, False)
         self.assert_observer('core.acknowledge', 'diacamma.invoice', 'billTransition')
         self.assert_action_equal(self.response_json['action'], ("", None, "diacamma.payoff", "payableEmail", 1, 1, 1))
 
