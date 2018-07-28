@@ -372,7 +372,7 @@ class ArticleList(XferListEditor):
         if len(self.categories_filter) > 0:
             for cat_item in Category.objects.filter(id__in=self.categories_filter):
                 items = items.filter(categories__in=[cat_item])
-        return items
+        return items.distinct()
 
     def fillresponse_header(self):
         show_filter = self.getparam('show_filter', 0)
@@ -448,7 +448,7 @@ class ArticlePrint(XferPrintListing):
         if len(categories_filter) > 0:
             for cat_item in Category.objects.filter(id__in=categories_filter):
                 items = items.filter(categories__in=[cat_item])
-        return items
+        return items.distinct()
 
     def get_filter(self):
         show_filter = self.getparam('show_filter', 0)
