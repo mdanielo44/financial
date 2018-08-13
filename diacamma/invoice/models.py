@@ -1041,7 +1041,7 @@ class Detail(LucteriosModel):
     def define_autoreduce(self):
         if float(self.reduce) < 0.0001:
             for red_item in AutomaticReduce.objects.all():
-                self.reduce = max(self.reduce, red_item.calcul_reduce(self))
+                self.reduce = max(float(self.reduce), red_item.calcul_reduce(self))
             return float(self.reduce) > 0.0001
         return False
 
