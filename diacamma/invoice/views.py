@@ -53,7 +53,7 @@ from diacamma.payoff.views import PayoffAddModify, PayableEmail, can_send_email
 from diacamma.payoff.models import Payoff
 from diacamma.accounting.models import FiscalYear
 from diacamma.accounting.views import get_main_third
-from diacamma.accounting.tools import current_system_account
+from diacamma.accounting.tools import current_system_account, format_devise
 
 MenuManage.add_sub("invoice", None, "diacamma.invoice/images/invoice.png", _("invoice"), _("Manage of billing"), 45)
 
@@ -686,6 +686,19 @@ def thirdaddon_invoice(item, xfer):
             bill_grid.add_action_notified(xfer, Bill)
             bill_grid.set_location(0, 2, 2)
             xfer.add_component(bill_grid)
+            if len(bills) > 0:
+                reduce_sum = 0.0
+                total_sum = 0.0
+                for bill in bills:
+                    total_sum += bill.get_total()
+                    for detail in bill.detail_set.all():
+                        reduce_sum += detail.get_reduce()
+                gross_sum = total_sum + reduce_sum
+                lab = XferCompLabelForm('sum_summary')
+                lab.set_value(_("{[b]}Gross total{[/b]} : %(grosstotal)s - {[b]}total of reduces{[/b]} : %(reducetotal)s = {[b]}total to pay{[/b]} : %(total)s") %
+                              {'grosstotal': format_devise(gross_sum, 5), 'reducetotal': format_devise(reduce_sum, 5), 'total': format_devise(total_sum, 5)})
+                lab.set_location(0, 3, 2)
+                xfer.add_component(lab)
         except LucteriosException:
             pass
 

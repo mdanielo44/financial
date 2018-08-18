@@ -813,5 +813,5 @@ def payoff_checkparam():
         value='',
         meta='("accounting","ChartsAccount","import diacamma.accounting.tools;django.db.models.Q(code__regex=diacamma.accounting.tools.current_system_account().get_cash_mask()) & django.db.models.Q(year__is_actif=True)", "code", True)')
     Parameter.check_and_create(name='payoff-email-message', typeparam=0, title=_("payoff-email-message"),
-                               args="{'Multi':True}", value=_('%(name)s\n\nJoint in this email %(doc)s.\n\nRegards'))
+                               args="{'Multi':True, 'HyperText': True}", value=_('%(name)s{[br/]}{[br/]}Joint in this email %(doc)s.{[br/]}{[br/]}Regards'))
     check_payoff_accounting()

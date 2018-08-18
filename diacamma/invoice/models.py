@@ -25,6 +25,7 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import unicode_literals
 from re import match
 import logging
+from os.path import exists, join, dirname
 from datetime import date
 
 from django.db import models
@@ -40,6 +41,7 @@ from django_fsm import FSMIntegerField, transition
 from lucterios.framework.models import LucteriosModel, get_value_if_choices, get_value_converted, get_obj_contains
 from lucterios.framework.error import LucteriosException, IMPORTANT, GRAVE
 from lucterios.framework.signal_and_lock import Signal
+from lucterios.framework.filetools import get_user_path, readimage_to_base64
 from lucterios.CORE.models import Parameter, SavedCriteria
 from lucterios.CORE.parameters import Params
 from lucterios.contacts.models import CustomField, CustomizeObject
@@ -197,7 +199,10 @@ class Article(LucteriosModel, CustomizeObject):
 
     @classmethod
     def get_default_fields(cls):
-        fields = ["reference", "designation", (_('price'), "price_txt"), 'unit', "isdisabled", 'accountposting', "stockable"]
+        fields = []
+        if Params.getvalue("invoice-article-with-picture"):
+            fields.append((_('image'), 'image'))
+        fields.extend(["reference", "designation", (_('price'), "price_txt"), 'unit', "isdisabled", 'accountposting', "stockable"])
         if len(Category.objects.all()) > 0:
             fields.append('categories')
         if len(StorageArea.objects.all()) > 0:
@@ -281,6 +286,15 @@ class Article(LucteriosModel, CustomizeObject):
         except Exception:
             logging.getLogger('diacamma.invoice').exception("import_data")
             raise
+
+    @property
+    def image(self):
+        img_path = get_user_path("invoice", "Article_%s.jpg" % self.id)
+        if exists(img_path):
+            img = readimage_to_base64(img_path)
+        else:
+            img = readimage_to_base64(join(dirname(__file__), "static", 'diacamma.invoice', "images", "NoArticle.png"))
+        return img.decode('ascii')
 
     @property
     def price_txt(self):
@@ -1321,3 +1335,4 @@ def invoice_checkparam():
         art.accountposting = accout_post
         art.sell_account = ''
         art.save()
+    Parameter.check_and_create(name='invoice-article-with-picture', typeparam=3, title=_("invoice-article-with-picture"), args="{}", value='False')

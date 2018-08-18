@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-03-28 17:28+0000\n"
+"POT-Creation-Date: 2018-08-18 16:04+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -110,14 +110,14 @@ msgstr "capital"
 msgid "liabilities"
 msgstr "dettes"
 
-#: system/default.py:322
+#: system/default.py:309 system/default.py:310
+msgid "Total"
+msgstr "Total"
+
+#: system/default.py:327
 msgid "result (deficit)"
 msgstr "résultat (déficit)"
 
-#: system/default.py:324
+#: system/default.py:329
 msgid "result (profit)"
 msgstr "résultat (bénéfice)"
-
-#: system/default.py:326 system/default.py:327
-msgid "Total"
-msgstr "Total"

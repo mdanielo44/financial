@@ -24,6 +24,7 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
 from datetime import date
+from os import unlink
 
 from django.utils.translation import ugettext_lazy as _
 from django.core.exceptions import ObjectDoesNotExist
@@ -31,9 +32,11 @@ from django.db.models import Q
 from django.utils import six
 
 from lucterios.framework.editors import LucteriosEditor
-from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompSelect, XferCompCheckList, XferCompGrid, XferCompButton, XferCompEdit
+from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompSelect, XferCompCheckList, XferCompGrid, XferCompButton, XferCompEdit,\
+    XferCompUpLoad, XferCompImage
 from lucterios.framework.tools import CLOSE_NO, FORMTYPE_REFRESH, ActionsManage, FORMTYPE_MODAL
 from lucterios.framework.models import get_value_if_choices
+from lucterios.framework.filetools import save_from_base64, open_image_resize, get_user_path
 from lucterios.CORE.parameters import Params
 
 from diacamma.accounting.tools import current_system_account, format_devise
@@ -82,12 +85,45 @@ class ArticleEditor(LucteriosEditor):
         xfer.get_components('price').prec = currency_decimal
         accountposting = xfer.get_components("accountposting")
         CustomField.edit_fields(xfer, accountposting.col)
+        if Params.getvalue("invoice-article-with-picture"):
+            obj_ref = xfer.get_components('reference')
+            xfer.tab = obj_ref.tab
+            upload = XferCompUpLoad('uploadlogo')
+            upload.set_value('')
+            upload.description = _('image')
+            upload.add_filter('.jpg')
+            upload.add_filter('.gif')
+            upload.add_filter('.png')
+            upload.add_filter('.bmp')
+            upload.set_location(0, xfer.get_max_row() + 1, 2, 1)
+            xfer.add_component(upload)
 
     def saving(self, xfer):
+        if Params.getvalue("invoice-article-with-picture"):
+            uploadlogo = xfer.getparam('uploadlogo')
+            if uploadlogo is not None:
+                tmp_file = save_from_base64(uploadlogo)
+                with open(tmp_file, "rb") as image_tmp:
+                    image = open_image_resize(image_tmp, 100, 100)
+                    image = image.convert("RGB")
+                    img_path = get_user_path("invoice", "Article_%s.jpg" % self.item.id)
+                    with open(img_path, "wb") as image_file:
+                        image.save(image_file, 'JPEG', quality=90)
+                unlink(tmp_file)
         LucteriosEditor.saving(self, xfer)
         self.item.set_custom_values(xfer.params)
 
     def show(self, xfer):
+        if Params.getvalue("invoice-article-with-picture"):
+            obj_ref = xfer.get_components('designation')
+            xfer.tab = obj_ref.tab
+            new_col = obj_ref.col
+            xfer.move(obj_ref.tab, 1, 0)
+            img = XferCompImage('logoimg')
+            img.set_value(self.item.image)
+            img.type = 'jpg'
+            img.set_location(new_col, obj_ref.row, 1, 6)
+            xfer.add_component(img)
         if self.item.stockable != 0:
             xfer.new_tab(_("Storage"))
             grid = XferCompGrid('storage')

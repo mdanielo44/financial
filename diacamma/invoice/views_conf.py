@@ -78,6 +78,15 @@ class InvoiceConfCommercial(XferListEditor):
     caption = _("Invoice commercial configuration")
 
     def fillresponse_header(self):
+        self.new_tab(_('Parameters'))
+        param_lists = ['invoice-article-with-picture']
+        row = self.get_max_row() + 1
+        Params.fill(self, param_lists, 1, row)
+        btn = XferCompButton('editparam')
+        btn.set_is_mini(False)
+        btn.set_location(3, row, 2, 2)
+        btn.set_action(self.request, ParamEdit.get_action(TITLE_MODIFY, 'images/edit.png'), close=CLOSE_NO, params={'params': param_lists})
+        self.add_component(btn)
         self.params['basic_model'] = 'invoice.Article'
         self.new_tab(_('Categories'))
         self.fill_grid(self.get_max_row(), Category, 'category', Category.objects.all())
