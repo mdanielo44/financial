@@ -10,13 +10,14 @@ from lucterios.CORE.models import PrintModel
 
 def print_values(*args):
     translation.activate(settings.LANGUAGE_CODE)
-    PrintModel().load_model('diacamma.invoice', "Article_0001", is_default=True)
+    PrintModel().load_model('diacamma.invoice', "Article_0002", is_default=False)
+    PrintModel().load_model('diacamma.invoice', "Article_0003", is_default=False)
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('invoice', '0011_automaticreduce'),
+        ('invoice', '0012_print_article'),
     ]
 
     operations = [

@@ -31,7 +31,8 @@ from django.db.models.functions import Concat
 from django.db.models import Q, Value
 from django.db.models.query import QuerySet
 
-from lucterios.framework.xferadvance import TITLE_PRINT, TITLE_CLOSE, TITLE_DELETE, TITLE_MODIFY, TITLE_ADD, TITLE_CANCEL, TITLE_OK, TITLE_EDIT
+from lucterios.framework.xferadvance import TITLE_PRINT, TITLE_CLOSE, TITLE_DELETE, TITLE_MODIFY, TITLE_ADD, TITLE_CANCEL, TITLE_OK, TITLE_EDIT,\
+    TITLE_LABEL
 from lucterios.framework.xferadvance import XferListEditor, XferShowEditor, XferAddEditor, XferDelete, XferTransition
 from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompSelect, XferCompImage, XferCompGrid, XferCompCheck, XferCompEdit, XferCompCheckList, XferCompMemo
 from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage, FORMTYPE_MODAL, CLOSE_YES, SELECT_SINGLE, FORMTYPE_REFRESH, CLOSE_NO, SELECT_MULTI, WrapAction
@@ -39,7 +40,8 @@ from lucterios.framework.xfergraphic import XferContainerAcknowledge, XferContai
 from lucterios.framework.error import LucteriosException, IMPORTANT
 from lucterios.framework import signal_and_lock
 
-from lucterios.CORE.xferprint import XferPrintAction, XferPrintReporting, XferPrintListing
+from lucterios.CORE.xferprint import XferPrintAction, XferPrintReporting, XferPrintListing,\
+    XferPrintLabel
 from lucterios.CORE.parameters import Params
 from lucterios.CORE.editors import XferSavedCriteriaSearchEditor
 from lucterios.CORE.models import PrintModel
@@ -435,13 +437,45 @@ class ArticleList(XferListEditor):
         self.add_action(ArticleSearch.get_action(_("Search"), "diacamma.invoice/images/article.png"), modal=FORMTYPE_NOMODAL, close=CLOSE_YES)
 
 
-@ActionsManage.affect_list(_("Print"), "images/print.png", close=CLOSE_NO)
+@ActionsManage.affect_list(TITLE_PRINT, "images/print.png", close=CLOSE_NO)
 @MenuManage.describ('invoice.change_article')
 class ArticlePrint(XferPrintListing):
     icon = "article.png"
     model = Article
     field_id = 'article'
     caption = _("Print articles")
+
+    def filter_callback(self, items):
+        categories_filter = self.getparam('cat_filter', ())
+        if len(categories_filter) > 0:
+            for cat_item in Category.objects.filter(id__in=categories_filter):
+                items = items.filter(categories__in=[cat_item])
+        return items.distinct()
+
+    def get_filter(self):
+        show_filter = self.getparam('show_filter', 0)
+        show_stockable = self.getparam('stockable', -1)
+        ref_filter = self.getparam('ref_filter', '')
+        show_storagearea = self.getparam('storagearea', 0)
+        new_filter = Q()
+        if ref_filter != '':
+            new_filter &= Q(reference__icontains=ref_filter) | Q(designation__icontains=ref_filter)
+        if show_filter == 0:
+            new_filter &= Q(isdisabled=False)
+        if show_stockable != -1:
+            new_filter &= Q(stockable=show_stockable)
+        if show_storagearea != 0:
+            new_filter &= Q(storagedetail__storagesheet__storagearea=show_storagearea)
+        return new_filter
+
+
+@ActionsManage.affect_list(TITLE_LABEL, "images/print.png", close=CLOSE_NO)
+@MenuManage.describ('invoice.change_article')
+class ArticleLabel(XferPrintLabel):
+    icon = "article.png"
+    model = Article
+    field_id = 'article'
+    caption = _("Label articles")
 
     def filter_callback(self, items):
         categories_filter = self.getparam('cat_filter', ())
