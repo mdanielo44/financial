@@ -26,7 +26,6 @@ from __future__ import unicode_literals
 from re import match
 import logging
 from os.path import exists, join, dirname
-from datetime import date
 
 from django.db import models
 from django.db.models.aggregates import Max, Sum
@@ -35,13 +34,15 @@ from django.db.models import Q, Value, F
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.utils.translation import ugettext_lazy as _
-from django.utils import six
+from django.utils.dateformat import DateFormat
+from django.utils import six, timezone
 from django_fsm import FSMIntegerField, transition
 
 from lucterios.framework.models import LucteriosModel, get_value_if_choices, get_value_converted, get_obj_contains
 from lucterios.framework.error import LucteriosException, IMPORTANT, GRAVE
 from lucterios.framework.signal_and_lock import Signal
 from lucterios.framework.filetools import get_user_path, readimage_to_base64
+from lucterios.framework.tools import same_day_months_after
 from lucterios.CORE.models import Parameter, SavedCriteria
 from lucterios.CORE.parameters import Params
 from lucterios.contacts.models import CustomField, CustomizeObject
@@ -49,6 +50,7 @@ from lucterios.contacts.models import CustomField, CustomizeObject
 from diacamma.accounting.models import FiscalYear, Third, EntryAccount, CostAccounting, Journal, EntryLineAccount, ChartsAccount, AccountThird
 from diacamma.accounting.tools import current_system_account, format_devise, currency_round, correct_accounting_code
 from diacamma.payoff.models import Supporting
+from datetime import timedelta
 
 
 class Vat(LucteriosModel):
@@ -717,7 +719,7 @@ class Bill(Supporting):
         new_asset = None
         if (self.bill_type in (1, 3)):
             new_asset = Bill.objects.create(
-                bill_type=2, date=date.today(), third=self.third, status=0, cost_accounting=self.cost_accounting)
+                bill_type=2, date=timezone.now(), third=self.third, status=0, cost_accounting=self.cost_accounting)
             for detail in self.detail_set.all():
                 detail.id = None
                 detail.bill = new_asset
@@ -733,7 +735,7 @@ class Bill(Supporting):
     def convert_to_bill(self):
         if (self.status == 1) and (self.bill_type == 0):
             new_bill = Bill.objects.create(
-                bill_type=1, date=date.today(), third=self.third, status=0, comment=self.comment)
+                bill_type=1, date=timezone.now(), third=self.third, status=0, comment=self.comment)
             cost_accountings = CostAccounting.objects.filter(
                 Q(status=0) & Q(is_default=True))
             if len(cost_accountings) >= 1:
@@ -808,6 +810,29 @@ class Bill(Supporting):
             art_list.append(("{[b]}%s{[/b]}" % _('total'), "{[b]}%s{[/b]}" % format_devise(total_art, 5),
                              "{[b]}---{[/b]}", "{[b]}---{[/b]}", "{[b]}%.2f %%{[/b]}" % 100, total_art))
         return art_list
+
+    def get_statistics_month(self):
+        month_list = []
+        if self.fiscal_year is not None:
+            nb_month = (self.fiscal_year.end.year - self.fiscal_year.begin.year) * 12 + self.fiscal_year.end.month - self.fiscal_year.begin.month + 1
+            months = []
+            total_month = 0.0
+            for current_month in range(nb_month):
+                begin_date = same_day_months_after(self.fiscal_year.begin, months=current_month)
+                begin_date = begin_date - timedelta(days=begin_date.day - 1)
+                end_date = same_day_months_after(begin_date, months=1) - timedelta(days=1)
+                amount_sum = 0.0
+                for bill in Bill.objects.filter(Q(date__gte=begin_date) & Q(date__lte=end_date) & Q(bill_type__in=(1, 2, 3)) & Q(status__in=(1, 3))):
+                    amount_sum += bill.get_total()
+                    total_month += bill.get_total()
+                months.append((begin_date, amount_sum))
+            for begin_date, amount_sum in months:
+                try:
+                    ratio = "%.2f %%" % (100 * amount_sum / total_month)
+                except ZeroDivisionError:
+                    ratio = "---"
+                month_list.append((DateFormat(begin_date).format('F Y'), format_devise(amount_sum, 5), ratio))
+        return month_list
 
     def support_validated(self, validate_date):
         if (self.bill_type == 2) or (self.status != 1):

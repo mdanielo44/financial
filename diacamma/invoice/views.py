@@ -623,12 +623,30 @@ class BillStatistic(XferContainerCustom):
         grid.set_size(400, 800)
         self.add_component(grid)
 
+    def fill_month(self):
+        month_result = self.item.get_statistics_month()
+        grid = XferCompGrid("months")
+        grid.add_header("month", _("month"))
+        grid.add_header("amount", _("amount"))
+        grid.add_header("ratio", _("ratio (%)"))
+        index = 0
+        for month_val in month_result:
+            grid.set_value(index, "month", month_val[0])
+            grid.set_value(index, "amount", month_val[1])
+            grid.set_value(index, "ratio", month_val[2])
+            index += 1
+        grid.set_location(0, 1, 3)
+        grid.set_size(400, 800)
+        self.add_component(grid)
+
     def fillresponse(self):
         self.fill_header()
         self.new_tab(_('Customers'))
         self.fill_customers()
         self.new_tab(_('Articles'))
         self.fill_articles()
+        self.new_tab(_('By month'))
+        self.fill_month()
         self.add_action(BillStatisticPrint.get_action(TITLE_PRINT, "images/print.png"), close=CLOSE_NO, params={'classname': self.__class__.__name__})
         self.add_action(WrapAction(TITLE_CLOSE, 'images/close.png'))
 

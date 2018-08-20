@@ -1424,6 +1424,7 @@ def accounting_checkparam():
     Parameter.check_and_create(name='accounting-system', typeparam=0, title=_("accounting-system"), args="{'Multi':False}", value='')
     Parameter.check_and_create(name='accounting-sizecode', typeparam=1, title=_("accounting-sizecode"), args="{'Min':3, 'Max':50}", value='3')
     Parameter.check_and_create(name='accounting-needcost', typeparam=3, title=_("accounting-needcost"), args="{}", value='False')
+    Parameter.check_and_create(name='accounting-code-report-filter', typeparam=0, title=_("accounting-code-report-filter"), args="{'Multi':False}", value='')
     check_accountingcost()
 
 

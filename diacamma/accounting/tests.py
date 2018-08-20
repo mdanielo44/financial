@@ -597,7 +597,7 @@ class AdminTest(LucteriosTest):
         self.assert_observer('core.custom', 'diacamma.accounting', 'configuration')
         self.assertTrue('__tab_4' in self.json_data.keys(), self.json_data.keys())
         self.assertFalse('__tab_5' in self.json_data.keys(), self.json_data.keys())
-        self.assert_count_equal('', 4 + 5 + 2 + 6)
+        self.assert_count_equal('', 4 + 5 + 2 + 7)
         self.assert_grid_equal('fiscalyear', {"begin": "début", "end": "fin", "status": "status", "is_actif": "actif"}, 0)  # nb=4
 
         self.assert_grid_equal('journal', {'name': "nom"}, 5)  # nb=1
@@ -612,6 +612,7 @@ class AdminTest(LucteriosTest):
         self.assert_json_equal('LABELFORM', 'accounting-devise-prec', '2')
         self.assert_json_equal('LABELFORM', 'accounting-sizecode', '3')
         self.assert_json_equal('LABELFORM', 'accounting-needcost', 'Non')
+        self.assert_json_equal('LABELFORM', 'accounting-code-report-filter', '')
         self.assert_grid_equal('custom_field', {'name': "nom", 'kind_txt': "type"}, 0)  # nb=2
 
     def test_configuration_accountsystem(self):

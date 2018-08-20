@@ -823,26 +823,26 @@ class BillTest(InvoiceTest):
     def test_statistic(self):
         default_articles()
         details = [{'article': 0, 'designation': 'article 0', 'price': '20.00', 'quantity': 15}]
-        self._create_bill(details, 0, '2015-04-01', 6, True)  # 59.50
+        self._create_bill(details, 0, '2015-01-01', 6, True)  # 59.50
         details = [{'article': 1, 'designation': 'article 1', 'price': '22.00', 'quantity': 3, 'reduce': '5.0'},
                    {'article': 2, 'designation': 'article 2', 'price': '3.25', 'quantity': 7}]
-        self._create_bill(details, 1, '2015-04-01', 6, True)  # 83.75
+        self._create_bill(details, 1, '2015-02-01', 6, True)  # 83.75
         details = [{'article': 0, 'designation': 'article 0', 'price': '50.00', 'quantity': 2},
                    {'article': 5, 'designation': 'article 5', 'price': '6.33', 'quantity': 6.75}]
-        self._create_bill(details, 3, '2015-04-01', 4, True)  # 142.73
+        self._create_bill(details, 3, '2015-03-01', 4, True)  # 142.73
         details = [{'article': 1, 'designation': 'article 1', 'price': '23.00', 'quantity': 3},
                    {'article': 5, 'designation': 'article 5', 'price': '6.33', 'quantity': 3.50}]
         self._create_bill(details, 1, '2015-04-01', 5, True)  # 91.16
         details = [{'article': 2, 'designation': 'article 2', 'price': '3.30', 'quantity': 5},
                    {'article': 5, 'designation': 'article 5', 'price': '6.35', 'quantity': 4.25, 'reduce': '2.0'}]
-        self._create_bill(details, 1, '2015-04-01', 6, True)  # 41.49
+        self._create_bill(details, 1, '2015-05-01', 6, True)  # 41.49
         details = [{'article': 5, 'designation': 'article 5', 'price': '6.33', 'quantity': 1.25}]
-        self._create_bill(details, 2, '2015-04-01', 4, True)  # 7.91
+        self._create_bill(details, 2, '2015-06-01', 4, True)  # 7.91
 
         self.factory.xfer = BillStatistic()
         self.calljson('/diacamma.invoice/billStatistic', {}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'billStatistic')
-        self.assert_count_equal('', 7)
+        self.assert_count_equal('', 9)
 
         self.assert_count_equal('articles', 5)
         self.assert_json_equal('', 'articles/@0/article', "ABC1")
@@ -875,12 +875,27 @@ class BillTest(InvoiceTest):
         self.assert_json_equal('', 'customers/@3/customer', '{[b]}total{[/b]}')
         self.assert_json_equal('', 'customers/@3/amount', '{[b]}351.22€{[/b]}')
 
+        self.print_json('months')
+        self.assert_count_equal('months', 12)
+        self.assert_json_equal('', 'months/@0/amount', "0.00€")
+        self.assert_json_equal('', 'months/@1/amount', "83.75€")
+        self.assert_json_equal('', 'months/@2/amount', "142.73€")
+        self.assert_json_equal('', 'months/@3/amount', "91.16€")
+        self.assert_json_equal('', 'months/@4/amount', "41.49€")
+        self.assert_json_equal('', 'months/@5/amount', "7.91€")
+        self.assert_json_equal('', 'months/@6/amount', "0.00€")
+        self.assert_json_equal('', 'months/@7/amount', "0.00€")
+        self.assert_json_equal('', 'months/@8/amount', "0.00€")
+        self.assert_json_equal('', 'months/@9/amount', "0.00€")
+        self.assert_json_equal('', 'months/@10/amount', "0.00€")
+        self.assert_json_equal('', 'months/@11/amount', "0.00€")
+
         self.factory.xfer = BillStatisticPrint()
         self.calljson('/diacamma.invoice/billStatisticPrint', {'PRINT_MODE': '4'}, False)
         self.assert_observer('core.print', 'diacamma.invoice', 'billStatisticPrint')
         csv_value = b64decode(six.text_type(self.response_json['print']['content'])).decode("utf-8")
         content_csv = csv_value.split('\n')
-        self.assertEqual(len(content_csv), 24, str(content_csv))
+        self.assertEqual(len(content_csv), 39, str(content_csv))
         self.assertEqual(content_csv[1].strip(), '"Impression des statistiques"')
         self.assertEqual(content_csv[12].strip(), '"total";"351.22€";"100.00 %";')
         self.assertEqual(content_csv[20].strip(), '"total";"351.22€";"---";"---";"100.00 %";')

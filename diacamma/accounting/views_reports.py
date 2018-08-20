@@ -43,6 +43,7 @@ from diacamma.accounting.models import FiscalYear, format_devise, EntryLineAccou
 from diacamma.accounting.tools import correct_accounting_code, current_system_account
 from diacamma.accounting.tools_reports import get_spaces, convert_query_to_account,\
     add_cell_in_grid, fill_grid, add_item_in_grid
+from lucterios.CORE.parameters import Params
 
 
 class FiscalYearReport(XferContainerCustom):
@@ -50,6 +51,7 @@ class FiscalYearReport(XferContainerCustom):
     model = FiscalYear
     field_id = 'year'
     add_filtering = False
+    force_date_filter = False
 
     def __init__(self, **kwargs):
         XferContainerCustom.__init__(self, **kwargs)
@@ -75,7 +77,7 @@ class FiscalYearReport(XferContainerCustom):
 
     def fill_filterCode(self):
         if self.add_filtering:
-            filtercode = self.getparam('filtercode', '')
+            filtercode = self.getparam('filtercode', Params.getvalue("accounting-code-report-filter"))
             edt = XferCompEdit('filtercode')
             edt.set_value(filtercode)
             edt.is_default = True
@@ -106,7 +108,7 @@ class FiscalYearReport(XferContainerCustom):
         select_year.set_action(self.request, self.__class__.get_action(), close=CLOSE_NO, modal=FORMTYPE_REFRESH)
         self.add_component(select_year)
         self.filter = Q(entry__year=self.item)
-        if self.item.status != 2:
+        if self.force_date_filter or self.item.status != 2:
             self.fill_from_model(1, 1, False, ['begin'])
             self.fill_from_model(3, 1, False, ['end'])
             begin_filter = self.get_components('begin')
@@ -373,6 +375,7 @@ class FiscalYearIncomeStatement(FiscalYearReport):
 class FiscalYearLedger(FiscalYearReport):
     caption = _("Ledger")
     add_filtering = True
+    force_date_filter = True
 
     def __init__(self, **kwargs):
         FiscalYearReport.__init__(self, **kwargs)
@@ -429,6 +432,7 @@ class FiscalYearLedger(FiscalYearReport):
 class FiscalYearTrialBalance(FiscalYearReport):
     caption = _("Trial balance")
     add_filtering = True
+    force_date_filter = True
 
     def fill_filterCode(self):
         FiscalYearReport.fill_filterCode(self)
