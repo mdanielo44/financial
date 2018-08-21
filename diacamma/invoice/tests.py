@@ -875,7 +875,6 @@ class BillTest(InvoiceTest):
         self.assert_json_equal('', 'customers/@3/customer', '{[b]}total{[/b]}')
         self.assert_json_equal('', 'customers/@3/amount', '{[b]}351.22€{[/b]}')
 
-        self.print_json('months')
         self.assert_count_equal('months', 12)
         self.assert_json_equal('', 'months/@0/amount', "0.00€")
         self.assert_json_equal('', 'months/@1/amount', "83.75€")
