@@ -102,7 +102,7 @@ class ConfigTest(LucteriosTest):
         self.assert_observer('core.custom', 'diacamma.invoice', 'invoiceConfCommercial')
         self.assertTrue('__tab_5' in self.json_data.keys(), self.json_data.keys())
         self.assertFalse('__tab_6' in self.json_data.keys(), self.json_data.keys())
-        self.assert_count_equal('', 3 + 2 + 2 + 2 + 2 + 2)
+        self.assert_count_equal('', 3 + 3 + 2 + 2 + 2 + 2)
 
         self.assert_grid_equal('category', {'name': "nom", 'designation': "désignation"}, 0)
 
@@ -204,7 +204,7 @@ class ConfigTest(LucteriosTest):
         self.assert_observer('core.custom', 'diacamma.invoice', 'invoiceConfCommercial')
         self.assertTrue('__tab_5' in self.json_data.keys(), self.json_data.keys())
         self.assertFalse('__tab_6' in self.json_data.keys(), self.json_data.keys())
-        self.assert_count_equal('', 3 + 2 + 2 + 2 + 2 + 2)
+        self.assert_count_equal('', 3 + 3 + 2 + 2 + 2 + 2)
 
         self.assert_grid_equal('custom_field', {'name': "nom", 'kind_txt': "type"}, 2)
         self.assert_json_equal('', 'custom_field/@0/name', 'couleur')
@@ -218,7 +218,7 @@ class ConfigTest(LucteriosTest):
         self.assert_observer('core.custom', 'diacamma.invoice', 'invoiceConfCommercial')
         self.assertTrue('__tab_5' in self.json_data.keys(), self.json_data.keys())
         self.assertFalse('__tab_6' in self.json_data.keys(), self.json_data.keys())
-        self.assert_count_equal('', 3 + 2 + 2 + 2 + 2 + 2)
+        self.assert_count_equal('', 3 + 3 + 2 + 2 + 2 + 2)
 
         self.assert_grid_equal('storagearea', {'name': "nom", 'designation': "désignation"}, 0)
 

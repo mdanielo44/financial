@@ -79,7 +79,7 @@ class InvoiceConfCommercial(XferListEditor):
 
     def fillresponse_header(self):
         self.new_tab(_('Parameters'))
-        param_lists = ['invoice-article-with-picture']
+        param_lists = ['invoice-article-with-picture', 'invoice-reduce-with-ratio']
         row = self.get_max_row() + 1
         Params.fill(self, param_lists, 1, row)
         btn = XferCompButton('editparam')

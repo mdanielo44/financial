@@ -1374,6 +1374,19 @@ class BillTest(InvoiceTest):
         self.assert_json_equal('', 'bill/@7/total', '0.00€')
         self.assert_json_equal('', 'bill/@7/date', '2015-04-08')
 
+        self.factory.xfer = BillShow()
+        self.calljson('/diacamma.invoice/billShow', {'bill': 4}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'billShow')
+        self.assert_json_equal('LINK', 'third', "Dalton Jack")
+        self.assert_count_equal('detail', 1)
+        self.assert_json_equal('', 'detail/@0/article', 'ABC5')
+        self.assert_json_equal('', 'detail/@0/designation', 'article 5')
+        self.assert_json_equal('', 'detail/@0/price_txt', '100.00€')
+        self.assert_json_equal('', 'detail/@0/unit', '')
+        self.assert_json_equal('', 'detail/@0/quantity', '1.00')
+        self.assert_json_equal('', 'detail/@0/reduce_txt', '30.00€(30.00%)')
+        self.assert_json_equal('', 'detail/@0/total', '70.00€')
+
     def testt_autoreduce2(self):
         initial_thirds_fr()
         default_categories()
@@ -1413,6 +1426,19 @@ class BillTest(InvoiceTest):
         self.assert_json_equal('', 'bill/@5/third', 'Dalton Jack')
         self.assert_json_equal('', 'bill/@5/total', '135.00€')
 
+        self.factory.xfer = BillShow()
+        self.calljson('/diacamma.invoice/billShow', {'bill': 2}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'billShow')
+        self.assert_json_equal('LINK', 'third', "Dalton William")
+        self.assert_count_equal('detail', 1)
+        self.assert_json_equal('', 'detail/@0/article', 'ABC5')
+        self.assert_json_equal('', 'detail/@0/designation', 'article 5')
+        self.assert_json_equal('', 'detail/@0/price_txt', '50.00€')
+        self.assert_json_equal('', 'detail/@0/unit', '')
+        self.assert_json_equal('', 'detail/@0/quantity', '1.00')
+        self.assert_json_equal('', 'detail/@0/reduce_txt', '5.00€(10.00%)')
+        self.assert_json_equal('', 'detail/@0/total', '45.00€')
+
         self.factory.xfer = SupportingThirdValid()
         self.calljson('/diacamma.payoff/supportingThirdValid', {'supporting': 5, 'third': 6}, False)
         self.assert_observer('core.acknowledge', 'diacamma.payoff', 'supportingThirdValid')
@@ -1425,6 +1451,9 @@ class BillTest(InvoiceTest):
         self.assert_json_equal('', 'bill/@4/total', '135.00€')
 
     def testt_autoreduce3(self):
+        Parameter.change_value('invoice-reduce-with-ratio', 'False')
+        Params.clear()
+
         initial_thirds_fr()
         default_categories()
         default_articles()
@@ -1459,6 +1488,19 @@ class BillTest(InvoiceTest):
         self.assert_json_equal('', 'bill/@3/third', 'Dalton Jack')
         self.assert_json_equal('', 'bill/@3/total', '300.00€')
         self.assert_json_equal('', 'bill/@3/date', '2015-04-04')
+
+        self.factory.xfer = BillShow()
+        self.calljson('/diacamma.invoice/billShow', {'bill': 2}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'billShow')
+        self.assert_json_equal('LINK', 'third', "Dalton Jack")
+        self.assert_count_equal('detail', 1)
+        self.assert_json_equal('', 'detail/@0/article', 'ABC5')
+        self.assert_json_equal('', 'detail/@0/designation', 'article 5')
+        self.assert_json_equal('', 'detail/@0/price_txt', '15.00€')
+        self.assert_json_equal('', 'detail/@0/unit', '')
+        self.assert_json_equal('', 'detail/@0/quantity', '7.00')
+        self.assert_json_equal('', 'detail/@0/reduce_txt', '45.00€')
+        self.assert_json_equal('', 'detail/@0/total', '60.00€')
 
         new_year = FiscalYear.objects.create(begin='2016-01-01', end='2016-12-31', status=0, last_fiscalyear_id=1)
         new_year.set_has_actif()

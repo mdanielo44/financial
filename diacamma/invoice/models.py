@@ -1010,9 +1010,12 @@ class Detail(LucteriosModel):
     @property
     def reduce_txt(self):
         if self.reduce > 0.0001:
-            red_ratio = self.reduce_ratio_txt
-            if red_ratio != '':
-                red_ratio = "(%s)" % red_ratio
+            if Params.getvalue('invoice-reduce-with-ratio'):
+                red_ratio = self.reduce_ratio_txt
+                if red_ratio != '':
+                    red_ratio = "(%s)" % red_ratio
+            else:
+                red_ratio = ''
             return "%s%s" % (self.reduce_amount_txt, red_ratio)
         else:
             return None
@@ -1361,3 +1364,4 @@ def invoice_checkparam():
         art.sell_account = ''
         art.save()
     Parameter.check_and_create(name='invoice-article-with-picture', typeparam=3, title=_("invoice-article-with-picture"), args="{}", value='False')
+    Parameter.check_and_create(name='invoice-reduce-with-ratio', typeparam=3, title=_("invoice-reduce-with-ratio"), args="{}", value='True')
