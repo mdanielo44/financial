@@ -319,7 +319,7 @@ class StorageSheetEditor(LucteriosEditor):
             xfer.params['status'] = 0
         sel_type = xfer.get_components("sheet_type")
         sel_type.set_action(xfer.request, xfer.get_action('', ''), modal=FORMTYPE_REFRESH, close=CLOSE_NO)
-        if int(self.item.sheet_type) == 1:
+        if int(self.item.sheet_type) != 0:
             xfer.remove_component("provider")
             xfer.remove_component("bill_reference")
             xfer.remove_component("bill_date")
@@ -339,7 +339,7 @@ class StorageSheetEditor(LucteriosEditor):
                     bill_date.value = date.today()
 
     def show(self, xfer):
-        if int(self.item.sheet_type) == 1:
+        if int(self.item.sheet_type) != 0:
             xfer.remove_component("provider")
             xfer.remove_component("bill_reference")
             xfer.remove_component("bill_date")
@@ -357,7 +357,7 @@ class StorageSheetEditor(LucteriosEditor):
 class StorageDetailEditor(LucteriosEditor, DetailFilter):
 
     def edit(self, xfer):
-        if int(self.item.storagesheet.sheet_type) == 1:
+        if int(self.item.storagesheet.sheet_type) != 0:
             xfer.remove_component("price")
             max_qty = 0
             if self.item.article_id is not None:

@@ -1099,7 +1099,7 @@ class Detail(LucteriosModel):
 
 class StorageSheet(LucteriosModel):
     sheet_type = models.IntegerField(verbose_name=_('sheet type'),
-                                     choices=((0, _('stock receipt')), (1, _('stock exit'))), null=False, default=0, db_index=True)
+                                     choices=((0, _('stock receipt')), (1, _('stock exit')), (2, _('stock transfer'))), null=False, default=0, db_index=True)
     date = models.DateField(verbose_name=_('date'), null=False)
     storagearea = models.ForeignKey(StorageArea, verbose_name=_('storage area'), null=False, db_index=True, on_delete=models.PROTECT)
     comment = models.TextField(_('comment'))
@@ -1149,7 +1149,7 @@ class StorageSheet(LucteriosModel):
         for detail in self.storagedetail_set.all():
             if detail.article.stockable == 0:
                 info.append(_("Article %s is not stockable") % six.text_type(detail.article))
-            elif (self.sheet_type == 1) and not detail.article.has_sufficiently(self.storagearea_id, detail.quantity):
+            elif (self.sheet_type != 0) and not detail.article.has_sufficiently(self.storagearea_id, detail.quantity):
                 info.append(_("Article %s is not sufficiently stocked") % six.text_type(detail.article))
         return "{[br/]}".join(info)
 
@@ -1159,6 +1159,20 @@ class StorageSheet(LucteriosModel):
             for detail in self.storagedetail_set.all():
                 detail.quantity = -1 * abs(detail.quantity)
                 detail.save()
+
+    def create_oposit(self, target_area):
+        other = StorageSheet()
+        other.status = 0
+        other.date = self.date
+        other.comment = self.comment
+        other.sheet_type = 0
+        other.storagearea_id = target_area
+        other.save()
+        for detail in self.storagedetail_set.all():
+            detail.id = None
+            detail.storagesheet_id = other.id
+            detail.save()
+        return other
 
     class Meta(object):
         verbose_name = _('storage sheet')
@@ -1230,6 +1244,17 @@ class StorageDetail(LucteriosModel):
             for cat_item in Category.objects.filter(id__in=self.filter_cat):
                 items = items.filter(categories__in=[cat_item])
         return items
+
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+        if (self.storagesheet.status == 0) and (int(self.storagesheet.sheet_type) == 2):
+            art = self.article
+            art.show_storagearea = self.storagesheet.storagearea_id
+            stock_val = art.get_stockage_values()
+            if (len(stock_val) > 1) and (stock_val[0][0] == self.storagesheet.storagearea_id):
+                self.price = stock_val[0][3] / stock_val[0][2]
+            else:
+                self.price = 0.0
+        return LucteriosModel.save(self, force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields)
 
     class Meta(object):
         verbose_name = _('storage detail')

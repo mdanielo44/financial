@@ -30,12 +30,13 @@ from django.db.models.aggregates import Sum
 from django.db.models import Q
 
 from lucterios.framework.tools import MenuManage, FORMTYPE_NOMODAL, ActionsManage, SELECT_SINGLE, SELECT_MULTI, CLOSE_YES, FORMTYPE_REFRESH, CLOSE_NO, SELECT_NONE, WrapAction
-from lucterios.framework.xferadvance import XferListEditor, XferAddEditor, XferDelete, XferShowEditor, TITLE_ADD, TITLE_MODIFY, TITLE_DELETE, TITLE_EDIT, XferTransition, TITLE_PRINT, TITLE_CLOSE
+from lucterios.framework.xferadvance import XferListEditor, XferAddEditor, XferDelete, XferShowEditor, TITLE_ADD, TITLE_MODIFY, TITLE_DELETE, TITLE_EDIT, XferTransition, TITLE_PRINT, TITLE_CLOSE,\
+    TITLE_OK, TITLE_CANCEL
 
 from lucterios.CORE.xferprint import XferPrintAction
 from lucterios.CORE.views import ObjectImport
 from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompGrid, XferCompSelect, XferCompCheckList, GRID_ORDER, XferCompDate,\
-    XferCompEdit
+    XferCompEdit, XferCompImage
 from lucterios.framework.xferbasic import NULL_VALUE
 
 from diacamma.accounting.tools import format_devise
@@ -113,6 +114,40 @@ class StorageSheetTransition(XferTransition):
     icon = "storagesheet.png"
     model = StorageSheet
     field_id = 'storagesheet'
+
+    def fill_dlg(self):
+        dlg = self.create_custom(StorageSheet)
+        dlg.caption = _("Confirmation")
+        icon = XferCompImage('img')
+        icon.set_location(0, 0, 1, 6)
+        icon.set_value(self.icon_path())
+        dlg.add_component(icon)
+        lbl = XferCompLabelForm('lb_title')
+        lbl.set_value_as_infocenter(_("Do you want validate '%s'?") % self.item)
+        lbl.set_location(1, 1)
+        dlg.add_component(lbl)
+        sel = XferCompSelect('target_area')
+        sel.set_needed(True)
+        sel.set_select_query(StorageArea.objects.exclude(id=self.item.storagearea_id))
+        sel.set_location(1, 2)
+        sel.description = _('target area')
+        dlg.add_component(sel)
+        dlg.add_action(self.get_action(TITLE_OK, 'images/ok.png'), params={"CONFIRME": "YES"})
+        dlg.add_action(WrapAction(TITLE_CANCEL, 'images/cancel.png'))
+
+    def fill_confirm(self, transition, trans):
+        if (transition == 'valid') and (self.item.sheet_type == 2):
+            target_area = self.getparam('target_area', 0)
+            if (target_area != 0) and (self.getparam("CONFIRME") is not None):
+                self.item.sheet_type = 1
+                self.item.save()
+                other_storage = self.item.create_oposit(target_area)
+                self._confirmed(transition)
+                other_storage.valid()
+            else:
+                self.fill_dlg()
+        else:
+            XferTransition.fill_confirm(self, transition, trans)
 
 
 @MenuManage.describ('invoice.change_storagesheet')
