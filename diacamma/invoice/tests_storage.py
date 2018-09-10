@@ -27,7 +27,6 @@ from shutil import rmtree
 from _io import StringIO
 from django.utils import six
 
-from lucterios.framework.xfergraphic import XferContainerAcknowledge
 from lucterios.framework.filetools import get_user_dir
 from lucterios.framework.test import LucteriosTest
 

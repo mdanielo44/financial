@@ -34,7 +34,8 @@ from django.db.models.query import QuerySet
 from lucterios.framework.xferadvance import TITLE_PRINT, TITLE_CLOSE, TITLE_DELETE, TITLE_MODIFY, TITLE_ADD, TITLE_CANCEL, TITLE_OK, TITLE_EDIT,\
     TITLE_LABEL
 from lucterios.framework.xferadvance import XferListEditor, XferShowEditor, XferAddEditor, XferDelete, XferTransition
-from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompSelect, XferCompImage, XferCompGrid, XferCompCheck, XferCompEdit, XferCompCheckList, XferCompMemo
+from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompSelect, XferCompImage, XferCompGrid, XferCompCheck, XferCompEdit, XferCompCheckList, XferCompMemo,\
+    XferCompButton
 from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage, FORMTYPE_MODAL, CLOSE_YES, SELECT_SINGLE, FORMTYPE_REFRESH, CLOSE_NO, SELECT_MULTI, WrapAction
 from lucterios.framework.xfergraphic import XferContainerAcknowledge, XferContainerCustom
 from lucterios.framework.error import LucteriosException, IMPORTANT
@@ -50,10 +51,10 @@ from lucterios.CORE.views import ObjectMerge
 from lucterios.contacts.models import Individual, LegalEntity
 
 from diacamma.invoice.models import Article, Bill, Detail, Category, Provider,\
-    StorageArea
+    StorageArea, AutomaticReduce
 from diacamma.payoff.views import PayoffAddModify, PayableEmail, can_send_email
 from diacamma.payoff.models import Payoff
-from diacamma.accounting.models import FiscalYear
+from diacamma.accounting.models import FiscalYear, Third
 from diacamma.accounting.views import get_main_third
 from diacamma.accounting.tools import current_system_account, format_devise
 
@@ -661,6 +662,23 @@ class BillStatisticPrint(XferPrintAction):
     with_text_export = True
 
 
+@MenuManage.describ('invoice.change_bill')
+class BillCheckAutoreduce(XferContainerAcknowledge):
+    caption = _("Check auto-reduce")
+    icon = "bill.png"
+    model = Third
+    field_id = 'third'
+
+    def fillresponse(self):
+        if self.confirme(_('Do you want check auto-reduce ?')):
+            filter_auto = Q(bill__third=self.item) & Q(bill__bill_type__in=(0, 1, 3)) & Q(bill__status__in=(0, 1))
+            for detail in Detail.objects.filter(filter_auto):
+                detail.reduce = 0
+                detail.save(check_autoreduce=False)
+            for detail in Detail.objects.filter(filter_auto).order_by('-price', '-quantity'):
+                detail.save(check_autoreduce=True)
+
+
 @signal_and_lock.Signal.decorate('situation')
 def situation_invoice(xfer):
     if not hasattr(xfer, 'add_component'):
@@ -751,6 +769,11 @@ def thirdaddon_invoice(item, xfer):
                               {'grosstotal': format_devise(gross_sum, 5), 'reducetotal': format_devise(reduce_sum, 5), 'total': format_devise(total_sum, 5)})
                 lab.set_location(0, 3, 2)
                 xfer.add_component(lab)
+                if AutomaticReduce.objects.all().count() > 0:
+                    btn = XferCompButton('btn_autoreduce')
+                    btn.set_action(xfer.request, BillCheckAutoreduce.get_action(_('Reduce'), ''), modal=FORMTYPE_MODAL, close=CLOSE_NO, params={'third': item.id})
+                    btn.set_location(0, 4, 2)
+                    xfer.add_component(btn)
         except LucteriosException:
             pass
 

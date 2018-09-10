@@ -24,33 +24,21 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
 from shutil import rmtree
-from datetime import date
-from base64 import b64decode
 from _io import StringIO
 
-from django.utils import formats, six
+from django.utils import six
 
 from lucterios.framework.test import LucteriosTest
-from lucterios.framework.xfergraphic import XferContainerAcknowledge
 from lucterios.framework.filetools import get_user_dir
-from lucterios.CORE.models import Parameter, SavedCriteria
-from lucterios.CORE.parameters import Params
+from lucterios.CORE.models import SavedCriteria
 from lucterios.CORE.views import ObjectMerge
-from lucterios.mailing.tests import configSMTP, TestReceiver, decode_b64
-from lucterios.contacts.models import CustomField
 
 from diacamma.accounting.test_tools import initial_thirds_fr, default_compta_fr, default_costaccounting
-from diacamma.accounting.views_entries import EntryAccountList
-from diacamma.payoff.views import PayoffAddModify, PayoffDel, SupportingThird, SupportingThirdValid, PayableEmail
-from diacamma.payoff.test_tools import default_bankaccount_fr
-from diacamma.invoice.models import Article, Bill, AccountPosting
-from diacamma.invoice.test_tools import default_articles, InvoiceTest, default_categories, default_customize, default_accountPosting
+from diacamma.invoice.models import Article
+from diacamma.invoice.test_tools import default_articles, default_categories, default_customize, default_accountPosting
 from diacamma.invoice.views_conf import InvoiceConfFinancial, InvoiceConfCommercial, VatAddModify, VatDel, CategoryAddModify, CategoryDel, ArticleImport, StorageAreaDel,\
     StorageAreaAddModify, AccountPostingAddModify, AccountPostingDel, AutomaticReduceAddModify, AutomaticReduceDel
-from diacamma.invoice.views import ArticleList, ArticleAddModify, ArticleDel, \
-    BillList, BillAddModify, BillShow, DetailAddModify, DetailDel, BillTransition, BillDel, BillFromQuotation, \
-    BillStatistic, BillStatisticPrint, BillPrint, BillMultiPay, BillSearch, ArticleShow, ArticleSearch
-from diacamma.accounting.models import CostAccounting
+from diacamma.invoice.views import ArticleList, ArticleAddModify, ArticleDel, ArticleShow, ArticleSearch
 
 
 class ConfigTest(LucteriosTest):

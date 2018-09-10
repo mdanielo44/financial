@@ -26,31 +26,28 @@ from __future__ import unicode_literals
 from shutil import rmtree
 from datetime import date
 from base64 import b64decode
-from _io import StringIO
 
 from django.utils import formats, six
 
 from lucterios.framework.test import LucteriosTest
-from lucterios.framework.xfergraphic import XferContainerAcknowledge
 from lucterios.framework.filetools import get_user_dir
 from lucterios.CORE.models import Parameter, SavedCriteria
 from lucterios.CORE.parameters import Params
-from lucterios.CORE.views import ObjectMerge
 from lucterios.mailing.tests import configSMTP, TestReceiver, decode_b64
 from lucterios.contacts.models import CustomField
 
-from diacamma.accounting.test_tools import initial_thirds_fr, default_compta_fr, default_costaccounting
+from diacamma.accounting.test_tools import initial_thirds_fr, default_compta_fr
+from diacamma.accounting.models import CostAccounting, FiscalYear
+from diacamma.accounting.views import ThirdShow
 from diacamma.accounting.views_entries import EntryAccountList
 from diacamma.payoff.views import PayoffAddModify, PayoffDel, SupportingThird, SupportingThirdValid, PayableEmail
 from diacamma.payoff.test_tools import default_bankaccount_fr
-from diacamma.invoice.models import Article, Bill, AccountPosting
-from diacamma.invoice.test_tools import default_articles, InvoiceTest, default_categories, default_customize, default_accountPosting
-from diacamma.invoice.views_conf import InvoiceConfFinancial, InvoiceConfCommercial, VatAddModify, VatDel, CategoryAddModify, CategoryDel, ArticleImport, StorageAreaDel,\
-    StorageAreaAddModify, AccountPostingAddModify, AccountPostingDel, AutomaticReduceAddModify, AutomaticReduceDel
-from diacamma.invoice.views import ArticleList, ArticleAddModify, ArticleDel, \
-    BillList, BillAddModify, BillShow, DetailAddModify, DetailDel, BillTransition, BillDel, BillFromQuotation, \
-    BillStatistic, BillStatisticPrint, BillPrint, BillMultiPay, BillSearch, ArticleShow, ArticleSearch
-from diacamma.accounting.models import CostAccounting, FiscalYear
+from diacamma.invoice.models import Bill, AccountPosting
+from diacamma.invoice.test_tools import default_articles, InvoiceTest, default_categories, default_customize
+from diacamma.invoice.views_conf import AutomaticReduceAddModify, AutomaticReduceDel
+from diacamma.invoice.views import BillList, BillAddModify, BillShow, DetailAddModify, DetailDel, BillTransition, BillDel, BillFromQuotation, \
+    BillStatistic, BillStatisticPrint, BillPrint, BillMultiPay, BillSearch,\
+    BillCheckAutoreduce
 
 
 class BillTest(InvoiceTest):
@@ -1387,7 +1384,7 @@ class BillTest(InvoiceTest):
         self.assert_json_equal('', 'detail/@0/reduce_txt', '30.00€(30.00%)')
         self.assert_json_equal('', 'detail/@0/total', '70.00€')
 
-    def testt_autoreduce2(self):
+    def test_autoreduce2(self):
         initial_thirds_fr()
         default_categories()
         default_articles()
@@ -1450,7 +1447,7 @@ class BillTest(InvoiceTest):
         self.assert_json_equal('', 'bill/@4/third', 'Dalton Jack')
         self.assert_json_equal('', 'bill/@4/total', '135.00€')
 
-    def testt_autoreduce3(self):
+    def test_autoreduce3(self):
         Parameter.change_value('invoice-reduce-with-ratio', 'False')
         Params.clear()
 
@@ -1514,3 +1511,106 @@ class BillTest(InvoiceTest):
         self.assert_json_equal('', 'bill/@4/third', 'Dalton Jack')
         self.assert_json_equal('', 'bill/@4/total', '45.00€')
         self.assert_json_equal('', 'bill/@4/date', '2016-04-01')
+
+    def test_autoreduce_checked(self):
+        Parameter.change_value('invoice-reduce-with-ratio', 'False')
+        Params.clear()
+
+        initial_thirds_fr()
+        default_categories()
+        default_articles()
+
+        self.factory.xfer = ThirdShow()
+        self.calljson('/diacamma.accounting/thirdShow', {"third": 6, 'status_filter': -2, 'GRID_ORDER%bill': 'id'}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdShow')
+        self.assert_count_equal('bill', 0)
+        self.assertFalse('btn_autoreduce' in self.json_data.keys(), self.json_data.keys())
+        self.assertFalse('sum_summary' in self.json_data.keys(), self.json_data.keys())
+
+        self._create_bill([{'article': 5, 'designation': 'article 5', 'price': '15', 'quantity': 5}], 1, '2015-04-01', 6, True)
+        self._create_bill([{'article': 5, 'designation': 'article 5', 'price': '15', 'quantity': 7}], 1, '2015-04-02', 6, True)
+        self._create_bill([{'article': 5, 'designation': 'article 5', 'price': '15', 'quantity': 2}], 1, '2015-04-03', 6, True)
+        self._create_bill([{'article': 1, 'designation': 'article 1', 'price': '15', 'quantity': 20}], 1, '2015-04-04', 6, True)
+
+        self.factory.xfer = ThirdShow()
+        self.calljson('/diacamma.accounting/thirdShow', {"third": 6, 'status_filter': -2, 'GRID_ORDER%bill': 'id'}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdShow')
+        self.assert_count_equal('bill', 4)
+        self.assertFalse('btn_autoreduce' in self.json_data.keys(), self.json_data.keys())
+        self.assert_json_equal('', 'sum_summary', "{[b]}Total brut{[/b]} : 510.00€ - {[b]}total des réductions{[/b]} : 0.00€ = {[b]}total à règler{[/b]} : 510.00€")
+
+        self.factory.xfer = AutomaticReduceAddModify()
+        self.calljson('/diacamma.invoice/automaticReduceAddModify', {'name': "reduct #3", 'category': 2, 'mode': 2, 'amount': '25.0', 'occurency': '10', 'filtercriteria': '0', 'SAVE': 'YES'}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'automaticReduceAddModify')
+
+        self.factory.xfer = ThirdShow()
+        self.calljson('/diacamma.accounting/thirdShow', {"third": 6, 'status_filter': -2, 'GRID_ORDER%bill': 'id'}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdShow')
+        self.assert_count_equal('bill', 4)
+        self.assert_json_equal('', 'bill/@0/third', 'Dalton Jack')
+        self.assert_json_equal('', 'bill/@0/total', '75.00€')
+        self.assert_json_equal('', 'bill/@0/date', '2015-04-01')
+        self.assert_json_equal('', 'bill/@1/third', 'Dalton Jack')
+        self.assert_json_equal('', 'bill/@1/total', '105.00€')
+        self.assert_json_equal('', 'bill/@1/date', '2015-04-02')
+        self.assert_json_equal('', 'bill/@2/third', 'Dalton Jack')
+        self.assert_json_equal('', 'bill/@2/total', '30.00€')
+        self.assert_json_equal('', 'bill/@2/date', '2015-04-03')
+        self.assert_json_equal('', 'bill/@3/third', 'Dalton Jack')
+        self.assert_json_equal('', 'bill/@3/total', '300.00€')
+        self.assert_json_equal('', 'bill/@3/date', '2015-04-04')
+        self.assertTrue('btn_autoreduce' in self.json_data.keys(), self.json_data.keys())
+        self.assert_json_equal('', 'sum_summary', "{[b]}Total brut{[/b]} : 510.00€ - {[b]}total des réductions{[/b]} : 0.00€ = {[b]}total à règler{[/b]} : 510.00€")
+
+        self.factory.xfer = BillCheckAutoreduce()
+        self.calljson('/diacamma.invoice/billCheckAutoreduce', {'third': 6, 'CONFIRME': 'YES'}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'billCheckAutoreduce')
+
+        self.factory.xfer = ThirdShow()
+        self.calljson('/diacamma.accounting/thirdShow', {"third": 6, 'status_filter': -2, 'GRID_ORDER%bill': 'id'}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdShow')
+        self.assert_count_equal('bill', 4)
+        self.assert_json_equal('', 'bill/@0/third', 'Dalton Jack')
+        self.assert_json_equal('', 'bill/@0/total', '75.00€')
+        self.assert_json_equal('', 'bill/@0/date', '2015-04-01')
+        self.assert_json_equal('', 'bill/@1/third', 'Dalton Jack')
+        self.assert_json_equal('', 'bill/@1/total', '52.50€')
+        self.assert_json_equal('', 'bill/@1/date', '2015-04-02')
+        self.assert_json_equal('', 'bill/@2/third', 'Dalton Jack')
+        self.assert_json_equal('', 'bill/@2/total', '30.00€')
+        self.assert_json_equal('', 'bill/@2/date', '2015-04-03')
+        self.assert_json_equal('', 'bill/@3/third', 'Dalton Jack')
+        self.assert_json_equal('', 'bill/@3/total', '300.00€')
+        self.assert_json_equal('', 'bill/@3/date', '2015-04-04')
+        self.assert_json_equal('', 'sum_summary', "{[b]}Total brut{[/b]} : 510.00€ - {[b]}total des réductions{[/b]} : 52.50€ = {[b]}total à règler{[/b]} : 457.50€")
+
+        self.factory.xfer = AutomaticReduceDel()
+        self.calljson('/diacamma.invoice/automaticReduceDel', {'automaticreduce': '1', 'CONFIRME': 'YES'}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'automaticReduceDel')
+
+        self.factory.xfer = AutomaticReduceAddModify()
+        self.calljson('/diacamma.invoice/automaticReduceAddModify', {'name': "reduct #2", 'category': 2, 'mode': 1, 'amount': '10.0', 'occurency': '0', 'filtercriteria': '0', 'SAVE': 'YES'}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'automaticReduceAddModify')
+
+        self.factory.xfer = BillCheckAutoreduce()
+        self.calljson('/diacamma.invoice/billCheckAutoreduce', {'third': 6, 'CONFIRME': 'YES'}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'billCheckAutoreduce')
+
+        self.factory.xfer = ThirdShow()
+        self.calljson('/diacamma.accounting/thirdShow', {"third": 6, 'status_filter': -2, 'GRID_ORDER%bill': 'id'}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdShow')
+        self.assert_count_equal('bill', 4)
+        self.assert_json_equal('', 'bill/@0/third', 'Dalton Jack')
+        self.assert_json_equal('', 'bill/@0/total', '67.50€')
+        self.assert_json_equal('', 'bill/@0/date', '2015-04-01')
+        self.assert_json_equal('', 'bill/@1/third', 'Dalton Jack')
+        self.assert_json_equal('', 'bill/@1/total', '94.50€')
+        self.assert_json_equal('', 'bill/@1/date', '2015-04-02')
+        self.assert_json_equal('', 'bill/@2/third', 'Dalton Jack')
+        self.assert_json_equal('', 'bill/@2/total', '27.00€')
+        self.assert_json_equal('', 'bill/@2/date', '2015-04-03')
+        self.assert_json_equal('', 'bill/@3/third', 'Dalton Jack')
+        self.assert_json_equal('', 'bill/@3/total', '300.00€')
+        self.assert_json_equal('', 'bill/@3/date', '2015-04-04')
+        self.assertTrue('btn_autoreduce' in self.json_data.keys(), self.json_data.keys())
+        self.assert_json_equal('', 'sum_summary', "{[b]}Total brut{[/b]} : 510.00€ - {[b]}total des réductions{[/b]} : 21.00€ = {[b]}total à règler{[/b]} : 489.00€")
