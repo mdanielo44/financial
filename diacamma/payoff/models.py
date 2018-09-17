@@ -85,6 +85,9 @@ class Supporting(LucteriosModel):
     def get_third_mask(self):
         raise Exception('no implemented!')
 
+    def get_third_masks_by_amount(self, amount):
+        return [(self.get_third_mask(), amount)]
+
     def get_max_payoff(self, ignore_payoff=-1):
         return self.get_total_rest_topay(ignore_payoff)
 
@@ -310,13 +313,14 @@ class Payoff(LucteriosModel):
             year=fiscal_year, date_value=self.date, designation=designation, journal=Journal.objects.get(id=4))
         amount_to_bank = 0
         for third, amount in third_amounts:
-            third_account = third.get_account(fiscal_year, supporting.get_third_mask())
-            if third_account.type_of_account == 0:
-                is_liability = 1
-            else:
-                is_liability = -1
-            EntryLineAccount.objects.create(account=third_account, amount=is_liability * is_revenu * amount, third=third, entry=new_entry)
-            amount_to_bank += float(amount)
+            for sub_mask, sub_amount in supporting.get_third_masks_by_amount(amount):
+                third_account = third.get_account(fiscal_year, sub_mask)
+                if third_account.type_of_account == 0:
+                    is_liability = 1
+                else:
+                    is_liability = -1
+                EntryLineAccount.objects.create(account=third_account, amount=is_liability * is_revenu * sub_amount, third=third, entry=new_entry)
+                amount_to_bank += float(sub_amount)
         if self.bank_account is None:
             bank_code = Params.getvalue("payoff-cash-account")
         else:
