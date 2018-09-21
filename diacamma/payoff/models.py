@@ -393,7 +393,7 @@ class Payoff(LucteriosModel):
         new_entry.unlink()
 
     @classmethod
-    def multi_save(cls, supportings, amount, mode, payer, reference, bank_account, date, bank_fee, repartition):
+    def multi_save(cls, supportings, amount, mode, payer, reference, bank_account, date, bank_fee, repartition, entry=None):
         supporting_list = []
         amount_sum = 0
         amount_max = 0
@@ -435,7 +435,10 @@ class Payoff(LucteriosModel):
         designation = _("payoff for %s") % ",".join(designation_items)
         if len(designation) > 190:
             designation = _("payoff for %d multi-pay") % len(designation_items)
-        new_entry = paypoff_list[0].generate_accounting(third_amounts.items(), designation)
+        if entry is None:
+            new_entry = paypoff_list[0].generate_accounting(third_amounts.items(), designation)
+        else:
+            new_entry = entry
         cls._correct_account_multipay(new_entry, paypoff_list)
         try:
             entrylines = []
