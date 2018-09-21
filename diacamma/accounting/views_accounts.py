@@ -34,7 +34,7 @@ from lucterios.framework.tools import FORMTYPE_NOMODAL, FORMTYPE_REFRESH, CLOSE_
     FORMTYPE_MODAL, CLOSE_YES
 from lucterios.framework.tools import ActionsManage, MenuManage
 from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompImage,\
-    XferCompButton
+    XferCompButton, XferCompSelect
 from lucterios.framework.xfergraphic import XferContainerAcknowledge
 from lucterios.framework.signal_and_lock import Signal
 from lucterios.framework import signal_and_lock
@@ -43,6 +43,7 @@ from lucterios.CORE.views import ObjectMerge
 
 from diacamma.accounting.models import ChartsAccount, FiscalYear
 from django.utils import six
+from os.path import basename
 
 MenuManage.add_sub("bookkeeping", "financial", "diacamma.accounting/images/accounting.png", _("Bookkeeping"), _("Manage of Bookkeeping"), 30)
 
@@ -167,11 +168,35 @@ class ChartsAccountInitial(XferContainerAcknowledge):
     field_id = 'chartsaccount'
     caption = _("Add initial charts of account")
 
-    def fillresponse(self, confirme):
+    def fillresponse(self, account_item=""):
         account_list = []
         signal_and_lock.Signal.call_signal("initial_account", account_list)
-        if self.confirme(_('Do you want to import initial accounts?')):
-            ChartsAccount.import_initial(FiscalYear.get_current(self.getparam('year')), account_list)
+        if len(account_list) == 1:
+            if self.confirme(_('Do you want to import initial accounts?')):
+                ChartsAccount.import_initial(FiscalYear.get_current(self.getparam('year')), account_list[0])
+        elif len(account_list) > 1:
+            if account_item not in account_list:
+                select_list = {}
+                for account_item in account_list:
+                    filename = basename(account_item).split('-')[-1].split('.')[0]
+                    select_list[account_item] = filename.replace('_', ' ')
+                dlg = self.create_custom()
+                img = XferCompImage('img')
+                img.set_value(self.icon_path())
+                img.set_location(0, 0, 1, 3)
+                dlg.add_component(img)
+                lbl = XferCompLabelForm('title')
+                lbl.set_value_as_title(self.caption)
+                lbl.set_location(1, 0)
+                dlg.add_component(lbl)
+                sel = XferCompSelect('account_item')
+                sel.set_select(select_list)
+                sel.set_location(1, 1)
+                dlg.add_component(sel)
+                dlg.add_action(self.get_action(TITLE_OK, "images/ok.png"), close=CLOSE_YES)
+                dlg.add_action(WrapAction(TITLE_CANCEL, 'images/cancel.png'))
+            else:
+                ChartsAccount.import_initial(FiscalYear.get_current(self.getparam('year')), account_item)
 
 
 @ActionsManage.affect_list(TITLE_LISTING, "images/print.png")

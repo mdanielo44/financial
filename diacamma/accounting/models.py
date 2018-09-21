@@ -651,18 +651,16 @@ class ChartsAccount(LucteriosModel):
         return LucteriosModel.save(self, force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields)
 
     @classmethod
-    def import_initial(cls, year, account_list):
-        for account_item in account_list:
-            if isfile(account_item):
-                with open(account_item, 'r', encoding='UTF-8') as fcsv:
-                    csv_read = DictReader(
-                        fcsv, delimiter=';', quotechar='', quoting=QUOTE_NONE)
-                    for row in csv_read:
-                        new_code = correct_accounting_code(row['code'])
-                        if cls.get_account(new_code, year) is None:
-                            account_desc = current_system_account().new_charts_account(new_code)
-                            if account_desc[1] >= 0:
-                                ChartsAccount.objects.create(year=year, code=new_code, name=row['name'], type_of_account=account_desc[1])
+    def import_initial(cls, year, account_item):
+        if isfile(account_item):
+            with open(account_item, 'r', encoding='UTF-8') as fcsv:
+                csv_read = DictReader(fcsv, delimiter=';', quotechar='', quoting=QUOTE_NONE)
+                for row in csv_read:
+                    new_code = correct_accounting_code(row['code'])
+                    if cls.get_account(new_code, year) is None:
+                        account_desc = current_system_account().new_charts_account(new_code)
+                        if account_desc[1] >= 0:
+                            ChartsAccount.objects.create(year=year, code=new_code, name=row['name'], type_of_account=account_desc[1])
 
     class Meta(object):
         verbose_name = _('charts of account')
