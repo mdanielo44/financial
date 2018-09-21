@@ -587,9 +587,15 @@ class BillStatistic(XferContainerCustom):
         fiscal_year = self.get_components('fiscal_year')
         fiscal_year.set_needed(True)
         fiscal_year.set_action(self.request, self.get_action(), close=CLOSE_NO, modal=FORMTYPE_REFRESH)
+        ck = XferCompCheck('without_reduct')
+        ck.set_value(self.getparam('without_reduct', False))
+        ck.set_location(1, 2, 2)
+        ck.description = _('Without reduction')
+        ck.set_action(self.request, self.get_action(), close=CLOSE_NO, modal=FORMTYPE_REFRESH)
+        self.add_component(ck)
 
     def fill_customers(self):
-        costumer_result = self.item.get_statistics_customer()
+        costumer_result = self.item.get_statistics_customer(self.getparam('without_reduct', False))
         grid = XferCompGrid("customers")
         grid.add_header("customer", _("customer"))
         grid.add_header("amount", _("amount"))
@@ -605,7 +611,7 @@ class BillStatistic(XferContainerCustom):
         self.add_component(grid)
 
     def fill_articles(self):
-        articles_result = self.item.get_statistics_article()
+        articles_result = self.item.get_statistics_article(self.getparam('without_reduct', False))
         grid = XferCompGrid("articles")
         grid.add_header("article", _("article"))
         grid.add_header("amount", _("amount"))
@@ -625,7 +631,7 @@ class BillStatistic(XferContainerCustom):
         self.add_component(grid)
 
     def fill_month(self):
-        month_result = self.item.get_statistics_month()
+        month_result = self.item.get_statistics_month(self.getparam('without_reduct', False))
         grid = XferCompGrid("months")
         grid.add_header("month", _("month"))
         grid.add_header("amount", _("amount"))

@@ -839,7 +839,7 @@ class BillTest(InvoiceTest):
         self.factory.xfer = BillStatistic()
         self.calljson('/diacamma.invoice/billStatistic', {}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'billStatistic')
-        self.assert_count_equal('', 9)
+        self.assert_count_equal('', 10)
 
         self.assert_count_equal('articles', 5)
         self.assert_json_equal('', 'articles/@0/article', "ABC1")
@@ -878,7 +878,7 @@ class BillTest(InvoiceTest):
         self.assert_json_equal('', 'months/@2/amount', "142.73€")
         self.assert_json_equal('', 'months/@3/amount', "91.16€")
         self.assert_json_equal('', 'months/@4/amount', "41.49€")
-        self.assert_json_equal('', 'months/@5/amount', "7.91€")
+        self.assert_json_equal('', 'months/@5/amount', "0.00€")
         self.assert_json_equal('', 'months/@6/amount', "0.00€")
         self.assert_json_equal('', 'months/@7/amount', "0.00€")
         self.assert_json_equal('', 'months/@8/amount', "0.00€")
@@ -891,14 +891,89 @@ class BillTest(InvoiceTest):
         self.assert_observer('core.print', 'diacamma.invoice', 'billStatisticPrint')
         csv_value = b64decode(six.text_type(self.response_json['print']['content'])).decode("utf-8")
         content_csv = csv_value.split('\n')
-        self.assertEqual(len(content_csv), 39, str(content_csv))
+        self.assertEqual(len(content_csv), 41, str(content_csv))
         self.assertEqual(content_csv[1].strip(), '"Impression des statistiques"')
-        self.assertEqual(content_csv[12].strip(), '"total";"351.22€";"100.00 %";')
-        self.assertEqual(content_csv[20].strip(), '"total";"351.22€";"---";"---";"100.00 %";')
+        self.assertEqual(content_csv[14].strip(), '"total";"351.22€";"100.00 %";')
+        self.assertEqual(content_csv[22].strip(), '"total";"351.22€";"---";"---";"100.00 %";')
 
         self.factory.xfer = BillPrint()
         self.calljson('/diacamma.invoice/billPrint', {'bill': '1;2;3;4;5', 'PRINT_MODE': 3, 'MODEL': 8}, False)
         self.assert_observer('core.print', 'diacamma.invoice', 'billPrint')
+
+    def test_statistic_without_reduce(self):
+        default_articles()
+        details = [{'article': 0, 'designation': 'article 0', 'price': '20.00', 'quantity': 15}]
+        self._create_bill(details, 0, '2015-01-01', 6, True)  # 59.50
+        details = [{'article': 1, 'designation': 'article 1', 'price': '22.00', 'quantity': 3, 'reduce': '5.0'},
+                   {'article': 2, 'designation': 'article 2', 'price': '3.25', 'quantity': 7}]
+        self._create_bill(details, 1, '2015-02-01', 6, True)  # 83.75
+        details = [{'article': 0, 'designation': 'article 0', 'price': '50.00', 'quantity': 2},
+                   {'article': 5, 'designation': 'article 5', 'price': '6.33', 'quantity': 6.75}]
+        self._create_bill(details, 3, '2015-03-01', 4, True)  # 142.73
+        details = [{'article': 1, 'designation': 'article 1', 'price': '23.00', 'quantity': 3},
+                   {'article': 5, 'designation': 'article 5', 'price': '6.33', 'quantity': 3.50}]
+        self._create_bill(details, 1, '2015-04-01', 5, True)  # 91.16
+        details = [{'article': 2, 'designation': 'article 2', 'price': '3.30', 'quantity': 5},
+                   {'article': 5, 'designation': 'article 5', 'price': '6.35', 'quantity': 4.25, 'reduce': '2.0'}]
+        self._create_bill(details, 1, '2015-05-01', 6, True)  # 41.49
+        details = [{'article': 5, 'designation': 'article 5', 'price': '6.33', 'quantity': 1.25}]
+        self._create_bill(details, 2, '2015-06-01', 4, True)  # 7.91
+
+        self.factory.xfer = BillStatistic()
+        self.calljson('/diacamma.invoice/billStatistic', {'without_reduct': True}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'billStatistic')
+        self.assert_count_equal('', 10)
+
+        self.assert_count_equal('articles', 5)
+        self.assert_json_equal('', 'articles/@0/article', "ABC1")
+        self.assert_json_equal('', 'articles/@0/amount', "135.00€")
+        self.assert_json_equal('', 'articles/@0/number', "6.00")
+        
+        self.assert_json_equal('', 'articles/@1/article', "---")
+        self.assert_json_equal('', 'articles/@1/amount', "100.00€")
+        self.assert_json_equal('', 'articles/@1/number', "2.00")
+        self.assert_json_equal('', 'articles/@1/mean', "50.00€")
+        self.assert_json_equal('', 'articles/@1/ratio', "27.92 %")
+
+        self.assert_json_equal('', 'articles/@2/article', "ABC5")
+        self.assert_json_equal('', 'articles/@2/amount', "83.97€")
+        self.assert_json_equal('', 'articles/@2/number', "13.25")
+        
+        self.assert_json_equal('', 'articles/@3/article', "ABC2")
+        self.assert_json_equal('', 'articles/@3/amount', "39.25€")
+        self.assert_json_equal('', 'articles/@3/number', "12.00")
+        
+        self.assert_json_equal('', 'articles/@4/article', '{[b]}total{[/b]}')
+        self.assert_json_equal('', 'articles/@4/amount', '{[b]}358.22€{[/b]}')
+        self.assert_json_equal('', 'articles/@4/number', '{[b]}---{[/b]}')
+
+        self.assert_count_equal('customers', 4)
+        self.assert_json_equal('', 'customers/@0/customer', "Minimum")
+        self.assert_json_equal('', 'customers/@0/amount', "134.82€")
+        
+        self.assert_json_equal('', 'customers/@1/customer', "Dalton Jack")
+        self.assert_json_equal('', 'customers/@1/amount', "132.24€")
+        self.assert_json_equal('', 'customers/@1/ratio', "36.92 %")
+        
+        self.assert_json_equal('', 'customers/@2/customer', "Dalton William")
+        self.assert_json_equal('', 'customers/@2/amount', "91.16€")
+        
+        self.assert_json_equal('', 'customers/@3/customer', '{[b]}total{[/b]}')        
+        self.assert_json_equal('', 'customers/@3/amount', '{[b]}358.22€{[/b]}')
+
+        self.assert_count_equal('months', 12)
+        self.assert_json_equal('', 'months/@0/amount', "0.00€")
+        self.assert_json_equal('', 'months/@1/amount', "88.75€")
+        self.assert_json_equal('', 'months/@2/amount', "142.73€")
+        self.assert_json_equal('', 'months/@3/amount', "91.16€")
+        self.assert_json_equal('', 'months/@4/amount', "43.49€")
+        self.assert_json_equal('', 'months/@5/amount', "0.00€")
+        self.assert_json_equal('', 'months/@6/amount', "0.00€")
+        self.assert_json_equal('', 'months/@7/amount', "0.00€")
+        self.assert_json_equal('', 'months/@8/amount', "0.00€")
+        self.assert_json_equal('', 'months/@9/amount', "0.00€")
+        self.assert_json_equal('', 'months/@10/amount', "0.00€")
+        self.assert_json_equal('', 'months/@11/amount', "0.00€")
 
     def test_payoff_bill(self):
         default_articles()
@@ -1313,7 +1388,19 @@ class BillTest(InvoiceTest):
         self.assert_count_equal('bill', 6)
 
         search_field_list = Bill.get_search_fields()
-        self.assertEqual(6 + 8 + 1 + 2 + 2 + 4 + 9 + 2 + 2 + 2 + 1, len(search_field_list), search_field_list)  # bill + contact + custom contact + custom third + third + detail + article  + art custom + category + provider
+        self.assertEqual(6 +  # bill
+                         8 +  # contact
+                         1 +  # custom contact
+                         2 +  # custom third
+                         2 +  # third
+                         4 +  # detail
+                         9 +  # article
+                         2 +  # art custom
+                         2 +  # category
+                         2 +  # provider
+                         1 +  # storage detail
+                         6,  # payoff
+                         len(search_field_list), search_field_list)
 
     def test_autoreduce1(self):
         initial_thirds_fr()

@@ -49,7 +49,7 @@ from lucterios.contacts.models import CustomField, CustomizeObject
 
 from diacamma.accounting.models import FiscalYear, Third, EntryAccount, CostAccounting, Journal, EntryLineAccount, ChartsAccount, AccountThird
 from diacamma.accounting.tools import current_system_account, format_devise, currency_round, correct_accounting_code
-from diacamma.payoff.models import Supporting
+from diacamma.payoff.models import Supporting, Payoff
 from datetime import timedelta
 
 
@@ -454,6 +454,8 @@ class Bill(Supporting):
             search_fields.append(cls.convert_field_for_search("third", fieldname))
         for fieldname in Detail.get_search_fields():
             search_fields.append(cls.convert_field_for_search("detail_set", fieldname))
+        for fieldname in Payoff.get_search_fields():
+            search_fields.append(cls.convert_field_for_search("payoff_set", fieldname))
         return search_fields
 
     @classmethod
@@ -488,6 +490,12 @@ class Bill(Supporting):
         val = 0
         for detail in self.detail_set.all():
             val += detail.get_total_excltax()
+        return val
+
+    def get_reduce_excltax(self):
+        val = 0
+        for detail in self.detail_set.all():
+            val += detail.get_reduce_excltax()
         return val
 
     @property
@@ -752,7 +760,7 @@ class Bill(Supporting):
         else:
             return None
 
-    def get_statistics_customer(self):
+    def get_statistics_customer(self, without_reduct):
         cust_list = []
         if self.fiscal_year is not None:
             total_cust = 0
@@ -761,12 +769,15 @@ class Bill(Supporting):
                     bill_type__in=(1, 2, 3)) & Q(status__in=(1, 3))):
                 if bill.third_id not in costumers.keys():
                     costumers[bill.third_id] = 0
+                total_excltax = bill.get_total_excltax()
+                if without_reduct:
+                    total_excltax += bill.get_reduce_excltax()
                 if bill.bill_type == 2:
-                    costumers[bill.third_id] -= bill.get_total_excltax()
-                    total_cust -= bill.get_total_excltax()
+                    costumers[bill.third_id] -= total_excltax
+                    total_cust -= total_excltax
                 else:
-                    costumers[bill.third_id] += bill.get_total_excltax()
-                    total_cust += bill.get_total_excltax()
+                    costumers[bill.third_id] += total_excltax
+                    total_cust += total_excltax
             for cust_id in costumers.keys():
                 try:
                     ratio = "%.2f %%" % (100 * costumers[cust_id] / total_cust)
@@ -777,7 +788,7 @@ class Bill(Supporting):
             cust_list.append(("{[b]}%s{[/b]}" % _('total'), "{[b]}%s{[/b]}" % format_devise(total_cust, 5), "{[b]}%.2f %%{[/b]}" % 100, total_cust))
         return cust_list
 
-    def get_statistics_article(self):
+    def get_statistics_article(self, without_reduct):
         art_list = []
         if self.fiscal_year is not None:
             total_art = 0
@@ -786,14 +797,17 @@ class Bill(Supporting):
                     bill__bill_type__in=(1, 2, 3)) & Q(bill__status__in=(1, 3))):
                 if det.article_id not in articles.keys():
                     articles[det.article_id] = [0, 0]
+                total_excltax = det.get_total_excltax()
+                if without_reduct:
+                    total_excltax += det.get_reduce_excltax()
                 if det.bill.bill_type == 2:
-                    articles[det.article_id][0] -= det.get_total_excltax()
+                    articles[det.article_id][0] -= total_excltax
                     articles[det.article_id][1] -= float(det.quantity)
-                    total_art -= det.get_total_excltax()
+                    total_art -= total_excltax
                 else:
-                    articles[det.article_id][0] += det.get_total_excltax()
+                    articles[det.article_id][0] += total_excltax
                     articles[det.article_id][1] += float(det.quantity)
-                    total_art += det.get_total_excltax()
+                    total_art += total_excltax
             for art_id in articles.keys():
                 if art_id is None:
                     art_text = "---"
@@ -811,7 +825,7 @@ class Bill(Supporting):
                              "{[b]}---{[/b]}", "{[b]}---{[/b]}", "{[b]}%.2f %%{[/b]}" % 100, total_art))
         return art_list
 
-    def get_statistics_month(self):
+    def get_statistics_month(self, without_reduct):
         month_list = []
         if self.fiscal_year is not None:
             nb_month = (self.fiscal_year.end.year - self.fiscal_year.begin.year) * 12 + self.fiscal_year.end.month - self.fiscal_year.begin.month + 1
@@ -822,9 +836,16 @@ class Bill(Supporting):
                 begin_date = begin_date - timedelta(days=begin_date.day - 1)
                 end_date = same_day_months_after(begin_date, months=1) - timedelta(days=1)
                 amount_sum = 0.0
-                for bill in Bill.objects.filter(Q(date__gte=begin_date) & Q(date__lte=end_date) & Q(bill_type__in=(1, 2, 3)) & Q(status__in=(1, 3))):
-                    amount_sum += bill.get_total()
-                    total_month += bill.get_total()
+                for bill in Bill.objects.filter(Q(date__gte=begin_date) & Q(date__lte=end_date) & Q(bill_type__in=(1, 3)) & Q(status__in=(1, 3))):
+                    total_excltax = bill.get_total_excltax()
+                    if without_reduct:
+                        total_excltax += bill.get_reduce_excltax()
+                    if bill.bill_type == 2:
+                        amount_sum -= total_excltax
+                        total_month -= total_excltax
+                    else:
+                        amount_sum += total_excltax
+                        total_month += total_excltax
                 months.append((begin_date, amount_sum))
             for begin_date, amount_sum in months:
                 try:

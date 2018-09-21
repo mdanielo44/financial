@@ -10,14 +10,18 @@ from lucterios.framework.xferadvance import XferAddEditor
 from lucterios.framework.xferadvance import XferShowEditor
 from lucterios.framework.xferadvance import XferDelete
 from lucterios.framework.xfergraphic import XferContainerCustom, XferContainerAcknowledge
-from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompImage, XferCompSelect
+from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompImage, XferCompSelect,\
+    XferCompDate
 from lucterios.framework.xfercomponents import XferCompEdit, XferCompGrid
-from lucterios.framework.tools import FORMTYPE_NOMODAL, CLOSE_YES, CLOSE_NO, FORMTYPE_REFRESH, SELECT_MULTI, SELECT_SINGLE
+from lucterios.framework.tools import FORMTYPE_NOMODAL, CLOSE_YES, CLOSE_NO, FORMTYPE_REFRESH, SELECT_MULTI, SELECT_SINGLE,\
+    convert_date
 from lucterios.framework.tools import ActionsManage, MenuManage, WrapAction
 from lucterios.CORE.xferprint import XferPrintAction
 
 from diacamma.payoff.models import DepositSlip, DepositDetail, BankTransaction, PaymentMethod
 from diacamma.accounting.models import FiscalYear
+from lucterios.framework.xferbasic import NULL_VALUE
+from django.utils import formats
 
 
 @MenuManage.describ('payoff.change_depositslip', FORMTYPE_NOMODAL, 'financial', _('manage deposit of cheque'))
@@ -79,8 +83,14 @@ class DepositSlipShow(XferShowEditor):
     field_id = 'depositslip'
     caption = _("Show deposit slip")
 
-    def __init__(self, **kwargs):
-        XferContainerCustom.__init__(self, **kwargs)
+    def fillresponse(self):
+        if self.getparam('PRINTING', False) and (self.item == 0):
+            lbl = XferCompLabelForm('printing_info')
+            lbl.set_color('red')
+            lbl.set_value_as_title(_('*** NO VALIDATED ***'))
+            lbl.set_location(2, 0)
+            self.add_component(lbl)
+        XferShowEditor.fillresponse(self)
 
 
 @ActionsManage.affect_grid(TITLE_DELETE, "images/delete.png", unique=SELECT_MULTI)
@@ -100,7 +110,7 @@ class DepositSlipTransition(XferTransition):
     field_id = 'depositslip'
 
 
-@ActionsManage.affect_show(TITLE_PRINT, "images/print.png", condition=lambda xfer: xfer.item.status != 0)
+@ActionsManage.affect_show(TITLE_PRINT, "images/print.png", condition=lambda xfer: (xfer.item.status != 0) or (len(xfer.item.depositdetail_set.all()) > 0))
 @MenuManage.describ('payoff.change_depositslip')
 class DepositSlipPrint(XferPrintAction):
     icon = "bank.png"
@@ -118,7 +128,7 @@ class DepositDetailAddModify(XferContainerCustom):
     field_id = 'depositdetail'
     caption = _("Add deposit detail")
 
-    def fill_header(self, payer, reference):
+    def fill_header(self, payer, reference, date_begin, date_end):
         img = XferCompImage('img')
         img.set_value(self.icon_path())
         img.set_location(0, 0)
@@ -139,19 +149,32 @@ class DepositDetailAddModify(XferContainerCustom):
         edt.description = _("reference contains")
         edt.set_action(self.request, self.get_action(), close=CLOSE_NO, modal=FORMTYPE_REFRESH)
         self.add_component(edt)
+        dt = XferCompDate('date_begin')
+        dt.set_value(date_begin)
+        dt.set_location(1, 2)
+        dt.set_needed(False)
+        dt.description = _("date superior to")
+        dt.set_action(self.request, self.get_action(), close=CLOSE_NO, modal=FORMTYPE_REFRESH)
+        self.add_component(dt)
+        dt = XferCompDate('date_end')
+        dt.set_value(date_end)
+        dt.set_location(2, 2)
+        dt.set_needed(False)
+        dt.description = _("date inferior to")
+        dt.set_action(self.request, self.get_action(), close=CLOSE_NO, modal=FORMTYPE_REFRESH)
+        self.add_component(dt)
 
-    def fillresponse(self, payer="", reference=""):
-        self.fill_header(payer, reference)
+    def fillresponse(self, payer="", reference="", date_begin=NULL_VALUE, date_end=NULL_VALUE):
+        self.fill_header(payer, reference, date_begin, date_end)
 
         grid = XferCompGrid('entry')
         grid.define_page(self)
         grid.add_header('bill', _('bill'))
         grid.add_header('payer', _('payer'), horderable=1)
         grid.add_header('amount', _('amount'), horderable=1)
-        grid.add_header('date', _('date'), horderable=1)
+        grid.add_header('date', _('date'), horderable=1, htype='date')
         grid.add_header('reference', _('reference'), horderable=1)
-        payoff_nodeposit = DepositDetail.get_payoff_not_deposit(
-            payer, reference, grid.order_list)
+        payoff_nodeposit = DepositDetail.get_payoff_not_deposit(payer, reference, grid.order_list, date_begin, date_end)
         for payoff in payoff_nodeposit:
             payoffid = payoff['id']
             grid.set_value(payoffid, 'bill', payoff['bill'])
@@ -159,7 +182,7 @@ class DepositDetailAddModify(XferContainerCustom):
             grid.set_value(payoffid, 'amount', payoff['amount'])
             grid.set_value(payoffid, 'date', payoff['date'])
             grid.set_value(payoffid, 'reference', payoff['reference'])
-        grid.set_location(0, 2, 4)
+        grid.set_location(0, 3, 4)
 
         grid.add_action(self.request, DepositDetailSave.get_action(_("select"), "images/ok.png"), close=CLOSE_YES, unique=SELECT_MULTI)
         self.add_component(grid)

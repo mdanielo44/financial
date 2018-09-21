@@ -119,7 +119,7 @@ class DepositTest(InvoiceTest):
         self.factory.xfer = DepositDetailAddModify()
         self.calljson('/diacamma.payoff/depositDetailAddModify', {'depositslip': 1}, False)
         self.assert_observer('core.custom', 'diacamma.payoff', 'depositDetailAddModify')
-        self.assert_count_equal('', 5)
+        self.assert_count_equal('', 7)
         self.assertEqual(len(self.json_actions), 1)
         self.assert_grid_equal('entry', {"bill": "facture", "payer": "payeur", "amount": "montant", "date": "date", "reference": "référence"}, 0)  # nb=5
         self.assert_count_equal('#entry/actions', 1)
@@ -156,7 +156,7 @@ class DepositTest(InvoiceTest):
         self.factory.xfer = DepositSlipShow()
         self.calljson('/diacamma.payoff/depositSlipShow', {'depositslip': 1}, False)
         self.assert_observer('core.custom', 'diacamma.payoff', 'depositSlipShow')
-        self.assertEqual(len(self.json_actions), 3)
+        self.assertEqual(len(self.json_actions), 4)
         self.assert_count_equal('depositdetail', 2)
         self.assert_json_equal('LABELFORM', 'total', '125.00€')
 

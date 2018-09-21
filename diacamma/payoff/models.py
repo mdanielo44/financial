@@ -49,6 +49,7 @@ from diacamma.accounting.models import EntryAccount, FiscalYear, Third, Journal,
     ChartsAccount, EntryLineAccount, AccountLink
 from diacamma.accounting.tools import format_devise, currency_round, correct_accounting_code
 from django.core.exceptions import ObjectDoesNotExist
+from lucterios.framework.xferbasic import NULL_VALUE
 
 
 def remove_accent(text, replace_space=False):
@@ -276,6 +277,11 @@ class Payoff(LucteriosModel):
     @classmethod
     def get_edit_fields(cls):
         return ["date", "amount", "payer", "mode", "bank_account", "reference", "bank_fee"]
+
+    @classmethod
+    def get_search_fields(cls):
+        search_fields = ["date", "amount", "mode", "reference", "payer", "bank_account"]
+        return search_fields
 
     @property
     def value(self):
@@ -562,17 +568,19 @@ class DepositDetail(LucteriosModel):
         return format_devise(self.get_amount(), 5)
 
     @classmethod
-    def get_payoff_not_deposit(cls, payer, reference, order_list):
+    def get_payoff_not_deposit(cls, payer, reference, order_list, date_begin, date_end):
         payoff_nodeposit = []
-        entity_known = DepositDetail.objects.values_list(
-            'payoff__entry_id', flat=True).distinct()
+        entity_known = DepositDetail.objects.values_list('payoff__entry_id', flat=True).distinct()
         entity_unknown = Payoff.objects.filter(supporting__is_revenu=True, mode=1).exclude(entry_id__in=entity_known).values(
             'entry_id', 'date', 'reference', 'payer').annotate(amount=Sum('amount'))
         if payer != '':
             entity_unknown = entity_unknown.filter(payer__icontains=payer)
         if reference != '':
-            entity_unknown = entity_unknown.filter(
-                reference__icontains=reference)
+            entity_unknown = entity_unknown.filter(reference__icontains=reference)
+        if date_begin != NULL_VALUE:
+            entity_unknown = entity_unknown.filter(date__gte=date_begin)
+        if date_end != NULL_VALUE:
+            entity_unknown = entity_unknown.filter(date__lte=date_end)
         if order_list is not None:
             entity_unknown = entity_unknown.order_by(*order_list)
         for values in entity_unknown:
