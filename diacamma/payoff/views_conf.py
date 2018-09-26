@@ -123,7 +123,7 @@ def paramchange_payoff(params):
         if system_ident == "french":
             Parameter.change_value('payoff-cash-account', correct_accounting_code('531'))
         elif system_ident == "belgium":
-            Parameter.change_value('payoff-cash-account', correct_accounting_code('570'))
+            Parameter.change_value('payoff-cash-account', correct_accounting_code('570000'))
     Params.clear()
 
 

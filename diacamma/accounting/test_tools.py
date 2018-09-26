@@ -106,9 +106,9 @@ def initial_thirds_fr():
 
 
 def fill_thirds_be():
-    create_third([2, 8], ['440'])  # 1 2
-    create_third([6, 7], ['400', '440'])  # 3 4
-    create_third([3, 4, 5], ['400'])  # 5 6 7
+    create_third([2, 8], ['440000'])  # 1 2
+    create_third([6, 7], ['400000', '440000'])  # 3 4
+    create_third([3, 4, 5], ['400000'])  # 5 6 7
 
 
 def initial_thirds_be():
@@ -117,6 +117,8 @@ def initial_thirds_be():
 
 
 def fill_accounts_fr(year=None, with12=True, with8=False):
+    Parameter.change_value('accounting-sizecode', 3)
+    Params.clear()
     create_account(['411', '512', '531'], 0, year)  # 1 2 3
     create_account(['401'], 1, year)  # 4
     create_account(['106', '110', '119'], 2, year)  # 5 6 7
@@ -129,12 +131,14 @@ def fill_accounts_fr(year=None, with12=True, with8=False):
 
 
 def fill_accounts_be(year=None, with12=True, with8=False):
-    create_account(['400', '550', '570'], 0, year)  # 1 2 3
-    create_account(['440'], 1, year)  # 4
+    Parameter.change_value('accounting-sizecode', 6)
+    Params.clear()
+    create_account(['400000', '550000', '570000'], 0, year)  # 1 2 3
+    create_account(['440000'], 1, year)  # 4
 
-    create_account(['130', '140', '141'], 2, year)  # 5 6 7
-    create_account(['700', '701', '705'], 3, year)  # 8 9 10
-    create_account(['600', '601', '602', '603', '604'], 4, year)  # 11 12 13 14 15
+    create_account(['130000', '140000', '141000'], 2, year)  # 5 6 7
+    create_account(['700000', '701000', '705000'], 3, year)  # 8 9 10
+    create_account(['600000', '601000', '602000', '603000', '604000'], 4, year)  # 11 12 13 14 15
     # TODO: add account for with12 & with8
 
 
