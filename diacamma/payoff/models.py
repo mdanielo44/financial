@@ -375,11 +375,12 @@ class Payoff(LucteriosModel):
             is_liability = 1
         else:
             is_liability = -1
-        first_entry_line = EntryLineAccount.objects.get(account=first_third_account, entry=new_entry, third=first_supporting.third)
+        first_entry_lines = EntryLineAccount.objects.filter(account=first_third_account, entry=new_entry, third=first_supporting.third)
+        first_entry_line = first_entry_lines[0] if len(first_entry_lines) > 0 else None
         for item_paypoff in paypoff_list:
             item_supporting = item_paypoff.supporting.get_final_child()
             item_third_account = item_supporting.third.get_account(fiscal_year, item_supporting.get_third_mask())
-            if item_third_account != first_third_account:
+            if (new_entry.close is False) and (first_entry_line is not None) and (item_third_account != first_third_account):
                 try:
                     item_entry_line = EntryLineAccount.objects.get(account=item_third_account, entry=new_entry, third=item_supporting.third)
                 except ObjectDoesNotExist:
