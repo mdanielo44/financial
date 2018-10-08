@@ -677,7 +677,7 @@ class BillCheckAutoreduce(XferContainerAcknowledge):
 
     def fillresponse(self):
         if self.confirme(_('Do you want check auto-reduce ?')):
-            filter_auto = Q(bill__third=self.item) & Q(bill__bill_type__in=(0, 1, 3)) & Q(bill__status__in=(0, 1))
+            filter_auto = Q(bill__third=self.item) & Q(bill__bill_type__in=(0, 1, 3)) & Q(bill__status=0)
             for detail in Detail.objects.filter(filter_auto):
                 detail.reduce = 0
                 detail.save(check_autoreduce=False)
@@ -766,6 +766,8 @@ def thirdaddon_invoice(item, xfer):
                 reduce_sum = 0.0
                 total_sum = 0.0
                 for bill in bills:
+                    if ((bill.bill_type == 0) and (bill.status == 3)) or (bill.status == 2):
+                        continue
                     total_sum += bill.get_total()
                     for detail in bill.detail_set.all():
                         reduce_sum += detail.get_reduce()

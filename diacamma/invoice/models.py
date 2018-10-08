@@ -742,19 +742,17 @@ class Bill(Supporting):
 
     def convert_to_bill(self):
         if (self.status == 1) and (self.bill_type == 0):
-            new_bill = Bill.objects.create(
-                bill_type=1, date=timezone.now(), third=self.third, status=0, comment=self.comment)
-            cost_accountings = CostAccounting.objects.filter(
-                Q(status=0) & Q(is_default=True))
+            self.status = 3
+            self.save()
+            new_bill = Bill.objects.create(bill_type=1, date=timezone.now(), third=self.third, status=0, comment=self.comment)
+            cost_accountings = CostAccounting.objects.filter(Q(status=0) & Q(is_default=True))
             if len(cost_accountings) >= 1:
                 new_bill.cost_accounting = cost_accountings[0]
                 new_bill.save()
             for detail in self.detail_set.all():
                 detail.id = None
                 detail.bill = new_bill
-                detail.save()
-            self.status = 3
-            self.save()
+                detail.save(check_autoreduce=False)
             Signal.call_signal("change_bill", 'convert', self, new_bill)
             return new_bill
         else:
@@ -1348,7 +1346,8 @@ class AutomaticReduce(LucteriosModel):
         if (detail.bill.third_id is not None) and (detail.bill.bill_type in (0, 1, 3)) and (detail.bill.status in (0, 1)) and (
                 detail.article_id is not None) and self.category.article_set.filter(id=detail.article_id).exists() and self.check_filtercriteria(detail.bill.third_id):
             current_year = FiscalYear.get_current()
-            reduce_query = Q(bill__third=detail.bill.third) & Q(bill__bill_type__in=(0, 1, 3)) & Q(bill__status__in=(0, 1, 3)) & Q(article__categories=self.category)
+            reduce_query = Q(bill__third=detail.bill.third) & Q(article__categories=self.category)
+            reduce_query &= (Q(bill__bill_type__in=(1, 3)) & Q(bill__status__in=(0, 1, 3))) | (Q(bill__bill_type=0) & Q(bill__status__in=(0, 1)))
             reduce_query &= Q(bill__date__gte=current_year.begin) & Q(bill__date__lte=current_year.end)
             if detail.id is not None:
                 reduce_query &= ~ Q(id=detail.id)
