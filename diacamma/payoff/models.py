@@ -166,11 +166,14 @@ class Supporting(LucteriosModel):
     def get_tax_sum(self):
         return 0.0
 
+    def get_send_email_objects(self):
+        return [self]
+
     def send_email(self, subject, message, model):
         fct_mailing_mod = import_module('lucterios.mailing.functions')
         pdf_name = "%s.pdf" % self.get_document_filename()
         gen = ReportingGenerator()
-        gen.items = [self]
+        gen.items = self.get_send_email_objects()
         gen.model_text = PrintModel.objects.get(id=model).value
         pdf_file = BytesIO(gen.generate_report(None, False))
         cclist = []
@@ -528,6 +531,35 @@ class DepositSlip(LucteriosModel):
                     DepositDetail.objects.create(
                         deposit=self, payoff=payoff_list[0])
 
+    def get_payoff_not_deposit(self, payer, reference, order_list, date_begin, date_end):
+        payoff_nodeposit = []
+        entity_known = DepositDetail.objects.values_list('payoff__entry_id', flat=True).distinct()
+        entity_unknown = Payoff.objects.filter(bank_account=self.bank_account, supporting__is_revenu=True, mode=1).exclude(entry_id__in=entity_known).values(
+            'entry_id', 'date', 'reference', 'payer').annotate(amount=Sum('amount'))
+        if payer != '':
+            entity_unknown = entity_unknown.filter(payer__icontains=payer)
+        if reference != '':
+            entity_unknown = entity_unknown.filter(reference__icontains=reference)
+        if date_begin != NULL_VALUE:
+            entity_unknown = entity_unknown.filter(date__gte=date_begin)
+        if date_end != NULL_VALUE:
+            entity_unknown = entity_unknown.filter(date__lte=date_end)
+        if order_list is not None:
+            entity_unknown = entity_unknown.order_by(*order_list)
+        for values in entity_unknown:
+            payoff = {}
+            payoff['id'] = values['entry_id']
+            bills = []
+            for supporting in Supporting.objects.filter(payoff__entry=values['entry_id']):
+                bills.append(six.text_type(supporting.get_final_child()))
+            payoff['bill'] = '{[br/]}'.join(bills)
+            payoff['payer'] = values['payer']
+            payoff['amount'] = format_devise(values['amount'], 5)
+            payoff['date'] = values['date']
+            payoff['reference'] = values['reference']
+            payoff_nodeposit.append(payoff)
+        return payoff_nodeposit
+
     class Meta(object):
         verbose_name = _('deposit slip')
         verbose_name_plural = _('deposit slips')
@@ -571,40 +603,11 @@ class DepositDetail(LucteriosModel):
     def amount(self):
         return format_devise(self.get_amount(), 5)
 
-    @classmethod
-    def get_payoff_not_deposit(cls, payer, reference, order_list, date_begin, date_end):
-        payoff_nodeposit = []
-        entity_known = DepositDetail.objects.values_list('payoff__entry_id', flat=True).distinct()
-        entity_unknown = Payoff.objects.filter(supporting__is_revenu=True, mode=1).exclude(entry_id__in=entity_known).values(
-            'entry_id', 'date', 'reference', 'payer').annotate(amount=Sum('amount'))
-        if payer != '':
-            entity_unknown = entity_unknown.filter(payer__icontains=payer)
-        if reference != '':
-            entity_unknown = entity_unknown.filter(reference__icontains=reference)
-        if date_begin != NULL_VALUE:
-            entity_unknown = entity_unknown.filter(date__gte=date_begin)
-        if date_end != NULL_VALUE:
-            entity_unknown = entity_unknown.filter(date__lte=date_end)
-        if order_list is not None:
-            entity_unknown = entity_unknown.order_by(*order_list)
-        for values in entity_unknown:
-            payoff = {}
-            payoff['id'] = values['entry_id']
-            bills = []
-            for supporting in Supporting.objects.filter(payoff__entry=values['entry_id']):
-                bills.append(six.text_type(supporting.get_final_child()))
-            payoff['bill'] = '{[br/]}'.join(bills)
-            payoff['payer'] = values['payer']
-            payoff['amount'] = format_devise(values['amount'], 5)
-            payoff['date'] = values['date']
-            payoff['reference'] = values['reference']
-            payoff_nodeposit.append(payoff)
-        return payoff_nodeposit
-
     class Meta(object):
         verbose_name = _('deposit detail')
         verbose_name_plural = _('deposit details')
         default_permissions = []
+        ordering = ['payoff__payer']
 
 
 class PaymentMethod(LucteriosModel):

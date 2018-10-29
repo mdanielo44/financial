@@ -164,7 +164,8 @@ class DepositDetailAddModify(XferContainerCustom):
         dt.set_action(self.request, self.get_action(), close=CLOSE_NO, modal=FORMTYPE_REFRESH)
         self.add_component(dt)
 
-    def fillresponse(self, payer="", reference="", date_begin=NULL_VALUE, date_end=NULL_VALUE):
+    def fillresponse(self, depositslip=0, payer="", reference="", date_begin=NULL_VALUE, date_end=NULL_VALUE):
+        deposit_item = DepositSlip.objects.get(id=depositslip)
         self.fill_header(payer, reference, date_begin, date_end)
 
         grid = XferCompGrid('entry')
@@ -174,7 +175,7 @@ class DepositDetailAddModify(XferContainerCustom):
         grid.add_header('amount', _('amount'), horderable=1)
         grid.add_header('date', _('date'), horderable=1, htype='date')
         grid.add_header('reference', _('reference'), horderable=1)
-        payoff_nodeposit = DepositDetail.get_payoff_not_deposit(payer, reference, grid.order_list, date_begin, date_end)
+        payoff_nodeposit = deposit_item.get_payoff_not_deposit(payer, reference, grid.order_list, date_begin, date_end)
         for payoff in payoff_nodeposit:
             payoffid = payoff['id']
             grid.set_value(payoffid, 'bill', payoff['bill'])
