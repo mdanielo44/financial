@@ -170,13 +170,15 @@ class DepositDetailAddModify(XferContainerCustom):
 
         grid = XferCompGrid('entry')
         grid.define_page(self)
+        payoff_nodeposit = deposit_item.get_payoff_not_deposit(payer, reference, grid.order_list, date_begin, date_end)
+        grid.nb_lines = len(payoff_nodeposit)
+        record_min, record_max = grid.define_page(self)
         grid.add_header('bill', _('bill'))
         grid.add_header('payer', _('payer'), horderable=1)
         grid.add_header('amount', _('amount'), horderable=1)
         grid.add_header('date', _('date'), horderable=1, htype='date')
         grid.add_header('reference', _('reference'), horderable=1)
-        payoff_nodeposit = deposit_item.get_payoff_not_deposit(payer, reference, grid.order_list, date_begin, date_end)
-        for payoff in payoff_nodeposit:
+        for payoff in payoff_nodeposit[record_min:record_max]:
             payoffid = payoff['id']
             grid.set_value(payoffid, 'bill', payoff['bill'])
             grid.set_value(payoffid, 'payer', payoff['payer'])

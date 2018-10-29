@@ -221,12 +221,12 @@ class DepositTest(InvoiceTest):
         self.calljson('/diacamma.payoff/depositSlipShow', {'depositslip': 1}, False)
         self.assert_observer('core.custom', 'diacamma.payoff', 'depositSlipShow')
         self.assert_count_equal('depositdetail', 2)
-        self.assert_json_equal('', 'depositdetail/@0/payoff.payer', 'Mr Smith')
-        self.assert_json_equal('', 'depositdetail/@0/payoff.reference', 'ABC123')
-        self.assert_json_equal('', 'depositdetail/@0/amount', '50.00€')
-        self.assert_json_equal('', 'depositdetail/@1/payoff.payer', 'Jean Dupond')
-        self.assert_json_equal('', 'depositdetail/@1/payoff.reference', 'IJKL654')
-        self.assert_json_equal('', 'depositdetail/@1/amount', '150.00€')
+        self.assert_json_equal('', 'depositdetail/@0/payoff.payer', 'Jean Dupond')
+        self.assert_json_equal('', 'depositdetail/@0/payoff.reference', 'IJKL654')
+        self.assert_json_equal('', 'depositdetail/@0/amount', '150.00€')
+        self.assert_json_equal('', 'depositdetail/@1/payoff.payer', 'Mr Smith')
+        self.assert_json_equal('', 'depositdetail/@1/payoff.reference', 'ABC123')
+        self.assert_json_equal('', 'depositdetail/@1/amount', '50.00€')
         self.assert_json_equal('LABELFORM', 'total', '200.00€')
 
         self.factory.xfer = DepositDetailAddModify()
@@ -291,8 +291,8 @@ class DepositTest(InvoiceTest):
                       {'year': '1', 'journal': '-1', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
         self.assert_count_equal('entryline', 12)
-        self.assert_json_equal('', 'entryline/@8/entry.num', '1')
-        self.assert_json_equal('', 'entryline/@10/entry.num', '2')
+        self.assert_json_equal('', 'entryline/@8/entry.num', '2')
+        self.assert_json_equal('', 'entryline/@10/entry.num', '1')
 
 
 class MethodTest(InvoiceTest, PaymentTest):
