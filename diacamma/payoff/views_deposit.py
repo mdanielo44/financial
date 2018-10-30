@@ -84,7 +84,7 @@ class DepositSlipShow(XferShowEditor):
     caption = _("Show deposit slip")
 
     def fillresponse(self):
-        if self.getparam('PRINTING', False) and (self.item == 0):
+        if self.getparam('PRINTING', False) and (self.item.status == 0):
             lbl = XferCompLabelForm('printing_info')
             lbl.set_color('red')
             lbl.set_value_as_title(_('*** NO VALIDATED ***'))
