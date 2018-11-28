@@ -15,14 +15,14 @@ A chaque article, vous devez définir un code comptable d'imputation pour la gé
 Le champ *stockable* permet de définir si vous voulez gérer une gestion de stock de cet article:
 
 * non stockable
-Article sans gestion de stock, comme par exemple des articles de service.
+    Article sans gestion de stock, comme par exemple des articles de service.
 
 * stockable
-Article stockable et facturable.
+    Article stockable et facturable.
 
 * stockable & non vendable
-Article stockable non proposable à la vente.
-Utile pour suivre des stocks de matériel interne.
+    Article stockable non proposable à la vente.
+    Utile pour suivre des stocks de matériel interne.
 
 De plus, dans le cas où vous réalisez des factures avec TVA, vous devrez préciser, pour chaque articles, le taux de taxe à appliquer.
 

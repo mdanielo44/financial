@@ -50,6 +50,7 @@ Menu *Administration/Modules (conf.)/Configuration financière du facturier*, on
 Un "Code d'imputation comptable" contiens:
  - un code comptable de vente
  - un code analytique (optionnel) 
+
 Chaque article peut être associé à un code d'imputation comptable (si non précisé, l'article n'est pas vendable).
 Ce mécanisme permet de centraliser à un seul endroit les configurations comptables des articles.
 Au changement d'exercice, si ces configurations doivent changées, il est plus simple de modifier cette configuration que l'ensemble des articles.

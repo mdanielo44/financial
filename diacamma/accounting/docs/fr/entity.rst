@@ -54,8 +54,6 @@ Une écriture d'encaissement peut se saisir manuellement comme précédemment ma
 Pour simplifier votre saisie, ré-ouvrez l'écriture d'achat ou de vente dont vous souhaitez saisir le réglement, cliquez sur le bouton "Encaissement": l'application vous propose alors une nouvelle écriture
 partiellement remplie. Il ne vous reste plus qu'é préciser sur quel compte financier (caisse, banque...) vous voulez réaliser cette opération.
 
-    .. image:: entity_edit.png
-
 Une fois un encaissement validé via ce mécanisme, les deux écritures (celle d'achat ou de vente et celle d'encaissement) sont automatiquement lettrées.
 
 	**Ecriture de report à nouveau**
