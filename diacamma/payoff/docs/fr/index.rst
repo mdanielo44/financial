@@ -1,4 +1,4 @@
-Diacamma réglement
+Diacamma règlement
 ==================
 
 Aide relative aux fonctionnalités de gestion des payements.
