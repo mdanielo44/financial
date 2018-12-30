@@ -693,3 +693,38 @@ class ConfigTest(LucteriosTest):
         self.assert_json_equal('LABELFORM', 'reference', "A123")
         self.assert_json_equal('LABELFORM', 'custom_1', "bleu")
         self.assert_json_equal('LABELFORM', 'custom_2', "15")
+
+    def test_article_same_name(self):
+        default_categories()
+        default_articles()
+
+        self.factory.xfer = ArticleList()
+        self.calljson('/diacamma.invoice/articleList', {}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'articleList')
+        self.assert_count_equal('article', 4)
+        self.assert_json_equal('', 'article/@0/reference', "ABC1")
+        self.assert_json_equal('', 'article/@0/id', 1)
+        self.assert_json_equal('', 'article/@1/reference', "ABC2")
+        self.assert_json_equal('', 'article/@2/reference', "ABC3")
+        self.assert_json_equal('', 'article/@3/reference', "ABC4")
+
+        self.factory.xfer = ArticleAddModify()
+        self.calljson('/diacamma.invoice/articleAddModify', {'article': '1'}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'articleAddModify')
+        self.assert_count_equal('', 13)
+        self.assert_json_equal('EDIT', 'reference', 'ABC1')
+
+        self.factory.xfer = ArticleAddModify()
+        self.calljson('/diacamma.invoice/articleAddModify',
+                      {'article': '1', 'reference': 'ABC1', 'designation': 'Article 01', 'price': '12.34', 'accountposting': 1, 'stockable': '1', 'qtyDecimal': '3', 'SAVE': 'YES'}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'articleAddModify')
+
+        self.factory.xfer = ArticleAddModify()
+        self.calljson('/diacamma.invoice/articleAddModify',
+                      {'article': '1', 'reference': 'ABC2', 'designation': 'Article 02', 'price': '12.34', 'accountposting': 1, 'stockable': '1', 'qtyDecimal': '3', 'SAVE': 'YES'}, False)
+        self.assert_observer('core.exception', 'diacamma.invoice', 'articleAddModify')
+
+        self.factory.xfer = ArticleAddModify()
+        self.calljson('/diacamma.invoice/articleAddModify',
+                      {'reference': 'ABC1', 'designation': 'Article 01', 'price': '12.34', 'accountposting': 1, 'stockable': '1', 'qtyDecimal': '3', 'SAVE': 'YES'}, False)
+        self.assert_observer('core.exception', 'diacamma.invoice', 'articleAddModify')

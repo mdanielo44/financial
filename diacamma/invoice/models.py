@@ -366,6 +366,14 @@ class Article(LucteriosModel, CustomizeObject):
                 return format_txt % float(val[2])
         return None
 
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+        unicity_query = Q(reference=self.reference)
+        if self.id is not None:
+            unicity_query &= ~Q(id=self.id)
+        if (Article.objects.filter(unicity_query).count() != 0):
+            raise LucteriosException(IMPORTANT, _("article reference is not unique !"))
+        return LucteriosModel.save(self, force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields)
+
     class Meta(object):
         verbose_name = _('article')
         verbose_name_plural = _('articles')
