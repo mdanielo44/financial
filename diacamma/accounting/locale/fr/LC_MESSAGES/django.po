@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-12-30 19:59+0000\n"
+"POT-Creation-Date: 2019-01-26 09:19+0000\n"
 "PO-Revision-Date: 2016-01-11 23:01+0000\n"
 "Last-Translator: b'Paul ARULATEDA <paul531@orange.fr>'\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -82,13 +82,13 @@ msgstr "référence"
 
 #: editors.py:433 models.py:995 models.py:1000 models.py:1008 models.py:1013
 #: models.py:1017 models.py:1234 printmodel/EntryLineAccount_0001.py:44
-#: views_reports.py:393 views_reports.py:453
+#: views_reports.py:396 views_reports.py:456
 msgid "debit"
 msgstr "débit"
 
 #: editors.py:439 models.py:995 models.py:1000 models.py:1008 models.py:1013
 #: models.py:1017 models.py:1234 printmodel/EntryLineAccount_0001.py:44
-#: views_reports.py:394 views_reports.py:454
+#: views_reports.py:397 views_reports.py:457
 msgid "credit"
 msgstr "crédit"
 
@@ -149,8 +149,8 @@ msgid "Disable"
 msgstr "Inactif"
 
 #: models.py:81 models.py:90 models.py:182 models.py:1188 models.py:1196
-#: printmodel/Third_0001.py:39 views.py:373 views_reports.py:137
-#: views_reports.py:143 views_reports.py:398
+#: printmodel/Third_0001.py:39 views.py:373 views_reports.py:140
+#: views_reports.py:146 views_reports.py:401
 msgid "total"
 msgstr "total"
 
@@ -187,11 +187,11 @@ msgstr "Ce compte n'est pas soldé !"
 msgid "accounts"
 msgstr "comptes"
 
-#: models.py:218 views_other.py:83 views_reports.py:609
+#: models.py:218 views_other.py:82 views_reports.py:612
 msgid "begin"
 msgstr "début"
 
-#: models.py:219 views_other.py:89 views_reports.py:617
+#: models.py:219 views_other.py:88 views_reports.py:620
 msgid "end"
 msgstr "fin"
 
@@ -278,8 +278,8 @@ msgstr "exercices"
 
 #: models.py:467 models.py:558 models.py:672 models.py:741 models.py:999
 #: models.py:1179 printmodel/ChartsAccount_0001.py:41
-#: printmodel/EntryLineAccount_0001.py:44 views_reports.py:392
-#: views_reports.py:450
+#: printmodel/EntryLineAccount_0001.py:44 views_reports.py:395
+#: views_reports.py:453
 msgid "name"
 msgstr "nom"
 
@@ -303,7 +303,7 @@ msgstr "Précédent analytique"
 msgid "This cost accounting is closed!"
 msgstr "Cette comptabilité analytique est clôturée !"
 
-#: models.py:483 views_other.py:129 views_other.py:149
+#: models.py:483 views_other.py:128 views_other.py:148
 msgid "This cost accounting is protected by other modules!"
 msgstr "Cette comptabilité analytique est protégée par un autre module !"
 
@@ -333,7 +333,7 @@ msgstr "La comptabilité  \"%s\" est utilisée dans un modèle d'écriture !"
 msgid "This cost accounting have entry with another year!"
 msgstr "Cette comptabilité analytique a des écritures d'un autre exercice !"
 
-#: models.py:551 views_other.py:27
+#: models.py:551 views_other.py:26
 msgid "costs accounting"
 msgstr "comptabilités analytiques"
 
@@ -353,11 +353,11 @@ msgstr "Passif"
 msgid "Equity"
 msgstr "Capitaux"
 
-#: models.py:561 views_budget.py:94 views_reports.py:297
+#: models.py:561 views_budget.py:94 views_reports.py:300
 msgid "Revenue"
 msgstr "Produit"
 
-#: models.py:561 views_budget.py:89 views_reports.py:291
+#: models.py:561 views_budget.py:89 views_reports.py:294
 msgid "Expense"
 msgstr "Charge"
 
@@ -413,7 +413,7 @@ msgstr "Lettrage"
 msgid "letters"
 msgstr "Lettrages"
 
-#: models.py:736 printmodel/EntryLineAccount_0001.py:44 views_reports.py:389
+#: models.py:736 printmodel/EntryLineAccount_0001.py:44 views_reports.py:392
 msgid "numeros"
 msgstr "N°"
 
@@ -425,11 +425,11 @@ msgstr "journal"
 msgid "link"
 msgstr "lettrage"
 
-#: models.py:739 printmodel/EntryLineAccount_0001.py:44 views_reports.py:390
+#: models.py:739 printmodel/EntryLineAccount_0001.py:44 views_reports.py:393
 msgid "date entry"
 msgstr "date d'écriture"
 
-#: models.py:740 printmodel/EntryLineAccount_0001.py:44 views_reports.py:391
+#: models.py:740 printmodel/EntryLineAccount_0001.py:44 views_reports.py:394
 msgid "date value"
 msgstr "date de pièce"
 
@@ -479,7 +479,7 @@ msgstr "lignes d'écriture"
 msgid "Model of entry"
 msgstr "Modèle d'écriture"
 
-#: models.py:1222 views_other.py:167
+#: models.py:1222 views_other.py:166
 msgid "Models of entry"
 msgstr "Modèles d'écriture"
 
@@ -904,11 +904,11 @@ msgstr "Gérez vos journaux comptables."
 msgid "Prévisionnal budget"
 msgstr "Budget prévisionnel"
 
-#: views_budget.py:103 views_reports.py:152 views_reports.py:156
+#: views_budget.py:103 views_reports.py:155 views_reports.py:159
 msgid "result (profit)"
 msgstr "résultat (bénéfice)"
 
-#: views_budget.py:105 views_reports.py:153 views_reports.py:155
+#: views_budget.py:105 views_reports.py:156 views_reports.py:158
 msgid "result (deficit)"
 msgstr "résultat (déficit)"
 
@@ -929,8 +929,8 @@ msgid "Delete Budget line"
 msgstr "Suprimer une ligne de budget"
 
 #: views_budget.py:198 views_budget.py:204 views_budget.py:290
-#: views_budget.py:296 views_reports.py:293 views_reports.py:299
-#: views_reports.py:576 views_reports.py:582
+#: views_budget.py:296 views_reports.py:296 views_reports.py:302
+#: views_reports.py:579 views_reports.py:585
 msgid "Budget"
 msgstr "Budget"
 
@@ -986,7 +986,7 @@ msgstr "Filtre"
 msgid "Search accounting entry"
 msgstr "Recherche d'écritures"
 
-#: views_entries.py:166 views_other.py:117 views_other.py:123
+#: views_entries.py:166 views_other.py:116 views_other.py:122
 msgid "Close"
 msgstr "Fermer"
 
@@ -1095,200 +1095,200 @@ msgstr "Modifier une ligne d'écriture"
 msgid "Delete entry line of account"
 msgstr "Suprimer une ligne d'écriture"
 
-#: views_other.py:22
+#: views_other.py:21
 msgid "Edition of costs accounting"
 msgstr "Édition des comptabilités analytiques"
 
-#: views_other.py:44
+#: views_other.py:43
 msgid "- without fiscal year -"
 msgstr "- sans exercice -"
 
-#: views_other.py:58
+#: views_other.py:57
 msgid "By date"
 msgstr "Par date"
 
-#: views_other.py:64
+#: views_other.py:63
 msgid "Print by date"
 msgstr "Impression par date"
 
-#: views_other.py:77
+#: views_other.py:76
 msgid "Define date range to determine accounting cost list."
 msgstr ""
 "Définissez l'intervale de date où déterminer la liste des comptabilités "
 "analytiques à analyser."
 
-#: views_other.py:100
+#: views_other.py:99
 msgid "No cost accounting finds for this range !"
 msgstr "Aucune comptabilité analytique n'est trouvé sur cet intervale !"
 
-#: views_other.py:104 views_other.py:110
+#: views_other.py:103 views_other.py:109
 msgid "Default"
 msgstr "Défaut"
 
-#: views_other.py:131
+#: views_other.py:130
 msgid "Do you want to close this cost accounting?"
 msgstr "Voulez-vous clôturer cette comptabilité analytique ?"
 
-#: views_other.py:142
+#: views_other.py:141
 msgid "Add cost accounting"
 msgstr "Ajouter une comptabilité analytique"
 
-#: views_other.py:143
+#: views_other.py:142
 msgid "Modify cost accounting"
 msgstr "Modifier une comptabilité analytique"
 
-#: views_other.py:159
+#: views_other.py:158
 msgid "Delete cost accounting"
 msgstr "Supprimer une comptabilité analytique"
 
-#: views_other.py:162
+#: views_other.py:161
 msgid "Edition of entry model"
 msgstr "Édition des modèles d'écriture"
 
-#: views_other.py:177
+#: views_other.py:176
 msgid "Add model of entry"
 msgstr "Ajouter un modèle d'écriture"
 
-#: views_other.py:178
+#: views_other.py:177
 msgid "Modify model of entry"
 msgstr "Modifier un modèle d'écriture"
 
-#: views_other.py:187
+#: views_other.py:186
 msgid "Show Model of entry"
 msgstr "Voir un modèle d'écriture"
 
-#: views_other.py:196
+#: views_other.py:195
 msgid "Delete Model of entry"
 msgstr "Supprimer un modèle d'écriture"
 
-#: views_other.py:206
+#: views_other.py:205
 msgid "Add model line  of entry"
 msgstr "Ajouter une ligne de modèle"
 
-#: views_other.py:207
+#: views_other.py:206
 msgid "Modify model line  of entry"
 msgstr "Modifier une ligne de modèle"
 
-#: views_other.py:216
+#: views_other.py:215
 msgid "Delete Model line  of entry"
 msgstr "Supprimer une ligne de modèle"
 
-#: views_reports.py:84
+#: views_reports.py:85
 msgid "Accounting code starting with"
 msgstr "Code comptable commençant par"
 
-#: views_reports.py:243
+#: views_reports.py:246
 msgid "Show balance sheet for current fiscal year"
 msgstr "Consulter le bilan pour l'exercice courant"
 
-#: views_reports.py:245
+#: views_reports.py:248
 msgid "Balance sheet"
 msgstr "Bilan"
 
-#: views_reports.py:269
+#: views_reports.py:272
 msgid "Assets"
 msgstr "Actifs"
 
-#: views_reports.py:275
+#: views_reports.py:278
 msgid "Liabilities"
 msgstr "Passifs"
 
-#: views_reports.py:285
+#: views_reports.py:288
 msgid "Show income statement for current fiscal year"
 msgstr "Consulter le compte de résultats pour l'exercice courant"
 
-#: views_reports.py:287
+#: views_reports.py:290
 msgid "Income statement"
 msgstr "Compte de résultats"
 
-#: views_reports.py:336 views_reports.py:337
+#: views_reports.py:339 views_reports.py:340
 msgid "annexe"
 msgstr "annexe"
 
-#: views_reports.py:343 views_reports.py:352
+#: views_reports.py:346 views_reports.py:355
 msgid "total with annexe"
 msgstr "total avec annexe"
 
-#: views_reports.py:374
+#: views_reports.py:377
 msgid "Show ledger for current fiscal year"
 msgstr "Consulter le grand livre pour l'exercice courant"
 
-#: views_reports.py:376 views_reports.py:721
+#: views_reports.py:379 views_reports.py:727
 msgid "Ledger"
 msgstr "Grand livre"
 
-#: views_reports.py:431
+#: views_reports.py:434
 msgid "Show trial balance for current fiscal year"
 msgstr "Consulter la balance pour l'exercice courant"
 
-#: views_reports.py:433 views_reports.py:740
+#: views_reports.py:436 views_reports.py:746
 msgid "Trial balance"
 msgstr "Balance"
 
-#: views_reports.py:444
+#: views_reports.py:447
 msgid "Detail by third"
 msgstr "Détail par tiers"
 
-#: views_reports.py:451
+#: views_reports.py:454
 msgid "debit sum"
 msgstr "total des débits"
 
-#: views_reports.py:452
+#: views_reports.py:455
 msgid "credit sum"
 msgstr "total des crédits"
 
-#: views_reports.py:502
+#: views_reports.py:505
 msgid "Print report fiscal year"
 msgstr "Impression du rapport de l'exercice"
 
-#: views_reports.py:530
+#: views_reports.py:533
 msgid "Print report cost accounting"
 msgstr "Impression du rapport de comptabilité analytique"
 
-#: views_reports.py:573
+#: views_reports.py:576
 msgid "Cost accounting"
 msgstr "Comptabilité analytique"
 
-#: views_reports.py:574
+#: views_reports.py:577
 msgid "Expenses"
 msgstr "Charges"
 
-#: views_reports.py:575 views_reports.py:581
+#: views_reports.py:578 views_reports.py:584
 msgid "Value"
 msgstr "Valeur"
 
-#: views_reports.py:578 views_reports.py:584
+#: views_reports.py:581 views_reports.py:587
 msgid "Last"
 msgstr "Précédente"
 
-#: views_reports.py:580
+#: views_reports.py:583
 msgid "Revenues"
 msgstr "Produits"
 
-#: views_reports.py:628
+#: views_reports.py:631
 msgid "Report"
 msgstr "Rapport"
 
-#: views_reports.py:631
+#: views_reports.py:634
 msgid "Income statement of cost accounting"
 msgstr "Compte de résultat de comptabilité analytique"
 
-#: views_reports.py:673
+#: views_reports.py:676
 msgid "general result (profit)"
 msgstr "résultat général (bénéfice)"
 
-#: views_reports.py:674
+#: views_reports.py:677
 msgid "general result (deficit)"
 msgstr "résultat général(déficit)"
 
-#: views_reports.py:687 views_reports.py:691
+#: views_reports.py:693 views_reports.py:697
 msgid "general total"
 msgstr "total général"
 
-#: views_reports.py:724
+#: views_reports.py:730
 msgid "Ledger of cost accounting"
 msgstr "Bilan de comptabilité analytique"
 
-#: views_reports.py:743
+#: views_reports.py:749
 msgid "Trial balance of cost accounting"
 msgstr "Compte de résultat de comptabilité analytique"

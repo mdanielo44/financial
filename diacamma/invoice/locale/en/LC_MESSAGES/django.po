@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-12-30 19:59+0000\n"
+"POT-Creation-Date: 2019-01-26 09:19+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -500,31 +500,31 @@ msgstr "automatic reduce"
 msgid "automatic reduces"
 msgstr "automatic reduces"
 
-#: models.py:1399
+#: models.py:1411
 msgid "invoice-default-sell-account"
 msgstr "default sell account"
 
-#: models.py:1401
+#: models.py:1413
 msgid "invoice-reduce-account"
 msgstr "reduce account"
 
-#: models.py:1403
+#: models.py:1415
 msgid "invoice-vat-mode"
 msgstr "VAT mode"
 
-#: models.py:1404
+#: models.py:1416
 msgid "invoice-vat-mode.0"
 msgstr "not applicable"
 
-#: models.py:1404
+#: models.py:1416
 msgid "invoice-vat-mode.1"
 msgstr "price without tax"
 
-#: models.py:1404
+#: models.py:1416
 msgid "invoice-vat-mode.2"
 msgstr "price including tax"
 
-#: models.py:1408
+#: models.py:1417
 msgid "invoice-account-third"
 msgstr "default third account"
 
@@ -535,6 +535,10 @@ msgstr "article with picture"
 #: models.py:1422
 msgid "invoice-reduce-with-ratio"
 msgstr "reduce with ratio"
+
+#: models.py:1423
+msgid "invoice-reduce-allow-article-empty"
+msgstr "allow article with code in invoice"
 
 #: printmodel/Article_0001.py:31
 msgid "listing"

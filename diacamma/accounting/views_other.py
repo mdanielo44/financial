@@ -6,8 +6,7 @@ from django.utils import six
 from django.db.models import Q
 
 from lucterios.framework.xferadvance import XferDelete, XferShowEditor, TITLE_ADD, TITLE_MODIFY, TITLE_DELETE, TITLE_EDIT, TITLE_CANCEL, TITLE_OK
-from lucterios.framework.tools import FORMTYPE_NOMODAL, SELECT_SINGLE, FORMTYPE_REFRESH, SELECT_MULTI, SELECT_NONE, CLOSE_NO, CLOSE_YES,\
-    FORMTYPE_MODAL
+from lucterios.framework.tools import FORMTYPE_NOMODAL, SELECT_SINGLE, FORMTYPE_REFRESH, SELECT_MULTI, SELECT_NONE, CLOSE_NO, CLOSE_YES
 from lucterios.framework.tools import ActionsManage, MenuManage, WrapAction
 from lucterios.framework.xfercomponents import XferCompImage, XferCompLabelForm, XferCompDate
 from lucterios.framework.xferadvance import XferListEditor

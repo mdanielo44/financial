@@ -54,7 +54,7 @@ class ConfigTest(LucteriosTest):
         self.assert_observer('core.custom', 'diacamma.invoice', 'invoiceConfFinancial')
         self.assertTrue('__tab_3' in self.json_data.keys(), self.json_data.keys())
         self.assertFalse('__tab_4' in self.json_data.keys(), self.json_data.keys())
-        self.assert_count_equal('', 2 + 6 + 2 + 2)
+        self.assert_count_equal('', 2 + 7 + 2 + 2)  # general + parameters + imputation + vat
 
         self.assert_grid_equal('vat', {'name': "nom", 'rate': "taux", 'account': "compte de TVA", 'isactif': "actif ?"}, 0)
 

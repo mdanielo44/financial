@@ -251,7 +251,7 @@ class DetailFilter(object):
             edt.description = _('categories')
             edt.set_action(xfer.request, xfer.get_action('', ''), modal=FORMTYPE_REFRESH, close=CLOSE_NO, params={'CHANGE_ART': 'YES'})
             xfer.add_component(edt)
-            if len(filter_cat) > 0:
+            if (len(filter_cat) > 0) or not Params.getvalue("invoice-reduce-allow-article-empty"):
                 sel_art.set_needed(True)
             ref_filter = xfer.getparam('ref_filter', '')
             edt = XferCompEdit("ref_filter")

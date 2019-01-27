@@ -45,8 +45,8 @@ from lucterios.contacts.models import CustomField
 
 def fill_params(xfer, param_lists=None, is_mini=False):
     if param_lists is None:
-        param_lists = ['invoice-vat-mode', 'invoice-default-sell-account',
-                       'invoice-reduce-account', 'invoice-account-third']
+        param_lists = ['invoice-vat-mode', 'invoice-default-sell-account', 'invoice-reduce-account',
+                       'invoice-account-third', 'invoice-reduce-allow-article-empty']
     Params.fill(xfer, param_lists, 1, xfer.get_max_row() + 1)
     btn = XferCompButton('editparam')
     btn.set_is_mini(is_mini)

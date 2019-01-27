@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-12-30 19:59+0000\n"
+"POT-Creation-Date: 2019-01-26 09:19+0000\n"
 "PO-Revision-Date: 2016-01-14 21:59+0000\n"
 "Last-Translator: b'Paul ARULATEDA <paul531@orange.fr>'\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -502,31 +502,31 @@ msgstr "réduction automatique"
 msgid "automatic reduces"
 msgstr "réductions automatiques"
 
-#: models.py:1399
+#: models.py:1411
 msgid "invoice-default-sell-account"
 msgstr "compte de vente par défaut"
 
-#: models.py:1401
+#: models.py:1413
 msgid "invoice-reduce-account"
 msgstr "compte de réduction"
 
-#: models.py:1403
+#: models.py:1415
 msgid "invoice-vat-mode"
 msgstr "mode TVA"
 
-#: models.py:1404
+#: models.py:1416
 msgid "invoice-vat-mode.0"
 msgstr "non applicable"
 
-#: models.py:1404
+#: models.py:1416
 msgid "invoice-vat-mode.1"
 msgstr "prix hors taxe"
 
-#: models.py:1404
+#: models.py:1416
 msgid "invoice-vat-mode.2"
 msgstr "prix toutes taxes comprises"
 
-#: models.py:1408
+#: models.py:1417
 msgid "invoice-account-third"
 msgstr "Compte tiers par défaut"
 
@@ -537,6 +537,10 @@ msgstr "article avec image"
 #: models.py:1422
 msgid "invoice-reduce-with-ratio"
 msgstr "réduction affichée avec %"
+
+#: models.py:1423
+msgid "invoice-reduce-allow-article-empty"
+msgstr "autoriser les arcticles sans code dans la facture"
 
 #: printmodel/Article_0001.py:31
 msgid "listing"

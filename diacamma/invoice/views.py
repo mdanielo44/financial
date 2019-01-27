@@ -48,6 +48,7 @@ from lucterios.CORE.editors import XferSavedCriteriaSearchEditor
 from lucterios.CORE.models import PrintModel
 from lucterios.CORE.views import ObjectMerge
 
+from lucterios.contacts.views_contacts import AbstractContactFindDouble
 from lucterios.contacts.models import Individual, LegalEntity
 
 from diacamma.invoice.models import Article, Bill, Detail, Category, Provider,\
@@ -514,6 +515,8 @@ class ArticleSearch(XferSavedCriteriaSearchEditor):
         if WrapAction.is_permission(self.request, 'invoice.add_article'):
             self.get_components(self.field_id).add_action(self.request, ObjectMerge.get_action(_("Merge"), "images/clone.png"),
                                                           close=CLOSE_NO, unique=SELECT_MULTI, params={'modelname': self.model.get_long_name(), 'field_id': self.field_id})
+        self.add_action(AbstractContactFindDouble.get_action(_("duplicate"), "images/clone.png"),
+                        params={'modelname': self.model.get_long_name(), 'field_id': self.field_id}, pos_act=0)
 
 
 @ActionsManage.affect_grid(TITLE_EDIT, "images/show.png", unique=SELECT_SINGLE)

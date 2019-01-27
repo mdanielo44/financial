@@ -59,7 +59,8 @@ class FiscalYearReport(XferContainerCustom):
         self.lastfilter = None
         self.budgetfilter_left = None
         self.budgetfilter_right = None
-        self.total_summary = (0, 0, 0, 0, 0, 0)
+        self.total_summary_left = (0, 0, 0)
+        self.total_summary_right = (0, 0, 0)
         self.result = (0, 0, 0)
         self.line_offset = 0
 
@@ -128,9 +129,11 @@ class FiscalYearReport(XferContainerCustom):
     def add_total_in_grid(self, total_in_left, total1_left, total2_left, totalb_left, total1_right, total2_right, totalb_right, line_idx):
         self.result = (0.0, 0.0, 0.0)
         if (total2_left is None) or (total2_right is None):
-            self.total_summary = (max(total1_left, total1_right), None, max(totalb_left, totalb_right))
+            self.total_summary_left = (max(total1_left, total1_right), None, max(totalb_left, totalb_right))
+            self.total_summary_right = (max(total1_left, total1_right), None, max(totalb_left, totalb_right))
         else:
-            self.total_summary = (max(total1_left, total1_right), max(total2_left, total2_right), max(totalb_left, totalb_right))
+            self.total_summary_left = (total1_left, total2_left, totalb_left)
+            self.total_summary_right = (total1_right, total2_right, totalb_right)
         line_idx += 1
         add_cell_in_grid(self.grid, self.line_offset + line_idx, 'left', '')
         line_idx += 1
@@ -338,8 +341,8 @@ class FiscalYearIncomeStatement(FiscalYearReport):
             left_line_idx = fill_grid(self.grid, self.line_offset + line_idx + 2, 'left', data_line_left)
             right_line_idx = fill_grid(self.grid, self.line_offset + line_idx + 2, 'right', data_line_right)
             max_line_idx = max(left_line_idx, right_line_idx)
-            total1_left, total2_left, totalb_left = self.total_summary
-            total1_right, total2_right, totalb_right = self.total_summary
+            total1_left, total2_left, totalb_left = self.total_summary_left
+            total1_right, total2_right, totalb_right = self.total_summary_right
             add_cell_in_grid(self.grid, max_line_idx, 'left', get_spaces(10) + "{[u]}{[b]}%s{[/b]}{[/u]}" % _('total with annexe'))
             total1_left += anx_total1_left
             add_cell_in_grid(self.grid, max_line_idx, 'left_n', "{[u]}{[b]}%s{[/b]}{[/u]}" % format_devise(max(total1_left, total1_right), 5))
@@ -653,7 +656,7 @@ class CostAccountingIncomeStatement(CostAccountingReport, FiscalYearIncomeStatem
             self.fill_filterheader()
             all_have_last = all_have_last or (self.lastfilter is not None)
             self.calcul_table()
-            total1_left, total2_left, totalb_left = self.total_summary
+            total1_left, total2_left, totalb_left = self.total_summary_left
             if total1_left:
                 tot_n += total1_left
             if totalb_left:
@@ -674,14 +677,17 @@ class CostAccountingIncomeStatement(CostAccountingReport, FiscalYearIncomeStatem
             add_cell_in_grid(self.grid, self.line_offset + 1, 'right', get_spaces(5) + "{[i]}%s{[/i]}" % _('general result (deficit)'))
             if res1 < 0:
                 add_cell_in_grid(self.grid, self.line_offset + 1, 'left_n', format_devise(-1 * res1, 5))
+                tot_n -= res1
             else:
                 add_cell_in_grid(self.grid, self.line_offset + 1, 'right_n', format_devise(res1, 5))
             if res2 < 0:
                 add_cell_in_grid(self.grid, self.line_offset + 1, 'left_n_1', format_devise(-1 * res2, 5))
+                tot_n1 -= res2
             else:
                 add_cell_in_grid(self.grid, self.line_offset + 1, 'right_n_1', format_devise(res2, 5))
             if resb < 0:
                 add_cell_in_grid(self.grid, self.line_offset + 1, 'left_b', format_devise(-1 * resb, 5))
+                tot_b -= resb
             else:
                 add_cell_in_grid(self.grid, self.line_offset + 1, 'right_b', format_devise(resb, 5))
             add_cell_in_grid(self.grid, self.line_offset + 2, 'left', get_spaces(10) + "{[u]}{[b]}%s{[/b]}{[/u]}" % _('general total'))

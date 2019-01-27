@@ -221,6 +221,27 @@ class BillTest(InvoiceTest):
         self.assert_count_equal('', 12)
         self.assert_select_equal('article', 1)  # nb=1
 
+    def test_add_bill_not_allow_empty_code(self):
+        default_categories()
+        default_articles(True)
+        Parameter.change_value('invoice-reduce-allow-article-empty', False)
+        Params.clear()
+        self.factory.xfer = BillList()
+        self.calljson('/diacamma.invoice/billList', {}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'billList')
+        self.assert_count_equal('bill', 0)
+
+        self.factory.xfer = BillAddModify()
+        self.calljson('/diacamma.invoice/billAddModify',
+                      {'bill_type': 1, 'date': '2014-04-01', 'SAVE': 'YES'}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'billAddModify')
+
+        self.factory.xfer = DetailAddModify()
+        self.calljson('/diacamma.invoice/detailAddModify', {'bill': 1}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'detailAddModify')
+        self.assert_count_equal('', 12)
+        self.assert_select_equal('article', 4)  # nb=4
+
     def test_add_bill_bad(self):
         default_articles()
         self.factory.xfer = BillAddModify()
