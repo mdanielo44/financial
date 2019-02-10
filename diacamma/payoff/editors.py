@@ -42,10 +42,6 @@ from diacamma.accounting.tools import current_system_account
 
 class SupportingEditor(LucteriosEditor):
 
-    def before_save(self, xfer):
-        self.item.is_revenu = self.item.get_final_child().payoff_is_revenu()
-        return LucteriosEditor.before_save(self, xfer)
-
     def show_third(self, xfer, right=''):
         xfer.params['supporting'] = self.item.id
         third = xfer.get_components('third')

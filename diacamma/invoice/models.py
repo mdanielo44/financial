@@ -900,7 +900,7 @@ class Bill(Supporting):
         for detail in self.detail_set.all():
             if detail.define_autoreduce():
                 detail.save()
-        return LucteriosModel.save(self, force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields)
+        return Supporting.save(self, force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields)
 
     class Meta(object):
         verbose_name = _('bill')
@@ -1406,6 +1406,15 @@ def convert_articles():
         art.save()
 
 
+def convert_asset_and_revenue():
+    nb_correct = 0
+    for bill in Bill.objects.filter(Q(bill_type__in=(0, 2)) & Q(is_revenu=True)):
+        bill.is_revenu = bill.payoff_is_revenu()
+        bill.save()
+        nb_correct += 1
+    six.print_("asset & revenue correction = %d" % nb_correct)
+
+
 @Signal.decorate('checkparam')
 def invoice_checkparam():
     Parameter.check_and_create(name='invoice-default-sell-account', typeparam=0, title=_("invoice-default-sell-account"),
@@ -1421,3 +1430,4 @@ def invoice_checkparam():
     Parameter.check_and_create(name='invoice-article-with-picture', typeparam=3, title=_("invoice-article-with-picture"), args="{}", value='False')
     Parameter.check_and_create(name='invoice-reduce-with-ratio', typeparam=3, title=_("invoice-reduce-with-ratio"), args="{}", value='True')
     Parameter.check_and_create(name='invoice-reduce-allow-article-empty', typeparam=3, title=_("invoice-reduce-allow-article-empty"), args="{}", value='True')
+    convert_asset_and_revenue()

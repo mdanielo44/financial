@@ -174,6 +174,9 @@ class BillTest(InvoiceTest):
         self.assert_json_equal('LABELFORM', 'info', "{[font color=\"red\"]}{[/font]}")
         self.assertEqual(len(self.json_actions), 3)
 
+        bill_item = Bill.objects.get(id=1)
+        self.assertEqual(bill_item.is_revenu, True)
+
         self.factory.xfer = BillList()
         self.calljson('/diacamma.invoice/billList', {}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'billList')
@@ -183,6 +186,53 @@ class BillTest(InvoiceTest):
         self.calljson('/diacamma.invoice/billList', {'filter': 'Dalton Jack'}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'billList')
         self.assert_count_equal('bill', 1)
+
+    def test_add_asset(self):
+        default_articles()
+
+        self.factory.xfer = BillAddModify()
+        self.calljson('/diacamma.invoice/billAddModify',
+                      {'bill_type': 2, 'date': '2014-04-01', 'SAVE': 'YES'}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'billAddModify')
+        self.assertEqual(self.response_json['action']['id'], "diacamma.invoice/billShow")
+        self.assertEqual(len(self.response_json['action']['params']), 1)
+        self.assertEqual(self.response_json['action']['params']['bill'], 1)
+        self.assertEqual(len(self.json_context), 2)
+
+        self.factory.xfer = BillShow()
+        self.calljson('/diacamma.invoice/billShow', {'bill': 1}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'billShow')
+        self.assertEqual(len(self.json_actions), 2)
+        self.assert_count_equal('', 11)
+        self.assert_json_equal('LABELFORM', 'title', "{[br/]}{[center]}{[u]}{[b]}avoir{[/b]}{[/u]}{[/center]}")
+        self.assert_json_equal('LABELFORM', 'num_txt', "---")
+        self.assert_json_equal('LABELFORM', 'status', "en création")
+        self.assert_json_equal('LABELFORM', 'date', "1 avril 2014")
+        self.assert_json_equal('LABELFORM', 'info', "{[font color=\"red\"]}aucun tiers sélectionné{[br/]}pas de détail{[br/]}la date n'est pas incluse dans l'exercice{[/font]}")
+
+        self.factory.xfer = BillAddModify()
+        self.calljson('/diacamma.invoice/billAddModify',
+                      {'bill': 1, 'date': '2015-04-01', 'SAVE': 'YES'}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'billAddModify')
+
+        self.factory.xfer = SupportingThirdValid()
+        self.calljson('/diacamma.payoff/supportingThirdValid', {'supporting': 1, 'third': 6}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.payoff', 'supportingThirdValid')
+
+        self.factory.xfer = DetailAddModify()
+        self.calljson('/diacamma.invoice/detailAddModify',
+                      {'SAVE': 'YES', 'bill': 1, 'article': 1, 'designation': 'My article', 'price': '43.72', 'quantity': 2}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'detailAddModify')
+
+        self.factory.xfer = BillShow()
+        self.calljson('/diacamma.invoice/billShow', {'bill': 1}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'billShow')
+        self.assert_count_equal('', 12)
+        self.assert_json_equal('LABELFORM', 'info', "{[font color=\"red\"]}{[/font]}")
+        self.assertEqual(len(self.json_actions), 3)
+
+        bill_item = Bill.objects.get(id=1)
+        self.assertEqual(bill_item.is_revenu, False)
 
     def test_add_bill_with_filter(self):
         default_categories()
@@ -1000,6 +1050,8 @@ class BillTest(InvoiceTest):
         default_articles()
         details = [{'article': 0, 'designation': 'article 0', 'price': '100.00', 'quantity': 1}]
         bill_id = self._create_bill(details, 1, '2015-04-01', 6, True)  # 59.50
+        bill_item = Bill.objects.get(id=bill_id)
+        self.assertEqual(bill_item.is_revenu, True)
 
         self.factory.xfer = EntryAccountList()
         self.calljson('/diacamma.accounting/entryAccountList', {'year': '1', 'journal': '-1', 'filter': '0'}, False)
@@ -1080,22 +1132,21 @@ class BillTest(InvoiceTest):
         self.assert_json_equal('', 'entryline/@5/entry_account', "[581] 581")
         self.assert_json_equal('LABELFORM', 'result', '{[center]}{[b]}Produit :{[/b]} 100.00€ - {[b]}Charge :{[/b]} 0.00€ = {[b]}Résultat :{[/b]} 100.00€{[br/]}{[b]}Trésorerie :{[/b]} 100.00€ - {[b]}Validé :{[/b]} 0.00€{[/center]}')
 
-    def test_payoff_avoid(self):
+    def test_payoff_asset(self):
         default_articles()
-        details = [
-            {'article': 0, 'designation': 'article 0', 'price': '50.00', 'quantity': 1}]
+        details = [{'article': 0, 'designation': 'article 0', 'price': '50.00', 'quantity': 1}]
         bill_id = self._create_bill(details, 2, '2015-04-01', 6, True)  # 59.50
+        bill_item = Bill.objects.get(id=bill_id)
+        self.assertEqual(bill_item.is_revenu, False)
 
         self.factory.xfer = EntryAccountList()
-        self.calljson('/diacamma.accounting/entryAccountList',
-                      {'year': '1', 'journal': '-1', 'filter': '0'}, False)
+        self.calljson('/diacamma.accounting/entryAccountList', {'year': '1', 'journal': '-1', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
         self.assert_count_equal('entryline', 2)
         self.assert_json_equal('LABELFORM', 'result', '{[center]}{[b]}Produit :{[/b]} -50.00€ - {[b]}Charge :{[/b]} 0.00€ = {[b]}Résultat :{[/b]} -50.00€{[br/]}{[b]}Trésorerie :{[/b]} 0.00€ - {[b]}Validé :{[/b]} 0.00€{[/center]}')
 
         self.factory.xfer = PayoffAddModify()
-        self.calljson(
-            '/diacamma.payoff/payoffAddModify', {'supporting': bill_id, 'mode': 3}, False)
+        self.calljson('/diacamma.payoff/payoffAddModify', {'supporting': bill_id, 'mode': 3}, False)
         self.assert_observer('core.custom', 'diacamma.payoff', 'payoffAddModify')
         self.assert_count_equal('', 7)
         self.assert_select_equal('bank_account', 2)  # nb=2
@@ -1120,8 +1171,7 @@ class BillTest(InvoiceTest):
         self.assert_json_equal('', 'payoff/@0/bank_account', "My bank")
 
         self.factory.xfer = EntryAccountList()
-        self.calljson('/diacamma.accounting/entryAccountList',
-                      {'year': '1', 'journal': '-1', 'filter': '0'}, False)
+        self.calljson('/diacamma.accounting/entryAccountList', {'year': '1', 'journal': '-1', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
         self.assert_count_equal('entryline', 4)
         self.assert_json_equal('', 'entryline/@2/entry_account', "[411 Dalton Jack]")
@@ -1133,8 +1183,7 @@ class BillTest(InvoiceTest):
         self.assert_observer('core.acknowledge', 'diacamma.payoff', 'payoffDel')
 
         self.factory.xfer = EntryAccountList()
-        self.calljson('/diacamma.accounting/entryAccountList',
-                      {'year': '1', 'journal': '-1', 'filter': '0'}, False)
+        self.calljson('/diacamma.accounting/entryAccountList', {'year': '1', 'journal': '-1', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
         self.assert_count_equal('entryline', 2)
         self.assert_json_equal('LABELFORM', 'result', '{[center]}{[b]}Produit :{[/b]} -50.00€ - {[b]}Charge :{[/b]} 0.00€ = {[b]}Résultat :{[/b]} -50.00€{[br/]}{[b]}Trésorerie :{[/b]} 0.00€ - {[b]}Validé :{[/b]} 0.00€{[/center]}')
