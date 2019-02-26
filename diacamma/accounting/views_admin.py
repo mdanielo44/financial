@@ -244,10 +244,9 @@ def paramchange_accounting(params):
             if account.code != correct_accounting_code(account.code):
                 account.code = correct_accounting_code(account.code)
                 account.save()
-        for charts_account in ChartsAccount.objects.filter(year__status__in=(0, 1)):
+        for charts_account in ChartsAccount.objects.filter(year__status__in=(0, 1)).distinct():
             if charts_account.code != correct_accounting_code(charts_account.code):
-                charts_account.code = correct_accounting_code(
-                    charts_account.code)
+                charts_account.code = correct_accounting_code(charts_account.code)
                 charts_account.save()
         for model_line in ModelLineEntry.objects.all():
             if model_line.code != correct_accounting_code(model_line.code):

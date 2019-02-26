@@ -179,7 +179,7 @@ class Supporting(LucteriosModel):
         cclist = []
         contact = self.third.contact.get_final_child()
         if isinstance(contact, LegalEntity):
-            for indiv in Individual.objects.filter(responsability__legal_entity=self.third.contact):
+            for indiv in Individual.objects.filter(responsability__legal_entity=self.third.contact).distinct():
                 if indiv.email != '':
                     cclist.append(indiv.email)
         if len(cclist) == 0:
@@ -401,7 +401,7 @@ class Payoff(LucteriosModel):
         supporting_list = []
         amount_sum = 0
         amount_max = 0
-        for supporting in Supporting.objects.filter(id__in=supportings):
+        for supporting in Supporting.objects.filter(id__in=supportings).distinct():
             supporting = supporting.get_final_child()
             amount_sum += supporting.get_final_child().get_total_rest_topay()
             amount_max += supporting.get_final_child().get_max_payoff()
@@ -550,7 +550,7 @@ class DepositSlip(LucteriosModel):
             payoff = {}
             payoff['id'] = values['entry_id']
             bills = []
-            for supporting in Supporting.objects.filter(payoff__entry=values['entry_id']):
+            for supporting in Supporting.objects.filter(payoff__entry=values['entry_id']).distinct():
                 bills.append(six.text_type(supporting.get_final_child()))
             payoff['bill'] = '{[br/]}'.join(bills)
             payoff['payer'] = values['payer']
@@ -592,8 +592,7 @@ class DepositDetail(LucteriosModel):
         return self.payoff.reference
 
     def get_amount(self):
-        values = Payoff.objects.filter(
-            entry=self.payoff.entry, reference=self.payoff.reference).aggregate(Sum('amount'))
+        values = Payoff.objects.filter(entry=self.payoff.entry, reference=self.payoff.reference).aggregate(Sum('amount'))
         if 'amount__sum' in values.keys():
             return values['amount__sum']
         else:

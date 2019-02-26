@@ -177,8 +177,7 @@ class ThirdDisable(XferContainerAcknowledge):
             dlg.add_action(self.get_action(TITLE_OK, 'images/ok.png'), params={"SAVE": "YES"})
             dlg.add_action(WrapAction(TITLE_CANCEL, 'images/cancel.png'))
         else:
-            third_ids = [val_third['third'] for val_third in EntryLineAccount.objects.filter(
-                entry__date_value__gt=limit_date, third__gt=0).values('third')]
+            third_ids = [val_third['third'] for val_third in EntryLineAccount.objects.filter(entry__date_value__gt=limit_date, third__gt=0).values('third')]
             for third in Third.objects.filter(status=0):
                 if third.id not in third_ids:
                     third.status = 1
@@ -402,7 +401,7 @@ def thirdaddon_accounting(item, xfer):
             edt.set_action(xfer.request, xfer.get_action(),
                            modal=FORMTYPE_REFRESH, close=CLOSE_NO)
             xfer.add_component(edt)
-            entrulines = EntryLineAccount.objects.filter(entry_lines_filter)
+            entrulines = EntryLineAccount.objects.filter(entry_lines_filter).distinct()
             link_grid_lines = XferCompGrid('entryline')
             link_grid_lines.set_model(entrulines, EntryLineAccount.get_default_fields(), xfer)
             link_grid_lines.set_location(0, 2, 2)

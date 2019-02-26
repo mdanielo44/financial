@@ -92,7 +92,7 @@ class CostAccountingReportByDate(XferContainerAcknowledge):
             dlg.add_action(WrapAction(TITLE_CANCEL, 'images/cancel.png'))
         else:
             list_cost = []
-            for cost_item in CostAccounting.objects.filter(Q(entrylineaccount__entry__date_value__gte=begin_date) & Q(entrylineaccount__entry__date_value__lte=end_date)):
+            for cost_item in CostAccounting.objects.filter(Q(entrylineaccount__entry__date_value__gte=begin_date) & Q(entrylineaccount__entry__date_value__lte=end_date)).distinct():
                 list_cost.append(six.text_type(cost_item.id))
             list_cost = set(list_cost)
             if len(list_cost) == 0:

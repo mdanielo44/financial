@@ -128,7 +128,7 @@ class DefaultSystemAccounting(object):
         query = Q(account__code__startswith=self.NEGATIF_ACCOUNT) | Q(account__code__startswith=self.POSITIF_ACCOUNT)
         query &= Q(account__year=year)
         sum_profit = 0
-        for new_line in EntryLineAccount.objects.filter(query):
+        for new_line in EntryLineAccount.objects.filter(query).distinct():
             sum_profit += new_line.amount
             new_line.id = None
             new_line.entry = new_entry

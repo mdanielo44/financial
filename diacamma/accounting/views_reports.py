@@ -413,7 +413,7 @@ class FiscalYearLedger(FiscalYearReport):
         self.last_account = None
         self.last_third = None
         self.last_total = 0
-        for line in EntryLineAccount.objects.filter(self.filter).order_by('account__code', 'entry__date_value', 'third'):
+        for line in EntryLineAccount.objects.filter(self.filter).distinct().order_by('account__code', 'entry__date_value', 'third'):
             if self.last_account != line.account:
                 self._add_total_account()
                 self.last_account = line.account

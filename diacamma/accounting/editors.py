@@ -197,14 +197,12 @@ class ChartsAccountEditor(LucteriosEditor):
     def show(self, xfer):
         row = xfer.get_max_row() + 1
         comp = XferCompGrid('entryaccount')
-        comp.set_model(EntryAccount.objects.filter(entrylineaccount__account=self.item), None, xfer)
+        comp.set_model(EntryAccount.objects.filter(entrylineaccount__account=self.item).distinct(), None, xfer)
         comp.description = EntryLineAccount._meta.verbose_name
-        comp.add_action(xfer.request, ActionsManage.get_action_url(
-            'accounting.EntryAccount', 'OpenFromLine', xfer), unique=SELECT_SINGLE, close=CLOSE_NO)
+        comp.add_action(xfer.request, ActionsManage.get_action_url('accounting.EntryAccount', 'OpenFromLine', xfer), unique=SELECT_SINGLE, close=CLOSE_NO)
         comp.add_action(xfer.request, ActionsManage.get_action_url('accounting.EntryAccount', 'Close', xfer), unique=SELECT_MULTI, close=CLOSE_NO)
         if self.item.is_third:
-            comp.add_action(xfer.request, ActionsManage.get_action_url(
-                'accounting.EntryAccount', 'Link', xfer), unique=SELECT_MULTI, close=CLOSE_NO)
+            comp.add_action(xfer.request, ActionsManage.get_action_url('accounting.EntryAccount', 'Link', xfer), unique=SELECT_MULTI, close=CLOSE_NO)
         comp.set_location(1, row)
         xfer.add_component(comp)
 
@@ -322,7 +320,7 @@ class EntryAccountEditor(LucteriosEditor):
 
 def edit_third_for_line(xfer, column, row, account_code, current_third, vertical=True):
     sel_thirds = []
-    for third in Third.objects.filter(accountthird__code=account_code):
+    for third in Third.objects.filter(accountthird__code=account_code).distinct():
         sel_thirds.append((third.id, six.text_type(third)))
     sel_thirds = sorted(sel_thirds, key=lambda third_item: third_item[1])
     if len(sel_thirds) > 0:
@@ -392,7 +390,7 @@ class EntryLineAccountEditor(LucteriosEditor):
                 else:
                     current_year = xfer.item.entry.year
                     current_costaccounting = self.item.costaccounting
-                sel.set_select_query(CostAccounting.objects.filter(Q(status=0) & (Q(year=None) | Q(year=current_year))))
+                sel.set_select_query(CostAccounting.objects.filter(Q(status=0) & (Q(year=None) | Q(year=current_year))).distinct())
                 sel.set_needed(Params.getvalue('accounting-needcost'))
                 if current_costaccounting is not None:
                     sel.set_value(current_costaccounting.id)
@@ -456,7 +454,7 @@ class ModelEntryEditor(EntryLineAccountEditor):
                 break
         comp_journal.select_list = select_jrn
         sel = xfer.get_components('costaccounting')
-        sel.set_select_query(CostAccounting.objects.filter(Q(status=0) & (Q(year=None) | Q(year=FiscalYear.get_current()))))
+        sel.set_select_query(CostAccounting.objects.filter(Q(status=0) & (Q(year=None) | Q(year=FiscalYear.get_current()))).distinct())
 
 
 class ModelLineEntryEditor(EntryLineAccountEditor):

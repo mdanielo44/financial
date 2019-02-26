@@ -84,12 +84,12 @@ class BudgetList(XferListEditor):
         row_id = self.get_max_row() + 1
 
         expense_filter = Q(code__regex=current_system_account().get_expence_mask()) | (Q(code__regex=current_system_account().get_annexe_mask()) & Q(amount__lt=0))
-        self.fill_grid(row_id, self.model, 'budget_expense', self.model.objects.filter(self.filter & expense_filter))
+        self.fill_grid(row_id, self.model, 'budget_expense', self.model.objects.filter(self.filter & expense_filter).distinct())
         self.get_components("budget_expense").colspan = 3
         self.get_components("budget_expense").description = _("Expense")
 
         revenue_filter = Q(code__regex=current_system_account().get_revenue_mask()) | (Q(code__regex=current_system_account().get_annexe_mask()) & Q(amount__gte=0))
-        self.fill_grid(row_id + 1, self.model, 'budget_revenue', self.model.objects.filter(self.filter & revenue_filter))
+        self.fill_grid(row_id + 1, self.model, 'budget_revenue', self.model.objects.filter(self.filter & revenue_filter).distinct())
         self.get_components("budget_revenue").colspan = 3
         self.get_components("budget_revenue").description = _("Revenue")
 
@@ -264,11 +264,11 @@ class BudgetImport(XferContainerAcknowledge):
                 budget_filter = Q(year_id=year)
             else:
                 budget_filter = Q(cost_accounting_id=cost_accounting)
-            for budget_line in Budget.objects.filter(budget_filter):
+            for budget_line in Budget.objects.filter(budget_filter).distinct():
                 if (cost_accounting != 0) or (budget_line.cost_accounting_id is None):
                     budget_line.delete()
             if cost_accounting == 0:
-                for chart in ChartsAccount.objects.filter(Q(year_id=currentyear) & Q(type_of_account__in=(3, 4))):
+                for chart in ChartsAccount.objects.filter(Q(year_id=currentyear) & Q(type_of_account__in=(3, 4))).distinct():
                     value = chart.get_current_total()
                     for current_budget in Budget.objects.filter(year_id=year, code=chart.code):
                         value -= current_budget.amount
@@ -278,7 +278,7 @@ class BudgetImport(XferContainerAcknowledge):
                 if year == 0:
                     year = None
                 values = {}
-                for line in EntryLineAccount.objects.filter(account__type_of_account__in=(3, 4), costaccounting_id=costaccounting):
+                for line in EntryLineAccount.objects.filter(account__type_of_account__in=(3, 4), costaccounting_id=costaccounting).distinct():
                     if line.account.code not in values.keys():
                         values[line.account.code] = 0.0
                     values[line.account.code] += line.amount

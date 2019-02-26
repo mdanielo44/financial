@@ -116,12 +116,9 @@ class Third(LucteriosModel, CustomizeObject):
                 current_filter &= Q(entry__date_value__lte=current_date)
             else:
                 current_filter &= Q(entry__date_value__lt=current_date)
-        active_sum = get_amount_sum(EntryLineAccount.objects.filter(
-            current_filter & Q(account__type_of_account=0)).aggregate(Sum('amount')))
-        passive_sum = get_amount_sum(EntryLineAccount.objects.filter(
-            current_filter & Q(account__type_of_account=1)).aggregate(Sum('amount')))
-        other_sum = get_amount_sum(EntryLineAccount.objects.filter(
-            current_filter & Q(account__type_of_account__gt=1)).aggregate(Sum('amount')))
+        active_sum = get_amount_sum(EntryLineAccount.objects.filter(current_filter & Q(account__type_of_account=0)).aggregate(Sum('amount')))
+        passive_sum = get_amount_sum(EntryLineAccount.objects.filter(current_filter & Q(account__type_of_account=1)).aggregate(Sum('amount')))
+        other_sum = get_amount_sum(EntryLineAccount.objects.filter(current_filter & Q(account__type_of_account__gt=1)).aggregate(Sum('amount')))
         return passive_sum - active_sum + other_sum
 
     @property
@@ -302,8 +299,7 @@ class FiscalYear(LucteriosModel):
 
     @property
     def has_no_lastyear_entry(self):
-        val = get_amount_sum(EntryLineAccount.objects.filter(
-            entry__journal__id=1, account__year=self).aggregate(Sum('amount')))
+        val = get_amount_sum(EntryLineAccount.objects.filter(entry__journal__id=1, account__year=self).aggregate(Sum('amount')))
         return abs(val) < 0.0001
 
     def import_charts_accounts(self):
@@ -1399,7 +1395,7 @@ def check_accountingcost():
             entry.costaccounting = None
             entry.save()
     entryline_cmp = 0
-    for entryline in EntryLineAccount.objects.filter(costaccounting_id__isnull=True, entry__costaccounting_id__isnull=False, account__type_of_account__in=(3, 4, 5)):
+    for entryline in EntryLineAccount.objects.filter(costaccounting_id__isnull=True, entry__costaccounting_id__isnull=False, account__type_of_account__in=(3, 4, 5)).distinct():
         entryline.costaccounting_id = entryline.entry.costaccounting_id
         entryline.save()
         entryline_cmp += 1

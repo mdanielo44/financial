@@ -142,9 +142,9 @@ class PayoffEditor(LucteriosEditor):
         fee_code = Params.getvalue("payoff-bankcharges-account")
         supportings = xfer.getparam('supportings', ())
         if len(supportings) > 0:
-            supporting_list = Supporting.objects.filter(id__in=supportings, is_revenu=True)
+            supporting_list = Supporting.objects.filter(id__in=supportings, is_revenu=True).distinct()
             if len(supporting_list) == 0:
-                supporting_list = Supporting.objects.filter(id__in=supportings, is_revenu=False)
+                supporting_list = Supporting.objects.filter(id__in=supportings, is_revenu=False).distinct()
             if len(supporting_list) == 0:
                 raise LucteriosException(IMPORTANT, _('No-valid selection!'))
         else:

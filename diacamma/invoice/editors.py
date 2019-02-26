@@ -75,7 +75,7 @@ class AccountPostingEditor(LucteriosEditor):
         xfer.add_component(sel_code)
         comp = xfer.get_components("cost_accounting")
         comp.set_needed(False)
-        comp.set_select_query(CostAccounting.objects.filter(Q(status=0) & (Q(year=None) | Q(year=FiscalYear.get_current()))))
+        comp.set_select_query(CostAccounting.objects.filter(Q(status=0) & (Q(year=None) | Q(year=FiscalYear.get_current()))).distinct())
 
 
 class ArticleEditor(LucteriosEditor):
@@ -217,7 +217,7 @@ class DetailFilter(object):
         filter_ref = xfer.getparam('reference', '')
         sel_third = xfer.get_components("third")
         sel_third.set_needed(False)
-        sel_third.set_select_query(Third.objects.filter(provider__isnull=False))
+        sel_third.set_select_query(Third.objects.filter(provider__isnull=False).distinct())
         sel_third.set_value(filter_thirdid)
         sel_third.set_action(xfer.request, xfer.get_action('', ''), modal=FORMTYPE_REFRESH, close=CLOSE_NO, params={'CHANGE_ART': 'YES'})
         sel_third.description = _('provider')

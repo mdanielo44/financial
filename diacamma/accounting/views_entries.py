@@ -280,7 +280,7 @@ class EntryAccountCostAccounting(XferContainerAcknowledge):
         if (self.getparam('entryline') is not None) or (self.getparam('entrylineaccount') is not None):
             entryline = self.getparam('entryline', self.getparam('entrylineaccount', ()))
             self.model = EntryLineAccount
-            self.items = EntryLineAccount.objects.filter(Q(id__in=entryline) & Q(account__type_of_account__in=(3, 4, 5)) & (Q(costaccounting__isnull=True) | Q(costaccounting__status=0)))
+            self.items = EntryLineAccount.objects.filter(Q(id__in=entryline) & Q(account__type_of_account__in=(3, 4, 5)) & (Q(costaccounting__isnull=True) | Q(costaccounting__status=0))).distinct()
             if len(self.items) > 0:
                 self.item = self.items[0]
         else:
@@ -302,7 +302,7 @@ class EntryAccountCostAccounting(XferContainerAcknowledge):
             dlg.add_component(lbl)
             sel = XferCompSelect('cost_accounting_id')
             sel.set_needed(Params.getvalue('accounting-needcost'))
-            sel.set_select_query(CostAccounting.objects.filter(Q(status=0) & (Q(year=None) | Q(year=current_year))))
+            sel.set_select_query(CostAccounting.objects.filter(Q(status=0) & (Q(year=None) | Q(year=current_year))).distinct())
             if self.item is not None:
                 sel.set_value(self.item.costaccounting_id)
             sel.set_location(1, 2)

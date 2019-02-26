@@ -263,12 +263,12 @@ class Article(LucteriosModel, CustomizeObject):
             if new_item is not None:
                 new_item.set_custom_values(rowdata)
                 if ('categories' in rowdata.keys()) and (rowdata['categories'] is not None) and (rowdata['categories'] != ''):
-                    cat = Category.objects.filter(name__iexact=rowdata['categories'])
+                    cat = Category.objects.filter(name__iexact=rowdata['categories']).distinct()
                     if len(cat) > 0:
                         cat_ids = [cat[0].id]
                         for cat_item in new_item.categories.all():
                             cat_ids.append(cat_item.id)
-                        new_item.categories.set(Category.objects.filter(id__in=cat_ids))
+                        new_item.categories.set(Category.objects.filter(id__in=cat_ids).distinct())
                         new_item.save()
                 if ('provider.third.contact' in rowdata.keys()) and (rowdata['provider.third.contact'] is not None) and (rowdata['provider.third.contact'] != ''):
                     if ('provider.reference' in rowdata.keys()) and (rowdata['provider.reference'] is not None):
@@ -278,7 +278,7 @@ class Article(LucteriosModel, CustomizeObject):
                     q_legalentity = Q(contact__legalentity__name__iexact=rowdata['provider.third.contact'])
                     q_individual = Q(completename__icontains=rowdata['provider.third.contact'])
                     thirds = Third.objects.annotate(completename=Concat('contact__individual__lastname', Value(' '),
-                                                                        'contact__individual__firstname')).filter(q_legalentity | q_individual)
+                                                                        'contact__individual__firstname')).filter(q_legalentity | q_individual).distinct()
                     if len(thirds) > 0:
                         Provider.objects.get_or_create(article=new_item, third=thirds[0], reference=reference)
             return new_item
@@ -388,7 +388,7 @@ class Provider(LucteriosModel):
     @property
     def third_query(self):
         thirdfilter = Q(accountthird__code__regex=current_system_account().get_provider_mask())
-        return Third.objects.filter(thirdfilter)
+        return Third.objects.filter(thirdfilter).distinct()
 
     def __str__(self):
         return self.reference
@@ -952,10 +952,10 @@ class Detail(LucteriosModel):
             artfilter &= Q(provider__reference__icontains=self.filter_ref)
         if self.filter_lib != '':
             artfilter &= Q(reference__icontains=self.filter_lib) | Q(designation__icontains=self.filter_lib)
-        items = Article.objects.filter(artfilter)
+        items = Article.objects.filter(artfilter).distinct()
         if len(self.filter_cat) > 0:
-            for cat_item in Category.objects.filter(id__in=self.filter_cat):
-                items = items.filter(categories__in=[cat_item])
+            for cat_item in Category.objects.filter(id__in=self.filter_cat).distinct():
+                items = items.filter(categories__in=[cat_item]).distinct()
         return items
 
     def __str__(self):
@@ -1158,7 +1158,7 @@ class StorageSheet(LucteriosModel):
     @property
     def provider_query(self):
         thirdfilter = Q(accountthird__code__regex=current_system_account().get_provider_mask())
-        return Third.objects.filter(thirdfilter)
+        return Third.objects.filter(thirdfilter).distinct()
 
     def can_delete(self):
         if self.status > 0:
@@ -1267,10 +1267,10 @@ class StorageDetail(LucteriosModel):
             artfilter &= Q(provider__reference__icontains=self.filter_ref)
         if self.filter_lib != '':
             artfilter &= Q(reference__icontains=self.filter_lib) | Q(designation__icontains=self.filter_lib)
-        items = Article.objects.filter(artfilter)
+        items = Article.objects.filter(artfilter).distinct()
         if len(self.filter_cat) > 0:
-            for cat_item in Category.objects.filter(id__in=self.filter_cat):
-                items = items.filter(categories__in=[cat_item])
+            for cat_item in Category.objects.filter(id__in=self.filter_cat).distinct():
+                items = items.filter(categories__in=[cat_item]).distinct()
         return items
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
@@ -1345,7 +1345,7 @@ class AutomaticReduce(LucteriosModel):
         if self.filtercriteria_id is not None:
             from lucterios.framework.xfersearch import get_search_query_from_criteria
             filter_result, _desc = get_search_query_from_criteria(self.filtercriteria.criteria, Third)
-            third_list = Third.objects.filter(filter_result)
+            third_list = Third.objects.filter(filter_result).distinct()
             return third_list.filter(id=third_id).exists()
         return True
 
@@ -1395,7 +1395,7 @@ def get_or_create_customer(contact_id):
 
 
 def convert_articles():
-    for art in Article.objects.filter(Q(accountposting__isnull=True) & ~Q(sell_account='')):
+    for art in Article.objects.filter(Q(accountposting__isnull=True) & ~Q(sell_account='')).distinct():
         accout_post, created = AccountPosting.objects.get_or_create(sell_account=art.sell_account)
         if created:
             account = ChartsAccount.get_chart_account(accout_post.sell_account)

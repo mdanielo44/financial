@@ -681,10 +681,10 @@ class BillCheckAutoreduce(XferContainerAcknowledge):
     def fillresponse(self):
         if self.confirme(_('Do you want check auto-reduce ?')):
             filter_auto = Q(bill__third=self.item) & Q(bill__bill_type__in=(0, 1, 3)) & Q(bill__status=0)
-            for detail in Detail.objects.filter(filter_auto):
+            for detail in Detail.objects.filter(filter_auto).distinct():
                 detail.reduce = 0
                 detail.save(check_autoreduce=False)
-            for detail in Detail.objects.filter(filter_auto).order_by('-price', '-quantity'):
+            for detail in Detail.objects.filter(filter_auto).distinct().order_by('-price', '-quantity'):
                 detail.save(check_autoreduce=True)
 
 
@@ -693,17 +693,17 @@ def situation_invoice(xfer):
     if not hasattr(xfer, 'add_component'):
         contacts = []
         if not xfer.user.is_anonymous:
-            for contact in Individual.objects.filter(user=xfer.user):
+            for contact in Individual.objects.filter(user=xfer.user).distinct():
                 contacts.append(contact.id)
-            for contact in LegalEntity.objects.filter(responsability__individual__user=xfer.user):
+            for contact in LegalEntity.objects.filter(responsability__individual__user=xfer.user).distinct():
                 contacts.append(contact.id)
         return len(contacts) > 0
     else:
         contacts = []
         if not xfer.request.user.is_anonymous:
-            for contact in Individual.objects.filter(user=xfer.request.user):
+            for contact in Individual.objects.filter(user=xfer.request.user).distinct():
                 contacts.append(contact.id)
-            for contact in LegalEntity.objects.filter(responsability__individual__user=xfer.request.user):
+            for contact in LegalEntity.objects.filter(responsability__individual__user=xfer.request.user).distinct():
                 contacts.append(contact.id)
         if len(contacts) > 0:
             row = xfer.get_max_row() + 1
@@ -711,7 +711,7 @@ def situation_invoice(xfer):
             lab.set_value_as_infocenter(_("Invoice"))
             lab.set_location(0, row, 4)
             xfer.add_component(lab)
-            nb_build = len(Bill.objects.filter(third__contact_id__in=contacts))
+            nb_build = len(Bill.objects.filter(third__contact_id__in=contacts).distinct())
             lab = XferCompLabelForm('invoicecurrent')
             lab.set_value_as_header(_("You are %d bills") % nb_build)
             lab.set_location(0, row + 1, 4)
@@ -759,7 +759,7 @@ def thirdaddon_invoice(item, xfer):
             xfer.new_tab(_('Invoice'))
             current_filter, status_filter = _add_bill_filter(xfer, 1)
             current_filter &= Q(third=item)
-            bills = Bill.objects.filter(current_filter)
+            bills = Bill.objects.filter(current_filter).distinct()
             bill_grid = XferCompGrid('bill')
             bill_grid.set_model(bills, Bill.get_default_fields(status_filter), xfer)
             bill_grid.add_action_notified(xfer, Bill)

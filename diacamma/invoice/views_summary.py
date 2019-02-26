@@ -41,7 +41,7 @@ from diacamma.payoff.views import PayableShow
 def current_bill_right(request):
     right = False
     if not request.user.is_anonymous:
-        contacts = Individual.objects.filter(user=request.user)
+        contacts = Individual.objects.filter(user=request.user).distinct()
         right = len(contacts) > 0
     return right
 
@@ -55,9 +55,9 @@ class CurrentBill(XferListEditor):
 
     def fillresponse_header(self):
         contacts = []
-        for contact in Individual.objects.filter(user=self.request.user):
+        for contact in Individual.objects.filter(user=self.request.user).distinct():
             contacts.append(contact.id)
-        for contact in LegalEntity.objects.filter(responsability__individual__user=self.request.user):
+        for contact in LegalEntity.objects.filter(responsability__individual__user=self.request.user).distinct():
             contacts.append(contact.id)
         self.filter = Q(third__contact_id__in=contacts) & Q(status__gt=0)
 
