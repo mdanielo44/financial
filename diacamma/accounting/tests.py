@@ -917,14 +917,14 @@ class ModelTest(LucteriosTest):
         self.calljson('/diacamma.accounting/entryAccountModelSelector', {}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountModelSelector')
         self.assert_count_equal('', 3)
-        self.assert_select_equal('model', 2)  # nb=2
+        self.assert_select_equal('model', 3)  # nb=2
         self.assert_json_equal('FLOAT', 'factor', '1.00')
 
         self.factory.xfer = EntryAccountModelSelector()
         self.calljson('/diacamma.accounting/entryAccountModelSelector', {'journal': 2}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountModelSelector')
         self.assert_count_equal('', 3)
-        self.assert_select_equal('model', 1)  # nb=1
+        self.assert_select_equal('model', 2)  # nb=1
         self.assert_json_equal('FLOAT', 'factor', '1.00')
 
     def test_insert(self):
@@ -940,3 +940,17 @@ class ModelTest(LucteriosTest):
         serial_entry = self.response_json["action"]["params"]['serial_entry'].split('\n')
         self.assertEqual(serial_entry[0][-22:], "|1|3|48.430000|0|None|", serial_entry[0])
         self.assertEqual(serial_entry[1][-23:], "|2|0|-48.430000|0|None|", serial_entry[1])
+
+    def test_insert_with_costaccounting(self):
+        add_models()
+        self.factory.xfer = EntryAccountModelSelector()
+        self.calljson('/diacamma.accounting/entryAccountModelSelector', {'SAVE': 'YES', 'journal': '2', 'model': 3, 'factor': 1.00}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountModelSelector')
+        self.assertEqual(len(self.json_context), 2)
+        self.assertEqual(self.json_context['entryaccount'], 1)
+        self.assertEqual(self.json_context['journal'], '2')
+        self.assertEqual(self.response_json["action"]["id"], "diacamma.accounting/entryAccountEdit")
+        self.assertEqual(len(self.response_json["action"]["params"]), 1)
+        serial_entry = self.response_json["action"]["params"]['serial_entry'].split('\n')
+        self.assertEqual(serial_entry[0][-23:], "|1|3|-37.910000|0|None|", serial_entry[0])
+        self.assertEqual(serial_entry[1][-23:], "|11|0|37.910000|2|None|", serial_entry[1])

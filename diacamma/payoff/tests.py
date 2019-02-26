@@ -49,26 +49,40 @@ class PayoffTest(LucteriosTest):
         self.calljson('/diacamma.payoff/payoffConf', {}, False)
         self.assert_observer('core.custom', 'diacamma.payoff', 'payoffConf')
         self.assertTrue('__tab_3' in self.json_data.keys(), self.json_data.keys())
-        self.assert_count_equal('', 2 + 2 + 7)
+        self.assert_count_equal('', 3 + 2 + 7)
 
-        self.assert_grid_equal('bankaccount', {'designation': "désignation", 'reference': "référence", 'account_code': "code comptable"}, 0)
+        self.assert_grid_equal('bankaccount', {'order_key': 'ordre', 'designation': "désignation", 'reference': "référence", 'account_code': "code comptable"}, 0)
 
         self.factory.xfer = BankAccountAddModify()
         self.calljson('/diacamma.payoff/bankAccountAddModify', {}, False)
         self.assert_observer('core.custom', 'diacamma.payoff', 'bankAccountAddModify')
-        self.assert_count_equal('', 4)
+        self.assert_count_equal('', 5)
 
         self.factory.xfer = BankAccountAddModify()
         self.calljson('/diacamma.payoff/bankAccountAddModify',
-                      {'designation': 'My bank', 'reference': '0123 456789 654 12', 'account_code': '512', 'SAVE': 'YES'}, False)
+                      {'designation': 'My bank', 'reference': '0123 456789 654 12', 'account_code': '512', 'is_disabled': 0, 'SAVE': 'YES'}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.payoff', 'bankAccountAddModify')
+
+        self.factory.xfer = PayoffConf()
+        self.calljson('/diacamma.payoff/payoffConf', {'show_only_enabled_bank': True}, False)
+        self.assert_count_equal('bankaccount', 1)
+        self.assert_json_equal('', 'bankaccount/@0/id', '1')
+        self.assert_json_equal('', 'bankaccount/@0/designation', 'My bank')
+        self.assert_json_equal('', 'bankaccount/@0/reference', '0123 456789 654 12')
+        self.assert_json_equal('', 'bankaccount/@0/account_code', '512')
+
+        self.factory.xfer = BankAccountAddModify()
+        self.calljson('/diacamma.payoff/bankAccountAddModify',
+                      {'bankaccount': 1, 'designation': 'My bank', 'reference': '0123 456789 654 12', 'account_code': '512', 'is_disabled': 1, 'SAVE': 'YES'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.payoff', 'bankAccountAddModify')
 
         self.factory.xfer = PayoffConf()
         self.calljson('/diacamma.payoff/payoffConf', {}, False)
+        self.assert_count_equal('bankaccount', 0)
+
+        self.factory.xfer = PayoffConf()
+        self.calljson('/diacamma.payoff/payoffConf', {'show_only_enabled_bank': False}, False)
         self.assert_count_equal('bankaccount', 1)
-        self.assert_json_equal('', 'bankaccount/@0/designation', 'My bank')
-        self.assert_json_equal('', 'bankaccount/@0/reference', '0123 456789 654 12')
-        self.assert_json_equal('', 'bankaccount/@0/account_code', '512')
 
         self.factory.xfer = BankAccountDelete()
         self.calljson('/diacamma.payoff/bankAccountDelete',
@@ -88,7 +102,7 @@ class PayoffTest(LucteriosTest):
         self.calljson('/diacamma.payoff/payoffConf', {}, False)
         self.assert_observer('core.custom', 'diacamma.payoff', 'payoffConf')
         self.assertTrue('__tab_3' in self.json_data.keys(), self.json_data.keys())
-        self.assert_count_equal('', 2 + 2 + 7)
+        self.assert_count_equal('', 3 + 2 + 7)
         self.assert_grid_equal('paymentmethod', {'paytype': "type", 'bank_account': "compte bancaire", 'info': "paramètres"}, 0)
 
         self.factory.xfer = PaymentMethodAddModify()

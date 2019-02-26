@@ -2,17 +2,18 @@
 from __future__ import unicode_literals
 
 from django.utils.translation import ugettext_lazy as _
-
+from django.db.models import Q
 
 from lucterios.framework.xferadvance import XferListEditor, XferDelete,\
     TITLE_MODIFY, TITLE_ADD, TITLE_DELETE
 from lucterios.framework.xferadvance import XferAddEditor
 from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage,\
-    CLOSE_NO, SELECT_SINGLE, SELECT_MULTI
-from lucterios.CORE.parameters import Params
-from lucterios.framework.xfercomponents import XferCompButton
-from lucterios.CORE.views import ParamEdit
+    CLOSE_NO, SELECT_SINGLE, SELECT_MULTI, FORMTYPE_REFRESH
+from lucterios.framework.xfercomponents import XferCompButton, XferCompCheck
+from lucterios.framework.xfergraphic import XferContainerAcknowledge
 from lucterios.framework import signal_and_lock
+from lucterios.CORE.parameters import Params
+from lucterios.CORE.views import ParamEdit
 from lucterios.CORE.models import Parameter
 
 from diacamma.accounting.tools import correct_accounting_code
@@ -39,9 +40,19 @@ class PayoffConf(XferListEditor):
 
     def fillresponse_header(self):
         self.new_tab(_('Bank account'))
+        show_only_enabled_bank = self.getparam('show_only_enabled_bank', True)
+        if show_only_enabled_bank is True:
+            self.filter = Q(is_disabled=False)
 
-    def fillresponse(self):
+    def fillresponse(self, show_only_enabled_bank=True):
         XferListEditor.fillresponse(self)
+        check = XferCompCheck('show_only_enabled_bank')
+        check.set_location(0, 2)
+        check.set_value(show_only_enabled_bank)
+        check.description = _('show only enabled bank account')
+        check.set_action(self.request, self.get_action(), modal=FORMTYPE_REFRESH, close=CLOSE_NO)
+        self.add_component(check)
+
         self.new_tab(_('Payment method'))
         self.fill_grid(0, PaymentMethod, "paymentmethod", PaymentMethod.objects.all())
         self.new_tab(_('Parameters'))
@@ -66,6 +77,18 @@ class BankAccountDelete(XferDelete):
     model = BankAccount
     field_id = 'bankaccount'
     caption = _("Delete bank account")
+
+
+@ActionsManage.affect_grid(_('Up'), "images/up.png", unique=SELECT_SINGLE)
+@MenuManage.describ('payoff.add_bankaccount')
+class BankAccountUp(XferContainerAcknowledge):
+    icon = "up.png"
+    model = BankAccount
+    field_id = 'bankaccount'
+    caption = _("Up bank account")
+
+    def fillresponse(self):
+        self.item.up_order()
 
 
 @ActionsManage.affect_grid(TITLE_ADD, "images/add.png")

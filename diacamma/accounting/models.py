@@ -1079,6 +1079,7 @@ class EntryLineAccount(LucteriosModel):
         return res
 
     def get_serial(self):
+        # return serial information: "<id>|<accound id>|<third id> or None|<amount>|<cost id> or None|<reference> or None"
         if self.third is None:
             third_id = 0
         else:
@@ -1204,11 +1205,11 @@ class ModelEntry(LucteriosModel):
     def total(self):
         return format_devise(self.get_total(), 5)
 
-    def get_serial_entry(self, factor, year):
+    def get_serial_entry(self, factor, year, costaccounting=None):
         entry_lines = []
         num = 0
         for line in self.modellineentry_set.all():
-            entry_lines.append(line.get_entry_line(factor, num, year))
+            entry_lines.append(line.get_entry_line(factor, num, year, costaccounting))
             num += 1
         return EntryAccount().get_serial(entry_lines)
 
@@ -1270,7 +1271,7 @@ class ModelLineEntry(LucteriosModel):
         else:
             self.amount = 0
 
-    def get_entry_line(self, factor, num, year):
+    def get_entry_line(self, factor, num, year, costaccounting=None):
         import time
         try:
             new_entry_line = EntryLineAccount()
@@ -1278,6 +1279,8 @@ class ModelLineEntry(LucteriosModel):
             new_entry_line.account = ChartsAccount.objects.get(year=year, code=correct_accounting_code(self.code))
             new_entry_line.third = self.third
             new_entry_line.amount = currency_round(self.amount * factor)
+            if (costaccounting is not None) and (new_entry_line.account.type_of_account in (3, 4, 5)):
+                new_entry_line.costaccounting = costaccounting
             new_entry_line.reference = None
             return new_entry_line
         except ObjectDoesNotExist:

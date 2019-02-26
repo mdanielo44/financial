@@ -148,18 +148,16 @@ def default_costaccounting():
 
 
 def add_models():
-    model1 = ModelEntry.objects.create(journal=Journal.objects.get(
-        id=2), designation='achat')
-    ModelLineEntry.objects.create(model=model1, code='411', third=Third.objects.get(
-        id=3), amount=19.37)
-    ModelLineEntry.objects.create(
-        model=model1, code='512', amount=-19.37)
-    model2 = ModelEntry.objects.create(journal=Journal.objects.get(
-        id=3), designation='vente')
-    ModelLineEntry.objects.create(model=model2, code='401', third=Third.objects.get(
-        id=6), amount=-68.47)
-    ModelLineEntry.objects.create(
-        model=model2, code='531', amount=68.47)
+    default_costaccounting()
+    model1 = ModelEntry.objects.create(journal=Journal.objects.get(id=2), designation='achat')
+    ModelLineEntry.objects.create(model=model1, code='411', third=Third.objects.get(id=3), amount=19.37)
+    ModelLineEntry.objects.create(model=model1, code='512', amount=-19.37)
+    model2 = ModelEntry.objects.create(journal=Journal.objects.get(id=3), designation='vente')
+    ModelLineEntry.objects.create(model=model2, code='401', third=Third.objects.get(id=6), amount=-68.47)
+    ModelLineEntry.objects.create(model=model2, code='531', amount=68.47)
+    model3 = ModelEntry.objects.create(journal=Journal.objects.get(id=2), designation='service', costaccounting_id=2)
+    ModelLineEntry.objects.create(model=model3, code='411', third=Third.objects.get(id=3), amount=-37.91)
+    ModelLineEntry.objects.create(model=model3, code='601', amount=37.91)
 
 
 def set_accounting_system(country='FR'):

@@ -29,7 +29,7 @@ from _io import BytesIO
 from django.conf import settings
 from django.db import models
 from django.db.models import Q
-from django.db.models.aggregates import Sum
+from django.db.models.aggregates import Sum, Max
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.utils.translation import ugettext_lazy as _
 from django.utils.module_loading import import_module
@@ -236,23 +236,45 @@ class Supporting(LucteriosModel):
 class BankAccount(LucteriosModel):
     designation = models.TextField(_('designation'), null=False)
     reference = models.CharField(_('reference'), max_length=200, null=False)
-    account_code = models.CharField(
-        _('account code'), max_length=50, null=False)
+    account_code = models.CharField(_('account code'), max_length=50, null=False)
+    order_key = models.IntegerField(verbose_name=_('order key'), null=True, default=None)
+    is_disabled = models.BooleanField(verbose_name=_('is disabled'), default=False)
 
     @classmethod
     def get_default_fields(cls):
-        return ["designation", "reference", "account_code"]
+        return ["order_key", "designation", "reference", "account_code"]
+
+    @classmethod
+    def get_edit_fields(cls):
+        return ["designation", "reference", "account_code", "is_disabled"]
 
     def __str__(self):
         return self.designation
 
+    def up_order(self):
+        prec_banks = BankAccount.objects.filter(order_key__lt=self.order_key).order_by('-order_key')
+        if len(prec_banks) > 0:
+            prec_bank = prec_banks[0]
+            order_key = prec_bank.order_key
+            prec_bank.order_key = self.order_key
+            self.order_key = order_key
+            prec_bank.save()
+            self.save()
+
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         self.account_code = correct_accounting_code(self.account_code)
+        if self.order_key is None:
+            val = BankAccount.objects.all().aggregate(Max('order_key'))
+            if val['order_key__max'] is None:
+                self.order_key = 1
+            else:
+                self.order_key = val['order_key__max'] + 1
         return LucteriosModel.save(self, force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields)
 
     class Meta(object):
         verbose_name = _('bank account')
         verbose_name_plural = _('bank accounts')
+        ordering = ['order_key']
 
 
 class Payoff(LucteriosModel):
@@ -289,6 +311,10 @@ class Payoff(LucteriosModel):
     @property
     def value(self):
         return format_devise(self.amount, 5)
+
+    @property
+    def bank_account_query(self):
+        return BankAccount.objects.filter(is_disabled=False)
 
     def delete_accounting(self):
         if self.entry is not None:
@@ -819,17 +845,18 @@ def check_payoff_accounting():
                     pass
 
 
+def check_bank_account():
+    for bank in BankAccount.objects.filter(order_key__isnull=True).order_by('id'):
+        bank.save()
+
+
 @Signal.decorate('checkparam')
 def payoff_checkparam():
     Parameter.check_and_create(name='payoff-bankcharges-account', typeparam=0, title=_("payoff-bankcharges-account"),
                                args="{'Multi':False}", value='', meta='("accounting","ChartsAccount", Q(type_of_account=4) & Q(year__is_actif=True), "code", False)')
-    Parameter.check_and_create(
-        name='payoff-cash-account',
-        typeparam=0,
-        title=_("payoff-cash-account"),
-        args="{'Multi':False}",
-        value='',
-        meta='("accounting","ChartsAccount","import diacamma.accounting.tools;django.db.models.Q(code__regex=diacamma.accounting.tools.current_system_account().get_cash_mask()) & django.db.models.Q(year__is_actif=True)", "code", True)')
+    Parameter.check_and_create(name='payoff-cash-account', typeparam=0, title=_("payoff-cash-account"),
+                               args="{'Multi':False}", value='', meta='("accounting","ChartsAccount","import diacamma.accounting.tools;django.db.models.Q(code__regex=diacamma.accounting.tools.current_system_account().get_cash_mask()) & django.db.models.Q(year__is_actif=True)", "code", True)')
     Parameter.check_and_create(name='payoff-email-message', typeparam=0, title=_("payoff-email-message"),
                                args="{'Multi':True, 'HyperText': True}", value=_('%(name)s{[br/]}{[br/]}Joint in this email %(doc)s.{[br/]}{[br/]}Regards'))
     check_payoff_accounting()
+    check_bank_account()

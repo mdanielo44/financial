@@ -44,12 +44,14 @@ def default_bankaccount_fr():
     create_account(['581'], 0, FiscalYear.get_current())
     BankAccount.objects.create(designation="My bank", reference="0123 456789 321654 12", account_code="512")
     BankAccount.objects.create(designation="PayPal", reference="paypal@moi.com", account_code="581")
+    BankAccount.objects.create(designation="Old", reference="Old", account_code="531", is_disabled=True)
 
 
 def default_bankaccount_be():
     create_account(['552000'], 0, FiscalYear.get_current())
     BankAccount.objects.create(designation="My bank", reference="0123 456789 321654 12", account_code="550000")
     BankAccount.objects.create(designation="PayPal", reference="paypal@moi.com", account_code="552000")
+    BankAccount.objects.create(designation="Old", reference="Old", account_code="570000", is_disabled=True)
 
 
 def default_paymentmethod():

@@ -440,6 +440,15 @@ class FiscalYearTrialBalance(FiscalYearReport):
     def fill_filterCode(self):
         FiscalYearReport.fill_filterCode(self)
         row = self.get_max_row() + 1
+
+        self.only_nonull = self.getparam('only_nonull', False)
+        edt = XferCompCheck('only_nonull')
+        edt.set_value(self.only_nonull)
+        edt.set_location(1, row)
+        edt.description = _("Only no null")
+        edt.set_action(self.request, self.__class__.get_action(), close=CLOSE_NO, modal=FORMTYPE_REFRESH)
+        self.add_component(edt)
+
         self.with_third = self.getparam('with_third', False)
         edt = XferCompCheck('with_third')
         edt.set_value(self.with_third)
@@ -488,16 +497,17 @@ class FiscalYearTrialBalance(FiscalYearReport):
         balance_values = self._get_balance_values()
         keys = sorted(balance_values.keys())
         for key in keys:
-            add_cell_in_grid(self.grid, self.line_offset + line_idx, 'designation', balance_values[key][0])
-            add_cell_in_grid(self.grid, self.line_offset + line_idx, 'total_debit', format_devise(balance_values[key][1], 5))
-            add_cell_in_grid(self.grid, self.line_offset + line_idx, 'total_credit', format_devise(balance_values[key][2], 5))
             diff = balance_values[key][1] - balance_values[key][2]
-            add_cell_in_grid(self.grid, self.line_offset + line_idx, 'solde_debit', format_devise(max(0, diff), 0))
-            if abs(diff) < 0.0001:
-                add_cell_in_grid(self.grid, self.line_offset + line_idx, 'solde_credit', format_devise(0, 5))
-            else:
-                add_cell_in_grid(self.grid, self.line_offset + line_idx, 'solde_credit', format_devise(max(0, -1 * diff), 0))
-            line_idx += 1
+            if (self.only_nonull is False) or (abs(diff) > 0.0001):
+                add_cell_in_grid(self.grid, self.line_offset + line_idx, 'designation', balance_values[key][0])
+                add_cell_in_grid(self.grid, self.line_offset + line_idx, 'total_debit', format_devise(balance_values[key][1], 5))
+                add_cell_in_grid(self.grid, self.line_offset + line_idx, 'total_credit', format_devise(balance_values[key][2], 5))
+                add_cell_in_grid(self.grid, self.line_offset + line_idx, 'solde_debit', format_devise(max(0, diff), 0))
+                if abs(diff) < 0.0001:
+                    add_cell_in_grid(self.grid, self.line_offset + line_idx, 'solde_credit', format_devise(0, 5))
+                else:
+                    add_cell_in_grid(self.grid, self.line_offset + line_idx, 'solde_credit', format_devise(max(0, -1 * diff), 0))
+                line_idx += 1
 
 
 @MenuManage.describ('accounting.change_fiscalyear')
@@ -761,3 +771,4 @@ class CostAccountingTrialBalance(CostAccountingReport, FiscalYearTrialBalance):
     def fill_filterCode(self):
         FiscalYearReport.fill_filterCode(self)
         self.with_third = False
+        self.only_nonull = False

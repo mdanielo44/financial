@@ -516,10 +516,9 @@ class EntryAccountModelSelector(XferContainerAcknowledge):
                 if old_key in self.params.keys():
                     del self.params[old_key]
             year = FiscalYear.get_current(self.getparam('year'))
-            serial_entry = model.get_serial_entry(factor, year)
+            serial_entry = model.get_serial_entry(factor, year, model.costaccounting)
             date_value = date.today().isoformat()
-            entry = EntryAccount.objects.create(year=year, date_value=date_value, designation=model.designation,
-                                                journal=model.journal, costaccounting=model.costaccounting)
+            entry = EntryAccount.objects.create(year=year, date_value=date_value, designation=model.designation, journal=model.journal)
             entry.editor.before_save(self)
             self.params["entryaccount"] = entry.id
             self.redirect_action(EntryAccountEdit.get_action(), params={"serial_entry": serial_entry})

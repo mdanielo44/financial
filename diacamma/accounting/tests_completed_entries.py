@@ -1129,6 +1129,17 @@ class CompletedEntryTest(LucteriosTest):
         self.assert_observer('core.custom', 'diacamma.accounting', 'fiscalYearTrialBalance')
         self._check_result_with_filter()
 
+    def test_fiscalyear_trialbalance_third(self):
+        self.factory.xfer = FiscalYearTrialBalance()
+        self.calljson('/diacamma.accounting/fiscalYearTrialBalance', {'filtercode': '4', 'with_third': 1}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'fiscalYearTrialBalance')
+        self.assert_count_equal('report_1', 6)
+
+        self.factory.xfer = FiscalYearTrialBalance()
+        self.calljson('/diacamma.accounting/fiscalYearTrialBalance', {'filtercode': '4', 'with_third': 1, 'only_nonull': 1}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'fiscalYearTrialBalance')
+        self.assert_count_equal('report_1', 3)
+
     def test_fiscalyear_trialbalance_print(self):
         self.factory.xfer = FiscalYearReportPrint()
         self.calljson('/diacamma.accounting/fiscalYearReportPrint', {'classname': 'FiscalYearTrialBalance', "PRINT_MODE": 3}, False)
