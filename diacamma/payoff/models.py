@@ -435,7 +435,7 @@ class Payoff(LucteriosModel):
             amount_sum += supporting.get_final_child().get_total_rest_topay()
             amount_max += supporting.get_final_child().get_max_payoff()
             supporting_list.append(supporting)
-        if abs(amount_sum) < 0.0001:
+        if abs(amount_max) < 0.0001:
             raise LucteriosException(IMPORTANT, _('No-valid selection!'))
         if (amount > amount_sum) and (amount_sum < amount_max):
             amount_sum = amount
@@ -450,14 +450,19 @@ class Payoff(LucteriosModel):
             if repartition == 0:
                 new_paypoff.amount = currency_round(supporting.get_total_rest_topay() * amount / amount_sum)
             else:
-                new_paypoff.amount = min(supporting.get_total_rest_topay(), amount_rest)
+                total_rest_topay = supporting.get_total_rest_topay()
+                new_paypoff.amount = min(total_rest_topay, amount_rest)
             if new_paypoff.amount > 0.0001:
                 amount_rest -= float(new_paypoff.amount)
                 new_paypoff.save(do_generate=False)
                 paypoff_list.append(new_paypoff)
+            else:
+                new_paypoff.amount = 0
         if abs(amount_rest) > 0.001:
             new_paypoff.amount += amount_rest
             new_paypoff.save(do_generate=False)
+            if new_paypoff not in paypoff_list:
+                paypoff_list.append(new_paypoff)
         third_amounts = {}
         designation_items = []
         for paypoff_item in paypoff_list:
