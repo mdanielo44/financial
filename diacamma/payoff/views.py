@@ -55,7 +55,7 @@ from lucterios.CORE.models import PrintModel
 from lucterios.CORE.parameters import Params
 
 
-@ActionsManage.affect_grid(TITLE_ADD, "images/add.png", condition=lambda xfer, gridname='': xfer.item.get_max_payoff() > 0.001)
+@ActionsManage.affect_grid(TITLE_ADD, "images/add.png", condition=lambda xfer, gridname='': abs(xfer.item.get_total_rest_topay()) > 0.001)
 @ActionsManage.affect_grid(TITLE_MODIFY, "images/edit.png", unique=SELECT_SINGLE)
 @MenuManage.describ('payoff.add_payoff')
 class PayoffAddModify(XferAddEditor):
@@ -68,6 +68,8 @@ class PayoffAddModify(XferAddEditor):
     def fillresponse_multisave(self, supportings=(), amount=0.0,
                                mode=0, payer='', reference='',
                                bank_account=0, date=None, fee_bank=0.0, repartition=0):
+        if self.item.id is not None:
+            self.item.delete()
         Payoff.multi_save(supportings, amount, mode, payer, reference, bank_account, date, fee_bank, repartition)
 
     def run_save(self, request, *args, **kwargs):
@@ -84,6 +86,18 @@ class PayoffAddModify(XferAddEditor):
             return multisave.get(request, *args, **kwargs)
         else:
             return XferAddEditor.run_save(self, request, *args, **kwargs)
+
+    def fillresponse(self):
+        if self.item.id is not None:
+            self.items = Payoff.objects.filter(entry=self.item.entry)
+            amount = 0
+            supportings = []
+            for item in self.items:
+                supportings.append(six.text_type(item.supporting.id))
+                amount += item.amount
+            self.params['supportings'] = ";".join(supportings)
+            self.params['amount'] = amount
+        XferAddEditor.fillresponse(self)
 
 
 @ActionsManage.affect_grid(TITLE_DELETE, "images/delete.png", unique=SELECT_MULTI)

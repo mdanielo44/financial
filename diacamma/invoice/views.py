@@ -86,15 +86,30 @@ def _add_bill_filter(xfer, row, with_third=False):
     sel_list.append((-2, None))
     edt = XferCompSelect("status_filter")
     edt.set_select(sel_list)
-    edt.description = _('Filter by type')
+    edt.description = _('Filter by status')
     edt.set_value(status_filter)
     edt.set_location(0, row)
     edt.set_action(xfer.request, xfer.get_action(), modal=FORMTYPE_REFRESH, close=CLOSE_NO)
     xfer.add_component(edt)
+
+    type_filter = xfer.getparam('type_filter', -1)
+    dep_field = Bill.get_field_by_name('bill_type')
+    sel_list = list(dep_field.choices)
+    sel_list.insert(0, (-1, None))
+    edt = XferCompSelect("type_filter")
+    edt.set_select(sel_list)
+    edt.description = _('Filter by type')
+    edt.set_value(type_filter)
+    edt.set_location(0, row + 1)
+    edt.set_action(xfer.request, xfer.get_action(), modal=FORMTYPE_REFRESH, close=CLOSE_NO)
+    xfer.add_component(edt)
+
     if status_filter >= 0:
         current_filter &= Q(status=status_filter)
     elif status_filter == -1:
         current_filter &= Q(status=0) | Q(status=1)
+    if type_filter >= 0:
+        current_filter &= Q(bill_type=type_filter)
     return current_filter, status_filter
 
 
@@ -175,7 +190,7 @@ class BillShow(XferShowEditor):
                             close=CLOSE_NO, params={'item_name': self.field_id}, pos_act=0)
 
 
-@ActionsManage.affect_transition("status")
+@ActionsManage.affect_transition("status", multi_list=('archive',))
 @MenuManage.describ('invoice.add_bill')
 class BillTransition(XferTransition):
     icon = "bill.png"

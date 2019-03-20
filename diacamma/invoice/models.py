@@ -494,6 +494,20 @@ class Bill(Supporting):
     def get_current_date(self):
         return self.date
 
+    def get_min_payoff(self, ignore_payoff=-1):
+        min_payoff = min(0, self.get_total_rest_topay(ignore_payoff) * 1.5)
+        if abs(min_payoff) < 0.00001:
+            currency_decimal = Params.getvalue("accounting-devise-prec")
+            min_payoff = 1 * 10 ** (-1 * currency_decimal)
+        return min_payoff
+
+    def get_max_payoff(self, ignore_payoff=-1):
+        max_payoff = max(self.get_total_rest_topay(ignore_payoff) * 1.5, 0)
+        if abs(max_payoff) < 0.00001:
+            currency_decimal = Params.getvalue("accounting-devise-prec")
+            max_payoff = -1 * 10 ** (-1 * currency_decimal)
+        return max_payoff
+
     def get_total_excltax(self):
         val = 0
         for detail in self.detail_set.all():

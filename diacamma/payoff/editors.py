@@ -130,7 +130,7 @@ class BankAccountEditor(LucteriosEditor):
 class PayoffEditor(LucteriosEditor):
 
     def before_save(self, xfer):
-        if float(self.item.amount) < 0.0001:
+        if abs(float(self.item.amount)) < 0.0001:
             raise LucteriosException(IMPORTANT, _("payoff null!"))
         info = self.item.supporting.check_date(self.item.date)
         if len(info) > 0:
@@ -150,6 +150,7 @@ class PayoffEditor(LucteriosEditor):
         else:
             supporting_list = [self.item.supporting]
         amount_max = 0
+        amount_min = 0
         amount_sum = xfer.getparam('amount', 0.0)
         title = []
         if self.item.id is None:
@@ -161,6 +162,7 @@ class PayoffEditor(LucteriosEditor):
             title.append(six.text_type(up_supporting))
             if xfer.getparam('amount') is None:
                 amount_sum += up_supporting.get_total_rest_topay()
+            amount_min += up_supporting.get_min_payoff(current_payoff)
             amount_max += up_supporting.get_max_payoff(current_payoff)
         xfer.move(0, 0, 1)
         lbl = XferCompLabelForm('supportings')
@@ -179,14 +181,14 @@ class PayoffEditor(LucteriosEditor):
                 xfer.change_to_readonly('repartition')
         amount = xfer.get_components("amount")
         if self.item.id is None:
-            amount.value = max(0.0, amount_sum)
-            xfer.get_components("payer").value = six.text_type(
-                supporting_list[0].third)
+            amount.value = min(max(amount_min, amount_sum), amount_max)
+            xfer.get_components("payer").value = six.text_type(supporting_list[0].third)
             if xfer.getparam('date') is None:
-                xfer.get_components("date").value = supporting_list[
-                    0].get_final_child().default_date()
+                xfer.get_components("date").value = supporting_list[0].get_final_child().default_date()
+        elif xfer.getparam('amount') is not None:
+            amount.value = amount_sum
         amount.prec = currency_decimal
-        amount.min = 0.0
+        amount.min = float(amount_min)
         amount.max = float(amount_max)
         mode = xfer.get_components("mode")
         banks = xfer.get_components("bank_account")

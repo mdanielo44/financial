@@ -89,6 +89,9 @@ class Supporting(LucteriosModel):
     def get_third_masks_by_amount(self, amount):
         return [(self.get_third_mask(), amount)]
 
+    def get_min_payoff(self, ignore_payoff=-1):
+        return 0
+
     def get_max_payoff(self, ignore_payoff=-1):
         return self.get_total_rest_topay(ignore_payoff)
 
@@ -447,7 +450,7 @@ class Payoff(LucteriosModel):
             if repartition == 0:
                 new_paypoff.amount = currency_round(supporting.get_total_rest_topay() * amount / amount_sum)
             else:
-                new_paypoff.amount = min(supporting.get_max_payoff(), amount_rest)
+                new_paypoff.amount = min(supporting.get_total_rest_topay(), amount_rest)
             if new_paypoff.amount > 0.0001:
                 amount_rest -= float(new_paypoff.amount)
                 new_paypoff.save(do_generate=False)

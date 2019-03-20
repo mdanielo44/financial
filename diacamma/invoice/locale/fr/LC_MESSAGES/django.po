@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-01-26 09:19+0000\n"
+"POT-Creation-Date: 2019-03-20 13:35+0000\n"
 "PO-Revision-Date: 2016-01-14 21:59+0000\n"
 "Last-Translator: b'Paul ARULATEDA <paul531@orange.fr>'\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -64,7 +64,7 @@ msgstr "002@Fournisseur"
 msgid "price excl. taxes"
 msgstr "prix HT"
 
-#: editors.py:188 editors.py:192 printmodel/Bill_0001.py:134 views.py:136
+#: editors.py:188 editors.py:192 printmodel/Bill_0001.py:134 views.py:137
 msgid "total excl. taxes"
 msgstr "total HT"
 
@@ -73,7 +73,7 @@ msgid "price incl. taxes"
 msgstr "prix TTC"
 
 #: editors.py:191 editors.py:193 models.py:479 printmodel/Bill_0001.py:135
-#: views.py:138
+#: views.py:139
 msgid "total incl. taxes"
 msgstr "total TTC"
 
@@ -85,12 +85,12 @@ msgstr "total TVA"
 msgid "provider"
 msgstr "fournisseur"
 
-#: editors.py:251 models.py:181 printmodel/Article_0001.py:41 views.py:415
+#: editors.py:251 models.py:181 printmodel/Article_0001.py:41 views.py:416
 #: views_storage.py:267 views_storage.py:392
 msgid "categories"
 msgstr "catégories"
 
-#: editors.py:260 views.py:399 views_storage.py:257 views_storage.py:382
+#: editors.py:260 views.py:400 views_storage.py:257 views_storage.py:382
 msgid "ref./designation"
 msgstr "réf./désignation"
 
@@ -145,7 +145,7 @@ msgid "Storage areas"
 msgstr "Lieux de stockage"
 
 #: models.py:126 models.py:378 models.py:384 models.py:915 models.py:1213
-#: printmodel/Bill_0001.py:127 printmodel/Bill_0002.py:144 views.py:616
+#: printmodel/Bill_0001.py:127 printmodel/Bill_0002.py:144 views.py:619
 msgid "article"
 msgstr "article"
 
@@ -481,8 +481,8 @@ msgstr "par pourcentage"
 msgid "by overall percentage sold"
 msgstr "par pourcentage global vendu"
 
-#: models.py:1297 models.py:1306 models.py:1314 views.py:601 views.py:617
-#: views.py:637
+#: models.py:1297 models.py:1306 models.py:1314 views.py:604 views.py:620
+#: views.py:640
 msgid "amount"
 msgstr "montant"
 
@@ -502,43 +502,43 @@ msgstr "réduction automatique"
 msgid "automatic reduces"
 msgstr "réductions automatiques"
 
-#: models.py:1411
+#: models.py:1420
 msgid "invoice-default-sell-account"
 msgstr "compte de vente par défaut"
 
-#: models.py:1413
+#: models.py:1422
 msgid "invoice-reduce-account"
 msgstr "compte de réduction"
 
-#: models.py:1415
+#: models.py:1424
 msgid "invoice-vat-mode"
 msgstr "mode TVA"
 
-#: models.py:1416
+#: models.py:1425
 msgid "invoice-vat-mode.0"
 msgstr "non applicable"
 
-#: models.py:1416
+#: models.py:1425
 msgid "invoice-vat-mode.1"
 msgstr "prix hors taxe"
 
-#: models.py:1416
+#: models.py:1425
 msgid "invoice-vat-mode.2"
 msgstr "prix toutes taxes comprises"
 
-#: models.py:1417
+#: models.py:1426
 msgid "invoice-account-third"
 msgstr "Compte tiers par défaut"
 
-#: models.py:1421
+#: models.py:1430
 msgid "invoice-article-with-picture"
 msgstr "article avec image"
 
-#: models.py:1422
+#: models.py:1431
 msgid "invoice-reduce-with-ratio"
 msgstr "réduction affichée avec %"
 
-#: models.py:1423
+#: models.py:1432
 msgid "invoice-reduce-allow-article-empty"
 msgstr "autoriser les arcticles sans code dans la facture"
 
@@ -570,7 +570,7 @@ msgstr "total payé"
 msgid "rest to pay"
 msgstr "reste dû"
 
-#: printmodel/Bill_0002.py:31 printmodel/Bill_0002.py:152 views.py:272
+#: printmodel/Bill_0002.py:31 printmodel/Bill_0002.py:152 views.py:273
 msgid "payoff"
 msgstr "règlement"
 
@@ -578,264 +578,268 @@ msgstr "règlement"
 msgid "payoffs"
 msgstr "règlements"
 
-#: views.py:61
+#: views.py:62
 msgid "invoice"
 msgstr "facturier"
 
-#: views.py:61
+#: views.py:62
 msgid "Manage of billing"
 msgstr "Gestion de facturation"
 
-#: views.py:71
+#: views.py:72
 msgid "Filtrer by third"
 msgstr "Filtrer par tiers"
 
-#: views.py:84
+#: views.py:85
 msgid "building+valid"
 msgstr "En construction+validé"
 
-#: views.py:88
+#: views.py:89
 msgid "Filter by type"
 msgstr "Filtrer par type"
 
-#: views.py:100
+#: views.py:101
 msgid "Management of bill list"
 msgstr "Gestion de liste de factures"
 
-#: views.py:105
+#: views.py:106
 msgid "Bill"
 msgstr "Facture"
 
-#: views.py:141
+#: views.py:142
 msgid "To find a bill following a set of criteria."
 msgstr "Pour trouver une facture suivant un ensemble de critères"
 
-#: views.py:146
+#: views.py:147
 msgid "Search bill"
 msgstr "Recherche de facture"
 
-#: views.py:156
+#: views.py:157
 msgid "Add bill"
 msgstr "Ajouter une facture"
 
-#: views.py:157
+#: views.py:158
 msgid "Modify bill"
 msgstr "Modifier une facture"
 
-#: views.py:163
+#: views.py:164
 msgid "Show bill"
 msgstr "Voir une facture"
 
-#: views.py:186 views_storage.py:120
+#: views.py:187 views_storage.py:120
 msgid "Confirmation"
 msgstr "Confirmation"
 
-#: views.py:192 views_storage.py:126
+#: views.py:193 views_storage.py:126
 #, python-format
 msgid "Do you want validate '%s'?"
 msgstr "Voulez-vous valider '%s' ?"
 
-#: views.py:210
+#: views.py:211
 msgid "Payment of deposit or cash"
 msgstr "Payement d'acompte ou comptant"
 
-#: views.py:229
+#: views.py:230
 msgid "Send email with PDF"
 msgstr "Envoyer un courriel avec le PDF"
 
-#: views.py:234
+#: views.py:235
 msgid "subject"
 msgstr "sujet"
 
-#: views.py:238
+#: views.py:239
 msgid "message"
 msgstr "message"
 
-#: views.py:275
+#: views.py:276
 msgid "Multi-pay bill"
 msgstr "Multi-règlement"
 
-#: views.py:284
+#: views.py:285
 msgid "=> Bill"
 msgstr "=> Facture"
 
-#: views.py:287
+#: views.py:288
 msgid "Convert to bill"
 msgstr "Convertir en facture"
 
-#: views.py:293
+#: views.py:294
 #, python-format
 msgid "Do you want convert '%s' to bill?"
 msgstr "Voulez-vous convertir '%s' en facture?"
 
-#: views.py:305
+#: views.py:306
 msgid "Delete bill"
 msgstr "Supprimer une facture"
 
-#: views.py:308 views.py:309 views_summary.py:67
+#: views.py:309 views.py:310 views_summary.py:67
 msgid "Print"
 msgstr "Imprimer"
 
-#: views.py:315
+#: views.py:316
 msgid "Print bill"
 msgstr "Imprimer une facture"
 
-#: views.py:331
+#: views.py:332
 msgid "No invoice to print!"
 msgstr "Pas de facture à imprimer !"
 
-#: views.py:341
+#: views.py:342
 msgid "Add detail"
 msgstr "Ajouter un détail"
 
-#: views.py:342
+#: views.py:343
 msgid "Modify detail"
 msgstr "Modifier un détail"
 
-#: views.py:359
+#: views.py:360
 msgid "Delete detail"
 msgstr "Supprimer un détail"
 
-#: views.py:362
+#: views.py:363
 msgid "Management of article list"
 msgstr "Gestion de la liste d'articles"
 
-#: views.py:367 views.py:653
+#: views.py:368 views.py:656
 msgid "Articles"
 msgstr "Articles"
 
-#: views.py:388
+#: views.py:389
 msgid "Only activate"
 msgstr "Seulement les actifs"
 
-#: views.py:388
+#: views.py:389
 msgid "All"
 msgstr "Tous"
 
-#: views.py:391
+#: views.py:392
 msgid "Show articles"
 msgstr "Voir un article"
 
-#: views.py:438
+#: views.py:439
 msgid "Search"
 msgstr "Recherche"
 
-#: views.py:447
+#: views.py:448
 msgid "Print articles"
 msgstr "Impression d'articles"
 
-#: views.py:479
+#: views.py:480
 msgid "Label articles"
 msgstr "Étiquette d'article"
 
-#: views.py:510
+#: views.py:511
 msgid "Search article"
 msgstr "Rechercher un article"
 
-#: views.py:515
+#: views.py:516
 msgid "Merge"
 msgstr "Fusion"
 
-#: views.py:522
+#: views.py:518
+msgid "duplicate"
+msgstr ""
+
+#: views.py:525
 msgid "Show article"
 msgstr "Voir un article"
 
-#: views.py:535
+#: views.py:538
 msgid "Add article"
 msgstr "Ajouter un article"
 
-#: views.py:536
+#: views.py:539
 msgid "Modify article"
 msgstr "Modifier un article"
 
-#: views.py:545
+#: views.py:548
 msgid "Delete article"
 msgstr "Supprimer un article"
 
-#: views.py:555
+#: views.py:558
 msgid "Add provider"
 msgstr "Ajouter un fournisseur"
 
-#: views.py:556
+#: views.py:559
 msgid "Modify provider"
 msgstr "Modifier un fournisseur"
 
-#: views.py:565
+#: views.py:568
 msgid "Delete provider"
 msgstr "Supprimer un fournisseur"
 
-#: views.py:568
+#: views.py:571
 msgid "Statistic of selling"
 msgstr "Statistiques des ventes"
 
-#: views.py:573
+#: views.py:576
 msgid "Statistic"
 msgstr "Statistiques"
 
-#: views.py:582
+#: views.py:585
 #, python-format
 msgid "Statistics in date of %s"
 msgstr "Statistiques en date du %s"
 
-#: views.py:593
+#: views.py:596
 msgid "Without reduction"
 msgstr "Sans réduction"
 
-#: views.py:600
+#: views.py:603
 msgid "customer"
 msgstr "client"
 
-#: views.py:602 views.py:620 views.py:638
+#: views.py:605 views.py:623 views.py:641
 msgid "ratio (%)"
 msgstr "ratio (%)"
 
-#: views.py:618
+#: views.py:621
 msgid "number"
 msgstr "nombre"
 
-#: views.py:619
+#: views.py:622
 msgid "mean"
 msgstr "moyen"
 
-#: views.py:636
+#: views.py:639
 msgid "month"
 msgstr "mois"
 
-#: views.py:651
+#: views.py:654
 msgid "Customers"
 msgstr "Clients"
 
-#: views.py:655
+#: views.py:658
 msgid "By month"
 msgstr "Par mois"
 
-#: views.py:663
+#: views.py:666
 msgid "Print statistic"
 msgstr "Impression des statistiques"
 
-#: views.py:673
+#: views.py:676
 msgid "Check auto-reduce"
 msgstr "Contrôle de réduction automatique"
 
-#: views.py:679
+#: views.py:682
 msgid "Do you want check auto-reduce ?"
 msgstr "Voulez-vous contrôler les réductions automatiques ?"
 
-#: views.py:708 views.py:733 views.py:756 views_conf.py:224
+#: views.py:711 views.py:736 views.py:759 views_conf.py:224
 msgid "Invoice"
 msgstr "Facturier"
 
-#: views.py:713
+#: views.py:716
 #, python-format
 msgid "You are %d bills"
 msgstr "Vous avez %d factures sur votre compte"
 
-#: views.py:739 views.py:800
+#: views.py:742 views.py:803
 #, python-format
 msgid "There are %(build)d bills in building and %(valid)d validated"
 msgstr "Il y a %(build)d factures en construction et %(valid)d validées"
 
-#: views.py:776
+#: views.py:779
 #, python-format
 msgid ""
 "{[b]}Gross total{[/b]} : %(grosstotal)s - {[b]}total of reduces{[/b]} : "
@@ -844,11 +848,11 @@ msgstr ""
 "{[b]}Total brut{[/b]} : %(grosstotal)s - {[b]}total des réductions{[/b]} : "
 "%(reducetotal)s = {[b]}total à règler{[/b]} : %(total)s"
 
-#: views.py:782
+#: views.py:785
 msgid "Reduce"
 msgstr "Réduction"
 
-#: views.py:796
+#: views.py:799
 msgid "Financial"
 msgstr "Financier"
 
