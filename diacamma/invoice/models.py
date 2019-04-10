@@ -1426,7 +1426,8 @@ def convert_asset_and_revenue():
         bill.is_revenu = bill.payoff_is_revenu()
         bill.save()
         nb_correct += 1
-    six.print_("asset & revenue correction = %d" % nb_correct)
+    if nb_correct > 0:
+        six.print_("asset & revenue correction = %d" % nb_correct)
 
 
 @Signal.decorate('checkparam')
