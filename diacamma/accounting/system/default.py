@@ -74,7 +74,7 @@ class DefaultSystemAccounting(object):
         return ''
 
     def new_charts_account(self, code):
-        return ''
+        return '', -1
 
     def _create_custom_for_profit(self, year, custom, val_profit):
         from django.db.models import Q

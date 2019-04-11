@@ -43,11 +43,9 @@ from lucterios.CORE.editors import XferSavedCriteriaSearchEditor
 from lucterios.contacts.tools import ContactSelection
 from lucterios.contacts.models import AbstractContact
 
-from diacamma.accounting.models import Third, AccountThird, FiscalYear, \
-    EntryLineAccount, ModelLineEntry, EntryAccount, ChartsAccount
+from diacamma.accounting.models import Third, AccountThird, FiscalYear, EntryLineAccount, ModelLineEntry, ChartsAccount
 from diacamma.accounting.views_admin import Configuration, add_year_info
-from diacamma.accounting.tools import correct_accounting_code,\
-    current_system_account
+from diacamma.accounting.tools import correct_accounting_code, current_system_account
 
 MenuManage.add_sub("financial", None, "diacamma.accounting/images/financial.png", _("Financial"), _("Financial tools"), 50)
 
