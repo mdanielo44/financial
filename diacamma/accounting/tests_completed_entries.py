@@ -251,7 +251,7 @@ class CompletedEntryTest(LucteriosTest):
         self.calljson('/diacamma.accounting/entryAccountSearch',
                       {'year': '1', 'journal': '-1', 'filter': '0', 'CRITERIA': 'entry.year||8||1//account.code||6||7'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountSearch')
-        self.assert_count_equal('', 22)
+        self.assert_count_equal('', 21)
         self.assert_count_equal('entryline', 3)
 
     def test_listing_search(self):

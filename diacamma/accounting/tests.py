@@ -63,7 +63,7 @@ class ThirdTest(LucteriosTest):
         self.factory.xfer = ThirdAdd()
         self.calljson('/diacamma.accounting/thirdAdd', {}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'thirdAdd')
-        self.assert_comp_equal(('SELECT', 'modelname'), 'contacts.AbstractContact', (2, 0, 3, 1))
+        self.assert_comp_equal(('SELECT', 'modelname'), 'contacts.AbstractContact', (1, 0, 4, 1))
         self.assert_select_equal('modelname', 3)  # nb=3
         self.assert_count_equal('abstractcontact', 8)
 
@@ -89,7 +89,7 @@ class ThirdTest(LucteriosTest):
         self.factory.xfer = ThirdAdd()
         self.calljson('/diacamma.accounting/thirdAdd', {'modelname': 'contacts.LegalEntity'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'thirdAdd')
-        self.assert_comp_equal(('SELECT', 'modelname'), 'contacts.LegalEntity', (2, 0, 3, 1))
+        self.assert_comp_equal(('SELECT', 'modelname'), 'contacts.LegalEntity', (1, 0, 4, 1))
         self.assert_grid_equal('legal_entity', {"name": "nom", "tel1": "tel1", "tel2": "tel2", "email": "courriel"}, 3)  # nb=4
 
         self.factory.xfer = ThirdSave()
@@ -122,7 +122,7 @@ class ThirdTest(LucteriosTest):
         self.factory.xfer = ThirdAdd()
         self.calljson('/diacamma.accounting/thirdAdd', {'modelname': 'contacts.Individual'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'thirdAdd')
-        self.assert_comp_equal(('SELECT', 'modelname'), 'contacts.Individual', (2, 0, 3, 1))
+        self.assert_comp_equal(('SELECT', 'modelname'), 'contacts.Individual', (1, 0, 4, 1))
         self.assert_grid_equal('individual', {"firstname": "prénom", "lastname": "nom", "tel1": "tel1", "tel2": "tel2", "email": "courriel"}, 5)  # nb=5
 
         self.factory.xfer = ThirdSave()
