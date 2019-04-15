@@ -42,8 +42,10 @@ from lucterios.CORE.xferprint import XferPrintListing
 from lucterios.CORE.views import ObjectMerge
 
 from diacamma.accounting.models import ChartsAccount, FiscalYear
-from django.utils import six
+from django.utils import six, formats
 from os.path import basename
+from datetime import date
+from lucterios.framework.models import get_value_if_choices
 
 MenuManage.add_sub("bookkeeping", "financial", "diacamma.accounting/images/accounting.png", _("Bookkeeping"), _("Manage of Bookkeeping"), 30)
 
@@ -217,6 +219,19 @@ class ChartsAccountListing(XferPrintListing):
         else:
             new_filter = XferPrintListing.get_filter(self)
         return new_filter
+
+    def fillresponse(self):
+        self.caption = _("Listing charts of account") + " - " + formats.date_format(date.today(), "DATE_FORMAT")
+        if self.getparam('CRITERIA') is None:
+            info_list = []
+            select_year = self.getparam('year')
+            info_list.append("{[b]}{[u]}%s{[/u]}{[/b]} : %s" % (_('fiscal year'), six.text_type(FiscalYear.get_current(select_year))))
+            select_type = self.getparam('type_of_account', 0)
+            if select_type >= 0:
+                dep_field = self.item.get_field_by_name("type_of_account")
+                info_list.append("{[b]}{[u]}%s{[/u]}{[/b]} : %s" % (dep_field.verbose_name, get_value_if_choices(select_type, dep_field)))
+            self.info = '{[br]}'.join(info_list)
+        XferPrintListing.fillresponse(self)
 
 
 @ActionsManage.affect_list(_('Last fiscal year'), 'images/edit.png',

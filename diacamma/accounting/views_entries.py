@@ -43,6 +43,7 @@ from lucterios.CORE.parameters import Params
 from diacamma.accounting.models import EntryLineAccount, EntryAccount, FiscalYear, Journal, AccountLink, current_system_account, CostAccounting, ModelEntry
 from django.db.models.expressions import Case, When, ExpressionWrapper
 from django.db.models.fields import DecimalField
+from django.utils import formats, six
 
 
 @MenuManage.describ('accounting.change_entryaccount', FORMTYPE_NOMODAL, 'bookkeeping', _('Edition of accounting entry for current fiscal year'),)
@@ -198,6 +199,21 @@ class EntryAccountListing(XferPrintListing):
         else:
             new_filter = XferPrintListing.get_filter(self)
         return new_filter
+
+    def fillresponse(self):
+        self.caption = _("Listing accounting entry") + " - " + formats.date_format(date.today(), "DATE_FORMAT")
+        if self.getparam('CRITERIA') is None:
+            info_list = []
+            select_year = self.getparam('year')
+            info_list.append("{[b]}{[u]}%s{[/u]}{[/b]} : %s" % (_('fiscal year'), six.text_type(FiscalYear.get_current(select_year))))
+            select_journal = self.getparam('journal', 4)
+            if select_journal >= 0:
+                info_list.append("{[b]}{[u]}%s{[/u]}{[/b]} : %s" % (_('journal'), six.text_type(Journal.objects.get(id=select_journal))))
+            select_filter = self.getparam('filter', 1)
+            select_filter_list = {0: _('All'), 1: _('In progress'), 2: _('Valid'), 3: _('Lettered'), 4: _('Not lettered')}
+            info_list.append("{[b]}{[u]}%s{[/u]}{[/b]} : %s" % (_("Filter"), select_filter_list[select_filter]))
+            self.info = '{[br]}'.join(info_list)
+        XferPrintListing.fillresponse(self)
 
 
 @ActionsManage.affect_grid(TITLE_DELETE, 'images/delete.png', unique=SELECT_MULTI, condition=lambda xfer, gridname='': (xfer.item.year.status in [0, 1]) and (xfer.getparam('filter', 0) != 2))

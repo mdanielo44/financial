@@ -29,7 +29,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.db.models.query import QuerySet
 from django.db.models.functions import Concat
 from django.db.models import Q, Value
-from django.utils import six
+from django.utils import six, formats
 
 from lucterios.framework import signal_and_lock
 from lucterios.framework.xferadvance import XferListEditor, XferAddEditor, XferShowEditor, XferDelete,\
@@ -248,8 +248,7 @@ class ThirdListing(XferPrintListing):
     caption = _("Listing third")
 
     def filter_callback(self, items):
-        items = sorted(items, key=lambda t: six.text_type(
-            t))
+        items = sorted(items, key=lambda t: six.text_type(t))
         if (self.getparam('CRITERIA') is None) and (self.getparam('show_filter', 0) == 2):
             items = [item for item in items if abs(item.get_total()) > 0.0001]
         res = QuerySet(model=Third)
@@ -259,15 +258,40 @@ class ThirdListing(XferPrintListing):
     def get_filter(self):
         if self.getparam('CRITERIA') is None:
             contact_filter = self.getparam('filter', '')
+            thirdtype = self.getparam('thirdtype', 0)
             new_filter = Q(status=0)
             if contact_filter != "":
                 q_legalentity = Q(contact__legalentity__name__icontains=contact_filter)
                 q_individual = (Q(contact__individual__firstname__icontains=contact_filter) | Q(
                     contact__individual__lastname__icontains=contact_filter))
                 new_filter &= (q_legalentity | q_individual)
+            if thirdtype == 1:
+                new_filter &= Q(accountthird__code__regex=current_system_account().get_customer_mask())
+            elif thirdtype == 2:
+                new_filter &= Q(accountthird__code__regex=current_system_account().get_provider_mask())
+            elif thirdtype == 3:
+                new_filter &= Q(accountthird__code__regex=current_system_account().get_societary_mask())
+            elif thirdtype == 4:
+                new_filter &= Q(accountthird__code__regex=current_system_account().get_employed_mask())
         else:
             new_filter = XferPrintListing.get_filter(self)
         return new_filter
+
+    def fillresponse(self):
+        self.caption = _("Listing third") + " - " + formats.date_format(date.today(), "DATE_FORMAT")
+        if self.getparam('CRITERIA') is None:
+            info_list = []
+            contact_filter = self.getparam('filter', '')
+            thirdtype = self.getparam('thirdtype', 0)
+            if contact_filter != "":
+                info_list.append("{[b]}{[u]}%s{[/u]}{[/b]} : %s" % (_('Filtrer by contact'), contact_filter))
+            thirdtype_list = {1: _('Customer'), 2: _('Provider'), 3: _('Shareholder'), 4: _('Employee')}
+            if thirdtype != 0:
+                info_list.append("{[b]}{[u]}%s{[/u]}{[/b]} : %s" % (_('Third type'), thirdtype_list[thirdtype]))
+            if (self.getparam('show_filter', 0) == 2):
+                info_list.append("{[b]}{[u]}%s{[/u]}{[/b]} : %s" % (_('Accounts displayed'), _('Filter any thirds unbalanced')))
+            self.info = '{[br]}'.join(info_list)
+        XferPrintListing.fillresponse(self)
 
 
 @ActionsManage.affect_grid(TITLE_ADD, "images/add.png", unique=SELECT_NONE)
