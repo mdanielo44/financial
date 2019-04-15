@@ -29,7 +29,6 @@ from datetime import date
 from django.utils import formats
 
 from lucterios.framework.test import LucteriosTest
-from lucterios.framework.xfergraphic import XferContainerAcknowledge
 from lucterios.framework.filetools import get_user_dir
 
 from diacamma.accounting.views_entries import EntryAccountList, \
@@ -375,8 +374,10 @@ class EntryTest(LucteriosTest):
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountValidate')
 
         self.factory.xfer = EntryLineAccountEdit()
-        self.calljson('/diacamma.accounting/entryLineAccountEdit', {'year': 1, 'debit_val': 0, 'date_value': '2015-02-13', 'num_cpt_txt': '', 'credit_val': 0, 'entrylineaccount_serial': -
-                                                                    2, 'serial_entry': '-1|4|2|87.230000|0|None|\n-2|11|0|87.230000|2|None|', 'journal': 2, 'designation': 'un plein cadie', 'entryaccount': '1'}, False)
+        self.calljson('/diacamma.accounting/entryLineAccountEdit', {'year': 1, 'debit_val': 0, 'date_value': '2015-02-13', 'num_cpt_txt': '', 'credit_val': 0,
+                                                                    'entrylineaccount_serial': -2,
+                                                                    'serial_entry': '-1|4|2|87.230000|0|None|\n-2|11|0|87.230000|2|None|',
+                                                                    'journal': 2, 'designation': 'un plein cadie', 'entryaccount': '1'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryLineAccountEdit')
         self.assert_count_equal('', 5)
         self.assert_json_equal('LABELFORM', 'account', '[601] 601')

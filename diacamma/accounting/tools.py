@@ -58,7 +58,7 @@ def currency_round(amount):
     currency_decimal = Params.getvalue("accounting-devise-prec")
     try:
         return round(float(amount), currency_decimal)
-    except:
+    except Exception:
         return round(0.0, currency_decimal)
 
 
