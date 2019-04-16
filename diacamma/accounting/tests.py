@@ -466,9 +466,9 @@ class ThirdTest(LucteriosTest):
         self.assertEqual(content_csv[6].strip(), '"Dalton Jack";"411";"0.00€";')
         self.assertEqual(content_csv[7].strip(), '"Dalton Joe";"411";"0.00€";')
         self.assertEqual(content_csv[8].strip(), '"Dalton William";"411";"-125.97€";')
-        self.assertEqual(content_csv[9].strip(), '"Luke Lucky";"411 401";"0.00€";')
+        self.assertEqual(content_csv[9].strip(), '"Luke Lucky";"411,401";"0.00€";')
         self.assertEqual(content_csv[10].strip(), '"Maximum";"401";"78.24€";')
-        self.assertEqual(content_csv[11].strip(), '"Minimum";"411 401";"-34.01€";')
+        self.assertEqual(content_csv[11].strip(), '"Minimum";"411,401";"-34.01€";')
 
         self.factory.xfer = ThirdListing()
         self.calljson('/diacamma.accounting/thirdListing', {'PRINT_MODE': '4', 'MODEL': 5, 'filter': 'joe'}, False)
@@ -490,7 +490,7 @@ class ThirdTest(LucteriosTest):
         self.assertEqual(content_csv[4].strip(), '"contact";"compte";"total";')
         self.assertEqual(content_csv[5].strip(), '"Dalton William";"411";"-125.97€";')
         self.assertEqual(content_csv[6].strip(), '"Maximum";"401";"78.24€";')
-        self.assertEqual(content_csv[7].strip(), '"Minimum";"411 401";"-34.01€";')
+        self.assertEqual(content_csv[7].strip(), '"Minimum";"411,401";"-34.01€";')
 
     def test_list_disable(self):
         fill_thirds_fr()
