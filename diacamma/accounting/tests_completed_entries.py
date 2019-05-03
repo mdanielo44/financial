@@ -32,7 +32,6 @@ from django.utils import six, formats
 from django.db.models import Q
 
 from lucterios.framework.test import LucteriosTest
-from lucterios.framework.xfergraphic import XferContainerAcknowledge
 from lucterios.framework.filetools import get_user_dir, get_user_path
 from lucterios.CORE.models import Parameter
 from lucterios.CORE.parameters import Params
@@ -60,7 +59,7 @@ class CompletedEntryTest(LucteriosTest):
         default_compta_fr(with8=True)
         rmtree(get_user_dir(), True)
         fill_entries_fr(1)
-        add_entry(1, 5, '2015-12-31', 'Bénévolat', '-1|19|0|-1234.000000|0|None|\n-2|18|0|1234.000000|0|None|', True)
+        add_entry(1, 5, '2015-12-31', 'Bénévolat', '-1|19|0|-1234.000000|0|0|None|\n-2|18|0|1234.000000|0|0|None|', True)
         last_year = FiscalYear.objects.create(begin='2014-01-01', end='2014-12-31', status=2)  # id=2
         current_year = FiscalYear.objects.get(id=1)
         current_year.last_fiscalyear = last_year
@@ -77,7 +76,7 @@ class CompletedEntryTest(LucteriosTest):
     def test_lastyear(self):
         self._goto_entrylineaccountlist(1, 0, 3)
         self.assert_json_equal('', 'entryline/@0/entry.num', '1')
-        self.assert_json_equal('', 'entryline/@0/entry.link', '---')
+        self.assert_json_equal('', 'entryline/@0/link', '---')
         self.assert_json_equal('', 'entryline/@0/entry_account', '[106] 106')
         self.assert_json_equal('', 'entryline/@0/credit', '{[font color="green"]}1250.38€{[/font]}')
         self.assert_json_equal('', 'entryline/@1/entry_account', '[512] 512')
@@ -88,19 +87,19 @@ class CompletedEntryTest(LucteriosTest):
     def test_buying(self):
         self._goto_entrylineaccountlist(2, 0, 6)
         self.assert_json_equal('', 'entryline/@0/entry.num', '---')
-        self.assert_json_equal('', 'entryline/@0/entry.link', 'C')
+        self.assert_json_equal('', 'entryline/@0/link', 'C')
         self.assert_json_equal('', 'entryline/@0/entry_account', '[401 Dalton Avrel]')
         self.assert_json_equal('', 'entryline/@0/credit', '{[font color="green"]}194.08€{[/font]}')
         self.assert_json_equal('', 'entryline/@1/entry_account', '[607] 607')
 
         self.assert_json_equal('', 'entryline/@2/entry.num', '2')
-        self.assert_json_equal('', 'entryline/@2/entry.link', 'A')
+        self.assert_json_equal('', 'entryline/@2/link', 'A')
         self.assert_json_equal('', 'entryline/@2/entry_account', '[401 Minimum]')
         self.assert_json_equal('', 'entryline/@2/credit', '{[font color="green"]}63.94€{[/font]}')
         self.assert_json_equal('', 'entryline/@3/entry_account', '[602] 602')
 
         self.assert_json_equal('', 'entryline/@4/entry.num', '---')
-        self.assert_json_equal('', 'entryline/@4/entry.link', '---')
+        self.assert_json_equal('', 'entryline/@4/link', '---')
         self.assert_json_equal('', 'entryline/@4/entry_account', '[401 Maximum]')
         self.assert_json_equal('', 'entryline/@4/credit', '{[font color="green"]}78.24€{[/font]}')
         self.assert_json_equal('', 'entryline/@5/entry_account', '[601] 601')
@@ -108,45 +107,45 @@ class CompletedEntryTest(LucteriosTest):
     def test_selling(self):
         self._goto_entrylineaccountlist(3, 0, 6)
         self.assert_json_equal('', 'entryline/@0/entry.num', '4')
-        self.assert_json_equal('', 'entryline/@0/entry.link', 'E')
+        self.assert_json_equal('', 'entryline/@0/link', 'E')
         self.assert_json_equal('', 'entryline/@0/entry_account', '[411 Dalton Joe]')
         self.assert_json_equal('', 'entryline/@0/debit', '{[font color="blue"]}70.64€{[/font]}')
         self.assert_json_equal('', 'entryline/@1/entry.num', '4')
-        self.assert_json_equal('', 'entryline/@1/entry.link', 'E')
+        self.assert_json_equal('', 'entryline/@1/link', '---')
         self.assert_json_equal('', 'entryline/@1/entry_account', '[707] 707')
 
         self.assert_json_equal('', 'entryline/@2/entry.num', '6')
-        self.assert_json_equal('', 'entryline/@2/entry.link', '---')
+        self.assert_json_equal('', 'entryline/@2/link', '---')
         self.assert_json_equal('', 'entryline/@2/entry_account', '[411 Dalton William]')
         self.assert_json_equal('', 'entryline/@2/debit', '{[font color="blue"]}125.97€{[/font]}')
         self.assert_json_equal('', 'entryline/@3/entry.num', '6')
-        self.assert_json_equal('', 'entryline/@3/entry.link', '---')
+        self.assert_json_equal('', 'entryline/@3/link', '---')
         self.assert_json_equal('', 'entryline/@3/entry_account', '[707] 707')
 
         self.assert_json_equal('', 'entryline/@4/entry.num', '---')
-        self.assert_json_equal('', 'entryline/@4/entry.link', '---')
+        self.assert_json_equal('', 'entryline/@4/link', '---')
         self.assert_json_equal('', 'entryline/@4/entry_account', '[411 Minimum]')
         self.assert_json_equal('', 'entryline/@4/debit', '{[font color="blue"]}34.01€{[/font]}')
         self.assert_json_equal('', 'entryline/@5/entry.num', '---')
-        self.assert_json_equal('', 'entryline/@5/entry.link', '---')
+        self.assert_json_equal('', 'entryline/@5/link', '---')
         self.assert_json_equal('', 'entryline/@5/entry_account', '[707] 707')
 
     def test_payment(self):
         self._goto_entrylineaccountlist(4, 0, 6)
         self.assert_json_equal('', 'entryline/@0/entry.num', '3')
-        self.assert_json_equal('', 'entryline/@0/entry.link', 'A')
+        self.assert_json_equal('', 'entryline/@0/link', 'A')
         self.assert_json_equal('', 'entryline/@0/entry_account', '[401 Minimum]')
         self.assert_json_equal('', 'entryline/@0/debit', '{[font color="blue"]}63.94€{[/font]}')
         self.assert_json_equal('', 'entryline/@1/entry_account', '[512] 512')
 
         self.assert_json_equal('', 'entryline/@2/entry.num', '---')
-        self.assert_json_equal('', 'entryline/@2/entry.link', 'C')
+        self.assert_json_equal('', 'entryline/@2/link', 'C')
         self.assert_json_equal('', 'entryline/@2/entry_account', '[401 Dalton Avrel]')
         self.assert_json_equal('', 'entryline/@2/debit', '{[font color="blue"]}194.08€{[/font]}')
         self.assert_json_equal('', 'entryline/@3/entry_account', '[531] 531')
 
         self.assert_json_equal('', 'entryline/@4/entry.num', '5')
-        self.assert_json_equal('', 'entryline/@4/entry.link', 'E')
+        self.assert_json_equal('', 'entryline/@4/link', 'E')
         self.assert_json_equal('', 'entryline/@4/entry_account', '[411 Dalton Joe]')
         self.assert_json_equal('', 'entryline/@4/credit', '{[font color="green"]}70.64€{[/font]}')
         self.assert_json_equal('', 'entryline/@5/entry_account', '[512] 512')
@@ -154,7 +153,7 @@ class CompletedEntryTest(LucteriosTest):
     def test_other(self):
         self._goto_entrylineaccountlist(5, 0, 4)
         self.assert_json_equal('', 'entryline/@0/entry.num', '7')
-        self.assert_json_equal('', 'entryline/@0/entry.link', '---')
+        self.assert_json_equal('', 'entryline/@0/link', '---')
         self.assert_json_equal('', 'entryline/@0/entry_account', '[512] 512')
         self.assert_json_equal('', 'entryline/@0/credit', '{[font color="green"]}12.34€{[/font]}')
         self.assert_json_equal('', 'entryline/@1/entry_account', '[627] 627')
@@ -202,7 +201,7 @@ class CompletedEntryTest(LucteriosTest):
         self.assertEqual(content_csv[1].strip()[:20], '"Liste d\'écritures -')
         self.assertEqual(content_csv[4].strip(), '"N°";"date d\'écriture";"date de pièce";"compte";"nom";"débit";"crédit";"lettrage";')
         self.assertEqual(content_csv[5].strip(), '"1";"%s";"1 février 2015";"[106] 106";"Report à nouveau";"";"1250.38€";"";' % formats.date_format(date.today(), "DATE_FORMAT"))
-        self.assertEqual(content_csv[9].strip(), '"---";"---";"13 février 2015";"[607] 607";"depense 2";"194.08€";"";"C";')
+        self.assertEqual(content_csv[9].strip(), '"---";"---";"13 février 2015";"[607] 607";"depense 2";"194.08€";"";"";')
 
         self.factory.xfer = EntryAccountListing()
         self.calljson('/diacamma.accounting/entryAccountListing',
@@ -264,7 +263,7 @@ class CompletedEntryTest(LucteriosTest):
         self.assertEqual(len(content_csv), 11, str(content_csv))
         self.assertEqual(content_csv[1].strip()[:20], '"Liste d\'écritures -')
         self.assertEqual(content_csv[4].strip(), '"N°";"date d\'écriture";"date de pièce";"compte";"nom";"débit";"crédit";"lettrage";')
-        self.assertEqual(content_csv[5].strip(), '"4";"%s";"21 février 2015";"[707] 707";"vente 1";"";"70.64€";"E";' % formats.date_format(date.today(), "DATE_FORMAT"))
+        self.assertEqual(content_csv[5].strip(), '"4";"%s";"21 février 2015";"[707] 707";"vente 1";"";"70.64€";"";' % formats.date_format(date.today(), "DATE_FORMAT"))
         self.assertEqual(content_csv[7].strip(), '"---";"---";"24 février 2015";"[707] 707";"vente 3";"";"34.01€";"";')
 
     def test_report_tool(self):

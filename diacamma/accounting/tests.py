@@ -249,13 +249,13 @@ class ThirdTest(LucteriosTest):
         self.assert_select_equal('lines_filter', 3)  # nb=3
         self.assert_count_equal('entryline', 3)
         self.assert_json_equal('', 'entryline/@0/entry.num', '2')
-        self.assert_json_equal('', 'entryline/@0/entry.link', 'A')
+        self.assert_json_equal('', 'entryline/@0/link', 'A')
         self.assert_json_equal('', 'entryline/@0/credit', '{[font color="green"]}63.94€{[/font]}')
         self.assert_json_equal('', 'entryline/@1/entry.num', '3')
-        self.assert_json_equal('', 'entryline/@1/entry.link', 'A')
+        self.assert_json_equal('', 'entryline/@1/link', 'A')
         self.assert_json_equal('', 'entryline/@1/debit', '{[font color="blue"]}63.94€{[/font]}')
         self.assert_json_equal('', 'entryline/@2/entry.num', '---')
-        self.assert_json_equal('', 'entryline/@2/entry.link', '---')
+        self.assert_json_equal('', 'entryline/@2/link', '---')
         self.assert_json_equal('', 'entryline/@2/debit', '{[font color="blue"]}34.01€{[/font]}')
 
         self.factory.xfer = AccountThirdDel()
@@ -280,7 +280,7 @@ class ThirdTest(LucteriosTest):
         self.assert_json_equal('SELECT', 'lines_filter', '0')
         self.assert_select_equal('lines_filter', 3)  # nb=3
         self.assert_grid_equal('entryline', {"entry.num": "N°", "entry.date_entry": "date d'écriture", "entry.date_value": "date de pièce", "designation_ref": "nom",
-                                             "entry_account": "compte", 'debit': 'débit', 'credit': 'crédit', "costaccounting": "comptabilité analytique", "entry.link": "lettrage"}, 3)
+                                             "entry_account": "compte", 'debit': 'débit', 'credit': 'crédit', "costaccounting": "comptabilité analytique", "link": "lettrage"}, 3)
 
         self.factory.xfer = ThirdShow()
         self.calljson('/diacamma.accounting/thirdShow', {"third": 4, 'lines_filter': 1}, False)
@@ -938,8 +938,8 @@ class ModelTest(LucteriosTest):
         self.assertEqual(self.response_json["action"]["id"], "diacamma.accounting/entryAccountEdit")
         self.assertEqual(len(self.response_json["action"]["params"]), 1)
         serial_entry = self.response_json["action"]["params"]['serial_entry'].split('\n')
-        self.assertEqual(serial_entry[0][-22:], "|1|3|48.430000|0|None|", serial_entry[0])
-        self.assertEqual(serial_entry[1][-23:], "|2|0|-48.430000|0|None|", serial_entry[1])
+        self.assertEqual(serial_entry[0][-24:], "|1|3|48.430000|0|0|None|", serial_entry[0])
+        self.assertEqual(serial_entry[1][-25:], "|2|0|-48.430000|0|0|None|", serial_entry[1])
 
     def test_insert_with_costaccounting(self):
         add_models()
@@ -952,5 +952,5 @@ class ModelTest(LucteriosTest):
         self.assertEqual(self.response_json["action"]["id"], "diacamma.accounting/entryAccountEdit")
         self.assertEqual(len(self.response_json["action"]["params"]), 1)
         serial_entry = self.response_json["action"]["params"]['serial_entry'].split('\n')
-        self.assertEqual(serial_entry[0][-23:], "|1|3|-37.910000|0|None|", serial_entry[0])
-        self.assertEqual(serial_entry[1][-23:], "|11|0|37.910000|2|None|", serial_entry[1])
+        self.assertEqual(serial_entry[0][-25:], "|1|3|-37.910000|0|0|None|", serial_entry[0])
+        self.assertEqual(serial_entry[1][-25:], "|11|0|37.910000|2|0|None|", serial_entry[1])

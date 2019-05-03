@@ -42,7 +42,7 @@ from lucterios.CORE.parameters import Params
 from diacamma.accounting.tools import current_system_account, format_devise
 from diacamma.accounting.models import CostAccounting, FiscalYear, Third
 from diacamma.payoff.editors import SupportingEditor
-from diacamma.invoice.models import Provider, Category, CustomField
+from diacamma.invoice.models import Provider, Category, CustomField, Article
 
 
 class VatEditor(LucteriosEditor):
@@ -205,6 +205,17 @@ class BillEditor(SupportingEditor):
 
 class DetailFilter(object):
 
+    def refresh_article(self, xfer):
+        sel_art = xfer.get_components("article")
+
+        if (sel_art.value == 0) or (sel_art.value is None):
+            self.item.article_id = None
+            self.item.article = None
+        else:
+            self.item.article_id = int(sel_art.value)
+            self.item.article = Article.objects.get(id=self.item.article_id)
+        return sel_art
+
     def _add_provider_filter(self, xfer, sel_art, init_row):
         old_model = xfer.model
         xfer.model = Provider
@@ -283,12 +294,12 @@ class DetailEditor(LucteriosEditor, DetailFilter):
         return
 
     def edit(self, xfer):
+        sel_art = self.refresh_article(xfer)
         currency_decimal = Params.getvalue("accounting-devise-prec")
         xfer.get_components('price').prec = currency_decimal
         xfer.get_components('reduce').prec = currency_decimal
         xfer.get_components('designation').with_hypertext = True
 
-        sel_art = xfer.get_components("article")
         DetailFilter.edit_filter(self, xfer, sel_art)
 
         if self.item.article_id is None:
@@ -357,6 +368,7 @@ class StorageSheetEditor(LucteriosEditor):
 class StorageDetailEditor(LucteriosEditor, DetailFilter):
 
     def edit(self, xfer):
+        sel_art = self.refresh_article(xfer)
         if int(self.item.storagesheet.sheet_type) != 0:
             xfer.remove_component("price")
             max_qty = 0
@@ -375,5 +387,4 @@ class StorageDetailEditor(LucteriosEditor, DetailFilter):
             xfer.get_components('quantity').prec = self.item.article.qtyDecimal
         else:
             xfer.get_components('quantity').prec = 3
-        sel_art = xfer.get_components('article')
         DetailFilter.edit_filter(self, xfer, sel_art)

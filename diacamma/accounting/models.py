@@ -49,6 +49,7 @@ from lucterios.CORE.parameters import Params
 from lucterios.contacts.models import AbstractContact, CustomField, CustomizeObject
 
 from diacamma.accounting.tools import get_amount_sum, format_devise, current_system_account, currency_round, correct_accounting_code
+import re
 
 
 class ThirdCustomField(LucteriosModel):
@@ -693,8 +694,8 @@ class AccountLink(LucteriosModel):
 
     @property
     def letter(self):
-        year = self.entryaccount_set.all()[0].year
-        nb_link = AccountLink.objects.filter(entryaccount__year=year, id__lt=self.id).count()
+        year = self.entrylineaccount_set.all()[0].entry.year
+        nb_link = AccountLink.objects.filter(entrylineaccount__entry__year=year, id__lt=self.id).count()
         letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
         res = ''
         while nb_link >= 26:
@@ -704,21 +705,33 @@ class AccountLink(LucteriosModel):
         return letters[nb_link] + res
 
     @classmethod
-    def create_link(cls, entries):
+    def create_link(cls, entrylines):
+        regex_third = re.compile(current_system_account().get_third_mask())
         year = None
-        for entry in entries:
-            entry = EntryAccount.objects.get(id=entry.id)
-            if entry.year.status == 2:
+        third_info = None
+        sum_amount = 0.0
+        for entryline in entrylines:
+            entryline = EntryLineAccount.objects.get(id=entryline.id)
+            if regex_third.match(entryline.account.code) is None:
+                raise LucteriosException(IMPORTANT, _("An entry line is not third!"))
+            if entryline.entry.year.status == 2:
                 raise LucteriosException(IMPORTANT, _("Fiscal year finished!"))
             if year is None:
-                year = entry.year
-            elif year != entry.year:
+                year = entryline.entry.year
+            elif year != entryline.entry.year:
                 raise LucteriosException(IMPORTANT, _("This entries are not in same fiscal year!"))
-            entry.unlink()
+            if third_info is None:
+                third_info = (entryline.account.code, entryline.third_id)
+            elif (third_info[0] != entryline.account.code) or (third_info[1] != entryline.third_id):
+                raise LucteriosException(IMPORTANT, _("This entry lines are not in same third!"))
+            sum_amount += float(entryline.amount)
+            entryline.unlink()
+        if abs(sum_amount) > 0.0001:
+            raise LucteriosException(IMPORTANT, _("The input lines are not balanced!"))
         new_link = AccountLink.objects.create()
-        for entry in entries:
-            entry.link = new_link
-            entry.save()
+        for entryline in entrylines:
+            entryline.link = new_link
+            entryline.save()
 
     class Meta(object):
 
@@ -740,7 +753,7 @@ class EntryAccount(LucteriosModel):
 
     @classmethod
     def get_default_fields(cls):
-        return ['num', 'date_entry', 'date_value', (_('description'), 'description'), (_('cost accounting'), 'costaccountingset')]
+        return ['num', 'date_entry', 'date_value', (_('description'), 'description')]
 
     @classmethod
     def get_edit_fields(cls):
@@ -781,18 +794,13 @@ class EntryAccount(LucteriosModel):
             res += "{[td]}%s{[/td]}" % line.entry_account
             res += "{[td]}%s{[/td]}" % line.debit
             res += "{[td]}%s{[/td]}" % line.credit
+            res += "{[td]}%s{[/td]}" % (line.costaccounting if line.costaccounting is not None else '---',)
+            res += "{[td]}%s{[/td]}" % (line.link if line.link is not None else '---',)
             if (line.reference is not None) and (line.reference != ''):
                 res += "{[td]}%s{[/td]}" % line.reference
             res += "{[/tr]}"
         res += "{[/table]}"
         return res
-
-    @property
-    def costaccountingset(self):
-        res = []
-        for line in self.entrylineaccount_set.filter(costaccounting_id__isnull=False):
-            res.append(six.text_type(line.costaccounting))
-        return '{[br/]}'.join(res)
 
     def can_delete(self):
         if self.close:
@@ -815,6 +823,8 @@ class EntryAccount(LucteriosModel):
 
     def delete(self):
         self.unlink()
+        for entryline in self.entrylineaccount_set.all():
+            entryline.unlink()
         LucteriosModel.delete(self)
 
     def get_serial(self, entrylines=None):
@@ -932,7 +942,6 @@ class EntryAccount(LucteriosModel):
                     if serial_val != '':
                         serial_val += '\n'
                     serial_val += line.create_clone_inverse()
-            AccountLink.create_link([self, new_entry])
             return new_entry, serial_val
 
     def add_entry_line(self, amount, code, name=None, third=None):
@@ -944,6 +953,9 @@ class EntryAccount(LucteriosModel):
             new_entry_line.third = third
             new_entry_line.save()
             return new_entry_line
+
+    def get_thirds(self):
+        return self.entrylineaccount_set.filter(account__code__regex=current_system_account().get_third_mask()).distinct()
 
     @property
     def has_third(self):
@@ -975,6 +987,7 @@ class EntryLineAccount(LucteriosModel):
     reference = models.CharField(_('reference'), max_length=100, null=True)
     third = models.ForeignKey('Third', verbose_name=_('third'), null=True, on_delete=models.PROTECT, db_index=True)
     costaccounting = models.ForeignKey('CostAccounting', verbose_name=_('cost accounting'), null=True, on_delete=models.PROTECT)
+    link = models.ForeignKey('AccountLink', verbose_name=_('link'), null=True, on_delete=models.SET_NULL)
 
     def __str__(self):
         res = ""
@@ -988,12 +1001,12 @@ class EntryLineAccount(LucteriosModel):
 
     @classmethod
     def get_other_fields(cls):
-        return [(_('account'), 'entry_account'), (_('debit'), 'debit'), (_('credit'), 'credit'), 'reference', 'costaccounting']
+        return [(_('account'), 'entry_account'), (_('debit'), 'debit'), (_('credit'), 'credit'), 'reference', 'costaccounting', 'link']
 
     @classmethod
     def get_default_fields(cls):
         return ['entry.num', 'entry.date_entry', 'entry.date_value', (_('name'), 'designation_ref'), (_('account'), 'entry_account'),
-                (_('debit'), 'debit'), (_('credit'), 'credit'), 'costaccounting', 'entry.link']
+                (_('debit'), 'debit'), (_('credit'), 'credit'), 'costaccounting', 'link']
 
     def get_color_ref(self):
         return self.entry_id
@@ -1079,7 +1092,7 @@ class EntryLineAccount(LucteriosModel):
         return res
 
     def get_serial(self):
-        # return serial information: "<id>|<accound id>|<third id> or None|<amount>|<cost id> or None|<reference> or None"
+        # return serial information: "<id>|<accound id>|<third id> or 0|<amount>|<cost id> or 0|<link id> or 0|<reference> or None"
         if self.third is None:
             third_id = 0
         else:
@@ -1092,7 +1105,11 @@ class EntryLineAccount(LucteriosModel):
             costaccounting_id = 0
         else:
             costaccounting_id = self.costaccounting.id
-        return "%d|%d|%d|%f|%d|%s|" % (self.id, self.account.id, third_id, self.amount, costaccounting_id, reference)
+        if self.link is None:
+            link_id = 0
+        else:
+            link_id = self.link.id
+        return "%d|%d|%d|%f|%d|%d|%s|" % (self.id, self.account.id, third_id, self.amount, costaccounting_id, link_id, reference)
 
     @classmethod
     def add_serial(cls, num_cpt, debit_val, credit_val, thirdid=0, costaccountingid=0, reference=None):
@@ -1130,7 +1147,11 @@ class EntryLineAccount(LucteriosModel):
             new_entry_line.costaccounting = None
         else:
             new_entry_line.costaccounting = CostAccounting.objects.get(id=int(serial_vals[4]))
-        new_entry_line.reference = "".join(serial_vals[5:-1])
+        if int(serial_vals[5]) == 0:
+            new_entry_line.link = None
+        else:
+            new_entry_line.link = AccountLink.objects.get(id=int(serial_vals[5]))
+        new_entry_line.reference = "".join(serial_vals[6:-1])
         if new_entry_line.reference.startswith("None"):
             new_entry_line.reference = None
         return new_entry_line
@@ -1158,6 +1179,19 @@ class EntryLineAccount(LucteriosModel):
             return self.account is not None
         except ObjectDoesNotExist:
             return False
+
+    def unlink(self):
+        if (self.entry.year.status != 2) and (self.link_id is not None):
+            for entryline in self.link.entrylineaccount_set.all():
+                entryline.link = None
+                if not entryline.entry.delete_if_ghost_entry():
+                    entryline.save()
+            self.link.delete()
+            self.link = None
+
+    def delete(self):
+        self.unlink()
+        LucteriosModel.delete(self)
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         if (self.account.type_of_account not in (3, 4, 5)) and (self.costaccounting is not None):

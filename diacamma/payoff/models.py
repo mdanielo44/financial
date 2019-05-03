@@ -218,16 +218,37 @@ class Supporting(LucteriosModel):
         raise Exception('no implemented!')
 
     def generate_accountlink(self):
+        def _add_entryline_by_third(entry):
+            added = False
+            for entryline_third in entry.get_thirds():
+                third_id = (entryline_third.account.code, entryline_third.third_id)
+                if third_id in entryline_by_third.keys():
+                    entryline_by_third[third_id].append(entryline_third)
+                    added = True
+            return added
+
         if (abs(self.get_total_rest_topay()) < 0.0001) and (self.entry_links() is not None) and (len(self.entry_links()) > 0):
-            try:
-                entryline = []
-                for all_payoff in self.payoff_set.filter(self.payoff_query):
-                    entryline.extend(all_payoff.supporting.entry_links())
-                    entryline.append(all_payoff.entry)
-                entryline = list(set(entryline))
-                AccountLink.create_link(entryline)
-            except LucteriosException:
-                pass
+            entryline_by_third = {}
+            for entry in self.entry_links():
+                for entryline_third in entry.get_thirds():
+                    third_id = (entryline_third.account.code, entryline_third.third_id)
+                    if third_id not in entryline_by_third.keys():
+                        entryline_by_third[third_id] = []
+
+            for all_payoff in self.payoff_set.filter(self.payoff_query):
+                for payoff_item in all_payoff.entry.payoff_set.all():
+                    supporting_payed = payoff_item.supporting.get_final_child()
+                    added = False
+                    for supporting_payed_entry in supporting_payed.entry_links():
+                        added = added or _add_entryline_by_third(supporting_payed_entry)
+                    if added:
+                        for payoff_item in supporting_payed.payoff_set.filter(supporting_payed.payoff_query):
+                            _add_entryline_by_third(payoff_item.entry)
+            for entrylines in entryline_by_third.values():
+                try:
+                    AccountLink.create_link(set(entrylines))
+                except LucteriosException:
+                    pass
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         self.is_revenu = self.get_final_child().payoff_is_revenu()
@@ -478,19 +499,8 @@ class Payoff(LucteriosModel):
         else:
             new_entry = entry
         cls._correct_account_multipay(new_entry, paypoff_list)
-        try:
-            entrylines = []
-            for supporting in supporting_list:
-                if (abs(supporting.get_total_rest_topay()) < 0.0001) and (supporting.entry_links() is not None) and (len(supporting.payoff_set.filter(supporting.payoff_query)) == 1):
-                    entries = supporting.entry_links()
-                    for entry in entries:
-                        entry.unlink()
-                    entrylines.extend(entries)
-            if len(entrylines) == len(supporting_list):
-                entrylines.append(new_entry)
-                AccountLink.create_link(entrylines)
-        except LucteriosException:
-            pass
+        for supporting in supporting_list:
+            supporting.generate_accountlink()
 
     def delete(self, using=None):
         self.delete_accounting()

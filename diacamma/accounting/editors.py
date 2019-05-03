@@ -243,10 +243,15 @@ class EntryAccountEditor(LucteriosEditor):
                 lbl.set_location(0, last_row + 3, 6)
                 lbl.set_value_as_header(_("entry of accounting for an asset"))
                 xfer.add_component(lbl)
-        if self.item.link is not None:
-            linkentries = EntryAccount.objects.filter(link=self.item.link).exclude(id=self.item.id)
+        links = []
+        for entryline in xfer.item.entrylineaccount_set.all():
+            if entryline.link is not None:
+                links.append(entryline.link)
+        if len(links) > 0:
+            linkentries = EntryAccount.objects.filter(entrylineaccount__link__in=links).exclude(id=self.item.id).distinct()
             if len(linkentries) == 0:
-                self.item.unlink()
+                for entryline in xfer.item.entrylineaccount_set.all():
+                    entryline.unlink()
             else:
                 lbl = XferCompLabelForm('sep4')
                 lbl.set_location(0, last_row + 4, 6)

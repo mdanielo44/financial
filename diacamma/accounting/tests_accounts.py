@@ -154,7 +154,7 @@ class ChartsAccountTest(LucteriosTest):
         self.assert_json_equal('LABELFORM', 'code', '707')
         self.assert_json_equal('LABELFORM', 'name', '707')
         self.assert_json_equal('LABELFORM', 'type_of_account', 'Produit')
-        self.assert_grid_equal('entryaccount', {"num": "N°", "date_entry": "date d'écriture", "date_value": "date de pièce", "description": "description", "costaccountingset": "comptabilité analytique"}, 3)  # nb=5
+        self.assert_grid_equal('entryaccount', {"num": "N°", "date_entry": "date d'écriture", "date_value": "date de pièce", "description": "description"}, 3)  # nb=5
         self.assert_json_equal('', 'entryaccount/@0/num', '4')
         self.assert_json_equal('', 'entryaccount/@0/date_value', '2015-02-21')
         description = self.json_data['entryaccount'][0]['description']
@@ -425,7 +425,7 @@ class FiscalYearWorkflowTest(PaymentTest):
 
     def test_begin_lastyearnovalid(self):
         self.assertEqual(FiscalYear.objects.get(id=1).status, 0)
-        new_entry = add_entry(1, 1, '2015-04-11', 'Report à nouveau aussi', '-1|1|0|37.61|0|None|\n-2|2|0|-37.61|0|None|', False)
+        new_entry = add_entry(1, 1, '2015-04-11', 'Report à nouveau aussi', '-1|1|0|37.61|0|0|None|\n-2|2|0|-37.61|0|0|None|', False)
 
         self.factory.xfer = FiscalYearBegin()
         self.calljson('/diacamma.accounting/fiscalYearBegin',
@@ -443,7 +443,7 @@ class FiscalYearWorkflowTest(PaymentTest):
 
     def test_begin_withbenef(self):
         self.assertEqual(FiscalYear.objects.get(id=1).status, 0)
-        add_entry(1, 1, '2015-04-11', 'Report à nouveau bénèf', '-1|16|0|123.45|0|None|\n-2|2|0|123.45|0|None|', True)
+        add_entry(1, 1, '2015-04-11', 'Report à nouveau bénèf', '-1|16|0|123.45|0|0|None|\n-2|2|0|123.45|0|0|None|', True)
 
         self.factory.xfer = ChartsAccountList()
         self.calljson('/diacamma.accounting/chartsAccountList',

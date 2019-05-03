@@ -32,7 +32,6 @@ from diacamma.accounting.test_tools import create_account, default_costaccountin
 from diacamma.invoice.models import Article, Vat, Category, Provider,\
     StorageArea, StorageSheet, StorageDetail, AccountPosting
 from diacamma.invoice.views import BillTransition, DetailAddModify, BillAddModify
-from diacamma.payoff.views import SupportingThirdValid
 from lucterios.contacts.models import CustomField
 
 

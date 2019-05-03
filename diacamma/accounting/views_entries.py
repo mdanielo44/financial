@@ -25,7 +25,11 @@ from __future__ import unicode_literals
 from datetime import date
 
 from django.utils.translation import ugettext_lazy as _
+from django.utils import formats, six
 from django.db.models import Q, F
+from django.db.models.expressions import Case, When, ExpressionWrapper
+from django.db.models.fields import DecimalField
+from django.db.models.aggregates import Count
 
 from lucterios.framework.xferadvance import XferShowEditor, XferDelete, XferSave, TITLE_LISTING, TITLE_DELETE, TITLE_OK, TITLE_CANCEL, TITLE_CLOSE, TITLE_MODIFY,\
     TITLE_EDIT, TITLE_ADD
@@ -41,9 +45,6 @@ from lucterios.CORE.editors import XferSavedCriteriaSearchEditor
 from lucterios.CORE.parameters import Params
 
 from diacamma.accounting.models import EntryLineAccount, EntryAccount, FiscalYear, Journal, AccountLink, current_system_account, CostAccounting, ModelEntry
-from django.db.models.expressions import Case, When, ExpressionWrapper
-from django.db.models.fields import DecimalField
-from django.utils import formats, six
 
 
 @MenuManage.describ('accounting.change_entryaccount', FORMTYPE_NOMODAL, 'bookkeeping', _('Edition of accounting entry for current fiscal year'),)
@@ -53,10 +54,19 @@ class EntryAccountList(XferListEditor):
     field_id = '???'
     caption = _("accounting entries")
 
+    def __init__(self, **kwargs):
+        XferListEditor.__init__(self, **kwargs)
+        self.select_filter = 1
+
     def get_items_from_filter(self):
         items = XferListEditor.get_items_from_filter(self)
+        items = items.annotate(num_link=Count('entry__entrylineaccount__link'))
         items = items.annotate(cdway=Case(When(account__type_of_account__in=(0, 4), then=-1), default=1, output_field=DecimalField()))
         items = items.annotate(credit_num=ExpressionWrapper(F('amount') * F('cdway'), output_field=DecimalField()), debit_num=ExpressionWrapper(-1 * F('amount') * F('cdway'), output_field=DecimalField()))
+        if self.select_filter == 3:
+            items = items.filter(Q(num_link__gt=0)).distinct()
+        elif self.select_filter == 4:
+            items = items.filter(Q(num_link=0)).distinct()
         return items
 
     def _filter_by_year(self):
@@ -79,23 +89,19 @@ class EntryAccountList(XferListEditor):
             self.filter &= Q(entry__journal__id=select_journal)
 
     def _filter_by_nature(self):
-        select_filter = self.getparam('filter', 1)
+        self.select_filter = self.getparam('filter', 1)
         sel = XferCompSelect("filter")
         sel.set_select({0: _('All'), 1: _('In progress'), 2: _('Valid'), 3: _('Lettered'), 4: _('Not lettered')})
-        sel.set_value(select_filter)
+        sel.set_value(self.select_filter)
         sel.set_location(0, 3, 2)
         sel.description = _("Filter")
         sel.set_size(20, 200)
         sel.set_action(self.request, self.get_action(), close=CLOSE_NO, modal=FORMTYPE_REFRESH)
         self.add_component(sel)
-        if select_filter == 1:
+        if self.select_filter == 1:
             self.filter &= Q(entry__close=False)
-        elif select_filter == 2:
+        elif self.select_filter == 2:
             self.filter &= Q(entry__close=True)
-        elif select_filter == 3:
-            self.filter &= Q(entry__link__id__gt=0)
-        elif select_filter == 4:
-            self.filter &= Q(entry__link=None)
 
     def fillresponse_header(self):
         self._filter_by_year()
@@ -179,26 +185,31 @@ class EntryAccountListing(XferPrintListing):
         self.model = EntryLineAccount
         self.field_id = 'entrylineaccount'
         XferPrintListing.__init__(self)
+        self.select_filter = 1
 
     def get_filter(self):
         if self.getparam('CRITERIA') is None:
             select_year = self.getparam('year')
             select_journal = self.getparam('journal', 4)
-            select_filter = self.getparam('filter', 1)
+            self.select_filter = self.getparam('filter', 1)
             new_filter = Q(entry__year=FiscalYear.get_current(select_year))
-            if select_filter == 1:
+            if self.select_filter == 1:
                 new_filter &= Q(entry__close=False)
-            elif select_filter == 2:
+            elif self.select_filter == 2:
                 new_filter &= Q(entry__close=True)
-            elif select_filter == 3:
-                new_filter &= Q(entry__link__id__gt=0)
-            elif select_filter == 4:
-                new_filter &= Q(entry__link=None)
             if select_journal != -1:
                 new_filter &= Q(entry__journal__id=select_journal)
         else:
             new_filter = XferPrintListing.get_filter(self)
         return new_filter
+
+    def filter_callback(self, items):
+        items = items.annotate(num_link=Count('entry__entrylineaccount__link'))
+        if self.select_filter == 3:
+            items = items.filter(Q(num_link__gt=0)).distinct()
+        elif self.select_filter == 4:
+            items = items.filter(Q(num_link=0)).distinct()
+        return items
 
     def fillresponse(self):
         self.caption = _("Listing accounting entry") + " - " + formats.date_format(date.today(), "DATE_FORMAT")
@@ -269,7 +280,10 @@ class EntryAccountLink(XferContainerAcknowledge):
     def _search_model(self):
         if self.getparam('entryline') is not None:
             entryline = self.getparam('entryline', ())
-            self.items = EntryAccount.objects.filter(entrylineaccount__id__in=entryline).distinct()
+            self.model = EntryLineAccount
+            self.items = EntryLineAccount.objects.filter(Q(id__in=entryline)).distinct()
+            if len(self.items) > 0:
+                self.item = self.items[0]
         else:
             XferContainerAcknowledge._search_model(self)
 
@@ -455,7 +469,14 @@ class EntryAccountValidate(XferContainerAcknowledge):
         save.params["SAVE"] = "YES"
         save.fillresponse()
         self.item.save_entrylineaccounts(serial_entry)
-        for old_key in ['date_value', 'designation', 'SAVE', 'serial_entry']:
+        linked_entryaccount = self.getparam('linked_entryaccount', 0)
+        if linked_entryaccount != 0:
+            try:
+                linked_entry = EntryAccount.objects.get(id=linked_entryaccount)
+                AccountLink.create_link(list(self.item.get_thirds()) + list(linked_entry.get_thirds()))
+            except Exception:
+                pass
+        for old_key in ['date_value', 'designation', 'SAVE', 'serial_entry', 'linked_entryaccount']:
             if old_key in self.params.keys():
                 del self.params[old_key]
         self.redirect_action(EntryAccountEdit.get_action())
@@ -478,7 +499,7 @@ class EntryAccountReverse(XferContainerAcknowledge):
         self.redirect_action(EntryAccountEdit.get_action(), {})
 
 
-@ActionsManage.affect_show(_('Payment'), '', condition=lambda xfer: (xfer.item.link is None) and xfer.item.has_third and not xfer.item.has_cash)
+@ActionsManage.affect_show(_('Payment'), '', condition=lambda xfer: (xfer.item.entrylineaccount_set.filter(link__isnull=False).count() == 0) and xfer.item.has_third and not xfer.item.has_cash)
 @MenuManage.describ('accounting.add_entryaccount')
 class EntryAccountCreateLinked(XferContainerAcknowledge):
     icon = "entry.png"
@@ -490,6 +511,7 @@ class EntryAccountCreateLinked(XferContainerAcknowledge):
         new_entry, serial_entry = self.item.create_linked()
         self.redirect_action(EntryAccountEdit.get_action(), params={"serial_entry": serial_entry,
                                                                     'journal': '4', 'entryaccount': new_entry.id,
+                                                                    'linked_entryaccount': self.item.id,
                                                                     'num_cpt_txt': current_system_account().get_cash_begin()})
 
 
