@@ -704,8 +704,28 @@ class AccountLink(LucteriosModel):
             nb_link = int(div) - 1
         return letters[nb_link] + res
 
+    def is_validity(self):
+        third_info = None
+        sum_amount = 0.0
+        entrylines = self.entrylineaccount_set.all()
+        is_valid = len(entrylines) > 0
+        for entryline in entrylines:
+            if third_info is None:
+                third_info = (entryline.account.code, entryline.third_id)
+            elif (third_info[0] != entryline.account.code) or (third_info[1] != entryline.third_id):
+                is_valid = False
+            sum_amount += float(entryline.amount)
+            entryline.unlink()
+        if abs(sum_amount) > 0.0001:
+            is_valid = False
+        return is_valid
+
+    def check_validity(self):
+        if not self.is_validity():
+            self.delete()
+
     @classmethod
-    def create_link(cls, entrylines):
+    def create_link(cls, entrylines, check_year=True):
         regex_third = re.compile(current_system_account().get_third_mask())
         year = None
         third_info = None
@@ -714,8 +734,8 @@ class AccountLink(LucteriosModel):
             entryline = EntryLineAccount.objects.get(id=entryline.id)
             if regex_third.match(entryline.account.code) is None:
                 raise LucteriosException(IMPORTANT, _("An entry line is not third!"))
-            if entryline.entry.year.status == 2:
-                raise LucteriosException(IMPORTANT, _("Fiscal year finished!"))
+            # if check_year and (entryline.entry.year.status == 2):
+            #    raise LucteriosException(IMPORTANT, _("Fiscal year finished!"))
             if year is None:
                 year = entryline.entry.year
             elif year != entryline.entry.year:
@@ -854,6 +874,9 @@ class EntryAccount(LucteriosModel):
                 if line.id < 0:
                     line.id = None
                 line.save()
+            for line in self.entrylineaccount_set.all():
+                if line.link_id is not None:
+                    line.link.check_validity()
 
     def remove_entrylineaccounts(self, serial_vals, entrylineid):
         lines = self.get_entrylineaccounts(serial_vals)
@@ -1440,6 +1463,30 @@ def check_accountingcost():
         six.print_(' * convert costaccounting: nb=%d' % entryline_cmp)
 
 
+def check_accountlink():
+    new_link = 0
+    old_link = 0
+    account_link_list = list(AccountLink.objects.filter(entryaccount__isnull=False))
+    for account_link in account_link_list:
+        entryline_by_third = {}
+        for entry_linked in account_link.entryaccount_set.all():
+            for entryline_third in entry_linked.get_thirds():
+                third_id = (entryline_third.account.code, entryline_third.third_id)
+                if third_id not in entryline_by_third.keys():
+                    entryline_by_third[third_id] = []
+                entryline_by_third[third_id].append(entryline_third)
+        for entrylines in entryline_by_third.values():
+            try:
+                AccountLink.create_link(set(entrylines), check_year=False)
+                new_link += 1
+            except LucteriosException as lct_ext:
+                six.print_('!!! check_accountlink Error:', lct_ext, ' - lines:', entrylines)
+        old_link += 1
+        account_link.delete()
+    if old_link > 0:
+        six.print_(' * convert AccountLink: old=%d / new=%d' % (old_link, new_link))
+
+
 def pre_save_datadb(sender, **kwargs):
     if (sender == EntryAccount) and ('instance' in kwargs):
         if kwargs['instance'].costaccounting_id == 0:
@@ -1457,6 +1504,7 @@ def accounting_checkparam():
     Parameter.check_and_create(name='accounting-needcost', typeparam=3, title=_("accounting-needcost"), args="{}", value='False')
     Parameter.check_and_create(name='accounting-code-report-filter', typeparam=0, title=_("accounting-code-report-filter"), args="{'Multi':False}", value='')
     check_accountingcost()
+    check_accountlink()
 
 
 pre_save.connect(pre_save_datadb)

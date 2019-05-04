@@ -58,7 +58,7 @@ class ThirdList(XferListEditor):
     caption = _("Thirds")
 
     def get_items_from_filter(self):
-        items = self.model.objects.annotate(completename=Concat('contact__individual__lastname', Value(' '), 'contact__individual__firstname')).filter(self.filter)
+        items = self.model.objects.annotate(completename=Concat('contact__individual__lastname', Value(' '), 'contact__individual__firstname')).filter(self.filter).distinct()
         sort_third = self.getparam('GRID_ORDER%third', '')
         sort_thirdbis = self.getparam('GRID_ORDER%third+', '')
         self.params['GRID_ORDER%third'] = ""
@@ -97,7 +97,7 @@ class ThirdList(XferListEditor):
 
         edt = XferCompSelect("show_filter")
         edt.set_select([(0, _('Hide the account total of thirds')), (1, _('Show the account total of thirds')),
-                        (2, _('Filter any thirds unbalanced'))])
+                        (2, _('Filter any thirds unbalanced')), (3, _('Filter any thirds with entries without link'))])
         edt.set_value(show_filter)
         edt.description = _('Accounts displayed')
         edt.set_location(0, 4, 2)
@@ -119,6 +119,8 @@ class ThirdList(XferListEditor):
             self.filter &= Q(accountthird__code__regex=current_system_account().get_societary_mask())
         elif thirdtype == 4:
             self.filter &= Q(accountthird__code__regex=current_system_account().get_employed_mask())
+        if show_filter == 3:
+            self.filter &= Q(entrylineaccount__link__isnull=True)
 
 
 @ActionsManage.affect_list(_("Search"), "diacamma.accounting/images/thirds.png")
@@ -259,6 +261,7 @@ class ThirdListing(XferPrintListing):
         if self.getparam('CRITERIA') is None:
             contact_filter = self.getparam('filter', '')
             thirdtype = self.getparam('thirdtype', 0)
+            show_filter = self.getparam('show_filter', 0)
             new_filter = Q(status=0)
             if contact_filter != "":
                 q_legalentity = Q(contact__legalentity__name__icontains=contact_filter)
@@ -273,6 +276,8 @@ class ThirdListing(XferPrintListing):
                 new_filter &= Q(accountthird__code__regex=current_system_account().get_societary_mask())
             elif thirdtype == 4:
                 new_filter &= Q(accountthird__code__regex=current_system_account().get_employed_mask())
+            if show_filter == 3:
+                new_filter &= Q(entrylineaccount__link__isnull=True)
         else:
             new_filter = XferPrintListing.get_filter(self)
         return new_filter
@@ -290,6 +295,8 @@ class ThirdListing(XferPrintListing):
                 info_list.append("{[b]}{[u]}%s{[/u]}{[/b]} : %s" % (_('Third type'), thirdtype_list[thirdtype]))
             if (self.getparam('show_filter', 0) == 2):
                 info_list.append("{[b]}{[u]}%s{[/u]}{[/b]} : %s" % (_('Accounts displayed'), _('Filter any thirds unbalanced')))
+            elif (self.getparam('show_filter', 0) == 3):
+                info_list.append("{[b]}{[u]}%s{[/u]}{[/b]} : %s" % (_('Accounts displayed'), _('Filter any thirds with entries without link')))
             self.info = '{[br]}'.join(info_list)
         XferPrintListing.fillresponse(self)
 
@@ -410,14 +417,16 @@ def thirdaddon_accounting(item, xfer):
                 entry_lines_filter &= Q(entry__year=FiscalYear.get_current())
             elif lines_filter == 1:
                 entry_lines_filter &= Q(entry__year=FiscalYear.get_current()) & Q(entry__close=False)
+            elif lines_filter == 3:
+                entry_lines_filter &= Q(link__isnull=True)
             xfer.new_tab(_('entry of account'))
             lbl = XferCompLabelForm('lbl_lines_filter')
             lbl.set_value_as_name(_('Accounts filter'))
             lbl.set_location(0, 1)
             xfer.add_component(lbl)
             edt = XferCompSelect("lines_filter")
-            edt.set_select([(0, _('All entries of current fiscal year')), (1, _(
-                'Only no-closed entries of current fiscal year')), (2, _('All entries for all fiscal year'))])
+            edt.set_select([(0, _('All entries of current fiscal year')), (1, _('Only no-closed entries of current fiscal year')),
+                            (2, _('All entries for all fiscal year')), (3, _('Only entries without link'))])
             edt.set_value(lines_filter)
             edt.set_location(1, 1)
             edt.set_action(xfer.request, xfer.get_action(),

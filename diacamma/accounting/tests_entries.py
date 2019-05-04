@@ -855,17 +855,17 @@ class EntryTest(LucteriosTest):
         self.factory.xfer = EntryAccountLink()
         self.calljson('/diacamma.accounting/entryAccountLink', {'year': '1', 'journal': '-1', 'filter': '0', 'entryline': '1;2'}, False)
         self.assert_observer('core.exception', 'diacamma.accounting', 'entryAccountLink')
-        self.assert_json_equal('', 'message', 'An entry line is not third!')
+        self.assert_json_equal('', 'message', "Une ligne d'écriture n'a pas un code de tiers !")
 
         self.factory.xfer = EntryAccountLink()
         self.calljson('/diacamma.accounting/entryAccountLink', {'year': '1', 'journal': '-1', 'filter': '0', 'entryline': '2;5'}, False)
         self.assert_observer('core.exception', 'diacamma.accounting', 'entryAccountLink')
-        self.assert_json_equal('', 'message', 'This entry lines are not in same third!')
+        self.assert_json_equal('', 'message', "Ces lignes d'écritures n'ont pas le même tiers !")
 
         self.factory.xfer = EntryAccountLink()
         self.calljson('/diacamma.accounting/entryAccountLink', {'year': '1', 'journal': '-1', 'filter': '0', 'entryline': '2;6'}, False)
         self.assert_observer('core.exception', 'diacamma.accounting', 'entryAccountLink')
-        self.assert_json_equal('', 'message', 'The input lines are not balanced!')
+        self.assert_json_equal('', 'message', "Ces lignes d'écritures ne s'équilibrent pas !")
 
     def test_delete_lineentry(self):
         self.factory.xfer = EntryAccountEdit()
