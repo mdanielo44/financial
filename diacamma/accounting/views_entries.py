@@ -291,6 +291,8 @@ class EntryAccountLink(XferContainerAcknowledge):
         if self.items is None:
             raise Exception('no link')
         if len(self.items) == 1:
+            if self.items[0].entry.year.status == 2:
+                raise LucteriosException(IMPORTANT, _("Fiscal year finished!"))
             if self.confirme(_('Do you want unlink this entry?')):
                 self.items[0].unlink()
         else:

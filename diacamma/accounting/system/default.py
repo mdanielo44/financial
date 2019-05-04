@@ -30,6 +30,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from lucterios.framework.tools import get_icon_path
 from lucterios.framework.xferadvance import TITLE_OK, TITLE_CANCEL
+from diacamma.accounting.models import AccountLink
 
 
 class DefaultSystemAccounting(object):
@@ -179,30 +180,65 @@ class DefaultSystemAccounting(object):
         sum_third = {}
         entry_lines = []
         end_desig = _("Fiscal year closing - Third")
-        for data_line in EntryLineAccount.objects.filter(account__code__regex=self.get_third_mask(), account__year=year).values('account', 'third').annotate(data_sum=Sum('amount')):
-            if abs(data_line['data_sum']) > 0.0001:
-                entry_lines.append((data_line['data_sum'], data_line['account'], data_line['third']))
-                if data_line['account'] not in sum_third.keys():
-                    sum_third[data_line['account']] = 0
-                sum_third[data_line['account']] += data_line['data_sum']
-        if len(sum_third) > 0:
-            new_entry = EntryAccount.objects.create(year=year, journal_id=5, designation=end_desig, date_value=year.end)
-            for entry_line in entry_lines:
+
+        last_account_id = 0
+        sum_account = 0.0
+        new_entry = EntryAccount.objects.create(year=year, journal_id=5, designation=end_desig, date_value=year.end)
+        for entry_line in EntryLineAccount.objects.filter(account__code__regex=self.get_third_mask(), account__year=year, link__isnull=True).order_by('account'):
+            if (last_account_id != entry_line.account_id) and (abs(sum_account) > 0.0001):
                 new_line = EntryLineAccount()
                 new_line.entry = new_entry
-                new_line.amount = -1 * entry_line[0]
-                new_line.account_id = entry_line[1]
-                if entry_line[2] is not None:
-                    new_line.third_id = entry_line[2]
+                new_line.account_id = last_account_id
+                new_line.amount = sum_account
+                new_line.third = None
                 new_line.save()
-            for account_id, value in sum_third.items():
+                sum_account = 0
+            last_account_id = entry_line.account_id
+            new_line = EntryLineAccount()
+            new_line.entry = new_entry
+            new_line.amount = -1 * entry_line.amount
+            new_line.account_id = entry_line.account_id
+            new_line.third_id = entry_line.third_id
+            new_line.reference = entry_line.entry.designation
+            new_line.save()
+            AccountLink.create_link([new_line, entry_line])
+            sum_account += float(entry_line.amount)
+        if last_account_id == 0:
+            new_entry.delete()
+        else:
+            if abs(sum_account) > 0.0001:
                 new_line = EntryLineAccount()
                 new_line.entry = new_entry
-                new_line.account_id = account_id
-                new_line.amount = value
+                new_line.account_id = last_account_id
+                new_line.amount = sum_account
                 new_line.third = None
                 new_line.save()
             new_entry.closed()
+#
+#         for data_line in EntryLineAccount.objects.filter(account__code__regex=self.get_third_mask(), account__year=year).values('account', 'third').annotate(data_sum=Sum('amount')):
+#             if abs(data_line['data_sum']) > 0.0001:
+#                 entry_lines.append((data_line['data_sum'], data_line['account'], data_line['third']))
+#                 if data_line['account'] not in sum_third.keys():
+#                     sum_third[data_line['account']] = 0
+#                 sum_third[data_line['account']] += data_line['data_sum']
+#         if len(sum_third) > 0:
+#             new_entry = EntryAccount.objects.create(year=year, journal_id=5, designation=end_desig, date_value=year.end)
+#             for entry_line in entry_lines:
+#                 new_line = EntryLineAccount()
+#                 new_line.entry = new_entry
+#                 new_line.amount = -1 * entry_line[0]
+#                 new_line.account_id = entry_line[1]
+#                 if entry_line[2] is not None:
+#                     new_line.third_id = entry_line[2]
+#                 new_line.save()
+#             for account_id, value in sum_third.items():
+#                 new_line = EntryLineAccount()
+#                 new_line.entry = new_entry
+#                 new_line.account_id = account_id
+#                 new_line.amount = value
+#                 new_line.third = None
+#                 new_line.save()
+#             new_entry.closed()
 
     def finalize_year(self, year):
         self._create_result_entry(year)
@@ -223,12 +259,12 @@ class DefaultSystemAccounting(object):
         from diacamma.accounting.models import EntryAccount
         last_entry_account = list(year.last_fiscalyear.entryaccount_set.filter(journal__id=5).order_by('num'))[-1]
         _no_change, debit_rest, credit_rest = last_entry_account.serial_control(last_entry_account.get_serial())
-        if abs(debit_rest - credit_rest) < 0.0001:
+        if (abs(debit_rest - credit_rest) < 0.0001) and (len(last_entry_account.get_thirds()) > 0):
             end_desig = _("Retained earnings - Third party debt")
             new_entry = EntryAccount.objects.create(year=year, journal_id=1, designation=end_desig, date_value=year.begin)
             for entry_line in last_entry_account.entrylineaccount_set.all():
                 if re.match(self.get_general_mask(), entry_line.account.code):
-                    new_entry.add_entry_line(-1 * entry_line.amount, entry_line.account.code, entry_line.account.name, entry_line.third)
+                    new_entry.add_entry_line(-1 * entry_line.amount, entry_line.account.code, entry_line.account.name, entry_line.third, entry_line.reference)
             new_entry.closed()
 
     def import_lastyear(self, year, import_result):

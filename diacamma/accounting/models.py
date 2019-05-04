@@ -748,6 +748,9 @@ class AccountLink(LucteriosModel):
             entryline.unlink()
         if abs(sum_amount) > 0.0001:
             raise LucteriosException(IMPORTANT, _("The input lines are not balanced!"))
+        for entryline in entrylines:
+            entryline = EntryLineAccount.objects.get(id=entryline.id)
+            entryline.unlink()
         new_link = AccountLink.objects.create()
         for entryline in entrylines:
             entryline.link = new_link
@@ -967,13 +970,14 @@ class EntryAccount(LucteriosModel):
                     serial_val += line.create_clone_inverse()
             return new_entry, serial_val
 
-    def add_entry_line(self, amount, code, name=None, third=None):
+    def add_entry_line(self, amount, code, name=None, third=None, reference=None):
         if abs(amount) > 0.0001:
             new_entry_line = EntryLineAccount()
             new_entry_line.entry = self
             new_entry_line.account = self.year.getorcreate_chartaccount(code, name)
             new_entry_line.amount = amount
             new_entry_line.third = third
+            new_entry_line.reference = reference
             new_entry_line.save()
             return new_entry_line
 
