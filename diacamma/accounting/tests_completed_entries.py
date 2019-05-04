@@ -861,8 +861,8 @@ class CompletedEntryTest(LucteriosTest):
         self.assert_count_equal('', 2 + 2 * 2)
         self.assertTrue('__tab_2' in self.json_data.keys(), self.json_data.keys())
         self.assertFalse('__tab_3' in self.json_data.keys(), self.json_data.keys())
-        self.assert_count_equal('report_1', 4)
-        self.assert_count_equal('report_2', 12)
+        self.assert_count_equal('report_1', 5)
+        self.assert_count_equal('report_2', 15)
 
         self.factory.xfer = CostAccountingLedger()
         self.calljson('/diacamma.accounting/costAccountingLedger', {'costaccounting': '2', 'begin_date': '2015-02-14', 'end_date': '2015-02-20'}, False)
@@ -870,7 +870,7 @@ class CompletedEntryTest(LucteriosTest):
         self.assert_count_equal('', 5 + 2 * 1)
         self.assertTrue('__tab_1' in self.json_data.keys(), self.json_data.keys())
         self.assertFalse('__tab_2' in self.json_data.keys(), self.json_data.keys())
-        self.assert_count_equal('report_2', 12)
+        self.assert_count_equal('report_2', 15)
 
     def test_costaccounting_trialbalance(self):
         self.factory.xfer = CostAccountingTrialBalance()

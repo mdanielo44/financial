@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 '''
 Describe report accounting viewer for Django
 
@@ -44,6 +43,7 @@ from diacamma.accounting.tools import correct_accounting_code, current_system_ac
 from diacamma.accounting.tools_reports import get_spaces, convert_query_to_account,\
     add_cell_in_grid, fill_grid, add_item_in_grid
 from lucterios.CORE.parameters import Params
+import re
 
 
 class FiscalYearReport(XferContainerCustom):
@@ -384,8 +384,30 @@ class FiscalYearLedger(FiscalYearReport):
         FiscalYearReport.__init__(self, **kwargs)
         self.last_account = None
         self.last_third = None
-        self.last_total = 0
+        self.last_total = [0.0, 0.0]
         self.line_idx = 1
+
+    def fill_filterCode(self):
+        row = self.get_max_row() + 1
+        self.only_nonull = self.getparam('only_nolink', False)
+        edt = XferCompCheck('only_nolink')
+        edt.set_value(self.only_nonull)
+        edt.set_location(1, row)
+        edt.description = _("Only entry without link")
+        edt.set_action(self.request, self.__class__.get_action(), close=CLOSE_NO, modal=FORMTYPE_REFRESH)
+        self.add_component(edt)
+        if self.only_nonull:
+            self.filter &= Q(link__isnull=True) & Q(third__isnull=False)
+            if self.getparam('filtercode', '') == '':
+                third_mask = current_system_account().get_third_mask()
+                while re.match("[0-9a-zA-Z]", third_mask[0]) is None:
+                    third_mask = third_mask[1:]
+                num_letter = 0
+                while re.match("[0-9a-zA-Z]", third_mask[num_letter]) is not None:
+                    num_letter += 1
+                third_mask = third_mask[:num_letter]
+                self.params['filtercode'] = third_mask
+        FiscalYearReport.fill_filterCode(self)
 
     def define_gridheader(self):
         self.grid = XferCompGrid('report_%d' % self.item.id)
@@ -393,27 +415,37 @@ class FiscalYearLedger(FiscalYearReport):
         self.grid.add_header('entry.date_entry', _('date entry'))
         self.grid.add_header('entry.date_value', _('date value'))
         self.grid.add_header('entry.designation', _('name'))
+        self.grid.add_header('link', _('link'))
         self.grid.add_header('debit', _('debit'))
         self.grid.add_header('credit', _('credit'))
 
     def _add_total_account(self):
         if self.last_account is not None:
             add_cell_in_grid(self.grid, self.line_offset + self.line_idx, 'entry.designation', get_spaces(30) + "{[i]}%s{[/i]}" % _('total'))
-            add_cell_in_grid(self.grid, self.line_offset + self.line_idx, 'debit', "{[i]}%s{[/i]}" %
-                             format_devise(max((0, -1 * self.last_account.credit_debit_way() * self.last_total)), 0))
-            add_cell_in_grid(self.grid, self.line_offset + self.line_idx, 'credit', "{[i]}%s{[/i]}" %
-                             format_devise(max((0, self.last_account.credit_debit_way() * self.last_total)), 0))
+            if self.last_account.credit_debit_way() == -1:
+                add_cell_in_grid(self.grid, self.line_offset + self.line_idx, 'debit', "{[i]}%s{[/i]}" % format_devise(self.last_total[0], 4))
+                add_cell_in_grid(self.grid, self.line_offset + self.line_idx, 'credit', "{[i]}%s{[/i]}" % format_devise(self.last_total[1], 4))
+            else:
+                add_cell_in_grid(self.grid, self.line_offset + self.line_idx, 'debit', "{[i]}%s{[/i]}" % format_devise(self.last_total[1], 4))
+                add_cell_in_grid(self.grid, self.line_offset + self.line_idx, 'credit', "{[i]}%s{[/i]}" % format_devise(self.last_total[0], 4))
+            self.line_idx += 1
+            last_total = self.last_total[0] - self.last_total[1]
+            add_cell_in_grid(self.grid, self.line_offset + self.line_idx, 'entry.designation', get_spaces(30) + "{[u]}{[i]}%s{[/i]}{[/u]}" % _('balance'))
+            add_cell_in_grid(self.grid, self.line_offset + self.line_idx, 'debit', "{[u]}{[i]}%s{[/i]}{[/u]}" %
+                             format_devise(max((0, -1 * self.last_account.credit_debit_way() * last_total)), 0))
+            add_cell_in_grid(self.grid, self.line_offset + self.line_idx, 'credit', "{[u]}{[i]}%s{[/i]}{[/u]}" %
+                             format_devise(max((0, self.last_account.credit_debit_way() * last_total)), 0 if abs(last_total) > 0.0001 else 4))
             self.line_idx += 1
             add_cell_in_grid(self.grid, self.line_offset + self.line_idx, 'entry.designation', '{[br/]}')
             self.line_idx += 1
-            self.last_total = 0
+            self.last_total = [0.0, 0.0]
 
     def calcul_table(self):
         self.line_idx = 1
         self.last_account = None
         self.last_third = None
-        self.last_total = 0
-        for line in EntryLineAccount.objects.filter(self.filter).distinct().order_by('account__code', 'entry__date_value', 'third'):
+        self.last_total = [0.0, 0.0]
+        for line in EntryLineAccount.objects.filter(self.filter).distinct().order_by('account__code', 'third', 'entry__date_value'):
             if self.last_account != line.account:
                 self._add_total_account()
                 self.last_account = line.account
@@ -426,7 +458,10 @@ class FiscalYearLedger(FiscalYearReport):
             self.last_third = line.third
             for header in self.grid.headers:
                 add_cell_in_grid(self.grid, self.line_offset + self.line_idx, header.name, line.evaluate('#' + header.name))
-            self.last_total += line.amount
+            if line.amount > 0:
+                self.last_total[0] += line.amount
+            else:
+                self.last_total[1] -= line.amount
             self.line_idx += 1
         self._add_total_account()
 

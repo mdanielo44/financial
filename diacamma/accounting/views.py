@@ -46,6 +46,7 @@ from lucterios.contacts.models import AbstractContact
 from diacamma.accounting.models import Third, AccountThird, FiscalYear, EntryLineAccount, ModelLineEntry, ChartsAccount
 from diacamma.accounting.views_admin import Configuration, add_year_info
 from diacamma.accounting.tools import correct_accounting_code, current_system_account
+from django.db.models.aggregates import Count
 
 MenuManage.add_sub("financial", None, "diacamma.accounting/images/financial.png", _("Financial"), _("Financial tools"), 50)
 
@@ -58,7 +59,7 @@ class ThirdList(XferListEditor):
     caption = _("Thirds")
 
     def get_items_from_filter(self):
-        items = self.model.objects.annotate(completename=Concat('contact__individual__lastname', Value(' '), 'contact__individual__firstname')).filter(self.filter).distinct()
+        items = self.model.objects.annotate(completename=Concat('contact__individual__lastname', Value(' '), 'contact__individual__firstname')).annotate(num_entryline=Count('entrylineaccount')).filter(self.filter).distinct()
         sort_third = self.getparam('GRID_ORDER%third', '')
         sort_thirdbis = self.getparam('GRID_ORDER%third+', '')
         self.params['GRID_ORDER%third'] = ""
@@ -120,7 +121,7 @@ class ThirdList(XferListEditor):
         elif thirdtype == 4:
             self.filter &= Q(accountthird__code__regex=current_system_account().get_employed_mask())
         if show_filter == 3:
-            self.filter &= Q(entrylineaccount__link__isnull=True)
+            self.filter &= Q(entrylineaccount__link__isnull=True) & Q(num_entryline__gt=0)
 
 
 @ActionsManage.affect_list(_("Search"), "diacamma.accounting/images/thirds.png")
