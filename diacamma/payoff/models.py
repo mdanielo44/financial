@@ -31,16 +31,18 @@ from django.db import models
 from django.db.models import Q
 from django.db.models.aggregates import Sum, Max
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.exceptions import ObjectDoesNotExist
 from django.utils.translation import ugettext_lazy as _
 from django.utils.module_loading import import_module
 from django.utils import six
 from django_fsm import FSMIntegerField, transition
 
-from lucterios.framework.models import LucteriosModel, get_value_converted,\
-    get_value_if_choices
+from lucterios.framework.models import LucteriosModel, get_value_converted, get_value_if_choices
 from lucterios.framework.error import LucteriosException, IMPORTANT
 from lucterios.framework.printgenerators import ReportingGenerator
 from lucterios.framework.signal_and_lock import Signal
+from lucterios.framework.xferbasic import NULL_VALUE
+from lucterios.framework.filetools import remove_accent
 from lucterios.CORE.models import PrintModel, Parameter
 from lucterios.CORE.parameters import Params
 from lucterios.contacts.models import LegalEntity, Individual
@@ -48,18 +50,6 @@ from lucterios.contacts.models import LegalEntity, Individual
 from diacamma.accounting.models import EntryAccount, FiscalYear, Third, Journal, \
     ChartsAccount, EntryLineAccount, AccountLink
 from diacamma.accounting.tools import format_devise, currency_round, correct_accounting_code
-from django.core.exceptions import ObjectDoesNotExist
-from lucterios.framework.xferbasic import NULL_VALUE
-
-
-def remove_accent(text, replace_space=False):
-    if replace_space:
-        text = text.replace(' ', '_').replace('-', '')
-    try:
-        import unicodedata
-        return ''.join((letter for letter in unicodedata.normalize('NFD', text) if unicodedata.category(letter) != 'Mn'))
-    except BaseException:
-        return text
 
 
 class Supporting(LucteriosModel):
@@ -103,6 +93,13 @@ class Supporting(LucteriosModel):
 
     def entry_links(self):
         return None
+
+    def get_email(self, only_main=None):
+        return self.third.contact.get_email(only_main)
+
+    @property
+    def contact(self):
+        return self.third.contact
 
     @property
     def payoff_query(self):
@@ -875,6 +872,8 @@ def payoff_checkparam():
     Parameter.check_and_create(name='payoff-cash-account', typeparam=0, title=_("payoff-cash-account"),
                                args="{'Multi':False}", value='', meta='("accounting","ChartsAccount","import diacamma.accounting.tools;django.db.models.Q(code__regex=diacamma.accounting.tools.current_system_account().get_cash_mask()) & django.db.models.Q(year__is_actif=True)", "code", True)')
     Parameter.check_and_create(name='payoff-email-message', typeparam=0, title=_("payoff-email-message"),
-                               args="{'Multi':True, 'HyperText': True}", value=_('%(name)s{[br/]}{[br/]}Joint in this email %(doc)s.{[br/]}{[br/]}Regards'))
+                               args="{'Multi':True, 'HyperText': True}", value=_('#name{[br/]}{[br/]}Joint in this email #doc.{[br/]}{[br/]}Regards'))
+    Parameter.check_and_create(name='payoff-email-subject', typeparam=0, title=_("payoff-email-subject"),
+                               args="{'Multi':False, 'HyperText': False}", value=_('#reference'))
     check_payoff_accounting()
     check_bank_account()

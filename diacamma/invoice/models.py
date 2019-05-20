@@ -427,12 +427,19 @@ class Bill(Supporting):
         CostAccounting, verbose_name=_('cost accounting'), null=True, default=None, db_index=True, on_delete=models.PROTECT)
 
     def __str__(self):
-        billtype = get_value_if_choices(
-            self.bill_type, self.get_field_by_name('bill_type'))
+        billtype = get_value_if_choices(self.bill_type, self.get_field_by_name('bill_type'))
         if self.num is None:
             return "%s - %s" % (billtype, get_value_converted(self.date))
         else:
             return "%s %s - %s" % (billtype, self.num_txt, get_value_converted(self.date))
+
+    @property
+    def reference(self):
+        billtype = get_value_if_choices(self.bill_type, self.get_field_by_name('bill_type'))
+        if self.num is None:
+            return "%s" % billtype
+        else:
+            return "%s %s" % (billtype, self.num_txt)
 
     @classmethod
     def get_default_fields(cls, status=-1):

@@ -58,6 +58,7 @@ from diacamma.payoff.models import Payoff
 from diacamma.accounting.models import FiscalYear, Third
 from diacamma.accounting.views import get_main_third
 from diacamma.accounting.tools import current_system_account, format_devise
+from lucterios.framework.xfersearch import get_criteria_list
 
 MenuManage.add_sub("invoice", None, "diacamma.invoice/images/invoice.png", _("invoice"), _("Manage of billing"), 45)
 
@@ -82,7 +83,7 @@ def _add_bill_filter(xfer, row, with_third=False):
     status_filter = xfer.getparam('status_filter', -1)
     dep_field = Bill.get_field_by_name('status')
     sel_list = list(dep_field.choices)
-    sel_list.insert(0, (-1, _('building+valid')))
+    sel_list.insert(0, (-1, '%s+%s' % (_('building'), _('valid'))))
     sel_list.append((-2, None))
     edt = XferCompSelect("status_filter")
     edt.set_select(sel_list)
@@ -185,9 +186,6 @@ class BillShow(XferShowEditor):
         XferShowEditor.fillresponse(self)
         self.add_action(ActionsManage.get_action_url('payoff.Supporting', 'Show', self),
                         close=CLOSE_NO, params={'item_name': self.field_id}, pos_act=0)
-        if self.item.status in (1, 3):
-            self.add_action(ActionsManage.get_action_url('payoff.Supporting', 'Email', self),
-                            close=CLOSE_NO, params={'item_name': self.field_id}, pos_act=0)
 
 
 @ActionsManage.affect_transition("status", multi_list=('archive',))
@@ -321,7 +319,31 @@ class BillDel(XferDelete):
     caption = _("Delete bill")
 
 
-@ActionsManage.affect_grid(_("Print"), "images/print.png", close=CLOSE_NO, unique=SELECT_MULTI, condition=lambda xfer, gridname='': xfer.getparam('status_filter', -1) in (1, 3))
+def can_printing(xfer, gridname=''):
+    if xfer.getparam('CRITERIA') is not None:
+        for criteria_item in get_criteria_list(xfer.getparam('CRITERIA')):
+            if (criteria_item[0] == 'status') and (criteria_item[2] in ('1', '3', '1;3')):
+                return True
+        return False
+    else:
+        return xfer.getparam('status_filter', -1) in (1, 3)
+
+
+@ActionsManage.affect_grid(_("Send"), "lucterios.mailing/images/email.png", close=CLOSE_NO, unique=SELECT_MULTI, condition=lambda xfer, gridname='': can_printing(xfer)and can_send_email(xfer))
+@ActionsManage.affect_show(_("Send"), "lucterios.mailing/images/email.png", close=CLOSE_NO, condition=lambda xfer: xfer.item.status in (1, 3))
+@MenuManage.describ('invoice.change_bill')
+class BillPayableEmail(XferContainerAcknowledge):
+    caption = _("Send by email")
+    icon = "bill.png"
+    model = Bill
+    field_id = 'bill'
+
+    def fillresponse(self):
+        self.redirect_action(ActionsManage.get_action_url('payoff.Supporting', 'Email', self),
+                             close=CLOSE_NO, params={'item_name': self.field_id})
+
+
+@ActionsManage.affect_grid(_("Print"), "images/print.png", close=CLOSE_NO, unique=SELECT_MULTI, condition=can_printing)
 @ActionsManage.affect_show(_("Print"), "images/print.png", close=CLOSE_NO, condition=lambda xfer: xfer.item.status in (1, 3))
 @MenuManage.describ('invoice.change_bill')
 class BillPrint(XferPrintReporting):

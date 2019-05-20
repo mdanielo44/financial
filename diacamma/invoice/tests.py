@@ -47,7 +47,9 @@ from diacamma.invoice.test_tools import default_articles, InvoiceTest, default_c
 from diacamma.invoice.views_conf import AutomaticReduceAddModify, AutomaticReduceDel
 from diacamma.invoice.views import BillList, BillAddModify, BillShow, DetailAddModify, DetailDel, BillTransition, BillDel, BillFromQuotation, \
     BillStatistic, BillStatisticPrint, BillPrint, BillMultiPay, BillSearch,\
-    BillCheckAutoreduce
+    BillCheckAutoreduce, BillPayableEmail
+from lucterios.mailing.models import Message
+from lucterios.framework.models import LucteriosScheduler
 
 
 class BillTest(InvoiceTest):
@@ -489,7 +491,7 @@ class BillTest(InvoiceTest):
         self.assert_count_equal('', 13)
         self.assert_json_equal('LABELFORM', 'num_txt', "A-1")
         self.assert_json_equal('LABELFORM', 'status', "validé")
-        self.assertEqual(len(self.json_actions), 4)
+        self.assertEqual(len(self.json_actions), 5)
 
         self.factory.xfer = EntryAccountList()
         self.calljson('/diacamma.accounting/entryAccountList',
@@ -606,7 +608,7 @@ class BillTest(InvoiceTest):
         self.assert_json_equal('LABELFORM', 'title', "{[br/]}{[center]}{[u]}{[b]}devis{[/b]}{[/u]}{[/center]}")
         self.assert_json_equal('LABELFORM', 'date', "1 avril 2015")
         self.assert_json_equal('LABELFORM', 'total_excltax', "62.50€")
-        self.assertEqual(len(self.json_actions), 5)
+        self.assertEqual(len(self.json_actions), 6)
 
         self.factory.xfer = EntryAccountList()
         self.calljson('/diacamma.accounting/entryAccountList',
@@ -677,7 +679,7 @@ class BillTest(InvoiceTest):
         self.assert_json_equal('LABELFORM', 'total_excltax', "88.80€")
         self.assert_json_equal('LABELFORM', 'num_txt', "A-1")
         self.assert_json_equal('LABELFORM', 'status', "validé")
-        self.assertEqual(len(self.json_actions), 3)
+        self.assertEqual(len(self.json_actions), 4)
 
         self.factory.xfer = EntryAccountList()
         self.calljson('/diacamma.accounting/entryAccountList',
@@ -721,7 +723,7 @@ class BillTest(InvoiceTest):
         self.assert_json_equal('LABELFORM', 'status', "validé")
         self.assert_json_equal('LABELFORM', 'title', "{[br/]}{[center]}{[u]}{[b]}reçu{[/b]}{[/u]}{[/center]}")
         self.assert_json_equal('LABELFORM', 'date', "1 avril 2015")
-        self.assertEqual(len(self.json_actions), 4)
+        self.assertEqual(len(self.json_actions), 5)
 
         self.factory.xfer = EntryAccountList()
         self.calljson('/diacamma.accounting/entryAccountList',
@@ -1581,7 +1583,7 @@ class BillTest(InvoiceTest):
                           {'item_name': 'bill', 'bill': bill_id}, False)
             self.assert_observer('core.custom', 'diacamma.payoff', 'payableEmail')
             self.assert_count_equal('', 4)
-            self.assert_json_equal('EDIT', 'subject', 'facture A-1 - 1 avril 2015')
+            self.assert_json_equal('EDIT', 'subject', 'facture A-1')
             self.assert_json_equal('MEMO', 'message', 'Jack Dalton{[br/]}{[br/]}Veuillez trouver ci-Joint à ce courriel facture A-1 - 1 avril 2015.{[br/]}{[br/]}Sincères salutations')
 
             self.factory.xfer = PayableEmail()
@@ -1598,6 +1600,73 @@ class BillTest(InvoiceTest):
             self.assertEqual('<html>this is a bill.</html>', decode_b64(msg.get_payload()))
             self.assertTrue('facture_A-1_Dalton Jack.pdf' in msg_file.get('Content-Type', ''), msg_file.get('Content-Type', ''))
             self.assertEqual("%PDF".encode('ascii', 'ignore'), b64decode(msg_file.get_payload())[:4])
+        finally:
+            server.stop()
+
+    def test_send_multi_bill(self):
+        default_articles()
+        configSMTP('localhost', 2025)
+        server = TestReceiver()
+        server.start(2025)
+        try:
+            self._create_bill([{'article': 5, 'designation': 'article 5', 'price': '100', 'quantity': 1}], 1, '2015-04-01', 6, True)
+            self._create_bill([{'article': 5, 'designation': 'article 5', 'price': '100', 'quantity': 1}], 3, '2015-04-02', 4, True)
+            self._create_bill([{'article': 5, 'designation': 'article 5', 'price': '100', 'quantity': 1}], 2, '2015-04-03', 6, True)
+            self._create_bill([{'article': 5, 'designation': 'article 5', 'price': '100', 'quantity': 1}], 0, '2015-04-04', 5, True)
+
+            self.factory.xfer = BillList()
+            self.calljson('/diacamma.invoice/billList', {'status_filter': -2}, False)
+            self.assert_observer('core.custom', 'diacamma.invoice', 'billList')
+            self.assert_count_equal('bill', 4)
+            self.assert_count_equal('#bill/actions', 3)
+
+            self.factory.xfer = BillList()
+            self.calljson('/diacamma.invoice/billList', {'status_filter': 0}, False)
+            self.assert_observer('core.custom', 'diacamma.invoice', 'billList')
+            self.assert_count_equal('bill', 0)
+            self.assert_count_equal('#bill/actions', 4)
+
+            self.factory.xfer = BillList()
+            self.calljson('/diacamma.invoice/billList', {'status_filter': 1}, False)
+            self.assert_observer('core.custom', 'diacamma.invoice', 'billList')
+            self.assert_count_equal('bill', 4)
+            self.assert_count_equal('#bill/actions', 6)
+            self.assert_action_equal(self.get_json_path('#bill/actions/@5'), ("Envoyer", "lucterios.mailing/images/email.png", "diacamma.invoice", "billPayableEmail", 0, 1, 2))
+
+            self.factory.xfer = BillPayableEmail()
+            self.calljson('/diacamma.invoice/billPayableEmail', {'status_filter': 1, 'bill': '1;2;3;4'}, False)
+            self.assert_observer('core.acknowledge', 'diacamma.invoice', 'billPayableEmail')
+            self.assertEqual(self.response_json['action']['id'], "diacamma.payoff/payableEmail")
+            self.assertEqual(len(self.response_json['action']['params']), 1)
+            self.assertEqual(self.response_json['action']['params']['item_name'], 'bill')
+
+            self.factory.xfer = PayableEmail()
+            self.calljson('/diacamma.payoff/payableEmail',
+                          {'item_name': 'bill', 'bill': "1;2;3;4"}, False)
+            self.assert_observer('core.custom', 'diacamma.payoff', 'payableEmail')
+            self.assert_count_equal('', 5)
+            self.assert_json_equal('LABELFORM', "nb_item", '4')
+            self.assert_json_equal('EDIT', 'subject', '#reference')
+            self.assert_json_equal('MEMO', 'message', '#name{[br/]}{[br/]}Veuillez trouver ci-Joint à ce courriel #doc.{[br/]}{[br/]}Sincères salutations')
+
+            self.factory.xfer = PayableEmail()
+            self.calljson('/diacamma.payoff/payableEmail',
+                          {'bill': "1;2;3;4", 'OK': 'YES', 'item_name': 'bill', 'subject': '#reference',
+                           'message': '#name{[br/]}{[br/]}Veuillez trouver ci-Joint à ce courriel #doc.{[br/]}{[br/]}Sincères salutations', 'model': 8}, False)
+            self.assert_observer('core.acknowledge', 'diacamma.payoff', 'payableEmail')
+
+            email_msg = Message.objects.get(id=1)
+            self.assertEqual(email_msg.subject, '#reference')
+            self.assertEqual(email_msg.body, '#name{[br/]}{[br/]}Veuillez trouver ci-Joint à ce courriel #doc.{[br/]}{[br/]}Sincères salutations')
+            self.assertEqual(email_msg.status, 2)
+            self.assertEqual(email_msg.recipients, "invoice.Bill id||8||1;2;3;4\n")
+            self.assertEqual(email_msg.email_to_send, "invoice.Bill:1:8\ninvoice.Bill:2:8\ninvoice.Bill:3:8\ninvoice.Bill:4:8")
+
+            self.assertEqual(1, len(LucteriosScheduler.get_list()))
+            LucteriosScheduler.stop_scheduler()
+            email_msg.sendemail(10, "http://testserver")
+            self.assertEqual(4, server.count())
+
         finally:
             server.stop()
 

@@ -53,6 +53,7 @@ from diacamma.payoff.models import Payoff, Supporting, PaymentMethod, BankTransa
 from diacamma.accounting.models import Third
 from lucterios.CORE.models import PrintModel
 from lucterios.CORE.parameters import Params
+from lucterios.mailing.models import Message
 
 
 @ActionsManage.affect_grid(TITLE_ADD, "images/add.png", condition=lambda xfer, gridname='': abs(xfer.item.get_total_rest_topay()) > 0.001)
@@ -199,43 +200,73 @@ class PayableEmail(XferContainerAcknowledge):
     field_id = 'supporting'
 
     def fillresponse(self, item_name='', subject='', message='', model=0):
+        def replace_tag(contact, text):
+            text = text.replace('#name', contact.get_final_child().get_presentation() if contact is not None else '???')
+            text = text.replace('#doc', self.item.get_docname())
+            text = text.replace('#reference', self.item.reference)
+            return text
+
         if item_name != '':
-            self.item = Supporting.objects.get(id=self.getparam(item_name, 0))
-        self.item = self.item.get_final_child()
+            self.items = Supporting.objects.filter(id__in=self.getparam(item_name, ()))
+        self.items = [item.get_final_child() for item in self.items]
+        if len(self.items) > 0:
+            self.item = self.items[0]
         if self.getparam("OK") is None:
             dlg = self.create_custom()
             icon = XferCompImage('img')
             icon.set_location(0, 0, 1, 6)
             icon.set_value(self.icon_path())
             dlg.add_component(icon)
+
+            subject = Params.getvalue('payoff-email-subject')
+            message = Params.getvalue('payoff-email-message')
+            message = message.replace('%(name)$', '#name')
+            message = message.replace('%(doc)$', '#doc')
+            if len(self.items) > 1:
+                edt = XferCompLabelForm('nb_item')
+                edt.set_value(len(self.items))
+                edt.set_location(1, 1)
+                edt.description = _('nb of sending')
+                dlg.add_component(edt)
+            else:
+                contact = self.item.third.contact.get_final_child()
+                subject = replace_tag(contact, subject)
+                message = replace_tag(contact, message)
             edt = XferCompEdit('subject')
-            edt.set_value(six.text_type(self.item))
-            edt.set_location(1, 1)
+            edt.set_value(subject)
+            edt.set_location(1, 2)
             edt.description = _('subject')
             dlg.add_component(edt)
-            contact = self.item.third.contact.get_final_child()
             memo = XferCompMemo('message')
             memo.description = _('message')
-            memo.set_value(Params.getvalue('payoff-email-message') % {'name': contact.get_presentation(), 'doc': self.item.get_docname()})
+            memo.set_value(message)
             memo.with_hypertext = True
             memo.set_size(130, 450)
-            memo.set_location(1, 2)
+            memo.set_location(1, 3)
             dlg.add_component(memo)
             selectors = PrintModel.get_print_selector(2, self.item.__class__)[0]
             sel = XferCompSelect('model')
             sel.set_select(selectors[2])
-            sel.set_location(1, 3)
+            sel.set_location(1, 4)
             sel.description = selectors[1]
             dlg.add_component(sel)
             dlg.add_action(self.get_action(TITLE_OK, 'images/ok.png'), params={"OK": "YES"})
             dlg.add_action(WrapAction(TITLE_CANCEL, 'images/cancel.png'))
         else:
-            html_message = "<html>"
-            html_message += message.replace('{[newline]}', '<br/>\n').replace('{[', '<').replace(']}', '>')
-            if self.item.payoff_have_payment() and (len(PaymentMethod.objects.all()) > 0):
-                html_message += get_html_payment(self.request.META.get('HTTP_REFERER', self.request.build_absolute_uri()), self.language, self.item)
-            html_message += "</html>"
-            self.item.send_email(subject, html_message, model)
+            if len(self.items) == 1:
+                html_message = "<html>"
+                html_message += message.replace('{[newline]}', '<br/>\n').replace('{[', '<').replace(']}', '>')
+                if self.item.payoff_have_payment() and (len(PaymentMethod.objects.all()) > 0):
+                    html_message += get_html_payment(self.request.META.get('HTTP_REFERER', self.request.build_absolute_uri()), self.language, self.item)
+                html_message += "</html>"
+                self.item.send_email(subject, html_message, model)
+            else:
+                model_obj = self.item.__class__
+                email_msg = Message.objects.create(subject=subject, body=message, email_to_send="%s:0:%s" % (model_obj.get_long_name(), model))
+                email_msg.add_recipient(model_obj.get_long_name(), 'id||8||%s' % ';'.join([six.text_type(item.id) for item in self.items]))
+                email_msg.save()
+                email_msg.valid()
+                email_msg.sending()
 
 
 @ActionsManage.affect_show(_("Payment"), "diacamma.payoff/images/payments.png", condition=lambda xfer: xfer.item.payoff_have_payment() and (len(PaymentMethod.objects.all()) > 0))
