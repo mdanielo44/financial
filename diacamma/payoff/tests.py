@@ -49,7 +49,7 @@ class PayoffTest(LucteriosTest):
         self.calljson('/diacamma.payoff/payoffConf', {}, False)
         self.assert_observer('core.custom', 'diacamma.payoff', 'payoffConf')
         self.assertTrue('__tab_3' in self.json_data.keys(), self.json_data.keys())
-        self.assert_count_equal('', 3 + 2 + 7)
+        self.assert_count_equal('', 2 + 3 + 2 + 6)
 
         self.assert_grid_equal('bankaccount', {'order_key': 'ordre', 'designation': "désignation", 'reference': "référence", 'account_code': "code comptable"}, 0)
 
@@ -102,7 +102,7 @@ class PayoffTest(LucteriosTest):
         self.calljson('/diacamma.payoff/payoffConf', {}, False)
         self.assert_observer('core.custom', 'diacamma.payoff', 'payoffConf')
         self.assertTrue('__tab_3' in self.json_data.keys(), self.json_data.keys())
-        self.assert_count_equal('', 3 + 2 + 7)
+        self.assert_count_equal('', 2 + 3 + 2 + 6)
         self.assert_grid_equal('paymentmethod', {'paytype': "type", 'bank_account': "compte bancaire", 'info': "paramètres"}, 0)
 
         self.factory.xfer = PaymentMethodAddModify()

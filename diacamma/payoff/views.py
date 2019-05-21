@@ -33,6 +33,7 @@ from django.db.models.query import QuerySet
 from django.db.models import Q, Value
 from django.conf import settings
 from django.utils import six, timezone
+from django.apps.registry import apps
 
 from lucterios.framework.xferbasic import XferContainerAbstract
 from lucterios.framework.xferadvance import XferAddEditor, XferListEditor, \
@@ -183,7 +184,6 @@ class SupportingThirdValid(XferSave):
 
 def can_send_email(xfer):
     from django.utils.module_loading import import_module
-    from django.apps.registry import apps
     if apps.is_installed("lucterios.mailing"):
         fct_mailing_mod = import_module('lucterios.mailing.functions')
         return fct_mailing_mod.will_mail_send()
@@ -199,15 +199,17 @@ class PayableEmail(XferContainerAcknowledge):
     model = Supporting
     field_id = 'supporting'
 
-    def fillresponse(self, item_name='', subject='', message='', model=0):
+    def fillresponse(self, item_name='', subject='', message='', model=0, modelname=""):
         def replace_tag(contact, text):
             text = text.replace('#name', contact.get_final_child().get_presentation() if contact is not None else '???')
-            text = text.replace('#doc', self.item.get_docname())
-            text = text.replace('#reference', self.item.reference)
+            text = text.replace('#doc', six.text_type(self.item.get_docname()))
+            text = text.replace('#reference', six.text_type(self.item.reference))
             return text
 
         if item_name != '':
-            self.items = Supporting.objects.filter(id__in=self.getparam(item_name, ()))
+            if modelname != '':
+                self.model = apps.get_model(modelname)
+            self.items = self.model.objects.filter(id__in=self.getparam(item_name, ()))
         self.items = [item.get_final_child() for item in self.items]
         if len(self.items) > 0:
             self.item = self.items[0]
@@ -229,7 +231,7 @@ class PayableEmail(XferContainerAcknowledge):
                 edt.description = _('nb of sending')
                 dlg.add_component(edt)
             else:
-                contact = self.item.third.contact.get_final_child()
+                contact = self.item.contact.get_final_child()
                 subject = replace_tag(contact, subject)
                 message = replace_tag(contact, message)
             edt = XferCompEdit('subject')

@@ -142,8 +142,9 @@ class PaymentTest(LucteriosTest):
         self.calljson('/diacamma.payoff/bankTransactionList', {}, False)
         self.assert_observer('core.custom', 'diacamma.payoff', 'bankTransactionList')
         self.assert_count_equal('banktransaction', 0)
-        setattr(settings, "DIACAMMA_PAYOFF_PAYPAL_URL", "http://localhost:%d" % self.server_port)
-        httpd = TestHTTPServer(('localhost', self.server_port))
+        PaymentTest.server_port += 1
+        setattr(settings, "DIACAMMA_PAYOFF_PAYPAL_URL", "http://localhost:%d" % PaymentTest.server_port)
+        httpd = TestHTTPServer(('localhost', PaymentTest.server_port))
         httpd.start()
         try:
             self.calljson('/diacamma.payoff/validationPaymentPaypal', paypal_validation_fields, True)

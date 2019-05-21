@@ -329,8 +329,8 @@ def can_printing(xfer, gridname=''):
         return xfer.getparam('status_filter', -1) in (1, 3)
 
 
-@ActionsManage.affect_grid(_("Send"), "lucterios.mailing/images/email.png", close=CLOSE_NO, unique=SELECT_MULTI, condition=lambda xfer, gridname='': can_printing(xfer)and can_send_email(xfer))
-@ActionsManage.affect_show(_("Send"), "lucterios.mailing/images/email.png", close=CLOSE_NO, condition=lambda xfer: xfer.item.status in (1, 3))
+@ActionsManage.affect_grid(_("Send"), "lucterios.mailing/images/email.png", close=CLOSE_NO, unique=SELECT_MULTI, condition=lambda xfer, gridname='': can_printing(xfer) and can_send_email(xfer))
+@ActionsManage.affect_show(_("Send"), "lucterios.mailing/images/email.png", close=CLOSE_NO, condition=lambda xfer: xfer.item.status in (1, 3) and can_send_email(xfer))
 @MenuManage.describ('invoice.change_bill')
 class BillPayableEmail(XferContainerAcknowledge):
     caption = _("Send by email")

@@ -491,7 +491,7 @@ class BillTest(InvoiceTest):
         self.assert_count_equal('', 13)
         self.assert_json_equal('LABELFORM', 'num_txt', "A-1")
         self.assert_json_equal('LABELFORM', 'status', "validé")
-        self.assertEqual(len(self.json_actions), 5)
+        self.assertEqual(len(self.json_actions), 4)
 
         self.factory.xfer = EntryAccountList()
         self.calljson('/diacamma.accounting/entryAccountList',
@@ -608,7 +608,7 @@ class BillTest(InvoiceTest):
         self.assert_json_equal('LABELFORM', 'title', "{[br/]}{[center]}{[u]}{[b]}devis{[/b]}{[/u]}{[/center]}")
         self.assert_json_equal('LABELFORM', 'date', "1 avril 2015")
         self.assert_json_equal('LABELFORM', 'total_excltax', "62.50€")
-        self.assertEqual(len(self.json_actions), 6)
+        self.assertEqual(len(self.json_actions), 5)
 
         self.factory.xfer = EntryAccountList()
         self.calljson('/diacamma.accounting/entryAccountList',
@@ -679,7 +679,7 @@ class BillTest(InvoiceTest):
         self.assert_json_equal('LABELFORM', 'total_excltax', "88.80€")
         self.assert_json_equal('LABELFORM', 'num_txt', "A-1")
         self.assert_json_equal('LABELFORM', 'status', "validé")
-        self.assertEqual(len(self.json_actions), 4)
+        self.assertEqual(len(self.json_actions), 3)
 
         self.factory.xfer = EntryAccountList()
         self.calljson('/diacamma.accounting/entryAccountList',
@@ -723,7 +723,7 @@ class BillTest(InvoiceTest):
         self.assert_json_equal('LABELFORM', 'status', "validé")
         self.assert_json_equal('LABELFORM', 'title', "{[br/]}{[center]}{[u]}{[b]}reçu{[/b]}{[/u]}{[/center]}")
         self.assert_json_equal('LABELFORM', 'date', "1 avril 2015")
-        self.assertEqual(len(self.json_actions), 5)
+        self.assertEqual(len(self.json_actions), 4)
 
         self.factory.xfer = EntryAccountList()
         self.calljson('/diacamma.accounting/entryAccountList',

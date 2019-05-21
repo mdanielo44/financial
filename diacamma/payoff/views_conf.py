@@ -22,7 +22,7 @@ from diacamma.accounting.system import accounting_system_ident
 
 
 def fill_params(xfer, is_mini=False):
-    param_lists = ['payoff-cash-account', 'payoff-bankcharges-account', 'payoff-email-message']
+    param_lists = ['payoff-cash-account', 'payoff-bankcharges-account', 'payoff-email-subject', 'payoff-email-message']
     Params.fill(xfer, param_lists, 1, xfer.get_max_row() + 1)
     btn = XferCompButton('editparam')
     btn.set_is_mini(is_mini)
