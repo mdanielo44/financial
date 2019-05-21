@@ -265,7 +265,7 @@ class PayableEmail(XferContainerAcknowledge):
             else:
                 model_obj = self.item.__class__
                 email_msg = Message.objects.create(subject=subject, body=message, email_to_send="%s:0:%s" % (model_obj.get_long_name(), model))
-                email_msg.add_recipient(model_obj.get_long_name(), 'id||8||%s' % (model, ';'.join([six.text_type(item.id) for item in self.items])))
+                email_msg.add_recipient(model_obj.get_long_name(), 'id||%s||%s' % (model, ';'.join([six.text_type(item.id) for item in self.items])))
                 email_msg.save()
                 email_msg.valid()
                 email_msg.sending()
