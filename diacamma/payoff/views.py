@@ -220,8 +220,8 @@ class PayableEmail(XferContainerAcknowledge):
 
             subject = Params.getvalue('payoff-email-subject')
             message = Params.getvalue('payoff-email-message')
-            message = message.replace('%(name)$', '#name')
-            message = message.replace('%(doc)$', '#doc')
+            message = message.replace('%(name)s', '#name')
+            message = message.replace('%(doc)s', '#doc')
             if len(self.items) > 1:
                 edt = XferCompLabelForm('nb_item')
                 edt.set_value(len(self.items))
