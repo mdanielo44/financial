@@ -213,6 +213,7 @@ class PayableEmail(XferContainerAcknowledge):
         self.items = [item.get_final_child() for item in self.items]
         if len(self.items) > 0:
             self.item = self.items[0]
+            self.model = self.item.__class__
         if self.getparam("OK") is None:
             dlg = self.create_custom()
             icon = XferCompImage('img')
@@ -246,7 +247,7 @@ class PayableEmail(XferContainerAcknowledge):
             memo.set_size(130, 450)
             memo.set_location(1, 3)
             dlg.add_component(memo)
-            selectors = PrintModel.get_print_selector(2, self.item.__class__)[0]
+            selectors = PrintModel.get_print_selector(2, self.model)[0]
             sel = XferCompSelect('model')
             sel.set_select(selectors[2])
             sel.set_location(1, 4)
@@ -265,7 +266,7 @@ class PayableEmail(XferContainerAcknowledge):
             else:
                 model_obj = self.item.__class__
                 email_msg = Message.objects.create(subject=subject, body=message, email_to_send="%s:0:%s" % (model_obj.get_long_name(), model))
-                email_msg.add_recipient(model_obj.get_long_name(), 'id||%s||%s' % (model, ';'.join([six.text_type(item.id) for item in self.items])))
+                email_msg.add_recipient(model_obj.get_long_name(), 'id||8||%s' % ';'.join([six.text_type(item.id) for item in self.items]))
                 email_msg.save()
                 email_msg.valid()
                 email_msg.sending()
