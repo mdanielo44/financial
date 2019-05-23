@@ -41,7 +41,8 @@ from django_fsm import FSMIntegerField, transition
 from lucterios.framework.models import LucteriosModel, get_value_if_choices, get_value_converted, get_obj_contains
 from lucterios.framework.error import LucteriosException, IMPORTANT, GRAVE
 from lucterios.framework.signal_and_lock import Signal
-from lucterios.framework.filetools import get_user_path, readimage_to_base64
+from lucterios.framework.filetools import get_user_path, readimage_to_base64,\
+    remove_accent
 from lucterios.framework.tools import same_day_months_after
 from lucterios.CORE.models import Parameter, SavedCriteria
 from lucterios.CORE.parameters import Params
@@ -915,7 +916,7 @@ class Bill(Supporting):
     def get_document_filename(self):
         billtype = get_value_if_choices(
             self.bill_type, self.get_field_by_name('bill_type'))
-        return "%s_%s_%s" % (billtype, self.num_txt, six.text_type(self.third))
+        return remove_accent("%s_%s_%s" % (billtype, self.num_txt, six.text_type(self.third)))
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         for detail in self.detail_set.all():
