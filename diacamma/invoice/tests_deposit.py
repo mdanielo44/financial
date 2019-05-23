@@ -407,7 +407,7 @@ class MethodTest(InvoiceTest, PaymentTest):
             self.assertEqual('base64', msg.get('Content-Transfer-Encoding', ''))
             self.check_email_msg(msg, '2', 'facture A-1 - 1 avril 2015')
             self.assertTrue('facture_A-1_Minimum.pdf' in msg_file.get('Content-Type', ''), msg_file.get('Content-Type', ''))
-            self.assertEqual("%PDF".encode('ascii', 'ignore'), b64decode(msg_file.get_payload())[:4])
+            self.save_pdf(base64_content=msg_file.get_payload())
         finally:
             server.stop()
 

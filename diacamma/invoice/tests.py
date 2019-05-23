@@ -1599,7 +1599,7 @@ class BillTest(InvoiceTest):
             self.assertEqual('base64', msg.get('Content-Transfer-Encoding', ''))
             self.assertEqual('<html>this is a bill.</html>', decode_b64(msg.get_payload()))
             self.assertTrue('facture_A-1_Dalton Jack.pdf' in msg_file.get('Content-Type', ''), msg_file.get('Content-Type', ''))
-            self.assertEqual("%PDF".encode('ascii', 'ignore'), b64decode(msg_file.get_payload())[:4])
+            self.save_pdf(base64_content=msg_file.get_payload())
         finally:
             server.stop()
 
@@ -1666,6 +1666,9 @@ class BillTest(InvoiceTest):
             LucteriosScheduler.stop_scheduler()
             email_msg.sendemail(10, "http://testserver")
             self.assertEqual(4, server.count())
+            for msg_index in range(4):
+                _msg, _msg_txt, msg_file = server.get_msg_index(msg_index)
+                self.save_pdf(base64_content=msg_file.get_payload(), ident=msg_index + 1)
         finally:
             server.stop()
 

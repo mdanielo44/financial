@@ -927,7 +927,7 @@ class CompletedEntryTest(LucteriosTest):
         self.calljson('/diacamma.accounting/fiscalYearReportPrint', {'classname': 'FiscalYearBalanceSheet', "PRINT_MODE": 3}, False)
         self.assert_observer('core.print', 'diacamma.accounting', 'fiscalYearReportPrint')
         pdf_value = b64decode(six.text_type(self.response_json['print']["content"]))
-        self.assertEqual(pdf_value[:4], "%PDF".encode('ascii', 'ignore'))
+        self.save_pdf()
 
     def test_fiscalyear_incomestatement(self):
         self.factory.xfer = FiscalYearIncomeStatement()
@@ -1023,7 +1023,7 @@ class CompletedEntryTest(LucteriosTest):
         self.calljson('/diacamma.accounting/fiscalYearReportPrint', {'classname': 'FiscalYearIncomeStatement', "PRINT_MODE": 3}, False)
         self.assert_observer('core.print', 'diacamma.accounting', 'fiscalYearReportPrint')
         pdf_value = b64decode(six.text_type(self.response_json['print']["content"]))
-        self.assertEqual(pdf_value[:4], "%PDF".encode('ascii', 'ignore'))
+        self.save_pdf()
 
     def test_fiscalyear_ledger(self):
         self.factory.xfer = FiscalYearLedger()
@@ -1041,8 +1041,7 @@ class CompletedEntryTest(LucteriosTest):
         self.factory.xfer = FiscalYearReportPrint()
         self.calljson('/diacamma.accounting/fiscalYearReportPrint', {'classname': 'FiscalYearLedger', "PRINT_MODE": 3}, False)
         self.assert_observer('core.print', 'diacamma.accounting', 'fiscalYearReportPrint')
-        pdf_value = b64decode(six.text_type(self.response_json['print']["content"]))
-        self.assertEqual(pdf_value[:4], "%PDF".encode('ascii', 'ignore'))
+        self.save_pdf()
 
     def test_fiscalyear_trialbalance(self):
         self.factory.xfer = FiscalYearTrialBalance()
@@ -1143,8 +1142,7 @@ class CompletedEntryTest(LucteriosTest):
         self.factory.xfer = FiscalYearReportPrint()
         self.calljson('/diacamma.accounting/fiscalYearReportPrint', {'classname': 'FiscalYearTrialBalance', "PRINT_MODE": 3}, False)
         self.assert_observer('core.print', 'diacamma.accounting', 'fiscalYearReportPrint')
-        pdf_value = b64decode(six.text_type(self.response_json['print']["content"]))
-        self.assertEqual(pdf_value[:4], "%PDF".encode('ascii', 'ignore'))
+        self.save_pdf()
 
     def test_export(self):
         self.assertFalse(exists(get_user_path('accounting', 'fiscalyear_export_1.xml')))
