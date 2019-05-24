@@ -269,6 +269,7 @@ class PayableEmail(XferContainerAcknowledge):
                 email_msg.add_recipient(model_obj.get_long_name(), 'id||8||%s' % ';'.join([six.text_type(item.id) for item in self.items]))
                 email_msg.save()
                 email_msg.valid()
+                email_msg.set_context(self)
                 email_msg.sending()
 
 
