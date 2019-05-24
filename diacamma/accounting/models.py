@@ -825,6 +825,16 @@ class EntryAccount(LucteriosModel):
         res += "{[/table]}"
         return res
 
+    @property
+    def is_asset(self):
+        sum_customer = get_amount_sum(self.entrylineaccount_set.filter(account__code__regex=current_system_account().get_third_mask()).aggregate(Sum('amount')))
+        return ((sum_customer < 0) and not self.has_cash) or ((sum_customer > 0) and self.has_cash)
+
+    def reverse_entry(self):
+        for line in self.entrylineaccount_set.all():
+            line.amount = -1 * line.amount
+            line.save()
+
     def can_delete(self):
         if self.close:
             return _('entry of account closed!')
@@ -1488,7 +1498,17 @@ def check_accountlink():
         old_link += 1
         account_link.delete()
     if old_link > 0:
-        six.print_(' * convert AccountLink: old=%d / new=%d' % (old_link, new_link))
+        from django.utils.module_loading import import_module
+        from django.apps.registry import apps
+        if apps.is_installed("diacamma.invoice"):
+            invoice_model = import_module('diacamma.invoice.models')
+            invoice_model.correct_quotation_asset_account()
+        if apps.is_installed("diacamma.payoff"):
+            payoff_model = import_module('diacamma.payoff.models')
+            addon_linked = payoff_model.check_accountlink_from_supporting()
+        else:
+            addon_linked = 0
+        six.print_(' * convert AccountLink: old= %d / new= %d + %d' % (old_link, new_link, addon_linked))
 
 
 def pre_save_datadb(sender, **kwargs):

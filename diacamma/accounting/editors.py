@@ -236,9 +236,7 @@ class EntryAccountEditor(LucteriosEditor):
             grid_lines.add_action(xfer.request, ActionsManage.get_action_url('accounting.EntryAccount', 'CostAccounting', xfer), close=CLOSE_NO, unique=SELECT_MULTI)
         xfer.add_component(grid_lines)
         if self.item.has_third:
-            sum_customer = get_amount_sum(self.item.entrylineaccount_set.filter(
-                account__code__regex=current_system_account().get_third_mask()).aggregate(Sum('amount')))
-            if ((sum_customer < 0) and not self.item.has_cash) or ((sum_customer > 0) and self.item.has_cash):
+            if self.item.is_asset:
                 lbl = XferCompLabelForm('asset_warning')
                 lbl.set_location(0, last_row + 3, 6)
                 lbl.set_value_as_header(_("entry of accounting for an asset"))

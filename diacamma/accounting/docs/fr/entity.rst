@@ -34,7 +34,7 @@ journal nous souhaitons réaliser notre nouvelle écriture, puis cliquons
 sur le bouton *Ajouter*.
 
 Aprés avoir précisé les dates de votre écriture, il vous faut
-ajouter les différentes lignes correspondant é votre opération financiére.
+ajouter les différentes lignes correspondant à votre opération financiére.
 
 Pour ajouter une ligne d'écriture, saisissez son code comptable
 si vous le connaissez dans la zone d'ajout ou laissez-vous guider par
@@ -80,23 +80,29 @@ une écriture d'achat (ou de vente) et son encaissement associé.
 Mais, il peut arriver que nous souhaitions lettrer plus de deux
 écritures. Par exemple, vous pouvez vouloir régler 3 factures d'un
 fournisseur en une seule fois. Dans ce cas, comme vous ne faites qu'un
-seul chéque d'un montant égal é la somme des factures, vous n'aurez
+seul chéque d'un montant égal à la somme des factures, vous n'aurez
 qu'une écriture d'encaissement que vous allez lettrer avec les 3
 écritures d'achats. A la relecture de votre comptabilité, il deviendra
 alors simple de comprendre qu'il s'agissait d'un réglement multiple.
 
-Pour réaliser cette action, sélectionnez les écritures que vous désirez
+Pour réaliser cette action, sélectionnez les lignes d'écritures que vous désirez
 lier et cliquez sur le bouton "Lettrer": Si l'outil les considére comme
 étant cohérentes, il réalisera le lettrage symbolisé par un numéro
-commun é ces écritures en derniére colonne du journal.
+commun à ces écritures en derniére colonne du journal.
+
+Voilà les règles pour qu'un lettrage soit accepté:
+ * Les lignes d'écritures doivent être des lignes de tiers (code comptable 4xx).
+ * Les lignes d'écritures doivent appartenir au même exercice.
+ * Les lignes d'écritures doivent être associée au même code de tiers et au même tiers
+ * Les lignes d'écritures doivent d’équilibrée.
 
 Si vous cliquez à nouveau sur ce bouton, vous avez la possibilité de supprimer
-le lettrage de cette écriture ainsi que celui des écritures associées.
+le lettrage de cette ligne d'écriture ainsi que celui des écritures associées.
 
 Validation d'écritures
 ----------------------
 
-Par défaut, une écriture est saisie au brouillard, c'est é dire dans un
+Par défaut, une écriture est saisie au brouillard, c'est à dire dans un
 état où elle reste modifiable ou supprimable.
 
 Par contre, il est nécessaire, pour finaliser votre comptabilité, de valider cette

@@ -1428,6 +1428,38 @@ def convert_articles():
         art.save()
 
 
+def correct_quotation_asset_account():
+    nb_quotation_correct = 0
+    nb_asset_correct = 0
+    for bill in Bill.objects.filter(Q(bill_type__in=(0, 2)) and Q(entry__close=False)):
+        if bill.bill_type == 0:
+            corrected = False
+            if bill.entry_id is not None:
+                entry = bill.entry
+                bill.entry = None
+                bill.save()
+                entry.delete()
+                corrected = True
+            for payoff in bill.payoff_set.filter(Q(entry__isnull=True) | Q(entry__close=False)):
+                payoff.delete()
+                corrected = True
+            if corrected:
+                nb_quotation_correct += 1
+        elif bill.bill_type == 2:
+            corrected = False
+            if not bill.entry.is_asset:
+                bill.entry.reverse_entry()
+                corrected = True
+            for payoff in bill.payoff_set.filter(Q(entry__close=False)):
+                if not payoff.entry.is_asset:
+                    payoff.entry.reverse_entry()
+                    corrected = True
+            if corrected:
+                nb_asset_correct += 1
+    if (nb_quotation_correct > 0) or (nb_asset_correct > 0):
+        six.print_(" * account correction assert = %d / quotation = %s" % (nb_asset_correct, nb_quotation_correct))
+
+
 def convert_asset_and_revenue():
     nb_correct = 0
     for bill in Bill.objects.filter(Q(bill_type__in=(0, 2)) & Q(is_revenu=True)):
@@ -1435,7 +1467,8 @@ def convert_asset_and_revenue():
         bill.save()
         nb_correct += 1
     if nb_correct > 0:
-        six.print_("asset & revenue correction = %d" % nb_correct)
+        six.print_(" * asset & revenue correction = %d" % nb_correct)
+        correct_quotation_asset_account()
 
 
 @Signal.decorate('checkparam')

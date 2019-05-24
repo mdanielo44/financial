@@ -495,9 +495,7 @@ class EntryAccountReverse(XferContainerAcknowledge):
         for old_key in ['serial_entry']:
             if old_key in self.params.keys():
                 del self.params[old_key]
-        for line in self.item.entrylineaccount_set.all():
-            line.amount = -1 * line.amount
-            line.save()
+        self.item.reverse_entry()
         self.redirect_action(EntryAccountEdit.get_action(), {})
 
 

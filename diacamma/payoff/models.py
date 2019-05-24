@@ -217,13 +217,15 @@ class Supporting(LucteriosModel):
     def generate_accountlink(self):
         def _add_entryline_by_third(entry):
             added = False
-            for entryline_third in entry.get_thirds():
-                third_id = (entryline_third.account.code, entryline_third.third_id)
-                if third_id in entryline_by_third.keys():
-                    entryline_by_third[third_id].append(entryline_third)
-                    added = True
+            if entry is not None:
+                for entryline_third in entry.get_thirds():
+                    third_id = (entryline_third.account.code, entryline_third.third_id)
+                    if third_id in entryline_by_third.keys():
+                        entryline_by_third[third_id].append(entryline_third)
+                        added = True
             return added
 
+        nb_link_created = 0
         if (abs(self.get_total_rest_topay()) < 0.0001) and (self.entry_links() is not None) and (len(self.entry_links()) > 0):
             entryline_by_third = {}
             for entry in self.entry_links():
@@ -232,7 +234,7 @@ class Supporting(LucteriosModel):
                     if third_id not in entryline_by_third.keys():
                         entryline_by_third[third_id] = []
 
-            for all_payoff in self.payoff_set.filter(self.payoff_query):
+            for all_payoff in self.payoff_set.filter(self.payoff_query & Q(entry__isnull=False)):
                 for payoff_item in all_payoff.entry.payoff_set.all():
                     supporting_payed = payoff_item.supporting.get_final_child()
                     added = False
@@ -244,8 +246,10 @@ class Supporting(LucteriosModel):
             for entrylines in entryline_by_third.values():
                 try:
                     AccountLink.create_link(set(entrylines))
+                    nb_link_created += 1
                 except LucteriosException:
                     pass
+        return nb_link_created
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         self.is_revenu = self.get_final_child().payoff_is_revenu()
@@ -863,6 +867,17 @@ def check_payoff_accounting():
 def check_bank_account():
     for bank in BankAccount.objects.filter(order_key__isnull=True).order_by('id'):
         bank.save()
+
+
+def check_accountlink_from_supporting():
+    nb_link_created = 0
+    for supporting in Supporting.objects.filter(Q(payoff__entry__entrylineaccount__third__isnull=False) & Q(payoff__entry__entrylineaccount__link__isnull=True)).distinct():
+        supporting = supporting.get_final_child()
+        link_created = supporting.generate_accountlink()
+        nb_link_created += link_created
+        if link_created > 0:
+            six.print_(' + Add entry link from %s' % supporting)
+    return nb_link_created
 
 
 @Signal.decorate('checkparam')
