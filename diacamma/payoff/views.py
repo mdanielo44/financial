@@ -54,7 +54,6 @@ from diacamma.payoff.models import Payoff, Supporting, PaymentMethod, BankTransa
 from diacamma.accounting.models import Third
 from lucterios.CORE.models import PrintModel
 from lucterios.CORE.parameters import Params
-from lucterios.mailing.models import Message
 
 
 @ActionsManage.affect_grid(TITLE_ADD, "images/add.png", condition=lambda xfer, gridname='': abs(xfer.item.get_total_rest_topay()) > 0.001)
@@ -264,6 +263,7 @@ class PayableEmail(XferContainerAcknowledge):
                 html_message += "</html>"
                 self.item.send_email(subject, html_message, model)
             else:
+                from lucterios.mailing.models import Message
                 model_obj = self.item.__class__
                 email_msg = Message.objects.create(subject=subject, body=message, email_to_send="%s:0:%s" % (model_obj.get_long_name(), model))
                 email_msg.add_recipient(model_obj.get_long_name(), 'id||8||%s' % ';'.join([six.text_type(item.id) for item in self.items]))
@@ -371,10 +371,7 @@ class ValidationPaymentPaypal(XferContainerAbstract):
         self.success = False
 
     def confirm_paypal(self):
-        try:
-            from urllib.parse import quote_plus
-        except Exception:
-            from urllib import quote_plus
+        from urllib.parse import quote_plus
         from requests import post
         paypal_url = getattr(settings, 'DIACAMMA_PAYOFF_PAYPAL_URL', 'https://www.paypal.com/cgi-bin/webscr')
         fields = 'cmd=_notify-validate'
