@@ -1021,7 +1021,7 @@ class EntryLineAccount(LucteriosModel):
     account = models.ForeignKey('ChartsAccount', verbose_name=_('account'), null=False, on_delete=models.PROTECT)
     entry = models.ForeignKey('EntryAccount', verbose_name=_('entry'), null=False, on_delete=models.CASCADE)
     amount = models.FloatField(_('amount'), db_index=True)
-    reference = models.CharField(_('reference'), max_length=100, null=True)
+    reference = models.CharField(_('reference'), max_length=200, null=True)
     third = models.ForeignKey('Third', verbose_name=_('third'), null=True, on_delete=models.PROTECT, db_index=True)
     costaccounting = models.ForeignKey('CostAccounting', verbose_name=_('cost accounting'), null=True, on_delete=models.PROTECT)
     link = models.ForeignKey('AccountLink', verbose_name=_('link'), null=True, on_delete=models.SET_NULL)
