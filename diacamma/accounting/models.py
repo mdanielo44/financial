@@ -715,7 +715,6 @@ class AccountLink(LucteriosModel):
             elif (third_info[0] != entryline.account.code) or (third_info[1] != entryline.third_id):
                 is_valid = False
             sum_amount += float(entryline.amount)
-            entryline.unlink()
         if abs(sum_amount) > 0.0001:
             is_valid = False
         return is_valid
@@ -1219,11 +1218,13 @@ class EntryLineAccount(LucteriosModel):
 
     def unlink(self):
         if (self.entry.year.status != 2) and (self.link_id is not None):
+            old_link = self.link
             for entryline in self.link.entrylineaccount_set.all():
                 entryline.link = None
                 if not entryline.entry.delete_if_ghost_entry():
                     entryline.save()
-            self.link.delete()
+            if (old_link is not None) and (old_link.id is not None):
+                old_link.delete()
             self.link = None
 
     def delete(self):
