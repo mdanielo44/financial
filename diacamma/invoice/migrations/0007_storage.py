@@ -36,7 +36,7 @@ class Migration(migrations.Migration):
             name='StorageSheet',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('sheet_type', models.IntegerField(choices=[(0, 'stock receipt'), (1, 'stock exit')], db_index=True, default=0, verbose_name='sheet type')),
+                ('sheet_type', models.IntegerField(choices=[(0, 'stock receipt'), (1, 'stock exit'), (2, 'stock transfer')], db_index=True, default=0, verbose_name='sheet type')),
                 ('status', FSMIntegerField(choices=[(0, 'building'), (1, 'valid')], db_index=True, default=0, verbose_name='status')),
                 ('date', models.DateField(verbose_name='date')),
                 ('comment', models.TextField(verbose_name='comment')),

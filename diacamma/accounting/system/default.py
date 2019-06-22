@@ -199,7 +199,10 @@ class DefaultSystemAccounting(object):
             new_line.amount = -1 * entry_line.amount
             new_line.account_id = entry_line.account_id
             new_line.third_id = entry_line.third_id
-            new_line.reference = entry_line.entry.designation
+            if (entry_line.reference is not None) and (entry_line.reference != ''):
+                new_line.reference = entry_line.reference
+            else:
+                new_line.reference = entry_line.entry.designation
             new_line.save()
             AccountLink.create_link([new_line, entry_line])
             sum_account += float(entry_line.amount)
@@ -214,31 +217,6 @@ class DefaultSystemAccounting(object):
                 new_line.third = None
                 new_line.save()
             new_entry.closed()
-#
-#         for data_line in EntryLineAccount.objects.filter(account__code__regex=self.get_third_mask(), account__year=year).values('account', 'third').annotate(data_sum=Sum('amount')):
-#             if abs(data_line['data_sum']) > 0.0001:
-#                 entry_lines.append((data_line['data_sum'], data_line['account'], data_line['third']))
-#                 if data_line['account'] not in sum_third.keys():
-#                     sum_third[data_line['account']] = 0
-#                 sum_third[data_line['account']] += data_line['data_sum']
-#         if len(sum_third) > 0:
-#             new_entry = EntryAccount.objects.create(year=year, journal_id=5, designation=end_desig, date_value=year.end)
-#             for entry_line in entry_lines:
-#                 new_line = EntryLineAccount()
-#                 new_line.entry = new_entry
-#                 new_line.amount = -1 * entry_line[0]
-#                 new_line.account_id = entry_line[1]
-#                 if entry_line[2] is not None:
-#                     new_line.third_id = entry_line[2]
-#                 new_line.save()
-#             for account_id, value in sum_third.items():
-#                 new_line = EntryLineAccount()
-#                 new_line.entry = new_entry
-#                 new_line.account_id = account_id
-#                 new_line.amount = value
-#                 new_line.third = None
-#                 new_line.save()
-#             new_entry.closed()
 
     def finalize_year(self, year):
         self._create_result_entry(year)
