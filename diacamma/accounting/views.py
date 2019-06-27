@@ -33,7 +33,8 @@ from django.utils import six, formats
 
 from lucterios.framework import signal_and_lock
 from lucterios.framework.xferadvance import XferListEditor, XferAddEditor, XferShowEditor, XferDelete,\
-    TITLE_ADD, TITLE_EDIT, TITLE_DELETE, TITLE_OK, TITLE_CANCEL, XferTransition
+    TITLE_ADD, TITLE_EDIT, TITLE_DELETE, TITLE_OK, TITLE_CANCEL, XferTransition,\
+    TITLE_CREATE
 from lucterios.framework.xfergraphic import XferContainerAcknowledge
 from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompEdit, XferCompButton, XferCompSelect, XferCompImage, XferCompDate, XferCompGrid
 from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage, FORMTYPE_REFRESH, CLOSE_NO, WrapAction, FORMTYPE_MODAL, SELECT_SINGLE, SELECT_MULTI, SELECT_NONE, CLOSE_YES
@@ -185,7 +186,7 @@ class ThirdDisable(XferContainerAcknowledge):
                     third.save()
 
 
-@ActionsManage.affect_grid(TITLE_ADD, "images/add.png", unique=SELECT_NONE)
+@ActionsManage.affect_grid(TITLE_CREATE, "images/new.png", unique=SELECT_NONE)
 @MenuManage.describ('accounting.add_third')
 class ThirdAdd(ContactSelection):
     icon = "thirds.png"

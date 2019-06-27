@@ -5,23 +5,20 @@ from django.utils.translation import ugettext_lazy as _
 from django.db.models import Q
 
 from lucterios.framework.xferadvance import XferListEditor, TITLE_DELETE, TITLE_ADD, TITLE_MODIFY, TITLE_EDIT, TITLE_PRINT,\
-    TITLE_CANCEL, XferTransition
+    TITLE_CANCEL, XferTransition, TITLE_CREATE
 from lucterios.framework.xferadvance import XferAddEditor
 from lucterios.framework.xferadvance import XferShowEditor
 from lucterios.framework.xferadvance import XferDelete
+from lucterios.framework.xferbasic import NULL_VALUE
 from lucterios.framework.xfergraphic import XferContainerCustom, XferContainerAcknowledge
-from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompImage, XferCompSelect,\
-    XferCompDate
+from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompImage, XferCompSelect, XferCompDate
 from lucterios.framework.xfercomponents import XferCompEdit, XferCompGrid
-from lucterios.framework.tools import FORMTYPE_NOMODAL, CLOSE_YES, CLOSE_NO, FORMTYPE_REFRESH, SELECT_MULTI, SELECT_SINGLE,\
-    convert_date
+from lucterios.framework.tools import FORMTYPE_NOMODAL, CLOSE_YES, CLOSE_NO, FORMTYPE_REFRESH, SELECT_MULTI, SELECT_SINGLE
 from lucterios.framework.tools import ActionsManage, MenuManage, WrapAction
 from lucterios.CORE.xferprint import XferPrintAction
 
 from diacamma.payoff.models import DepositSlip, DepositDetail, BankTransaction, PaymentMethod
 from diacamma.accounting.models import FiscalYear
-from lucterios.framework.xferbasic import NULL_VALUE
-from django.utils import formats
 
 
 @MenuManage.describ('payoff.change_depositslip', FORMTYPE_NOMODAL, 'financial', _('manage deposit of cheque'))
@@ -64,7 +61,7 @@ class DepositSlipList(XferListEditor):
             self.filter &= Q(date__lte=year.end)
 
 
-@ActionsManage.affect_grid(TITLE_ADD, "images/add.png")
+@ActionsManage.affect_grid(TITLE_CREATE, "images/new.png")
 @ActionsManage.affect_show(TITLE_MODIFY, "images/edit.png", condition=lambda xfer: xfer.item.status == 0, close=CLOSE_YES)
 @MenuManage.describ('payoff.add_depositslip')
 class DepositSlipAddModify(XferAddEditor):

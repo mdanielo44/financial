@@ -31,7 +31,7 @@ from django.db.models import Q
 
 from lucterios.framework.tools import MenuManage, FORMTYPE_NOMODAL, ActionsManage, SELECT_SINGLE, SELECT_MULTI, CLOSE_YES, FORMTYPE_REFRESH, CLOSE_NO, SELECT_NONE, WrapAction
 from lucterios.framework.xferadvance import XferListEditor, XferAddEditor, XferDelete, XferShowEditor, TITLE_ADD, TITLE_MODIFY, TITLE_DELETE, TITLE_EDIT, XferTransition, TITLE_PRINT, TITLE_CLOSE,\
-    TITLE_OK, TITLE_CANCEL
+    TITLE_OK, TITLE_CANCEL, TITLE_CREATE
 
 from lucterios.CORE.xferprint import XferPrintAction
 from lucterios.CORE.views import ObjectImport
@@ -79,7 +79,7 @@ class StorageSheetList(XferListEditor):
             self.filter &= Q(sheet_type=type_filter)
 
 
-@ActionsManage.affect_grid(TITLE_ADD, "images/add.png", condition=lambda xfer, gridname='': xfer.getparam('status', -1) != 1)
+@ActionsManage.affect_grid(TITLE_CREATE, "images/new.png", condition=lambda xfer, gridname='': xfer.getparam('status', -1) != 1)
 @ActionsManage.affect_show(TITLE_MODIFY, "images/edit.png", close=CLOSE_YES, condition=lambda xfer: xfer.item.status == 0)
 @MenuManage.describ('invoice.add_storagesheet')
 class StorageSheetAddModify(XferAddEditor):

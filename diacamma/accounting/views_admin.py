@@ -25,7 +25,8 @@ from __future__ import unicode_literals
 
 from django.utils.translation import ugettext_lazy as _
 
-from lucterios.framework.xferadvance import XferListEditor, XferDelete, TITLE_ADD, TITLE_MODIFY, TITLE_DELETE
+from lucterios.framework.xferadvance import XferListEditor, XferDelete, TITLE_ADD, TITLE_MODIFY, TITLE_DELETE,\
+    TITLE_CREATE
 from lucterios.framework.xferadvance import XferAddEditor
 from lucterios.framework.tools import FORMTYPE_MODAL, ActionsManage, MenuManage, SELECT_SINGLE, CLOSE_NO, SELECT_MULTI
 from lucterios.framework.xfergraphic import XferContainerAcknowledge, XferContainerCustom
@@ -190,7 +191,7 @@ class FiscalYearExport(XferContainerCustom):
         self.add_component(down)
 
 
-@ActionsManage.affect_grid(TITLE_ADD, "images/add.png")
+@ActionsManage.affect_grid(TITLE_CREATE, "images/new.png")
 @ActionsManage.affect_grid(TITLE_MODIFY, "images/edit.png", unique=SELECT_SINGLE)
 @MenuManage.describ('accounting.add_fiscalyear')
 class FiscalYearAddModify(XferAddEditor):

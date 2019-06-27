@@ -5,7 +5,8 @@ from django.utils.translation import ugettext_lazy as _
 from django.utils import six
 from django.db.models import Q
 
-from lucterios.framework.xferadvance import XferDelete, XferShowEditor, TITLE_ADD, TITLE_MODIFY, TITLE_DELETE, TITLE_EDIT, TITLE_CANCEL, TITLE_OK
+from lucterios.framework.xferadvance import XferDelete, XferShowEditor, TITLE_ADD, TITLE_MODIFY, TITLE_DELETE, TITLE_EDIT, TITLE_CANCEL, TITLE_OK,\
+    TITLE_CREATE
 from lucterios.framework.tools import FORMTYPE_NOMODAL, SELECT_SINGLE, FORMTYPE_REFRESH, SELECT_MULTI, SELECT_NONE, CLOSE_NO, CLOSE_YES
 from lucterios.framework.tools import ActionsManage, MenuManage, WrapAction
 from lucterios.framework.xfercomponents import XferCompImage, XferCompLabelForm, XferCompDate
@@ -166,7 +167,7 @@ class ModelEntryList(XferListEditor):
     caption = _("Models of entry")
 
 
-@ActionsManage.affect_grid(TITLE_ADD, "images/add.png", unique=SELECT_NONE)
+@ActionsManage.affect_grid(TITLE_CREATE, "images/new.png", unique=SELECT_NONE)
 @ActionsManage.affect_show(TITLE_MODIFY, "images/edit.png", close=CLOSE_YES)
 @MenuManage.describ('accounting.add_entryaccount')
 class ModelEntryAddModify(XferAddEditor):

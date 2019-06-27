@@ -32,7 +32,7 @@ from django.db.models import Q, Value
 from django.db.models.query import QuerySet
 
 from lucterios.framework.xferadvance import TITLE_PRINT, TITLE_CLOSE, TITLE_DELETE, TITLE_MODIFY, TITLE_ADD, TITLE_CANCEL, TITLE_OK, TITLE_EDIT,\
-    TITLE_LABEL
+    TITLE_LABEL, TITLE_CREATE
 from lucterios.framework.xferadvance import XferListEditor, XferShowEditor, XferAddEditor, XferDelete, XferTransition
 from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompSelect, XferCompImage, XferCompGrid, XferCompCheck, XferCompEdit, XferCompCheckList, XferCompMemo,\
     XferCompButton
@@ -163,7 +163,7 @@ class BillSearch(XferSavedCriteriaSearchEditor):
     caption = _("Search bill")
 
 
-@ActionsManage.affect_grid(TITLE_ADD, "images/add.png", condition=lambda xfer, gridname='': xfer.getparam('status_filter', -1) < 1)
+@ActionsManage.affect_grid(TITLE_CREATE, "images/new.png", condition=lambda xfer, gridname='': xfer.getparam('status_filter', -1) < 1)
 @ActionsManage.affect_show(TITLE_MODIFY, "images/edit.png", close=CLOSE_YES, condition=lambda xfer: xfer.item.status == 0)
 @MenuManage.describ('invoice.add_bill')
 class BillAddModify(XferAddEditor):
@@ -565,7 +565,7 @@ class ArticleShow(XferShowEditor):
     field_id = 'article'
 
 
-@ActionsManage.affect_grid(TITLE_ADD, "images/add.png")
+@ActionsManage.affect_grid(TITLE_CREATE, "images/new.png")
 @ActionsManage.affect_show(TITLE_MODIFY, "images/edit.png", close=CLOSE_YES)
 @MenuManage.describ('invoice.add_article')
 class ArticleAddModify(XferAddEditor):
