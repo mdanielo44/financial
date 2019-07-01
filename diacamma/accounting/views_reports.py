@@ -45,6 +45,8 @@ from diacamma.accounting.tools_reports import get_spaces, convert_query_to_accou
 from lucterios.CORE.parameters import Params
 import re
 
+MenuManage.add_sub("bookkeeping_report", "financial", "diacamma.accounting/images/accounting.png", _("Reports"), _("Report of Bookkeeping"), 30)
+
 
 class FiscalYearReport(XferContainerCustom):
     icon = "accountingReport.png"
@@ -243,7 +245,7 @@ class FiscalYearReport(XferContainerCustom):
         self.add_action(WrapAction(TITLE_CLOSE, 'images/close.png'))
 
 
-@MenuManage.describ('accounting.change_fiscalyear', FORMTYPE_NOMODAL, 'bookkeeping', _('Show balance sheet for current fiscal year'))
+@MenuManage.describ('accounting.change_fiscalyear', FORMTYPE_NOMODAL, 'bookkeeping_report', _('Show balance sheet for current fiscal year'))
 class FiscalYearBalanceSheet(FiscalYearReport):
     caption = _("Balance sheet")
 
@@ -285,7 +287,7 @@ class FiscalYearBalanceSheet(FiscalYearReport):
         current_system_account().fill_fiscalyear_balancesheet(self.grid, self.filter, self.lastfilter)
 
 
-@MenuManage.describ('accounting.change_fiscalyear', FORMTYPE_NOMODAL, 'bookkeeping', _('Show income statement for current fiscal year'))
+@MenuManage.describ('accounting.change_fiscalyear', FORMTYPE_NOMODAL, 'bookkeeping_report', _('Show income statement for current fiscal year'))
 class FiscalYearIncomeStatement(FiscalYearReport):
     caption = _("Income statement")
 
@@ -374,7 +376,7 @@ class FiscalYearIncomeStatement(FiscalYearReport):
         self.show_annexe(line_idx, Q(year=self.item))
 
 
-@MenuManage.describ('accounting.change_fiscalyear', FORMTYPE_NOMODAL, 'bookkeeping', _('Show ledger for current fiscal year'))
+@MenuManage.describ('accounting.change_fiscalyear', FORMTYPE_NOMODAL, 'bookkeeping_report', _('Show ledger for current fiscal year'))
 class FiscalYearLedger(FiscalYearReport):
     caption = _("Ledger")
     add_filtering = True
@@ -466,7 +468,7 @@ class FiscalYearLedger(FiscalYearReport):
         self._add_total_account()
 
 
-@MenuManage.describ('accounting.change_fiscalyear', FORMTYPE_NOMODAL, 'bookkeeping', _('Show trial balance for current fiscal year'))
+@MenuManage.describ('accounting.change_fiscalyear', FORMTYPE_NOMODAL, 'bookkeeping_report', _('Show trial balance for current fiscal year'))
 class FiscalYearTrialBalance(FiscalYearReport):
     caption = _("Trial balance")
     add_filtering = True
