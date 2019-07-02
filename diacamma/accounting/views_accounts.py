@@ -50,13 +50,13 @@ from lucterios.framework.models import get_value_if_choices
 MenuManage.add_sub("bookkeeping", "financial", "diacamma.accounting/images/accounting.png", _("Bookkeeping"), _("Manage of Bookkeeping"), 30)
 
 
-@ActionsManage.affect_other(_("charts of account"), "images/edit.png")
+@ActionsManage.affect_other(_("Charts of account"), "images/edit.png")
 @MenuManage.describ('accounting.change_chartsaccount', FORMTYPE_NOMODAL, 'bookkeeping', _('Editing and modifying of Charts of accounts for current fiscal year'))
 class ChartsAccountList(XferListEditor):
     icon = "account.png"
     model = ChartsAccount
     field_id = 'chartsaccount'
-    caption = _("charts of account")
+    caption = _("Charts of account")
     multi_page = False
 
     def fillresponse_header(self):

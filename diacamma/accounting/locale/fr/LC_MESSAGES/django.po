@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-07-01 14:36+0000\n"
+"POT-Creation-Date: 2019-07-02 09:25+0000\n"
 "PO-Revision-Date: 2016-01-11 23:01+0000\n"
 "Last-Translator: b'Paul ARULATEDA <paul531@orange.fr>'\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -334,7 +334,7 @@ msgstr "La comptabilité  \"%s\" est utilisée dans un modèle d'écriture !"
 msgid "This cost accounting have entry with another year!"
 msgstr "Cette comptabilité analytique a des écritures d'un autre exercice !"
 
-#: models.py:548 views_other.py:27
+#: models.py:548
 msgid "costs accounting"
 msgstr "comptabilités analytiques"
 
@@ -382,7 +382,7 @@ msgstr "total validé"
 msgid "Account already exists for this fiscal year!"
 msgstr "Ce compte existe déjà pour cet exercice fiscal !"
 
-#: models.py:663 views_accounts.py:53 views_accounts.py:59
+#: models.py:663
 msgid "charts of account"
 msgstr "plan comptable"
 
@@ -723,6 +723,10 @@ msgstr ""
 "vos écritures et vos opérations comptables{[/li]}{[li]}Suivre votre "
 "analytique{[/li]}{[/ul]}"
 
+#: views_accounts.py:53 views_accounts.py:59
+msgid "Charts of account"
+msgstr "Plan comptable"
+
 #: views_accounts.py:54
 msgid "Editing and modifying of Charts of accounts for current fiscal year"
 msgstr "Edition et modification du plan comptable de l'exercice courant"
@@ -984,9 +988,9 @@ msgstr ""
 msgid "Edition of accounting entry for current fiscal year"
 msgstr "Edition d'écriture pour l'exercice courant"
 
-#: views_entries.py:55 views_entries.py:362
-msgid "accounting entries"
-msgstr "écritures comptable"
+#: views_entries.py:55
+msgid "Accounting entries"
+msgstr "Écritures comptable"
 
 #: views_entries.py:94 views_entries.py:224
 msgid "All"
@@ -1069,6 +1073,10 @@ msgstr "Ok"
 msgid "Cancel"
 msgstr "Annuler"
 
+#: views_entries.py:362
+msgid "accounting entries"
+msgstr "écritures comptable"
+
 #: views_entries.py:390
 msgid "Show accounting entry"
 msgstr "Afficher une écriture"
@@ -1128,6 +1136,10 @@ msgstr "Suprimer une ligne d'écriture"
 #: views_other.py:22
 msgid "Edition of costs accounting"
 msgstr "Édition des comptabilités analytiques"
+
+#: views_other.py:27
+msgid "Costs accounting"
+msgstr "Comptabilités analytiques"
 
 #: views_other.py:44
 msgid "- without fiscal year -"

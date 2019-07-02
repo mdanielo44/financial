@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-07-01 14:37+0000\n"
+"POT-Creation-Date: 2019-07-02 09:25+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -576,9 +576,9 @@ msgstr "payoff"
 msgid "payoffs"
 msgstr "payoffs"
 
-#: views.py:63
-msgid "invoice"
-msgstr "invoice"
+#: views.py:63 views.py:748 views.py:773 views.py:796 views_conf.py:224
+msgid "Invoice"
+msgstr "Invoice"
 
 #: views.py:63
 msgid "Manage of billing"
@@ -831,10 +831,6 @@ msgstr "Check automatic reduce"
 msgid "Do you want check auto-reduce ?"
 msgstr "Do you want check automatique reduces ?"
 
-#: views.py:748 views.py:773 views.py:796 views_conf.py:224
-msgid "Invoice"
-msgstr "Invoice"
-
 #: views.py:753
 #, python-format
 msgid "You are %d bills"
@@ -1073,3 +1069,6 @@ msgstr "Your invoices"
 #: views_summary.py:69
 msgid "Payment"
 msgstr "Payment"
+
+#~ msgid "invoice"
+#~ msgstr "invoice"

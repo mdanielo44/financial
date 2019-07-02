@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-07-01 14:37+0000\n"
+"POT-Creation-Date: 2019-07-02 09:25+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -224,7 +224,7 @@ msgstr "Validate"
 msgid "deposit slip"
 msgstr "deposit slip"
 
-#: models.py:610 views_deposit.py:29
+#: models.py:610
 msgid "deposit slips"
 msgstr "deposit slips"
 
@@ -477,8 +477,12 @@ msgid "Configuration of payment method"
 msgstr "Add your payment methods"
 
 #: views_deposit.py:24
-msgid "manage deposit of cheque"
-msgstr "manage deposit of cheque"
+msgid "Manage deposit of cheque"
+msgstr "Manage deposit of cheque"
+
+#: views_deposit.py:29
+msgid "Deposit slips"
+msgstr "Deposit slips"
 
 #: views_deposit.py:42
 msgid "Filter by status"

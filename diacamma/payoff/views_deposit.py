@@ -21,12 +21,12 @@ from diacamma.payoff.models import DepositSlip, DepositDetail, BankTransaction, 
 from diacamma.accounting.models import FiscalYear
 
 
-@MenuManage.describ('payoff.change_depositslip', FORMTYPE_NOMODAL, 'financial', _('manage deposit of cheque'))
+@MenuManage.describ('payoff.change_depositslip', FORMTYPE_NOMODAL, 'financial', _('Manage deposit of cheque'))
 class DepositSlipList(XferListEditor):
     icon = "bank.png"
     model = DepositSlip
     field_id = 'depositslip'
-    caption = _("deposit slips")
+    caption = _("Deposit slips")
 
     def fillresponse_header(self):
         status_filter = self.getparam('status_filter', -1)

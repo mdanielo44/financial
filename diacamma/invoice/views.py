@@ -60,7 +60,7 @@ from diacamma.accounting.views import get_main_third
 from diacamma.accounting.tools import current_system_account, format_devise
 from lucterios.framework.xfersearch import get_criteria_list
 
-MenuManage.add_sub("invoice", None, "diacamma.invoice/images/invoice.png", _("invoice"), _("Manage of billing"), 45)
+MenuManage.add_sub("invoice", None, "diacamma.invoice/images/invoice.png", _("Invoice"), _("Manage of billing"), 45)
 
 
 def _add_bill_filter(xfer, row, with_third=False):

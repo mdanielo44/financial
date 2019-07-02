@@ -52,7 +52,7 @@ class EntryAccountList(XferListEditor):
     icon = "entry.png"
     model = EntryAccount
     field_id = '???'
-    caption = _("accounting entries")
+    caption = _("Accounting entries")
 
     def __init__(self, **kwargs):
         XferListEditor.__init__(self, **kwargs)

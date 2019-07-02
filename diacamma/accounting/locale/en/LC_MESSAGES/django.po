@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-07-01 14:36+0000\n"
+"POT-Creation-Date: 2019-07-02 09:25+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -332,7 +332,7 @@ msgstr "The cost accounting \"%s\" is include in a model of entry!"
 msgid "This cost accounting have entry with another year!"
 msgstr "This cost accounting have entry with another year!"
 
-#: models.py:548 views_other.py:27
+#: models.py:548
 msgid "costs accounting"
 msgstr "costs accounting"
 
@@ -380,7 +380,7 @@ msgstr "total validated"
 msgid "Account already exists for this fiscal year!"
 msgstr "Account already exists for this fiscal year!"
 
-#: models.py:663 views_accounts.py:53 views_accounts.py:59
+#: models.py:663
 msgid "charts of account"
 msgstr "charts of account"
 
@@ -713,6 +713,10 @@ msgstr "Only entries without link"
 msgid "Manage of Bookkeeping"
 msgstr "Manage of Bookkeeping"
 
+#: views_accounts.py:53 views_accounts.py:59
+msgid "Charts of account"
+msgstr "Charts of account"
+
 #: views_accounts.py:54
 msgid "Editing and modifying of Charts of accounts for current fiscal year"
 msgstr "Editing and modifying of Charts of accounts for current fiscal year"
@@ -974,9 +978,9 @@ msgstr ""
 msgid "Edition of accounting entry for current fiscal year"
 msgstr "Edition of accounting entry for current fiscal year"
 
-#: views_entries.py:55 views_entries.py:362
-msgid "accounting entries"
-msgstr "accounting entries"
+#: views_entries.py:55
+msgid "Accounting entries"
+msgstr "Accounting entries"
 
 #: views_entries.py:94 views_entries.py:224
 msgid "All"
@@ -1058,6 +1062,10 @@ msgstr "Ok"
 msgid "Cancel"
 msgstr "Cancel"
 
+#: views_entries.py:362
+msgid "accounting entries"
+msgstr "accounting entries"
+
 #: views_entries.py:390
 msgid "Show accounting entry"
 msgstr "Show entry of account"
@@ -1117,6 +1125,10 @@ msgstr "Delete entry line of account"
 #: views_other.py:22
 msgid "Edition of costs accounting"
 msgstr "Edition of costs accounting"
+
+#: views_other.py:27
+msgid "Costs accounting"
+msgstr "Costs accounting"
 
 #: views_other.py:44
 msgid "- without fiscal year -"
@@ -1191,16 +1203,12 @@ msgid "Delete Model line  of entry"
 msgstr "Delete Model line  of entry"
 
 #: views_reports.py:48
-#, fuzzy
-#| msgid "Report"
 msgid "Reports"
-msgstr "Report"
+msgstr "Reports"
 
 #: views_reports.py:48
-#, fuzzy
-#| msgid "Manage of Bookkeeping"
 msgid "Report of Bookkeeping"
-msgstr "Manage of Bookkeeping"
+msgstr "Report of Bookkeeping"
 
 #: views_reports.py:87
 msgid "Accounting code starting with"

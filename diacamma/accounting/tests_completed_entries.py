@@ -188,7 +188,7 @@ class CompletedEntryTest(LucteriosTest):
                                "{[center]}Exercice du 1 janvier 2015 au 31 décembre 2015 [en création]{[/center]}")
         self.assert_json_equal('LABELFORM', 'accounting_result',
                                '{[center]}{[b]}Produit :{[/b]} 230.62€ - {[b]}Charge :{[/b]} 348.60€ = {[b]}Résultat :{[/b]} -117.98€{[br/]}{[b]}Trésorerie :{[/b]} 1050.66€ - {[b]}Validé :{[/b]} 1244.74€{[/center]}')
-        self.assert_json_equal('LABELFORM', 'accountingtitle', "{[center]}{[u]}{[b]}Comptabilité{[/b]}{[/u]}{[/center]}")
+        self.assert_json_equal('LABELFORM', 'accountingtitle', "{[center]}{[u]}{[b]}Gestion comptable{[/b]}{[/u]}{[/center]}")
 
     def test_listing(self):
         self.factory.xfer = EntryAccountListing()

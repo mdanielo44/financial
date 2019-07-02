@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-07-01 14:37+0000\n"
+"POT-Creation-Date: 2019-07-02 09:25+0000\n"
 "PO-Revision-Date: 2016-01-14 22:21+0000\n"
 "Last-Translator: b'Paul ARULATEDA <paul531@orange.fr>'\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -226,7 +226,7 @@ msgstr "Valider"
 msgid "deposit slip"
 msgstr "dépôt de chèques"
 
-#: models.py:610 views_deposit.py:29
+#: models.py:610
 msgid "deposit slips"
 msgstr "dépôts de chèques"
 
@@ -485,8 +485,12 @@ msgstr ""
 "utilisateurs pour un règlement à distance."
 
 #: views_deposit.py:24
-msgid "manage deposit of cheque"
-msgstr "gestion des dépôts de chèques"
+msgid "Manage deposit of cheque"
+msgstr "Gestion des dépôts de chèques"
+
+#: views_deposit.py:29
+msgid "Deposit slips"
+msgstr "Dépôts de chèques"
 
 #: views_deposit.py:42
 msgid "Filter by status"

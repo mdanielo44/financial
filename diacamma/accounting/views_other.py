@@ -24,7 +24,7 @@ class CostAccountingList(XferListEditor):
     icon = "costAccounting.png"
     model = CostAccounting
     field_id = 'costaccounting'
-    caption = _("costs accounting")
+    caption = _("Costs accounting")
 
     def fillresponse_header(self):
         self.filter = Q()

@@ -595,7 +595,7 @@ class AdminTest(LucteriosTest):
         self.factory.xfer = StatusMenu()
         self.calljson('/CORE/statusMenu', {}, False)
         self.assert_observer('core.custom', 'CORE', 'statusMenu')
-        self.assert_json_equal('LABELFORM', 'accountingtitle', "{[center]}{[u]}{[b]}Comptabilité{[/b]}{[/u]}{[/center]}")
+        self.assert_json_equal('LABELFORM', 'accountingtitle', "{[center]}{[u]}{[b]}Gestion comptable{[/b]}{[/u]}{[/center]}")
         self.assert_json_equal('LABELFORM', 'accounting_error', "{[center]}Pas d'exercice défini !{[/center]}")
         self.assert_action_equal('#accounting_conf/action',
                                  ("conf.", None, 'diacamma.accounting', 'configuration', 0, 1, 1))
