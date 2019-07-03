@@ -277,7 +277,7 @@ class StorageTest(InvoiceTest):
         self.assert_json_equal('', 'storagedetail/@1/article', "ABC4")
         self.assert_json_equal('', 'storagedetail/@1/quantity_txt', "6")
         self.assert_json_equal('LABELFORM', 'info',
-                               "L'article ABC1 est en quantité insuffisante{[br/]}L'article ABC4 est en quantité insuffisante")
+                               ["L'article ABC1 est en quantité insuffisante","L'article ABC4 est en quantité insuffisante"])
 
         self.factory.xfer = ArticleShow()
         self.calljson('/diacamma.invoice/articleShow', {'article': '1'}, False)
@@ -327,7 +327,7 @@ class StorageTest(InvoiceTest):
         self.assert_json_equal('', 'storagedetail/@0/quantity_txt', "7.000")
         self.assert_json_equal('', 'storagedetail/@1/article', "ABC4")
         self.assert_json_equal('', 'storagedetail/@1/quantity_txt', "6")
-        self.assert_json_equal('LABELFORM', 'info', "")
+        self.assert_json_equal('LABELFORM', 'info', [])
 
         self.factory.xfer = StorageSheetTransition()
         self.calljson('/diacamma.invoice/storageSheetTransition',
@@ -434,7 +434,7 @@ class StorageTest(InvoiceTest):
         self.assert_json_equal('', 'storagedetail/@0/quantity_txt', "7.000")
         self.assert_json_equal('', 'storagedetail/@1/article', "ABC4")
         self.assert_json_equal('', 'storagedetail/@1/quantity_txt', "6")
-        self.assert_json_equal('LABELFORM', 'info', "")
+        self.assert_json_equal('LABELFORM', 'info', [])
 
         self.factory.xfer = StorageSheetList()
         self.calljson('/diacamma.invoice/storageSheetList', {'status': -1, 'sheet_type': 2}, False)
@@ -559,7 +559,7 @@ class StorageTest(InvoiceTest):
         self.calljson('/diacamma.invoice/billShow', {'bill': 1}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'billShow')
         self.assert_count_equal('detail', 3)
-        self.assert_json_equal('LABELFORM', 'info', "L'article ABC1 est en quantité insuffisante{[br/]}L'article ABC2 est en quantité insuffisante")
+        self.assert_json_equal('LABELFORM', 'info', ["L'article ABC1 est en quantité insuffisante", "L'article ABC2 est en quantité insuffisante"])
         self.assert_json_equal('', '#info/formatstr', "{[font color=\"red\"]}%s{[/font]}")
 
         self.factory.xfer = ArticleShow()
@@ -613,7 +613,7 @@ class StorageTest(InvoiceTest):
         self.calljson('/diacamma.invoice/billShow', {'bill': 1}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'billShow')
         self.assert_count_equal('detail', 3)
-        self.assert_json_equal('LABELFORM', 'info', "")
+        self.assert_json_equal('LABELFORM', 'info', [])
 
         self.factory.xfer = BillTransition()
         self.calljson('/diacamma.invoice/billTransition',
@@ -725,7 +725,7 @@ class StorageTest(InvoiceTest):
         self.assert_json_equal('', 'storagedetail/@2/article', "ABC3")
         self.assert_json_equal('', 'storagedetail/@3/article', "ABC4")
         self.assert_json_equal('', 'storagedetail/@4/article', "ABC5")
-        self.assert_json_equal('LABELFORM', 'info',"L'article ABC3 est en non stockable{[br/]}L'article ABC5 est en non stockable")
+        self.assert_json_equal('LABELFORM', 'info', ["L'article ABC3 est en non stockable", "L'article ABC5 est en non stockable"])
 
         self.factory.xfer = StorageDetailDel()
         self.calljson('/diacamma.invoice/storageDetailDel', {'storagedetail': "3", 'CONFIRME': 'YES'}, False)
@@ -737,7 +737,7 @@ class StorageTest(InvoiceTest):
         self.factory.xfer = StorageSheetShow()
         self.calljson('/diacamma.invoice/storageSheetShow', {'storagesheet': "1"}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'storageSheetShow')
-        self.assert_json_equal('LABELFORM', 'info', "")
+        self.assert_json_equal('LABELFORM', 'info', [])
 
         self.factory.xfer = StorageSheetTransition()
         self.calljson('/diacamma.invoice/storageSheetTransition',

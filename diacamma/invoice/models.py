@@ -604,8 +604,7 @@ class Bill(Supporting):
     def get_info_state(self):
         info = []
         if self.status == 0:
-            info = Supporting.get_info_state(
-                self, current_system_account().get_customer_mask())
+            info = Supporting.get_info_state(self, current_system_account().get_customer_mask())
         details = self.detail_set.all()
         if len(details) == 0:
             info.append(six.text_type(_("no detail")))
@@ -634,7 +633,7 @@ class Bill(Supporting):
             info.extend(self.check_date(self.date.isoformat()))
         except LucteriosException:
             pass
-        return "{[br/]}".join(info)
+        return info
 
     def can_delete(self):
         if self.status > 0:
@@ -726,7 +725,7 @@ class Bill(Supporting):
 
     transitionname__valid = _("Validate")
 
-    @transition(field=status, source=0, target=1, conditions=[lambda item:item.get_info_state() == ''])
+    @transition(field=status, source=0, target=1, conditions=[lambda item:item.get_info_state() == []])
     def valid(self):
         self.fiscal_year = FiscalYear.get_current()
         bill_list = Bill.objects.filter(Q(bill_type=self.bill_type) & Q(fiscal_year=self.fiscal_year)).exclude(status=0)
@@ -891,7 +890,7 @@ class Bill(Supporting):
             new_bill = self.convert_to_bill()
             new_bill.date = validate_date
             new_bill.save()
-            if (new_bill is None) or (new_bill.get_info_state() != ''):
+            if (new_bill is None) or (new_bill.get_info_state() != []):
                 raise LucteriosException(IMPORTANT, _("This item can't be validated!"))
             new_bill.valid()
         else:
@@ -1201,9 +1200,9 @@ class StorageSheet(LucteriosModel):
                 info.append(_("Article %s is not stockable") % six.text_type(detail.article))
             elif (self.sheet_type != 0) and not detail.article.has_sufficiently(self.storagearea_id, detail.quantity):
                 info.append(_("Article %s is not sufficiently stocked") % six.text_type(detail.article))
-        return "{[br/]}".join(info)
+        return info
 
-    @transition(field=status, source=0, target=1, conditions=[lambda item:item.get_info_state() == ''])
+    @transition(field=status, source=0, target=1, conditions=[lambda item:item.get_info_state() == []])
     def valid(self):
         if self.sheet_type == 1:
             for detail in self.storagedetail_set.all():

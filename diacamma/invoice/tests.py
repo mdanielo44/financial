@@ -98,7 +98,7 @@ class BillTest(InvoiceTest):
         self.assert_json_equal('LABELFORM', 'num_txt', None)
         self.assert_json_equal('LABELFORM', 'status', 0)
         self.assert_json_equal('LABELFORM', 'date', "2014-04-01")
-        self.assert_json_equal('LABELFORM', 'info', "aucun tiers sélectionné{[br/]}pas de détail{[br/]}la date n'est pas incluse dans l'exercice")
+        self.assert_json_equal('LABELFORM', 'info', ["aucun tiers sélectionné", "pas de détail", "la date n'est pas incluse dans l'exercice"])
 
         self.factory.xfer = BillAddModify()
         self.calljson('/diacamma.invoice/billAddModify',
@@ -108,7 +108,7 @@ class BillTest(InvoiceTest):
         self.factory.xfer = BillShow()
         self.calljson('/diacamma.invoice/billShow', {'bill': 1}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'billShow')
-        self.assert_json_equal('LABELFORM', 'info', "aucun tiers sélectionné{[br/]}pas de détail")
+        self.assert_json_equal('LABELFORM', 'info', ["aucun tiers sélectionné", "pas de détail"])
 
         self.factory.xfer = SupportingThird()
         self.calljson('/diacamma.payoff/supportingThird', {'bill': 1}, False)
@@ -122,7 +122,7 @@ class BillTest(InvoiceTest):
         self.factory.xfer = BillShow()
         self.calljson('/diacamma.invoice/billShow', {'bill': 1}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'billShow')
-        self.assert_json_equal('LABELFORM', 'info', "pas de détail")
+        self.assert_json_equal('LABELFORM', 'info', ["pas de détail"])
 
         self.factory.xfer = DetailAddModify()
         self.calljson('/diacamma.invoice/detailAddModify', {'bill': 1}, False)
@@ -173,7 +173,7 @@ class BillTest(InvoiceTest):
         self.assert_json_equal('', 'detail/@0/total', '87.44€')
 
         self.assert_json_equal('LABELFORM', 'total_excltax', "87.44€")
-        self.assert_json_equal('LABELFORM', 'info', "")
+        self.assert_json_equal('LABELFORM', 'info', [])
         self.assertEqual(len(self.json_actions), 3)
 
         bill_item = Bill.objects.get(id=1)
@@ -210,7 +210,7 @@ class BillTest(InvoiceTest):
         self.assert_json_equal('LABELFORM', 'num_txt', None)
         self.assert_json_equal('LABELFORM', 'status', 0)
         self.assert_json_equal('LABELFORM', 'date', "2014-04-01")
-        self.assert_json_equal('LABELFORM', 'info', "aucun tiers sélectionné{[br/]}pas de détail{[br/]}la date n'est pas incluse dans l'exercice")
+        self.assert_json_equal('LABELFORM', 'info', ["aucun tiers sélectionné", "pas de détail", "la date n'est pas incluse dans l'exercice"])
 
         self.factory.xfer = BillAddModify()
         self.calljson('/diacamma.invoice/billAddModify',
@@ -230,7 +230,7 @@ class BillTest(InvoiceTest):
         self.calljson('/diacamma.invoice/billShow', {'bill': 1}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'billShow')
         self.assert_count_equal('', 12)
-        self.assert_json_equal('LABELFORM', 'info', "")
+        self.assert_json_equal('LABELFORM', 'info', [])
         self.assertEqual(len(self.json_actions), 3)
 
         bill_item = Bill.objects.get(id=1)
@@ -308,7 +308,7 @@ class BillTest(InvoiceTest):
         self.factory.xfer = BillShow()
         self.calljson('/diacamma.invoice/billShow', {'bill': 1}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'billShow')
-        self.assert_json_equal('LABELFORM', 'info', "pas de détail")
+        self.assert_json_equal('LABELFORM', 'info', ["pas de détail"])
 
         self.factory.xfer = DetailAddModify()
         self.calljson('/diacamma.invoice/detailAddModify',
@@ -318,7 +318,7 @@ class BillTest(InvoiceTest):
         self.calljson('/diacamma.invoice/billShow', {'bill': 1}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'billShow')
         self.assert_count_equal('detail', 1)
-        self.assert_json_equal('LABELFORM', 'info', "au moins un article a un compte inconnu !")
+        self.assert_json_equal('LABELFORM', 'info', ["au moins un article a un compte inconnu !"])
 
         self.factory.xfer = DetailDel()
         self.calljson('/diacamma.invoice/detailDel',
@@ -332,7 +332,7 @@ class BillTest(InvoiceTest):
         self.calljson('/diacamma.invoice/billShow', {'bill': 1}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'billShow')
         self.assert_count_equal('detail', 1)
-        self.assert_json_equal('LABELFORM', 'info', "au moins un article a un compte inconnu !")
+        self.assert_json_equal('LABELFORM', 'info', ["au moins un article a un compte inconnu !"])
 
         self.factory.xfer = DetailDel()
         self.calljson('/diacamma.invoice/detailDel',
@@ -350,7 +350,7 @@ class BillTest(InvoiceTest):
         self.calljson('/diacamma.invoice/billShow', {'bill': 1}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'billShow')
         self.assert_count_equal('detail', 1)
-        self.assert_json_equal('LABELFORM', 'info', "Ce tiers n'a pas de compte correct !")
+        self.assert_json_equal('LABELFORM', 'info', ["Ce tiers n'a pas de compte correct !"])
 
     def check_list_del_archive(self):
         self.factory.xfer = BillList()
@@ -471,7 +471,7 @@ class BillTest(InvoiceTest):
         self.calljson('/diacamma.invoice/billShow', {'bill': 1}, False)
         self.assert_attrib_equal('total_excltax', 'description', "total")
         self.assert_json_equal('LABELFORM', 'total_excltax', "107.45€")
-        self.assert_json_equal('LABELFORM', 'info', "")
+        self.assert_json_equal('LABELFORM', 'info', [])
         self.assertEqual(len(self.json_actions), 3)
 
         self.factory.xfer = EntryAccountList()
@@ -575,7 +575,7 @@ class BillTest(InvoiceTest):
         self.calljson('/diacamma.invoice/billShow', {'bill': 2}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'billShow')
         self.assert_json_equal('LABELFORM', 'date', "2015-04-01")
-        self.assert_json_equal('LABELFORM', 'info', "")
+        self.assert_json_equal('LABELFORM', 'info', [])
 
         self.factory.xfer = BillTransition()
         self.calljson('/diacamma.invoice/billTransition',
@@ -757,7 +757,7 @@ class BillTest(InvoiceTest):
         self.assert_grid_equal('detail', {"article": "article", "designation": "désignation", "price_txt": "prix TTC", "unit": "unité",
                                           "quantity": "quantité", "storagearea": "lieu de stockage", "reduce_txt": "réduction", "total": "total TTC"}, 4)  # nb=8
         self.assert_attrib_equal('total_excltax', 'description', "total HT")
-        self.assert_json_equal('LABELFORM', 'info', "")
+        self.assert_json_equal('LABELFORM', 'info', [])
         self.assert_attrib_equal('total_incltax', 'description', "total TTC")
         self.assert_json_equal('LABELFORM', 'total_incltax', "128.02€")
         self.assert_json_equal('LABELFORM', 'vta_sum', "4.51€")
@@ -803,7 +803,7 @@ class BillTest(InvoiceTest):
         self.assert_grid_equal('detail', {"article": "article", "designation": "désignation", "price_txt": "prix HT", "unit": "unité",
                                           "quantity": "quantité", "storagearea": "lieu de stockage", "reduce_txt": "réduction", "total": "total HT"}, 4)  # nb=8
         self.assert_attrib_equal('total_excltax', 'description', "total HT")
-        self.assert_json_equal('LABELFORM', 'info', "")
+        self.assert_json_equal('LABELFORM', 'info', [])
         self.assert_attrib_equal('total_incltax', 'description', "total TTC")
         self.assert_json_equal('LABELFORM', 'total_incltax', "133.27€")
         self.assert_json_equal('LABELFORM', 'vta_sum', "5.25€")
