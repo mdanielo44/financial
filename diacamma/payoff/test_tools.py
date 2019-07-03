@@ -154,7 +154,7 @@ class PaymentTest(LucteriosTest):
         self.factory.xfer = BankTransactionShow()
         self.calljson('/diacamma.payoff/bankTransactionShow', {'banktransaction': 1}, False)
         self.assert_observer('core.custom', 'diacamma.payoff', 'bankTransactionShow')
-        self.assert_json_equal('LABELFORM', 'date', "3 avril 2015 20:52")
+        self.assert_json_equal('LABELFORM', 'date', "2015-04-03T20:52", True)
         contains = self.json_data["contains"]
         if success:
             self.assertEqual(len(contains), 1101 + len(title) + len("%.2f" % amount), contains)
@@ -162,9 +162,9 @@ class PaymentTest(LucteriosTest):
         self.assertTrue("custom = %d" % itemid in contains, contains)
         self.assertTrue("business = monney@truc.org" in contains, contains)
         if success:
-            self.assert_json_equal('LABELFORM', 'status', "succès")
+            self.assert_json_equal('LABELFORM', 'status', 1)
         else:
-            self.assert_json_equal('LABELFORM', 'status', "échec")
+            self.assert_json_equal('LABELFORM', 'status', 0)
         self.assert_json_equal('LABELFORM', 'payer', "test buyer")
         self.assert_json_equal('LABELFORM', 'amount', "%.3f" % amount)
 
@@ -172,11 +172,11 @@ class PaymentTest(LucteriosTest):
         self.calljson('/diacamma.payoff/bankTransactionList', {}, False)
         self.assert_observer('core.custom', 'diacamma.payoff', 'bankTransactionList')
         self.assert_count_equal('banktransaction', 1)
-        self.assert_json_equal('', 'banktransaction/@0/date', '2015-04-03 20:52', True)
+        self.assert_json_equal('', 'banktransaction/@0/date', '2015-04-03T20:52', True)
         if success:
-            self.assert_json_equal('', 'banktransaction/@0/status', six.text_type('succès'))
+            self.assert_json_equal('', 'banktransaction/@0/status', 1)
         else:
-            self.assert_json_equal('', 'banktransaction/@0/status', six.text_type('échec'))
+            self.assert_json_equal('', 'banktransaction/@0/status', 0)
         self.assert_json_equal('', 'banktransaction/@0/payer', 'test buyer')
         self.assert_json_equal('', 'banktransaction/@0/amount', "%.3f" % amount)
 

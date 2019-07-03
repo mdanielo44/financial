@@ -178,11 +178,9 @@ class ChartsAccountEditor(LucteriosEditor):
             if self.item.code != '':
                 code_ed.set_value(self.item.code + '!')
             if self.item.id is None:
-                xfer.get_components('type_of_account').set_value('---')
+                xfer.get_components('type_of_account').set_value(None)
         elif self.item.id is None:
-            field_type = self.item.get_field_by_name('type_of_account')
-            xfer.get_components('type_of_account').set_value(
-                get_value_if_choices(typeaccount, field_type))
+            xfer.get_components('type_of_account').set_value(typeaccount)
             xfer.get_components('name').set_value(descript)
             xfer.params['type_of_account'] = typeaccount
         elif typeaccount != self.item.type_of_account:
@@ -190,7 +188,8 @@ class ChartsAccountEditor(LucteriosEditor):
             code_ed.set_value(self.item.code + '!')
         lbl = XferCompLabelForm('error_code')
         lbl.set_location(1, xfer.get_max_row() + 1, 2)
-        lbl.set_value_center("{[font color='red']}%s{[/font]}" % error_msg)
+        lbl.set_color('red')
+        lbl.set_value_center(error_msg)
         xfer.add_component(lbl)
         return
 

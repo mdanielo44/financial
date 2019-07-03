@@ -38,7 +38,7 @@ from django.utils.dateformat import DateFormat
 from django.utils import six, timezone
 from django_fsm import FSMIntegerField, transition
 
-from lucterios.framework.models import LucteriosModel, get_value_if_choices, get_value_converted, get_obj_contains
+from lucterios.framework.models import LucteriosModel, get_value_if_choices, get_value_converted, get_obj_contains, get_date_formating
 from lucterios.framework.error import LucteriosException, IMPORTANT, GRAVE
 from lucterios.framework.signal_and_lock import Signal
 from lucterios.framework.filetools import get_user_path, readimage_to_base64,\
@@ -430,9 +430,9 @@ class Bill(Supporting):
     def __str__(self):
         billtype = get_value_if_choices(self.bill_type, self.get_field_by_name('bill_type'))
         if self.num is None:
-            return "%s - %s" % (billtype, get_value_converted(self.date))
+            return "%s - %s" % (billtype, get_date_formating(self.date))
         else:
-            return "%s %s - %s" % (billtype, self.num_txt, get_value_converted(self.date))
+            return "%s %s - %s" % (billtype, self.num_txt, get_date_formating(self.date))
 
     @property
     def reference(self):
@@ -1163,7 +1163,7 @@ class StorageSheet(LucteriosModel):
     def __str__(self):
         sheettype = get_value_if_choices(self.sheet_type, self.get_field_by_name('sheet_type'))
         sheetstatus = get_value_if_choices(self.status, self.get_field_by_name('status'))
-        return "%s - %s [%s]" % (sheettype, get_value_converted(self.date), sheetstatus)
+        return "%s - %s [%s]" % (sheettype, get_date_formating(self.date), sheetstatus)
 
     @classmethod
     def get_default_fields(cls):

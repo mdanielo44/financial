@@ -161,14 +161,19 @@ class PayoffTest(LucteriosTest):
         self.calljson('/diacamma.payoff/payoffConf', {}, False)
         self.assert_observer('core.custom', 'diacamma.payoff', 'payoffConf')
         self.assert_count_equal('paymentmethod', 3)
-        self.assert_json_equal('', 'paymentmethod/@0/paytype', "virement")
+        self.assert_json_equal('', '#paymentmethod/headers/@0/@0', 'paytype')
+        self.assert_json_equal('', '#paymentmethod/headers/@0/@1', 'type')
+        self.assert_json_equal('', '#paymentmethod/headers/@0/@2', {'0': 'virement', '1': 'chèque', '2': 'PayPal'})
+        self.assert_json_equal('', '#paymentmethod/headers/@0/@4', "%s")
+
+        self.assert_json_equal('', 'paymentmethod/@0/paytype', 0)
         self.assert_json_equal('', 'paymentmethod/@0/bank_account', "My bank")
         self.assert_json_equal('', 'paymentmethod/@0/info', '{[b]}IBAN{[/b]}{[br/]}123456798{[br/]}{[b]}BIC{[/b]}{[br/]}AADDVVCC{[br/]}')
 
-        self.assert_json_equal('', 'paymentmethod/@1/paytype', "chèque")
+        self.assert_json_equal('', 'paymentmethod/@1/paytype', 1)
         self.assert_json_equal('', 'paymentmethod/@1/bank_account', "My bank")
         self.assert_json_equal('', 'paymentmethod/@1/info', '{[b]}libellé à{[/b]}{[br/]}Truc{[br/]}', True)
 
-        self.assert_json_equal('', 'paymentmethod/@2/paytype', "PayPal")
+        self.assert_json_equal('', 'paymentmethod/@2/paytype', 2)
         self.assert_json_equal('', 'paymentmethod/@2/bank_account', "My bank")
         self.assert_json_equal('', 'paymentmethod/@2/info', '{[b]}compte Paypal{[/b]}{[br/]}monney@truc.org{[br/]}{[b]}avec contrôle{[/b]}{[br/]}Oui{[br/]}')

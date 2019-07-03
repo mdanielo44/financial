@@ -34,7 +34,6 @@ from lucterios.framework.tools import MenuManage, FORMTYPE_NOMODAL, CLOSE_NO, FO
 from lucterios.framework.xfergraphic import XferContainerCustom
 from lucterios.framework.xfercomponents import XferCompImage, XferCompSelect, XferCompLabelForm, XferCompGrid, XferCompEdit, XferCompCheck
 from lucterios.framework.xferadvance import TITLE_PRINT, TITLE_CLOSE
-from lucterios.framework.models import get_value_converted
 from lucterios.contacts.models import LegalEntity
 from lucterios.CORE.xferprint import XferPrintAction
 
@@ -655,7 +654,8 @@ class CostAccountingReport(FiscalYearReport):
             begin_filter = XferCompLabelForm('begin_date')
             begin_filter.set_location(1, 4)
             begin_filter.set_needed(True)
-            begin_filter.set_value(get_value_converted(datetime.strptime(self.date_begin, "%Y-%m-%d").date()))
+            begin_filter.set_value(datetime.strptime(self.date_begin, "%Y-%m-%d").date())
+            begin_filter.set_format("D")
             begin_filter.description = _('begin')
             self.add_component(begin_filter)
             self.filter &= Q(entry__date_value__gte=self.date_begin)
@@ -663,7 +663,8 @@ class CostAccountingReport(FiscalYearReport):
             end_filter = XferCompLabelForm('end_date')
             end_filter.set_location(2, 4)
             end_filter.set_needed(True)
-            end_filter.set_value(get_value_converted(datetime.strptime(self.date_end, "%Y-%m-%d").date()))
+            end_filter.set_value(datetime.strptime(self.date_end, "%Y-%m-%d").date())
+            end_filter.set_format("D")
             end_filter.description = _('end')
             self.add_component(end_filter)
             self.filter &= Q(entry__date_value__lte=self.date_end)

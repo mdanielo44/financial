@@ -78,7 +78,7 @@ class ThirdTest(LucteriosTest):
         self.assert_observer('core.custom', 'diacamma.accounting', 'thirdList')
         self.assert_count_equal('third', 1)
         self.assert_json_equal('', 'third/@0/contact', 'Dalton Joe')
-        self.assert_json_equal('', 'third/@0/accountthird_set', '')
+        self.assert_json_equal('', 'third/@0/accountthird_set', [])
 
     def test_add_legalentity(self):
         self.factory.xfer = ThirdList()
@@ -103,7 +103,7 @@ class ThirdTest(LucteriosTest):
         self.assert_observer('core.custom', 'diacamma.accounting', 'thirdList')
         self.assert_count_equal('third', 1)
         self.assert_json_equal('', 'third/@0/contact', 'Minimum')
-        self.assert_json_equal('', 'third/@0/accountthird_set', '401')
+        self.assert_json_equal('', 'third/@0/accountthird_set', ['401'])
 
         self.factory.xfer = ThirdShow()
         self.calljson('/diacamma.accounting/thirdShow', {"third": 1}, False)
@@ -136,7 +136,7 @@ class ThirdTest(LucteriosTest):
         self.assert_observer('core.custom', 'diacamma.accounting', 'thirdList')
         self.assert_count_equal('third', 1)
         self.assert_json_equal('', 'third/@0/contact', 'Dalton William')
-        self.assert_json_equal('', 'third/@0/accountthird_set', '401{[br/]}411')
+        self.assert_json_equal('', 'third/@0/accountthird_set', ['401', '411'])
 
         self.factory.xfer = ThirdShow()
         self.calljson('/diacamma.accounting/thirdShow', {"third": 1}, False)
@@ -184,7 +184,7 @@ class ThirdTest(LucteriosTest):
         self.assertTrue('__tab_1' in self.json_data.keys(), self.json_data.keys())
         self.assert_count_equal('', 9 + 4)
         self.assert_json_equal('LABELFORM', 'contact', 'Dalton William')
-        self.assert_json_equal('LABELFORM', 'status', 'Actif')
+        self.assert_json_equal('LABELFORM', 'status', 0)
         self.assert_grid_equal('accountthird', {'code': "code", 'total_txt': "total"}, 0)  # nb=2
         self.assert_count_equal('accountthird', 0)
         self.assert_json_equal('LABELFORM', 'total', '0.00€')
@@ -235,7 +235,7 @@ class ThirdTest(LucteriosTest):
         self.assertTrue('__tab_3' in self.json_data.keys(), self.json_data.keys())
         self.assert_count_equal('', 9 + 4 + 4 + 3)
         self.assert_json_equal('LABELFORM', 'contact', 'Minimum')
-        self.assert_json_equal('LABELFORM', 'status', 'Actif')
+        self.assert_json_equal('LABELFORM', 'status', 0)
         self.assert_grid_equal('accountthird', {'code': "code", 'total_txt': "total"}, 2)  # nb=2
         self.assert_json_equal('', 'accountthird/@0/id', '5')
         self.assert_json_equal('', 'accountthird/@0/code', '411')
@@ -254,8 +254,8 @@ class ThirdTest(LucteriosTest):
         self.assert_json_equal('', 'entryline/@1/entry.num', '3')
         self.assert_json_equal('', 'entryline/@1/link', 'A')
         self.assert_json_equal('', 'entryline/@1/debit', '{[font color="blue"]}63.94€{[/font]}')
-        self.assert_json_equal('', 'entryline/@2/entry.num', '---')
-        self.assert_json_equal('', 'entryline/@2/link', '---')
+        self.assert_json_equal('', 'entryline/@2/entry.num', None)
+        self.assert_json_equal('', 'entryline/@2/link', None)
         self.assert_json_equal('', 'entryline/@2/debit', '{[font color="blue"]}34.01€{[/font]}')
 
         self.factory.xfer = AccountThirdDel()
@@ -335,19 +335,19 @@ class ThirdTest(LucteriosTest):
         self.assert_count_equal('', 6)
         self.assert_grid_equal('third', {'contact': "contact", 'accountthird_set': "compte"}, 7)  # nb=2
         self.assert_json_equal('', 'third/@0/contact', 'Dalton Avrel')
-        self.assert_json_equal('', 'third/@0/accountthird_set', '401')
+        self.assert_json_equal('', 'third/@0/accountthird_set', ['401'])
         self.assert_json_equal('', 'third/@1/contact', 'Dalton Jack')
-        self.assert_json_equal('', 'third/@1/accountthird_set', '411')
+        self.assert_json_equal('', 'third/@1/accountthird_set', ['411'])
         self.assert_json_equal('', 'third/@2/contact', 'Dalton Joe')
-        self.assert_json_equal('', 'third/@2/accountthird_set', '411')
+        self.assert_json_equal('', 'third/@2/accountthird_set', ['411'])
         self.assert_json_equal('', 'third/@3/contact', 'Dalton William')
-        self.assert_json_equal('', 'third/@3/accountthird_set', '411{[br/]}421')
+        self.assert_json_equal('', 'third/@3/accountthird_set', ['411', '421'])
         self.assert_json_equal('', 'third/@4/contact', 'Luke Lucky')
-        self.assert_json_equal('', 'third/@4/accountthird_set', '411{[br/]}401')
+        self.assert_json_equal('', 'third/@4/accountthird_set', ['411', '401'])
         self.assert_json_equal('', 'third/@5/contact', 'Maximum')
-        self.assert_json_equal('', 'third/@5/accountthird_set', '401')
+        self.assert_json_equal('', 'third/@5/accountthird_set', ['401'])
         self.assert_json_equal('', 'third/@6/contact', 'Minimum')
-        self.assert_json_equal('', 'third/@6/accountthird_set', '411{[br/]}401{[br/]}421{[br/]}451')
+        self.assert_json_equal('', 'third/@6/accountthird_set', ['411', '401', '421', '451'])
 
         self.factory.xfer = ThirdList()
         self.calljson('/diacamma.accounting/thirdList', {'GRID_ORDER%third': '1', 'GRID_ORDER%third+': '-'}, False)
@@ -391,7 +391,7 @@ class ThirdTest(LucteriosTest):
         self.assert_count_equal('', 6)
         self.assert_grid_equal('third', {'contact': "contact", 'accountthird_set': "compte"}, 1)  # nb=2
         self.assert_json_equal('', 'third/@0/contact', 'Dalton Joe')
-        self.assert_json_equal('', 'third/@0/accountthird_set', '411')
+        self.assert_json_equal('', 'third/@0/accountthird_set', ['411'])
 
         self.factory.xfer = ThirdList()
         self.calljson('/diacamma.accounting/thirdList', {'thirdtype': 1}, False)
@@ -424,13 +424,13 @@ class ThirdTest(LucteriosTest):
         self.assert_grid_equal('third', {'contact': "contact", 'accountthird_set': "compte", 'total': "total"}, 7)  # nb=3
         self.assert_count_equal('third', 7)
         self.assert_json_equal('', 'third/@1/contact', 'Dalton Jack')
-        self.assert_json_equal('', 'third/@1/accountthird_set', '411')
+        self.assert_json_equal('', 'third/@1/accountthird_set', ['411'])
         self.assert_json_equal('', 'third/@1/total', '0.00€')
         self.assert_json_equal('', 'third/@3/contact', 'Dalton William')
-        self.assert_json_equal('', 'third/@3/accountthird_set', '411')
+        self.assert_json_equal('', 'third/@3/accountthird_set', ['411'])
         self.assert_json_equal('', 'third/@3/total', '-125.97€')
         self.assert_json_equal('', 'third/@6/contact', 'Minimum')
-        self.assert_json_equal('', 'third/@6/accountthird_set', '411{[br/]}401')
+        self.assert_json_equal('', 'third/@6/accountthird_set', ['411', '401'])
         self.assert_json_equal('', 'third/@6/total', '-34.01€')
 
         self.factory.xfer = ThirdList()
@@ -439,13 +439,13 @@ class ThirdTest(LucteriosTest):
         self.assert_count_equal('', 6)
         self.assert_grid_equal('third', {'contact': "contact", 'accountthird_set': "compte", 'total': "total"}, 3)  # nb=3
         self.assert_json_equal('', 'third/@0/contact', 'Dalton William')
-        self.assert_json_equal('', 'third/@0/accountthird_set', '411')
+        self.assert_json_equal('', 'third/@0/accountthird_set', ['411'])
         self.assert_json_equal('', 'third/@0/total', '-125.97€')
         self.assert_json_equal('', 'third/@1/contact', 'Maximum')
-        self.assert_json_equal('', 'third/@1/accountthird_set', '401')
+        self.assert_json_equal('', 'third/@1/accountthird_set', ['401'])
         self.assert_json_equal('', 'third/@1/total', '78.24€')
         self.assert_json_equal('', 'third/@2/contact', 'Minimum')
-        self.assert_json_equal('', 'third/@2/accountthird_set', '411{[br/]}401')
+        self.assert_json_equal('', 'third/@2/accountthird_set', ['411', '401'])
         self.assert_json_equal('', 'third/@2/total', '-34.01€')
 
     def test_listing(self):
@@ -535,7 +535,7 @@ class ThirdTest(LucteriosTest):
         self.assertTrue('__tab_1' in self.json_data.keys(), self.json_data.keys())
         self.assert_count_equal('', 9 + 4 + 2)
         self.assert_json_equal('LABELFORM', 'contact', 'Dalton William')
-        self.assert_json_equal('LABELFORM', 'status', 'Actif')
+        self.assert_json_equal('LABELFORM', 'status', 0)
         self.assert_grid_equal('accountthird', {'code': "code", 'total_txt': "total"}, 0)  # nb=2
         self.assert_json_equal('LABELFORM', 'total', '0.00€')
         self.assert_json_equal('LABELFORM', 'custom_1', "---")
@@ -595,8 +595,8 @@ class AdminTest(LucteriosTest):
         self.factory.xfer = StatusMenu()
         self.calljson('/CORE/statusMenu', {}, False)
         self.assert_observer('core.custom', 'CORE', 'statusMenu')
-        self.assert_json_equal('LABELFORM', 'accountingtitle', "{[center]}{[u]}{[b]}Gestion comptable{[/b]}{[/u]}{[/center]}")
-        self.assert_json_equal('LABELFORM', 'accounting_error', "{[center]}Pas d'exercice défini !{[/center]}")
+        self.assert_json_equal('LABELFORM', 'accountingtitle', "Gestion comptable")
+        self.assert_json_equal('LABELFORM', 'accounting_error', "Pas d'exercice défini !")
         self.assert_action_equal('#accounting_conf/action',
                                  ("conf.", None, 'diacamma.accounting', 'configuration', 0, 1, 1))
 
@@ -701,7 +701,7 @@ class AdminTest(LucteriosTest):
         self.calljson('/diacamma.accounting/fiscalYearAddModify', {}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'fiscalYearAddModify')
         self.assert_count_equal('', 4)
-        self.assert_json_equal('LABELFORM', 'status', 'en création')
+        self.assert_json_equal('LABELFORM', 'status', 0)
         self.assert_json_equal('DATE', 'begin', to_day.isoformat())
         self.assert_json_equal('DATE', 'end', to_day_plus_1.isoformat())
 
@@ -713,18 +713,24 @@ class AdminTest(LucteriosTest):
         self.calljson('/diacamma.accounting/configuration', {}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'configuration')
         self.assert_grid_equal('fiscalyear', {"begin": "début", "end": "fin", "status": "status", "is_actif": "actif"}, 1)  # nb=4
+
+        self.assert_json_equal('', '#fiscalyear/headers/@2/@0', 'status')
+        self.assert_json_equal('', '#fiscalyear/headers/@2/@1', 'status')
+        self.assert_json_equal('', '#fiscalyear/headers/@2/@2', {'0': 'en création', '1': 'en cours', '2': 'terminé'})
+        self.assert_json_equal('', '#fiscalyear/headers/@2/@4', "%s")
+
         self.assert_json_equal('', 'fiscalyear/@0/begin', '2015-07-01')
         self.assert_json_equal('', 'fiscalyear/@0/end', '2016-06-30')
-        self.assert_json_equal('', 'fiscalyear/@0/status', "en création")
-        self.assert_json_equal('', 'fiscalyear/@0/is_actif', "1")
+        self.assert_json_equal('', 'fiscalyear/@0/status', 0)
+        self.assert_json_equal('', 'fiscalyear/@0/is_actif', True)
 
         self.factory.xfer = FiscalYearAddModify()
         self.calljson('/diacamma.accounting/fiscalYearAddModify', {}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'fiscalYearAddModify')
         self.assert_count_equal('', 4)
         self.assertEqual(self.json_context['begin'], "2016-07-01")
-        self.assert_json_equal('LABELFORM', 'status', 'en création')
-        self.assert_json_equal('LABELFORM', 'begin', '1 juillet 2016')
+        self.assert_json_equal('LABELFORM', 'status', 0)
+        self.assert_json_equal('LABELFORM', 'begin', '2016-07-01')
         self.assert_json_equal('DATE', 'end', '2017-06-30')
 
         self.factory.xfer = FiscalYearAddModify()
@@ -737,8 +743,8 @@ class AdminTest(LucteriosTest):
         self.assert_count_equal('fiscalyear', 2)
         self.assert_json_equal('', 'fiscalyear/@1/begin', '2016-07-01')
         self.assert_json_equal('', 'fiscalyear/@1/end', '2017-06-30')
-        self.assert_json_equal('', 'fiscalyear/@1/status', "en création")
-        self.assert_json_equal('', 'fiscalyear/@1/is_actif', "0")
+        self.assert_json_equal('', 'fiscalyear/@1/status', 0)
+        self.assert_json_equal('', 'fiscalyear/@1/is_actif', False)
 
         self.factory.xfer = FiscalYearActive()
         self.calljson('/diacamma.accounting/fiscalYearActive', {'fiscalyear': '2'}, False)
@@ -748,8 +754,8 @@ class AdminTest(LucteriosTest):
         self.calljson('/diacamma.accounting/configuration', {}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'configuration')
         self.assert_count_equal('fiscalyear', 2)
-        self.assert_json_equal('', 'fiscalyear/@0/is_actif', "0")
-        self.assert_json_equal('', 'fiscalyear/@1/is_actif', "1")
+        self.assert_json_equal('', 'fiscalyear/@0/is_actif', False)
+        self.assert_json_equal('', 'fiscalyear/@1/is_actif', True)
 
         self.factory.xfer = FiscalYearAddModify()
         self.calljson('/diacamma.accounting/fiscalYearAddModify', {'fiscalyear': '1'}, False)
@@ -760,15 +766,13 @@ class AdminTest(LucteriosTest):
         self.calljson('/diacamma.accounting/fiscalYearAddModify', {'fiscalyear': '2'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'fiscalYearAddModify')
         self.assert_count_equal('', 4)
-        self.assert_json_equal('LABELFORM', 'status', 'en création')
-        self.assert_json_equal('LABELFORM', 'begin', '1 juillet 2016')
+        self.assert_json_equal('LABELFORM', 'status', 0)
+        self.assert_json_equal('LABELFORM', 'begin', '2016-07-01')
         self.assert_json_equal('DATE', 'end', '2017-06-30')
 
     def test_confi_delete(self):
-        year1 = FiscalYear.objects.create(
-            begin='2014-07-01', end='2015-06-30', status=2, is_actif=False, last_fiscalyear=None)
-        year2 = FiscalYear.objects.create(
-            begin='2015-07-01', end='2016-06-30', status=1, is_actif=False, last_fiscalyear=year1)
+        year1 = FiscalYear.objects.create(begin='2014-07-01', end='2015-06-30', status=2, is_actif=False, last_fiscalyear=None)
+        year2 = FiscalYear.objects.create(begin='2015-07-01', end='2016-06-30', status=1, is_actif=False, last_fiscalyear=year1)
         FiscalYear.objects.create(begin='2016-07-01', end='2017-06-30', status=0,
                                   is_actif=True, last_fiscalyear=year2)
         set_accounting_system()
@@ -788,8 +792,7 @@ class AdminTest(LucteriosTest):
         self.assert_json_equal('', 'message', "Cet exercice n'est pas le dernier !")
 
         self.factory.xfer = FiscalYearDel()
-        self.calljson(
-            '/diacamma.accounting/fiscalYearDel', {'fiscalyear': '2'}, False)
+        self.calljson('/diacamma.accounting/fiscalYearDel', {'fiscalyear': '2'}, False)
         self.assert_observer('core.exception', 'diacamma.accounting', 'fiscalYearDel')
         self.assert_json_equal('', 'message', "Cet exercice n'est pas le dernier !")
 

@@ -37,7 +37,7 @@ from django.utils.module_loading import import_module
 from django.utils import six
 from django_fsm import FSMIntegerField, transition
 
-from lucterios.framework.models import LucteriosModel, get_value_converted, get_value_if_choices
+from lucterios.framework.models import LucteriosModel, get_value_if_choices, get_date_formating, get_bool_textual
 from lucterios.framework.error import LucteriosException, IMPORTANT
 from lucterios.framework.printgenerators import ReportingGenerator
 from lucterios.framework.signal_and_lock import Signal
@@ -522,7 +522,7 @@ class DepositSlip(LucteriosModel):
         _('reference'), max_length=100, null=False, default='')
 
     def __str__(self):
-        return "%s %s" % (self.reference, get_value_converted(self.date))
+        return "%s %s" % (self.reference, get_date_formating(self.date))
 
     @classmethod
     def get_default_fields(cls):
@@ -706,7 +706,7 @@ class PaymentMethod(LucteriosModel):
         for fieldid, fieldtitle, fieldtype in self.get_extra_fields():
             res += "{[b]}%s{[/b]}{[br/]}" % fieldtitle
             if fieldtype == 2:
-                res += six.text_type(get_value_converted((items[fieldid - 1] == 'o') or (items[fieldid - 1] == 'True'), True))
+                res += six.text_type(get_bool_textual((items[fieldid - 1] == 'o') or (items[fieldid - 1] == 'True')))
             else:
                 res += items[fieldid - 1]
             res += "{[br/]}"

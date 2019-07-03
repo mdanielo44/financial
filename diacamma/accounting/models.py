@@ -40,7 +40,7 @@ from django.utils import six
 from django.db.models.signals import pre_save
 from django_fsm import FSMIntegerField, transition
 
-from lucterios.framework.models import LucteriosModel, get_value_converted, get_value_if_choices
+from lucterios.framework.models import LucteriosModel, get_value_if_choices, get_date_formating
 from lucterios.framework.error import LucteriosException, IMPORTANT, GRAVE
 from lucterios.framework.filetools import read_file, xml_validator, save_file, get_user_path
 from lucterios.framework.signal_and_lock import RecordLocker, Signal
@@ -416,7 +416,7 @@ class FiscalYear(LucteriosModel):
     def __str__(self):
         status = get_value_if_choices(self.status, self._meta.get_field(
             'status'))
-        return _("Fiscal year from %(begin)s to %(end)s [%(status)s]") % {'begin': get_value_converted(self.begin), 'end': get_value_converted(self.end), 'status': status}
+        return _("Fiscal year from %(begin)s to %(end)s [%(status)s]") % {'begin': get_date_formating(self.begin), 'end': get_date_formating(self.end), 'status': status}
 
     @property
     def letter(self):
