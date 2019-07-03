@@ -166,7 +166,8 @@ class PaymentTest(LucteriosTest):
         else:
             self.assert_json_equal('LABELFORM', 'status', 0)
         self.assert_json_equal('LABELFORM', 'payer', "test buyer")
-        self.assert_json_equal('LABELFORM', 'amount', "%.3f" % amount)
+        self.assert_json_equal('LABELFORM', 'amount', amount)
+        self.assert_json_equal('', '#amount/formatnum', "N3")
 
         self.factory.xfer = BankTransactionList()
         self.calljson('/diacamma.payoff/bankTransactionList', {}, False)
@@ -178,7 +179,7 @@ class PaymentTest(LucteriosTest):
         else:
             self.assert_json_equal('', 'banktransaction/@0/status', 0)
         self.assert_json_equal('', 'banktransaction/@0/payer', 'test buyer')
-        self.assert_json_equal('', 'banktransaction/@0/amount', "%.3f" % amount)
+        self.assert_json_equal('', 'banktransaction/@0/amount', amount)
 
 
 class TestHTTPServer(HTTPServer, BaseHTTPRequestHandler, Thread):
