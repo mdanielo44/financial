@@ -31,7 +31,7 @@ from django.utils import six
 from lucterios.framework.xfergraphic import XferContainerAcknowledge
 from lucterios.framework.test import LucteriosTest
 from lucterios.framework.filetools import get_user_dir
-from lucterios.CORE.views import StatusMenu
+from lucterios.CORE.views import StatusMenu, ParamEdit
 from lucterios.contacts.views import CustomFieldAddModify
 
 from diacamma.accounting.views import ThirdList, ThirdAdd, ThirdSave, ThirdShow, AccountThirdAddModify, AccountThirdDel, ThirdListing, ThirdDisable, ThirdEdit, ThirdSearch
@@ -538,8 +538,10 @@ class ThirdTest(LucteriosTest):
         self.assert_json_equal('LABELFORM', 'status', 0)
         self.assert_grid_equal('accountthird', {'code': "code", 'total_txt': "total"}, 0)  # nb=2
         self.assert_json_equal('LABELFORM', 'total', '0.00€')
-        self.assert_json_equal('LABELFORM', 'custom_1', "---")
+        self.assert_json_equal('LABELFORM', 'custom_1', 0)
+        self.assert_json_equal('', '#custom_1/formatnum', {'0': '---', '1': 'petit', '2': 'moyen', '3': 'gros'})
         self.assert_json_equal('LABELFORM', 'custom_2', "0")
+        self.assert_json_equal('', '#custom_2/formatnum', "N0")
 
         self.factory.xfer = ThirdEdit()
         self.calljson('/diacamma.accounting/thirdEdit', {"third": 1}, False)
@@ -558,11 +560,11 @@ class ThirdTest(LucteriosTest):
         self.calljson('/diacamma.accounting/thirdShow', {"third": 1}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'thirdShow')
         self.assert_json_equal('LABELFORM', 'contact', 'Dalton William')
-        self.assert_json_equal('LABELFORM', 'custom_1', "moyen")
-        self.assert_json_equal('LABELFORM', 'custom_2', "27")
+        self.assert_json_equal('LABELFORM', 'custom_1', 2)
+        self.assert_json_equal('LABELFORM', 'custom_2', 27)
 
         my_third = Third.objects.get(id=1)
-        self.assertEqual("moyen", my_third.get_custom_by_name("categorie"))
+        self.assertEqual(2, my_third.get_custom_by_name("categorie"))
         self.assertEqual(27, my_third.get_custom_by_name("value"))
         self.assertEqual(None, my_third.get_custom_by_name("truc"))
 
@@ -606,7 +608,7 @@ class AdminTest(LucteriosTest):
         self.assert_observer('core.custom', 'diacamma.accounting', 'configuration')
         self.assertTrue('__tab_4' in self.json_data.keys(), self.json_data.keys())
         self.assertFalse('__tab_5' in self.json_data.keys(), self.json_data.keys())
-        self.assert_count_equal('', 4 + 5 + 2 + 7)
+        self.assert_count_equal('', 4 + 5 + 2 + 6)
         self.assert_grid_equal('fiscalyear', {"begin": "début", "end": "fin", "status": "status", "is_actif": "actif"}, 0)  # nb=4
 
         self.assert_grid_equal('journal', {'name': "nom"}, 5)  # nb=1
@@ -616,13 +618,18 @@ class AdminTest(LucteriosTest):
         self.assert_json_equal('', 'journal/@3/name', 'Règlement')
         self.assert_json_equal('', 'journal/@4/name', 'Opérations diverses')
 
-        self.assert_json_equal('LABELFORM', 'accounting-devise', '€')
         self.assert_json_equal('LABELFORM', 'accounting-devise-iso', 'EUR')
         self.assert_json_equal('LABELFORM', 'accounting-devise-prec', '2')
         self.assert_json_equal('LABELFORM', 'accounting-sizecode', '3')
         self.assert_json_equal('LABELFORM', 'accounting-needcost', 'Non')
         self.assert_json_equal('LABELFORM', 'accounting-code-report-filter', '')
         self.assert_grid_equal('custom_field', {'name': "nom", 'kind_txt': "type"}, 0)  # nb=2
+
+        self.factory.xfer = ParamEdit()
+        self.calljson('/CORE/paramEdit', {'params': 'accounting-devise-iso'}, False)
+        self.assert_observer('core.custom', 'CORE', 'paramEdit')
+        self.assert_json_equal('SELECT', 'accounting-devise-iso', 'EUR')
+        self.assert_select_equal('accounting-devise-iso', 162)
 
     def test_configuration_accountsystem(self):
         self.factory.xfer = Configuration()

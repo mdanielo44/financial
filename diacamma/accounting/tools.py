@@ -29,6 +29,7 @@ from django.utils.translation import ugettext_lazy as _
 from lucterios.CORE.parameters import Params
 
 from diacamma.accounting.system import get_accounting_system
+from lucterios.framework.tools import format_to_string
 
 
 def current_system_account():
@@ -72,6 +73,14 @@ def correct_accounting_code(code):
     return code
 
 
+def get_currency_symbole(iso_ident):
+    symbole = format_to_string(0, 'C1' + iso_ident, '%s')
+    symbole = symbole.replace(',', '')
+    symbole = symbole.replace('.', '')
+    symbole = symbole.replace('0', '')
+    return symbole.strip()
+
+
 def format_devise(amount, mode):
 
     # mode 0 25.45 => 25,45€ / -25.45 =>
@@ -87,7 +96,8 @@ def format_devise(amount, mode):
     # -25.45 => {[font color="blue"]}25,45€{[/font]}
     from decimal import InvalidOperation
     result = ''
-    currency_short = Params.getvalue("accounting-devise")
+    currency_iso = Params.getvalue("accounting-devise-iso")
+    currency_short = get_currency_symbole(currency_iso)
     currency_decimal = Params.getvalue("accounting-devise-prec")
     currency_format = "%%0.%df" % currency_decimal
     currency_epsilon = pow(10, -1 * currency_decimal - 1)

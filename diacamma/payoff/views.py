@@ -386,16 +386,22 @@ class ValidationPaymentPaypal(XferContainerAbstract):
             raise
 
     def fillresponse(self):
+        import locale
         try:
             self.item.contains = ""
             self.item.payer = self.getparam('first_name', '') + " " + self.getparam('last_name', '')
             self.item.amount = self.getparam('mc_gross', 0.0)
+            saved = locale.setlocale(locale.LC_ALL)
+            locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
             try:
                 payoff_date = datetime.strptime(self.getparam("payment_date", '').replace('PDT', 'GMT'), '%H:%M:%S %b %d, %Y %Z')
                 payoff_date += timedelta(hours=7)
                 self.item.date = timezone.make_aware(payoff_date)
             except Exception:
+                logging.getLogger('diacamma.payoff').exception("problem of date %s" % self.getparam("payment_date", ''))
                 self.item.date = timezone.now()
+            finally:
+                locale.setlocale(locale.LC_ALL, saved)
             param_list = dict(self.request.POST)
             if 'FORMAT' in param_list.keys():
                 del param_list['FORMAT']

@@ -200,6 +200,13 @@ class Article(LucteriosModel, CustomizeObject):
         return "%s | %s %s" % (self.reference, text_value, stock_txt)
 
     @classmethod
+    def get_field_by_name(cls, fieldname):
+        dep_field = CustomizeObject.get_virtualfield(fieldname)
+        if dep_field is None:
+            dep_field = super(Article, cls).get_field_by_name(fieldname)
+        return dep_field
+
+    @classmethod
     def get_default_fields(cls):
         fields = []
         if Params.getvalue("invoice-article-with-picture"):

@@ -24,7 +24,7 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import unicode_literals
 
 from datetime import date, timedelta
-from os.path import join, isfile
+from os.path import join, isfile, dirname
 from re import match
 from csv import DictReader
 from _csv import QUOTE_NONE
@@ -49,8 +49,8 @@ from lucterios.CORE.models import Parameter
 from lucterios.CORE.parameters import Params
 from lucterios.contacts.models import AbstractContact, CustomField, CustomizeObject
 
-from diacamma.accounting.tools import get_amount_sum, format_devise, current_system_account, currency_round, correct_accounting_code
-import re
+from diacamma.accounting.tools import get_amount_sum, format_devise, current_system_account, currency_round, correct_accounting_code,\
+    get_currency_symbole
 
 
 class ThirdCustomField(LucteriosModel):
@@ -73,6 +73,13 @@ class Third(LucteriosModel, CustomizeObject):
 
     def __str__(self):
         return six.text_type(self.contact.get_final_child())
+
+    @classmethod
+    def get_field_by_name(cls, fieldname):
+        dep_field = CustomizeObject.get_virtualfield(fieldname)
+        if dep_field is None:
+            dep_field = super(Third, cls).get_field_by_name(fieldname)
+        return dep_field
 
     @classmethod
     def get_default_fields(cls):
@@ -726,6 +733,7 @@ class AccountLink(LucteriosModel):
 
     @classmethod
     def create_link(cls, entrylines, check_year=True):
+        import re
         regex_third = re.compile(current_system_account().get_third_mask())
         year = None
         third_info = None
@@ -1520,10 +1528,28 @@ def pre_save_datadb(sender, **kwargs):
             kwargs['instance'].costaccounting_id = None
 
 
+def get_meta_currency_iso():
+    currency_file = join(dirname(__file__), 'currency_iso.csv')
+    if isfile(currency_file):
+        currency_list = []
+        with open(currency_file, 'r') as currency_hdl:
+            for line in currency_hdl.readlines():
+                line = line.strip()
+                if line.count(';') == 1:
+                    iso_ident, title = line.split(';')
+                    symbole = get_currency_symbole(iso_ident)
+                    if iso_ident != symbole:
+                        symbole = "%s / %s" % (iso_ident, symbole)
+                    currency_list.append((iso_ident, "%s (%s)" % (title, symbole)))
+        return '("","",%s,"",True)' % six.text_type(currency_list)
+    else:
+        return None
+
+
 @Signal.decorate('checkparam')
 def accounting_checkparam():
-    Parameter.check_and_create(name='accounting-devise', typeparam=0, title=_("accounting-devise"), args="{'Multi':False}", value='€')
-    Parameter.check_and_create(name='accounting-devise-iso', typeparam=0, title=_("accounting-devise-iso"), args="{'Multi':False}", value='EUR')
+    Parameter.check_and_create(name='accounting-devise-iso', typeparam=0, title=_("accounting-devise-iso"), args="{'Multi':False}",
+                               value='EUR', meta=get_meta_currency_iso())
     Parameter.check_and_create(name='accounting-devise-prec', typeparam=1, title=_("accounting-devise-prec"), args="{'Min':0, 'Max':4}", value='2')
     Parameter.check_and_create(name='accounting-system', typeparam=0, title=_("accounting-system"), args="{'Multi':False}", value='')
     Parameter.check_and_create(name='accounting-sizecode', typeparam=1, title=_("accounting-sizecode"), args="{'Min':3, 'Max':50}", value='3')

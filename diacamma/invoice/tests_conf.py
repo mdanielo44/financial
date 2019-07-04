@@ -692,8 +692,10 @@ class ConfigTest(LucteriosTest):
         self.assert_observer('core.custom', 'diacamma.invoice', 'articleShow')
         self.assert_count_equal('', 16)
         self.assert_json_equal('LABELFORM', 'reference', "A123")
-        self.assert_json_equal('LABELFORM', 'custom_1', "bleu")
-        self.assert_json_equal('LABELFORM', 'custom_2', "15")
+        self.assert_json_equal('LABELFORM', 'custom_1', 4)
+        self.assert_json_equal('', '#custom_1/formatnum', {'0': '---', '1': 'noir', '2': 'blanc', '3': 'rouge', '4': 'bleu', '5': 'jaune'})
+        self.assert_json_equal('LABELFORM', 'custom_2', 15)
+        self.assert_json_equal('', '#custom_2/formatnum', "N0")
 
     def test_article_same_name(self):
         default_categories()

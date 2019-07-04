@@ -66,7 +66,7 @@ def select_account_system(xfer):
 
 
 def fill_params(xfer, is_mini=False):
-    xfer.params['params'] = ['accounting-devise', 'accounting-devise-iso', 'accounting-devise-prec']
+    xfer.params['params'] = ['accounting-devise-iso', 'accounting-devise-prec']
     if current_system_account().has_minium_code_size():
         xfer.params['params'].append('accounting-sizecode')
     xfer.params['params'].append('accounting-needcost')
