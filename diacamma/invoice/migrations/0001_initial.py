@@ -3,15 +3,15 @@ from __future__ import unicode_literals
 
 from django.db import models, migrations
 from django.db.models import deletion
-from django.utils import translation
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.conf import settings
 
+from lucterios.framework.tools import set_locale_lang
 from lucterios.CORE.models import PrintModel
 
 
 def initial_values(*args):
-    translation.activate(settings.LANGUAGE_CODE)
+    set_locale_lang(settings.LANGUAGE_CODE)
     PrintModel().load_model('diacamma.invoice', "Bill_0001", is_default=True)
     PrintModel().load_model('diacamma.invoice', "Bill_0002", is_default=False)
 

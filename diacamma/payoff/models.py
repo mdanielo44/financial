@@ -37,7 +37,8 @@ from django.utils.module_loading import import_module
 from django.utils import six
 from django_fsm import FSMIntegerField, transition
 
-from lucterios.framework.models import LucteriosModel, get_value_if_choices, get_date_formating, get_bool_textual
+from lucterios.framework.models import LucteriosModel, get_value_if_choices
+from lucterios.framework.tools import get_date_formating, get_bool_textual
 from lucterios.framework.error import LucteriosException, IMPORTANT
 from lucterios.framework.printgenerators import ReportingGenerator
 from lucterios.framework.signal_and_lock import Signal

@@ -40,7 +40,8 @@ from django.utils import six
 from django.db.models.signals import pre_save
 from django_fsm import FSMIntegerField, transition
 
-from lucterios.framework.models import LucteriosModel, get_value_if_choices, get_date_formating
+from lucterios.framework.models import LucteriosModel, get_value_if_choices
+from lucterios.framework.tools import get_date_formating
 from lucterios.framework.error import LucteriosException, IMPORTANT, GRAVE
 from lucterios.framework.filetools import read_file, xml_validator, save_file, get_user_path
 from lucterios.framework.signal_and_lock import RecordLocker, Signal

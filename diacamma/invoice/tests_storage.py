@@ -277,7 +277,7 @@ class StorageTest(InvoiceTest):
         self.assert_json_equal('', 'storagedetail/@1/article', "ABC4")
         self.assert_json_equal('', 'storagedetail/@1/quantity_txt', "6")
         self.assert_json_equal('LABELFORM', 'info',
-                               ["L'article ABC1 est en quantité insuffisante","L'article ABC4 est en quantité insuffisante"])
+                               ["L'article ABC1 est en quantité insuffisante", "L'article ABC4 est en quantité insuffisante"])
 
         self.factory.xfer = ArticleShow()
         self.calljson('/diacamma.invoice/articleShow', {'article': '1'}, False)

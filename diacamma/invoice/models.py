@@ -38,12 +38,11 @@ from django.utils.dateformat import DateFormat
 from django.utils import six, timezone
 from django_fsm import FSMIntegerField, transition
 
-from lucterios.framework.models import LucteriosModel, get_value_if_choices, get_value_converted, get_obj_contains, get_date_formating
+from lucterios.framework.models import LucteriosModel, get_value_if_choices, get_obj_contains
 from lucterios.framework.error import LucteriosException, IMPORTANT, GRAVE
 from lucterios.framework.signal_and_lock import Signal
-from lucterios.framework.filetools import get_user_path, readimage_to_base64,\
-    remove_accent
-from lucterios.framework.tools import same_day_months_after
+from lucterios.framework.filetools import get_user_path, readimage_to_base64, remove_accent
+from lucterios.framework.tools import same_day_months_after, get_date_formating
 from lucterios.CORE.models import Parameter, SavedCriteria
 from lucterios.CORE.parameters import Params
 from lucterios.contacts.models import CustomField, CustomizeObject
@@ -310,7 +309,7 @@ class Article(LucteriosModel, CustomizeObject):
     def get_designation(self):
         val = self.designation
         for cf_name, cf_model in CustomField.get_fields(self.__class__):
-            val += "{[br/]} - {[u]}%s{[/u]}: {[i]}%s{[/i]}" % (cf_model.name, get_value_converted(getattr(self, cf_name), True))
+            val += "{[br/]} - {[u]}%s{[/u]}: {[i]}%s{[/i]}" % (cf_model.name, getattr(self, cf_name))
         return val
 
     def get_amount_from_area(self, currentqty, area):

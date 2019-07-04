@@ -24,18 +24,18 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
 from __future__ import unicode_literals
-from django.utils import translation
 from django.utils.translation import ugettext_lazy as _
 from django.db.models.deletion import PROTECT, SET_NULL
 from django.db import models, migrations
 from django.conf import settings
 
 from lucterios.CORE.models import PrintModel
+from lucterios.framework.tools import set_locale_lang
 from diacamma.accounting.models import Journal
 
 
 def initial_values(*args):
-    translation.activate(settings.LANGUAGE_CODE)
+    set_locale_lang(settings.LANGUAGE_CODE)
     Journal.objects.create(name=_("Last year report"), id=1)
     Journal.objects.create(name=_("Buying"), id=2)
     Journal.objects.create(name=_("Selling"), id=3)
