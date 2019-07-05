@@ -17,7 +17,8 @@ from lucterios.framework.tools import SELECT_SINGLE
 from lucterios.framework.signal_and_lock import Signal
 from lucterios.CORE.xferprint import XferPrintAction
 
-from diacamma.accounting.tools import current_system_account, format_devise
+from diacamma.accounting.tools import current_system_account, format_devise,\
+    format_with_devise
 from diacamma.accounting.models import Budget, CostAccounting, FiscalYear, ChartsAccount, EntryLineAccount
 from django.db.models.aggregates import Sum
 
@@ -66,14 +67,14 @@ class BudgetList(XferListEditor):
                     if last_code != '':
                         chart = ChartsAccount.get_chart_account(last_code)
                         grid.set_value('C' + last_code, 'budget', six.text_type(chart))
-                        grid.set_value('C' + last_code, 'montant', format_devise(value, 2))
+                        grid.set_value('C' + last_code, 'montant', value)
                         value = 0
                     last_code = current_budget.code
                 value += current_budget.credit_debit_way() * current_budget.amount
             if last_code != '':
                 chart = ChartsAccount.get_chart_account(last_code)
                 grid.set_value('C' + last_code, 'budget', six.text_type(chart))
-                grid.set_value('C' + last_code, 'montant', format_devise(value, 2))
+                grid.set_value('C' + last_code, 'montant', value)
             grid.nb_lines = len(grid.records)
             grid.order_list = None
             grid.page_max = 1
@@ -97,7 +98,8 @@ class BudgetList(XferListEditor):
         if abs(resultat_budget) > 0.0001:
             row_id = self.get_max_row() + 1
             lbl = XferCompLabelForm('result')
-            lbl.set_value(format_devise(resultat_budget, 5))
+            lbl.set_value(resultat_budget)
+            lbl.set_format(format_with_devise(5))
             lbl.set_location(0, row_id, 2)
             if resultat_budget > 0:
                 lbl.description = _('result (profit)')
@@ -269,7 +271,7 @@ class BudgetImport(XferContainerAcknowledge):
                     budget_line.delete()
             if cost_accounting == 0:
                 for chart in ChartsAccount.objects.filter(Q(year_id=currentyear) & Q(type_of_account__in=(3, 4))).distinct():
-                    value = chart.get_current_total()
+                    value = chart.get_current_total(with_correction=False)
                     for current_budget in Budget.objects.filter(year_id=year, code=chart.code):
                         value -= current_budget.amount
                     if abs(value) > 0.001:

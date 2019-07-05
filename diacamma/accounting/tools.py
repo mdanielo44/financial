@@ -30,6 +30,7 @@ from lucterios.CORE.parameters import Params
 
 from diacamma.accounting.system import get_accounting_system
 from lucterios.framework.tools import format_to_string
+from lucterios.framework.models import extract_format
 
 
 def current_system_account():
@@ -81,6 +82,43 @@ def get_currency_symbole(iso_ident):
     return symbole.strip()
 
 
+def format_with_devise(mode):
+    result = []
+    currency_iso = Params.getvalue("accounting-devise-iso")
+    currency_decimal = Params.getvalue("accounting-devise-prec")
+    result.append('C%d%s' % (currency_decimal, currency_iso))
+    if mode == 0:  # 25.45 => 25,45€ / -25.45 => / 0 =>
+        result.append('%s')
+        result.append('')
+        result.append('')
+    elif mode == 1:  # 25.45 => Credit: 25,45 € / -25.45 => Debit: 25,45 € / 0 => 0,00 €
+        result.append('%s: %%s' % _('Credit'))
+        result.append('%s: %%s' % _('Debit'))
+        result.append('%s')
+    elif mode == 2:  # 25.45 => {[font color="green"]}Credit: 25,45 €{[/font]} / -25.45 => {[font color="blue"]}Debit: 25,45 €{[/font]} / 0 => 0,00 €
+        result.append('{[font color="green"]}%s: %%s{[/font]}' % _('Credit'))
+        result.append('{[font color="blue"]}%s: %%s{[/font]}' % _('Debit'))
+        result.append('%s')
+    elif mode == 3:  # 25.45 => 25,45 / -25.45 => -25,45
+        result[0] = 'N%d' % currency_decimal
+        result.append('%s')
+    elif mode == 4:  # 25.45 => 25,45 € / -25.45 => 25,45 € / 0 => 0,00 €
+        result.append('%s')
+        result.append('%s')
+    elif mode == 5:  # 25.45 => 25,45 € / -25.45 => -25,45 € / 0 => 0,00 €
+        result.append('%s')
+    elif mode == 6:  # 25.45 => {[font color="green"]}25,45 €{[/font]} / -25.45 => {[font color="blue"]}25,45 €{[/font]} / 0 =>
+        result.append('{[font color="green"]}%s{[/font]}')
+        result.append('{[font color="blue"]}%s{[/font]}')
+        result.append('')
+    return ";".join(result)
+
+
+def get_amount_from_format_devise(amount, mode):
+    formatnum, formatstr = extract_format(format_with_devise(mode))
+    return format_to_string(amount, formatnum, formatstr)
+
+
 def format_devise(amount, mode):
 
     # mode 0 25.45 => 25,45€ / -25.45 =>
@@ -90,8 +128,8 @@ def format_devise(amount, mode):
     # -25.45 => {[font color="blue"]}Debit 25,45€{[/font]}
 
     # mode 3 25.45 => 25,45 / -25.45 => -25.45
-    # mode 4 25.45 => 25,45€ / -25.45 => 25.45€
-    # mode 5 25.45 => 25,45€ / -25.45 => -25.45€
+    # mode 4 25.45 => 25,45€ / -25.45 => 25,45€
+    # mode 5 25.45 => 25,45€ / -25.45 => -25,45€
     # mode 6 25.45 => {[font color="green"]}25,45€{[/font]}     /
     # -25.45 => {[font color="blue"]}25,45€{[/font]}
     from decimal import InvalidOperation

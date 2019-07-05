@@ -230,7 +230,7 @@ class DefaultSystemAccounting(object):
         for charts_account in year.last_fiscalyear.chartsaccount_set.filter(type_of_account__in=(0, 1, 2)):
             code = charts_account.code
             name = charts_account.name
-            new_entry.add_entry_line(charts_account.get_current_validated(), code, name)
+            new_entry.add_entry_line(charts_account.get_current_validated(with_correction=False), code, name)
         new_entry.closed()
 
     def _create_report_third(self, year):

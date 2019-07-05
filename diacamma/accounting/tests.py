@@ -36,11 +36,13 @@ from lucterios.contacts.views import CustomFieldAddModify
 
 from diacamma.accounting.views import ThirdList, ThirdAdd, ThirdSave, ThirdShow, AccountThirdAddModify, AccountThirdDel, ThirdListing, ThirdDisable, ThirdEdit, ThirdSearch
 from diacamma.accounting.views_admin import Configuration, ConfigurationAccountingSystem, JournalAddModify, JournalDel, FiscalYearAddModify, FiscalYearActive, FiscalYearDel
-from diacamma.accounting.views_other import ModelEntryList, ModelEntryAddModify, ModelLineEntryAddModify
+from diacamma.accounting.views_other import ModelEntryList, ModelEntryAddModify, ModelLineEntryAddModify,\
+    ModelEntryShow
 from diacamma.accounting.test_tools import initial_contacts, fill_entries_fr, initial_thirds_fr, create_third, fill_accounts_fr, fill_thirds_fr, default_compta_fr, set_accounting_system, add_models
 from diacamma.accounting.models import FiscalYear, Third
 from diacamma.accounting.system import get_accounting_system, accounting_system_ident
-from diacamma.accounting.tools import current_system_account, clear_system_account
+from diacamma.accounting.tools import current_system_account, clear_system_account,\
+    format_with_devise
 from diacamma.accounting.views_entries import EntryAccountModelSelector
 from lucterios.CORE.parameters import Params
 from lucterios.contacts.models import CustomField
@@ -187,7 +189,7 @@ class ThirdTest(LucteriosTest):
         self.assert_json_equal('LABELFORM', 'status', 0)
         self.assert_grid_equal('accountthird', {'code': "code", 'total_txt': "total"}, 0)  # nb=2
         self.assert_count_equal('accountthird', 0)
-        self.assert_json_equal('LABELFORM', 'total', '0.00€')
+        self.assert_json_equal('LABELFORM', 'total', 0.0)
 
         self.factory.xfer = AccountThirdAddModify()
         self.calljson('/diacamma.accounting/accountThirdAddModify', {"third": 1}, False)
@@ -204,8 +206,8 @@ class ThirdTest(LucteriosTest):
         self.assert_observer('core.custom', 'diacamma.accounting', 'thirdShow')
         self.assert_count_equal('accountthird', 1)
         self.assert_json_equal('', 'accountthird/@0/code', '411')
-        self.assert_json_equal('', 'accountthird/@0/total_txt', '{[font color="green"]}Crédit: 0.00€{[/font]}')
-        self.assert_json_equal('LABELFORM', 'total', '0.00€')
+        self.assert_json_equal('', 'accountthird/@0/total_txt', 0.0)
+        self.assert_json_equal('LABELFORM', 'total', 0.0)
 
         self.factory.xfer = AccountThirdDel()
         self.calljson('/diacamma.accounting/accountThirdDel', {'CONFIRME': 'YES', "accountthird": 1}, False)
@@ -237,26 +239,31 @@ class ThirdTest(LucteriosTest):
         self.assert_json_equal('LABELFORM', 'contact', 'Minimum')
         self.assert_json_equal('LABELFORM', 'status', 0)
         self.assert_grid_equal('accountthird', {'code': "code", 'total_txt': "total"}, 2)  # nb=2
+        self.assert_json_equal('', '#accountthird/headers/@1/@0', 'total_txt')
+        self.assert_json_equal('', '#accountthird/headers/@1/@1', 'total')
+        self.assert_json_equal('', '#accountthird/headers/@1/@2', "C2EUR")
+        self.assert_json_equal('', '#accountthird/headers/@1/@4', '{[font color="green"]}Crédit: %s{[/font]};{[font color="blue"]}Débit: %s{[/font]};%s')
+
         self.assert_json_equal('', 'accountthird/@0/id', '5')
         self.assert_json_equal('', 'accountthird/@0/code', '411')
-        self.assert_json_equal('', 'accountthird/@0/total_txt', '{[font color="blue"]}Débit: 34.01€{[/font]}')
+        self.assert_json_equal('', 'accountthird/@0/total_txt', -34.01)
         self.assert_json_equal('', 'accountthird/@1/id', '6')
         self.assert_json_equal('', 'accountthird/@1/code', '401')
-        self.assert_json_equal('', 'accountthird/@1/total_txt', '{[font color="green"]}Crédit: 0.00€{[/font]}')
-        self.assert_json_equal('LABELFORM', 'total', '-34.01€')
+        self.assert_json_equal('', 'accountthird/@1/total_txt', 0.0)
+        self.assert_json_equal('LABELFORM', 'total', -34.01)
 
         self.assert_json_equal('SELECT', 'lines_filter', '0')
         self.assert_select_equal('lines_filter', 4)  # nb=4
         self.assert_count_equal('entryline', 3)
         self.assert_json_equal('', 'entryline/@0/entry.num', '2')
         self.assert_json_equal('', 'entryline/@0/link', 'A')
-        self.assert_json_equal('', 'entryline/@0/credit', '{[font color="green"]}63.94€{[/font]}')
+        self.assert_json_equal('', 'entryline/@0/credit', 63.94)
         self.assert_json_equal('', 'entryline/@1/entry.num', '3')
         self.assert_json_equal('', 'entryline/@1/link', 'A')
-        self.assert_json_equal('', 'entryline/@1/debit', '{[font color="blue"]}63.94€{[/font]}')
+        self.assert_json_equal('', 'entryline/@1/debit', -63.94)
         self.assert_json_equal('', 'entryline/@2/entry.num', None)
         self.assert_json_equal('', 'entryline/@2/link', None)
-        self.assert_json_equal('', 'entryline/@2/debit', '{[font color="blue"]}34.01€{[/font]}')
+        self.assert_json_equal('', 'entryline/@2/debit', -34.01)
 
         self.factory.xfer = AccountThirdDel()
         self.calljson('/diacamma.accounting/accountThirdDel', {"accountthird": 5}, False)
@@ -425,13 +432,13 @@ class ThirdTest(LucteriosTest):
         self.assert_count_equal('third', 7)
         self.assert_json_equal('', 'third/@1/contact', 'Dalton Jack')
         self.assert_json_equal('', 'third/@1/accountthird_set', ['411'])
-        self.assert_json_equal('', 'third/@1/total', '0.00€')
+        self.assert_json_equal('', 'third/@1/total', 0.0)
         self.assert_json_equal('', 'third/@3/contact', 'Dalton William')
         self.assert_json_equal('', 'third/@3/accountthird_set', ['411'])
-        self.assert_json_equal('', 'third/@3/total', '-125.97€')
+        self.assert_json_equal('', 'third/@3/total', -125.97)
         self.assert_json_equal('', 'third/@6/contact', 'Minimum')
         self.assert_json_equal('', 'third/@6/accountthird_set', ['411', '401'])
-        self.assert_json_equal('', 'third/@6/total', '-34.01€')
+        self.assert_json_equal('', 'third/@6/total', -34.01)
 
         self.factory.xfer = ThirdList()
         self.calljson('/diacamma.accounting/thirdList', {'show_filter': '2'}, False)
@@ -440,13 +447,13 @@ class ThirdTest(LucteriosTest):
         self.assert_grid_equal('third', {'contact': "contact", 'accountthird_set': "compte", 'total': "total"}, 3)  # nb=3
         self.assert_json_equal('', 'third/@0/contact', 'Dalton William')
         self.assert_json_equal('', 'third/@0/accountthird_set', ['411'])
-        self.assert_json_equal('', 'third/@0/total', '-125.97€')
+        self.assert_json_equal('', 'third/@0/total', -125.97)
         self.assert_json_equal('', 'third/@1/contact', 'Maximum')
         self.assert_json_equal('', 'third/@1/accountthird_set', ['401'])
-        self.assert_json_equal('', 'third/@1/total', '78.24€')
+        self.assert_json_equal('', 'third/@1/total', 78.24)
         self.assert_json_equal('', 'third/@2/contact', 'Minimum')
         self.assert_json_equal('', 'third/@2/accountthird_set', ['411', '401'])
-        self.assert_json_equal('', 'third/@2/total', '-34.01€')
+        self.assert_json_equal('', 'third/@2/total', -34.01)
 
     def test_listing(self):
         fill_thirds_fr()
@@ -471,13 +478,13 @@ class ThirdTest(LucteriosTest):
         self.assertEqual(len(content_csv), 15, str(content_csv))
         self.assertEqual(content_csv[1].strip()[:18], '"Liste de tiers - ')
         self.assertEqual(content_csv[4].strip(), '"contact";"compte";"total";')
-        self.assertEqual(content_csv[5].strip(), '"Dalton Avrel";"401";"0.00€";')
-        self.assertEqual(content_csv[6].strip(), '"Dalton Jack";"411";"0.00€";')
-        self.assertEqual(content_csv[7].strip(), '"Dalton Joe";"411";"0.00€";')
-        self.assertEqual(content_csv[8].strip(), '"Dalton William";"411";"-125.97€";')
-        self.assertEqual(content_csv[9].strip(), '"Luke Lucky";"411,401";"0.00€";')
-        self.assertEqual(content_csv[10].strip(), '"Maximum";"401";"78.24€";')
-        self.assertEqual(content_csv[11].strip(), '"Minimum";"411,401";"-34.01€";')
+        self.assertEqual(content_csv[5].strip(), '"Dalton Avrel";"401";"0,00 €";')
+        self.assertEqual(content_csv[6].strip(), '"Dalton Jack";"411";"0,00 €";')
+        self.assertEqual(content_csv[7].strip(), '"Dalton Joe";"411";"0,00 €";')
+        self.assertEqual(content_csv[8].strip(), '"Dalton William";"411";"-125,97 €";')
+        self.assertEqual(content_csv[9].strip(), '"Luke Lucky";"411,401";"0,00 €";')
+        self.assertEqual(content_csv[10].strip(), '"Maximum";"401";"78,24 €";')
+        self.assertEqual(content_csv[11].strip(), '"Minimum";"411,401";"-34,01 €";')
 
         self.factory.xfer = ThirdListing()
         self.calljson('/diacamma.accounting/thirdListing', {'PRINT_MODE': '4', 'MODEL': 5, 'filter': 'joe'}, False)
@@ -487,7 +494,7 @@ class ThirdTest(LucteriosTest):
         self.assertEqual(len(content_csv), 9, str(content_csv))
         self.assertEqual(content_csv[1].strip()[:18], '"Liste de tiers - ')
         self.assertEqual(content_csv[4].strip(), '"contact";"compte";"total";')
-        self.assertEqual(content_csv[5].strip(), '"Dalton Joe";"411";"0.00€";')
+        self.assertEqual(content_csv[5].strip(), '"Dalton Joe";"411";"0,00 €";')
 
         self.factory.xfer = ThirdListing()
         self.calljson('/diacamma.accounting/thirdListing', {'PRINT_MODE': '4', 'MODEL': 5, 'show_filter': '2'}, False)
@@ -497,9 +504,9 @@ class ThirdTest(LucteriosTest):
         self.assertEqual(len(content_csv), 11, str(content_csv))
         self.assertEqual(content_csv[1].strip()[:18], '"Liste de tiers - ')
         self.assertEqual(content_csv[4].strip(), '"contact";"compte";"total";')
-        self.assertEqual(content_csv[5].strip(), '"Dalton William";"411";"-125.97€";')
-        self.assertEqual(content_csv[6].strip(), '"Maximum";"401";"78.24€";')
-        self.assertEqual(content_csv[7].strip(), '"Minimum";"411,401";"-34.01€";')
+        self.assertEqual(content_csv[5].strip(), '"Dalton William";"411";"-125,97 €";')
+        self.assertEqual(content_csv[6].strip(), '"Maximum";"401";"78,24 €";')
+        self.assertEqual(content_csv[7].strip(), '"Minimum";"411,401";"-34,01 €";')
 
     def test_list_disable(self):
         fill_thirds_fr()
@@ -537,7 +544,10 @@ class ThirdTest(LucteriosTest):
         self.assert_json_equal('LABELFORM', 'contact', 'Dalton William')
         self.assert_json_equal('LABELFORM', 'status', 0)
         self.assert_grid_equal('accountthird', {'code': "code", 'total_txt': "total"}, 0)  # nb=2
-        self.assert_json_equal('LABELFORM', 'total', '0.00€')
+        self.assert_json_equal('LABELFORM', 'total', 0.0)
+        self.assert_json_equal('', '#total/formatnum', "C2EUR")
+        self.assert_json_equal('', '#total/formatstr', "%s")
+
         self.assert_json_equal('LABELFORM', 'custom_1', 0)
         self.assert_json_equal('', '#custom_1/formatnum', {'0': '---', '1': 'petit', '2': 'moyen', '3': 'gros'})
         self.assert_json_equal('LABELFORM', 'custom_2', "0")
@@ -592,6 +602,16 @@ class AdminTest(LucteriosTest):
     def setUp(self):
         LucteriosTest.setUp(self)
         rmtree(get_user_dir(), True)
+
+    def test_format(self):
+        self.assertEqual(format_with_devise(0), 'C2EUR;%s;;')
+        self.assertEqual(format_with_devise(1), 'C2EUR;Crédit: %s;Débit: %s;%s')
+        self.assertEqual(format_with_devise(2), 'C2EUR;{[font color="green"]}Crédit: %s{[/font]};{[font color="blue"]}Débit: %s{[/font]};%s')
+        self.assertEqual(format_with_devise(3), 'N2;%s')
+        self.assertEqual(format_with_devise(4), 'C2EUR;%s;%s')
+        self.assertEqual(format_with_devise(5), 'C2EUR;%s')
+        self.assertEqual(format_with_devise(6), 'C2EUR;{[font color="green"]}%s{[/font]};{[font color="blue"]}%s{[/font]};')
+        self.assertEqual(format_with_devise(7), 'C2EUR')
 
     def test_summary(self):
         self.factory.xfer = StatusMenu()
@@ -889,7 +909,7 @@ class ModelTest(LucteriosTest):
         self.assert_grid_equal('modelentry', {'journal': "journal", 'designation': "nom", 'total': "total"}, 1)  # nb=3
         self.assert_json_equal('', 'modelentry/@0/journal', "Achats")
         self.assert_json_equal('', 'modelentry/@0/designation', "foo")
-        self.assert_json_equal('', 'modelentry/@0/total', "0.00€")
+        self.assert_json_equal('', 'modelentry/@0/total', 0.0)
 
     def test_addline(self):
         self.factory.xfer = ModelEntryAddModify()
@@ -926,9 +946,33 @@ class ModelTest(LucteriosTest):
         self.assert_observer('core.custom', 'diacamma.accounting', 'modelEntryList')
         self.assert_count_equal('', 3)
         self.assert_grid_equal('modelentry', {'journal': "journal", 'designation': "nom", 'total': "total"}, 1)  # nb=3
+
+        self.assert_json_equal('', '#modelentry/headers/@2/@0', 'total')
+        self.assert_json_equal('', '#modelentry/headers/@2/@2', "C2EUR")
+        self.assert_json_equal('', '#modelentry/headers/@2/@4', "%s")
+
         self.assert_json_equal('', 'modelentry/@0/journal', "Achats")
         self.assert_json_equal('', 'modelentry/@0/designation', "foo")
-        self.assert_json_equal('', 'modelentry/@0/total', "19.37€")
+        self.assert_json_equal('', 'modelentry/@0/total', 19.37)
+
+        self.factory.xfer = ModelEntryShow()
+        self.calljson('/diacamma.accounting/modelEntryShow', {'modelentry': 1}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'modelEntryShow')
+        self.assert_json_equal('LABELFORM', 'journal', "Achats")
+        self.assert_json_equal('LABELFORM', 'designation', "foo")
+        self.assert_json_equal('LABELFORM', 'total', 19.37)
+        self.assert_grid_equal('modellineentry', {'code': 'code', 'third': 'tiers', 'debit': 'débit', 'credit': 'crédit'}, 1)
+        self.assert_json_equal('', '#modellineentry/headers/@2/@0', 'debit')
+        self.assert_json_equal('', '#modellineentry/headers/@2/@2', "C2EUR")
+        self.assert_json_equal('', '#modellineentry/headers/@2/@4', "%s;;")
+        self.assert_json_equal('', '#modellineentry/headers/@3/@0', 'credit')
+        self.assert_json_equal('', '#modellineentry/headers/@3/@2', "C2EUR")
+        self.assert_json_equal('', '#modellineentry/headers/@3/@4', "%s;;")
+
+        self.assert_json_equal('', 'modellineentry/@0/code', "411")
+        self.assert_json_equal('', 'modellineentry/@0/third', "Luke Lucky")
+        self.assert_json_equal('', 'modellineentry/@0/debit', 0)
+        self.assert_json_equal('', 'modellineentry/@0/credit', 19.37)
 
     def test_selector(self):
         add_models()

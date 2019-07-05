@@ -428,7 +428,7 @@ class EntryLineAccountEditor(LucteriosEditor):
         currency_decimal = Params.getvalue("accounting-devise-prec")
         edt = XferCompFloat('debit_val', -10000000, 10000000, currency_decimal)
         edt.set_location(column, row, 2)
-        edt.set_value(self.item.get_debit())
+        edt.set_value(self.item.get_debit(with_correction=False))
         edt.set_size(20, 75)
         edt.description = _('debit')
         xfer.add_component(edt)

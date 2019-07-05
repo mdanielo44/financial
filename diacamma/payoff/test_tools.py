@@ -67,7 +67,7 @@ class PaymentTest(LucteriosTest):
     def check_account(self, year_id, code, value, name=""):
         try:
             chart = ChartsAccount.objects.get(year_id=year_id, code=code)
-            self.assertAlmostEqual(value, chart.get_current_total(), msg=chart.name, delta=0.0001)
+            self.assertAlmostEqual(value, chart.get_current_total(with_correction=False), msg=chart.name, delta=0.0001)
             if name != '':
                 self.assertEqual(name, chart.name)
         except ObjectDoesNotExist:

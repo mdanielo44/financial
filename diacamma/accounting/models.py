@@ -40,7 +40,8 @@ from django.utils import six
 from django.db.models.signals import pre_save
 from django_fsm import FSMIntegerField, transition
 
-from lucterios.framework.models import LucteriosModel, get_value_if_choices
+from lucterios.framework.models import LucteriosModel, get_value_if_choices,\
+    LucteriosVirtualField
 from lucterios.framework.tools import get_date_formating
 from lucterios.framework.error import LucteriosException, IMPORTANT, GRAVE
 from lucterios.framework.filetools import read_file, xml_validator, save_file, get_user_path
@@ -50,7 +51,7 @@ from lucterios.CORE.parameters import Params
 from lucterios.contacts.models import AbstractContact, CustomField, CustomizeObject
 
 from diacamma.accounting.tools import get_amount_sum, format_devise, current_system_account, currency_round, correct_accounting_code,\
-    get_currency_symbole
+    get_currency_symbole, format_with_devise, get_amount_from_format_devise
 
 
 class ThirdCustomField(LucteriosModel):
@@ -70,6 +71,7 @@ class Third(LucteriosModel, CustomizeObject):
 
     contact = models.ForeignKey('contacts.AbstractContact', verbose_name=_('contact'), null=False, on_delete=models.CASCADE)
     status = FSMIntegerField(verbose_name=_('status'), choices=((0, _('Enable')), (1, _('Disable'))))
+    total = LucteriosVirtualField(verbose_name=_('total'), compute_from='get_total', format_string=lambda: format_with_devise(5))
 
     def __str__(self):
         return six.text_type(self.contact.get_final_child())
@@ -87,7 +89,7 @@ class Third(LucteriosModel, CustomizeObject):
 
     @classmethod
     def get_other_fields(cls):
-        return ["contact", "accountthird_set", (_('total'), 'total')]
+        return ["contact", "accountthird_set", 'total']
 
     @classmethod
     def get_edit_fields(cls):
@@ -96,7 +98,7 @@ class Third(LucteriosModel, CustomizeObject):
 
     @classmethod
     def get_show_fields(cls):
-        fields_desc = ["status", "accountthird_set", ((_('total'), 'total'),)]
+        fields_desc = ["status", "accountthird_set", 'total']
         fields_desc.extend(cls.get_fields_to_show())
         return {'': ['contact'], _('001@AccountThird information'): fields_desc}
 
@@ -129,10 +131,6 @@ class Third(LucteriosModel, CustomizeObject):
         passive_sum = get_amount_sum(EntryLineAccount.objects.filter(current_filter & Q(account__type_of_account=1)).aggregate(Sum('amount')))
         other_sum = get_amount_sum(EntryLineAccount.objects.filter(current_filter & Q(account__type_of_account__gt=1)).aggregate(Sum('amount')))
         return passive_sum - active_sum + other_sum
-
-    @property
-    def total(self):
-        return format_devise(self.get_total(), 5)
 
     def merge_objects(self, alias_objects=[]):
         LucteriosModel.merge_objects(self, alias_objects=alias_objects)
@@ -174,6 +172,8 @@ class AccountThird(LucteriosModel):
         Third, verbose_name=_('third'), null=False, on_delete=models.CASCADE)
     code = models.CharField(_('code'), max_length=50)
 
+    total_txt = LucteriosVirtualField(verbose_name=_('total'), compute_from='get_total_txt', format_string=lambda: format_with_devise(2))
+
     def __str__(self):
         return self.code
 
@@ -185,7 +185,7 @@ class AccountThird(LucteriosModel):
 
     @classmethod
     def get_default_fields(cls):
-        return ["code", (_('total'), 'total_txt')]
+        return ["code", 'total_txt']
 
     @classmethod
     def get_edit_fields(cls):
@@ -198,13 +198,12 @@ class AccountThird(LucteriosModel):
         except (ObjectDoesNotExist, LucteriosException):
             return None
 
-    @property
-    def total_txt(self):
+    def get_total_txt(self):
         chart = self.current_charts
         if chart is not None:
-            return format_devise(chart.credit_debit_way() * self.total, 2)
+            return chart.credit_debit_way() * self.total
         else:
-            return format_devise(0, 2)
+            return 0
 
     @property
     def total(self):
@@ -298,12 +297,10 @@ class FiscalYear(LucteriosModel):
         value = {}
         value['revenue'] = format_devise(self.total_revenue, 5)
         value['expense'] = format_devise(self.total_expense, 5)
-        value['result'] = format_devise(
-            self.total_revenue - self.total_expense, 5)
+        value['result'] = format_devise(self.total_revenue - self.total_expense, 5)
         value['cash'] = format_devise(self.total_cash, 5)
         value['closed'] = format_devise(self.total_cash_close, 5)
-        res_text = _(
-            '{[b]}Revenue:{[/b]} %(revenue)s - {[b]}Expense:{[/b]} %(expense)s = {[b]}Result:{[/b]} %(result)s{[br/]}{[b]}Cash:{[/b]} %(cash)s - {[b]}Closed:{[/b]} %(closed)s')
+        res_text = _('{[b]}Revenue:{[/b]} %(revenue)s - {[b]}Expense:{[/b]} %(expense)s = {[b]}Result:{[/b]} %(result)s{[br/]}{[b]}Cash:{[/b]} %(cash)s - {[b]}Closed:{[/b]} %(closed)s')
         return res_text % value
 
     @property
@@ -440,7 +437,7 @@ class FiscalYear(LucteriosModel):
     def _check_annexe(self):
         total = 0
         for chart in self.chartsaccount_set.filter(type_of_account=5):
-            total += chart.get_current_total()
+            total += chart.get_current_total(with_correction=False)
         if abs(total) > 0.0001:
             raise LucteriosException(IMPORTANT, _("The sum of annexe account must be null!"))
 
@@ -478,6 +475,10 @@ class CostAccounting(LucteriosModel):
     is_protected = models.BooleanField(verbose_name=_('default'), default=False)
     year = models.ForeignKey('FiscalYear', verbose_name=_('fiscal year'), null=True, default=None, on_delete=models.PROTECT, db_index=True)
 
+    total_revenue = LucteriosVirtualField(verbose_name=_('total revenue'), compute_from='get_total_revenue', format_string=lambda: format_with_devise(5))
+    total_expense = LucteriosVirtualField(verbose_name=_('total expense'), compute_from='get_total_expense', format_string=lambda: format_with_devise(5))
+    total_result = LucteriosVirtualField(verbose_name=_('result'), compute_from='get_total_result', format_string=lambda: format_with_devise(5))
+
     def __str__(self):
         return self.name
 
@@ -490,29 +491,20 @@ class CostAccounting(LucteriosModel):
 
     @classmethod
     def get_default_fields(cls):
-        return ['name', 'description', 'year', (_('total revenue'), 'total_revenue'), (_('total expense'), 'total_expense'), (_('result'), 'total_result'), 'status', 'is_default']
+        return ['name', 'description', 'year', 'total_revenue', 'total_expense', 'total_result', 'status', 'is_default']
 
     @classmethod
     def get_edit_fields(cls):
         return ['name', 'description', 'year', 'last_costaccounting']
 
-    @property
-    def total_revenue(self):
-        return format_devise(self.get_total_revenue(), 5)
-
     def get_total_revenue(self):
         return get_amount_sum(EntryLineAccount.objects.filter(account__type_of_account=3, costaccounting=self).aggregate(Sum('amount')))
-
-    @property
-    def total_expense(self):
-        return format_devise(self.get_total_expense(), 5)
 
     def get_total_expense(self):
         return get_amount_sum(EntryLineAccount.objects.filter(account__type_of_account=4, costaccounting=self).aggregate(Sum('amount')))
 
-    @property
-    def total_result(self):
-        return format_devise(self.get_total_revenue() - self.get_total_expense(), 5)
+    def get_total_result(self):
+        return self.get_total_revenue() - self.get_total_expense()
 
     def close(self):
         self.check_before_close()
@@ -565,10 +557,13 @@ class ChartsAccount(LucteriosModel):
     type_of_account = models.IntegerField(verbose_name=_('type of account'),
                                           choices=((0, _('Asset')), (1, _('Liability')), (2, _('Equity')), (3, _('Revenue')), (4, _('Expense')), (5, _('Contra-accounts'))), null=True, db_index=True)
 
+    last_year_total = LucteriosVirtualField(verbose_name=_('total of last year'), compute_from='get_last_year_total', format_string=lambda: format_with_devise(2))
+    current_total = LucteriosVirtualField(verbose_name=_('total current'), compute_from='get_current_total', format_string=lambda: format_with_devise(2))
+    current_validated = LucteriosVirtualField(verbose_name=_('total validated'), compute_from='get_current_validated', format_string=lambda: format_with_devise(2))
+
     @classmethod
     def get_default_fields(cls):
-        return ['code', 'name', (_('total of last year'), 'last_year_total'),
-                (_('total current'), 'current_total'), (_('total validated'), 'current_validated')]
+        return ['code', 'name', 'last_year_total', 'current_total', 'current_validated']
 
     @classmethod
     def get_edit_fields(cls):
@@ -580,8 +575,7 @@ class ChartsAccount(LucteriosModel):
 
     @classmethod
     def get_print_fields(cls):
-        return ['code', 'name', (_('total of last year'), 'last_year_total'),
-                (_('total current'), 'current_total'), (_('total validated'), 'current_validated'), 'entrylineaccount_set']
+        return ['code', 'name', 'last_year_total', 'current_total', 'current_validated', 'entrylineaccount_set']
 
     def __str__(self):
         return "[%s] %s" % (self.code, self.name)
@@ -589,32 +583,29 @@ class ChartsAccount(LucteriosModel):
     def get_name(self):
         return "[%s] %s" % (correct_accounting_code(self.code), self.name)
 
-    def get_last_year_total(self):
-        return get_amount_sum(self.entrylineaccount_set.filter(entry__journal__id=1).aggregate(Sum('amount')))
+    def get_last_year_total(self, with_correction=True):
+        if with_correction:
+            return self.credit_debit_way() * get_amount_sum(self.entrylineaccount_set.filter(entry__journal__id=1).aggregate(Sum('amount')))
+        else:
+            return get_amount_sum(self.entrylineaccount_set.filter(entry__journal__id=1).aggregate(Sum('amount')))
 
-    def get_current_total(self):
-        return get_amount_sum(self.entrylineaccount_set.all().aggregate(Sum('amount')))
+    def get_current_total(self, with_correction=True):
+        if with_correction:
+            return self.credit_debit_way() * get_amount_sum(self.entrylineaccount_set.all().aggregate(Sum('amount')))
+        else:
+            return get_amount_sum(self.entrylineaccount_set.all().aggregate(Sum('amount')))
 
-    def get_current_validated(self):
-        return get_amount_sum(self.entrylineaccount_set.filter(entry__close=True).aggregate(Sum('amount')))
+    def get_current_validated(self, with_correction=True):
+        if with_correction:
+            return self.credit_debit_way() * get_amount_sum(self.entrylineaccount_set.filter(entry__close=True).aggregate(Sum('amount')))
+        else:
+            return get_amount_sum(self.entrylineaccount_set.filter(entry__close=True).aggregate(Sum('amount')))
 
     def credit_debit_way(self):
         if self.type_of_account in [0, 4]:
             return -1
         else:
             return 1
-
-    @property
-    def last_year_total(self):
-        return format_devise(self.credit_debit_way() * self.get_last_year_total(), 2)
-
-    @property
-    def current_total(self):
-        return format_devise(self.credit_debit_way() * self.get_current_total(), 2)
-
-    @property
-    def current_validated(self):
-        return format_devise(self.credit_debit_way() * self.get_current_validated(), 2)
 
     @property
     def is_third(self):
@@ -782,9 +773,11 @@ class EntryAccount(LucteriosModel):
     costaccounting = models.ForeignKey('CostAccounting', verbose_name=_('cost accounting'), null=True, on_delete=models.PROTECT)
     close = models.BooleanField(verbose_name=_('close'), default=False, db_index=True)
 
+    description = LucteriosVirtualField(verbose_name=_('description'), compute_from='get_description')
+
     @classmethod
     def get_default_fields(cls):
-        return ['num', 'date_entry', 'date_value', (_('description'), 'description')]
+        return ['num', 'date_entry', 'date_value', 'description']
 
     @classmethod
     def get_edit_fields(cls):
@@ -815,16 +808,15 @@ class EntryAccount(LucteriosModel):
                 if len(entry.entrylineaccount_set.all()) == 0:
                     entry.delete()
 
-    @property
-    def description(self):
+    def get_description(self):
         res = self.designation
         res += "{[br/]}"
         res += "{[table style='min-width:200px;']}"
         for line in self.entrylineaccount_set.all():
             res += "{[tr]}"
             res += "{[td]}%s{[/td]}" % line.entry_account
-            res += "{[td]}%s{[/td]}" % line.debit
-            res += "{[td]}%s{[/td]}" % line.credit
+            res += "{[td]}%s{[/td]}" % get_amount_from_format_devise(line.debit, 6)
+            res += "{[td]}%s{[/td]}" % get_amount_from_format_devise(line.credit, 6)
             res += "{[td]}%s{[/td]}" % (line.costaccounting if line.costaccounting is not None else '---',)
             res += "{[td]}%s{[/td]}" % (line.link if line.link is not None else '---',)
             if (line.reference is not None) and (line.reference != ''):
@@ -930,13 +922,13 @@ class EntryAccount(LucteriosModel):
         if len(serial) == len(current):
             for idx in range(len(serial)):
                 total_credit += serial[idx].get_credit()
-                total_debit += serial[idx].get_debit()
+                total_debit += serial[idx].get_debit(with_correction=False)
                 no_change = no_change and current[idx].equals(serial[idx])
         else:
             no_change = False
             for idx in range(len(serial)):
                 total_credit += serial[idx].get_credit()
-                total_debit += serial[idx].get_debit()
+                total_debit += serial[idx].get_debit(with_correction=False)
         return no_change, currency_round(max(0, total_credit - total_debit)), currency_round(max(0, total_debit - total_credit))
 
     def closed(self, check_balance=True):
@@ -1034,41 +1026,34 @@ class EntryLineAccount(LucteriosModel):
     costaccounting = models.ForeignKey('CostAccounting', verbose_name=_('cost accounting'), null=True, on_delete=models.PROTECT)
     link = models.ForeignKey('AccountLink', verbose_name=_('link'), null=True, on_delete=models.SET_NULL)
 
-    def __str__(self):
-        res = ""
-        try:
-            res = "%s %s" % (self.entry_account, format_devise(self.account.credit_debit_way() * self.amount, 2))
-            if (self.reference is not None) and (self.reference != ''):
-                res += " (%s)" % self.reference
-        except BaseException:
-            res = "???"
-        return res
+    entry_account = LucteriosVirtualField(verbose_name=_('account'), compute_from='get_entry_account')
+    debit = LucteriosVirtualField(verbose_name=_('debit'), compute_from='get_debit', format_string=lambda: format_with_devise(6))
+    credit = LucteriosVirtualField(verbose_name=_('credit'), compute_from='get_credit', format_string=lambda: format_with_devise(6))
+    designation_ref = LucteriosVirtualField(verbose_name=_('name'), compute_from='get_designation_ref')
 
     @classmethod
     def get_other_fields(cls):
-        return [(_('account'), 'entry_account'), (_('debit'), 'debit'), (_('credit'), 'credit'), 'reference', 'costaccounting', 'link']
+        return ['entry_account', 'debit', 'credit', 'reference', 'costaccounting', 'link']
 
     @classmethod
     def get_default_fields(cls):
-        return ['entry.num', 'entry.date_entry', 'entry.date_value', (_('name'), 'designation_ref'), (_('account'), 'entry_account'),
-                (_('debit'), 'debit'), (_('credit'), 'credit'), 'costaccounting', 'link']
+        return ['entry.num', 'entry.date_entry', 'entry.date_value', 'designation_ref', 'entry_account',
+                'debit', 'credit', 'costaccounting', 'link']
 
     def get_color_ref(self):
         return self.entry_id
 
     @classmethod
     def get_edit_fields(cls):
-        return ['entry.date_entry', 'entry.date_value', 'entry.designation',
-                ((_('account'), 'entry_account'),), ((_('debit'), 'debit'),), ((_('credit'), 'credit'),)]
+        return ['entry.date_entry', 'entry.date_value', 'entry.designation', 'entry_account', 'debit', 'credit']
 
     @classmethod
     def get_show_fields(cls):
-        return ['entry.date_entry', 'entry.date_value', 'entry.designation',
-                ((_('account'), 'entry_account'),), ((_('debit'), 'debit'),), ((_('credit'), 'credit'),)]
+        return ['entry.date_entry', 'entry.date_value', 'entry.designation', 'entry_account', 'debit', 'credit']
 
     @classmethod
     def get_print_fields(cls):
-        return ['entry', (_('account'), 'entry_account'), (_('debit'), 'debit'), (_('credit'), 'credit'), 'reference', 'third.contact.str', 'costaccounting.name']
+        return ['entry', 'entry_account', 'debit', 'credit', 'reference', 'third.contact.str', 'costaccounting.name']
 
     @classmethod
     def get_search_fields(cls):
@@ -1079,39 +1064,42 @@ class EntryLineAccount(LucteriosModel):
             result.append(cls.convert_field_for_search('third', fieldname))
         return result
 
-    @property
-    def entry_account(self):
+    def __str__(self):
+        res = ""
+        try:
+            res = "%s %s" % (self.entry_account, get_amount_from_format_devise(self.account.credit_debit_way() * self.amount, 2))
+            if (self.reference is not None) and (self.reference != ''):
+                res += " (%s)" % self.reference
+        except BaseException:
+            res = "???"
+        return res
+
+    def get_entry_account(self):
         if self.third is None:
             return six.text_type(self.account)
         else:
             return "[%s %s]" % (self.account.code, six.text_type(self.third))
 
-    @property
-    def designation_ref(self):
+    def get_designation_ref(self):
         val = self.entry.designation
         if (self.reference is not None) and (self.reference != ''):
             val = "%s{[br/]}%s" % (val, self.reference)
         return val
 
-    def get_debit(self):
+    def get_debit(self, with_correction=True):
         try:
-            return max((0, -1 * self.account.credit_debit_way() * self.amount))
+            if with_correction:
+                return min(0, self.account.credit_debit_way() * self.amount)
+            else:
+                return max((0, -1 * self.account.credit_debit_way() * self.amount))
         except ObjectDoesNotExist:
             return 0.0
-
-    @property
-    def debit(self):
-        return format_devise(min(0, self.account.credit_debit_way() * self.amount), 6)
 
     def get_credit(self):
         try:
             return max((0, self.account.credit_debit_way() * self.amount))
         except ObjectDoesNotExist:
             return 0.0
-
-    @property
-    def credit(self):
-        return format_devise(self.get_credit(), 6)
 
     def set_montant(self, debit_val, credit_val):
         if debit_val > 0:
@@ -1258,12 +1246,14 @@ class ModelEntry(LucteriosModel):
     costaccounting = models.ForeignKey('CostAccounting', verbose_name=_('cost accounting'), null=True,
                                        default=None, on_delete=models.SET_NULL)
 
+    total = LucteriosVirtualField(verbose_name=_('total'), compute_from='get_total', format_string=lambda: format_with_devise(5))
+
     def __str__(self):
         return "[%s] %s (%s)" % (self.journal, self.designation, self.total)
 
     @classmethod
     def get_default_fields(cls):
-        return ['journal', 'designation', (_('total'), 'total')]
+        return ['journal', 'designation', 'total']
 
     @classmethod
     def get_edit_fields(cls):
@@ -1271,7 +1261,7 @@ class ModelEntry(LucteriosModel):
 
     @classmethod
     def get_show_fields(cls):
-        return ['journal', 'designation', 'costaccounting', ((_('total'), 'total'),), 'modellineentry_set']
+        return ['journal', 'designation', 'costaccounting', 'total', 'modellineentry_set']
 
     def get_total(self):
         try:
@@ -1282,10 +1272,6 @@ class ModelEntry(LucteriosModel):
         except LucteriosException:
             return 0.0
 
-    @property
-    def total(self):
-        return format_devise(self.get_total(), 5)
-
     def get_serial_entry(self, factor, year, costaccounting=None):
         entry_lines = []
         num = 0
@@ -1295,7 +1281,6 @@ class ModelEntry(LucteriosModel):
         return EntryAccount().get_serial(entry_lines)
 
     class Meta(object):
-
         verbose_name = _('Model of entry')
         verbose_name_plural = _('Models of entry')
         default_permissions = []
@@ -1307,9 +1292,12 @@ class ModelLineEntry(LucteriosModel):
     third = models.ForeignKey('Third', verbose_name=_('third'), null=True, on_delete=models.PROTECT)
     amount = models.FloatField(_('amount'), default=0)
 
+    debit = LucteriosVirtualField(verbose_name=_('debit'), compute_from='get_debit', format_string=lambda: format_with_devise(0))
+    credit = LucteriosVirtualField(verbose_name=_('credit'), compute_from='get_credit', format_string=lambda: format_with_devise(0))
+
     @classmethod
     def get_default_fields(cls):
-        return ['code', 'third', (_('debit'), 'debit'), (_('credit'), 'credit')]
+        return ['code', 'third', 'debit', 'credit']
 
     @classmethod
     def get_edit_fields(cls):
@@ -1324,25 +1312,17 @@ class ModelLineEntry(LucteriosModel):
         else:
             return 1
 
-    def get_debit(self):
+    def get_debit(self, with_correction=True):
         try:
             return max((0, -1 * self.credit_debit_way() * self.amount))
         except LucteriosException:
             return 0.0
-
-    @property
-    def debit(self):
-        return format_devise(self.get_debit(), 0)
 
     def get_credit(self):
         try:
             return max((0, self.credit_debit_way() * self.amount))
         except LucteriosException:
             return 0.0
-
-    @property
-    def credit(self):
-        return format_devise(self.get_credit(), 0)
 
     def set_montant(self, debit_val, credit_val):
         if debit_val > 0:
@@ -1383,18 +1363,20 @@ class Budget(LucteriosModel):
     code = models.CharField(_('account'), max_length=50)
     amount = models.FloatField(_('amount'), default=0)
 
-    @property
-    def budget(self):
-        chart = ChartsAccount.get_chart_account(self.code)
-        return six.text_type(chart)
+    budget = LucteriosVirtualField(verbose_name=_('code'), compute_from='get_budget')
+    montant = LucteriosVirtualField(verbose_name=_('amount'), compute_from='get_montant', format_string=lambda: format_with_devise(2))
 
     @classmethod
     def get_default_fields(cls):
-        return [(_('code'), 'budget'), (_('amount'), 'montant')]
+        return ['budget', 'montant']
 
     @classmethod
     def get_edit_fields(cls):
         return ['code']
+
+    def get_budget(self):
+        chart = ChartsAccount.get_chart_account(self.code)
+        return six.text_type(chart)
 
     def credit_debit_way(self):
         chart_account = current_system_account().new_charts_account(self.code)
@@ -1405,11 +1387,10 @@ class Budget(LucteriosModel):
         else:
             return 1
 
-    @property
-    def montant(self):
-        return format_devise(self.credit_debit_way() * self.amount, 2)
+    def get_montant(self):
+        return self.credit_debit_way() * self.amount
 
-    def get_debit(self):
+    def get_debit(self, with_correction=True):
         try:
             return max((0, -1 * self.credit_debit_way() * self.amount))
         except LucteriosException:
