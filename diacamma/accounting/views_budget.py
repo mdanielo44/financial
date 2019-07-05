@@ -17,8 +17,7 @@ from lucterios.framework.tools import SELECT_SINGLE
 from lucterios.framework.signal_and_lock import Signal
 from lucterios.CORE.xferprint import XferPrintAction
 
-from diacamma.accounting.tools import current_system_account, format_devise,\
-    format_with_devise
+from diacamma.accounting.tools import current_system_account, format_with_devise
 from diacamma.accounting.models import Budget, CostAccounting, FiscalYear, ChartsAccount, EntryLineAccount
 from django.db.models.aggregates import Sum
 

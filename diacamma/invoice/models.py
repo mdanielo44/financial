@@ -455,7 +455,7 @@ class Bill(Supporting):
         if status < 0:
             fields.append("status")
         elif status == 1:
-            fields.append(Supporting.get_payoff_fields()[-1][-1])
+            fields.append(Supporting.get_payoff_fields()[-1])
         return fields
 
     @classmethod

@@ -27,7 +27,7 @@ from __future__ import unicode_literals
 from django.db.models.aggregates import Sum
 from django.utils import six
 
-from diacamma.accounting.models import format_devise, EntryLineAccount, ChartsAccount, Budget, Third
+from diacamma.accounting.models import EntryLineAccount, ChartsAccount, Budget, Third
 from diacamma.accounting.tools import correct_accounting_code
 
 
@@ -147,17 +147,22 @@ def convert_query_to_account(query1, query2=None, query_budget=None, sign_value=
     return res, total1, total2, total3
 
 
-def add_cell_in_grid(grid, line_idx, colname, value):
-    grid.set_value("L%04d" % line_idx, colname, value)
+def add_cell_in_grid(grid, line_idx, colname, value, formttext='%s'):
+    if value is None:
+        return
+    if formttext != '%s':
+        grid.set_value("L%04d" % line_idx, colname, {'value': value, 'format': formttext.replace('%s', '{0}')})
+    else:
+        grid.set_value("L%04d" % line_idx, colname, value)
 
 
 def add_item_in_grid(grid, line_idx, side, data_item, formttext='%s'):
-    add_cell_in_grid(grid, line_idx, side, formttext % data_item[0])
-    add_cell_in_grid(grid, line_idx, side + '_n', formttext % format_devise(data_item[1], 5))
+    add_cell_in_grid(grid, line_idx, side, data_item[0], formttext)
+    add_cell_in_grid(grid, line_idx, side + '_n', data_item[1], formttext)
     if data_item[2] is not None:
-        add_cell_in_grid(grid, line_idx, side + '_n_1', formttext % format_devise(data_item[2], 5))
+        add_cell_in_grid(grid, line_idx, side + '_n_1', data_item[2], formttext)
     if data_item[3] is not None:
-        add_cell_in_grid(grid, line_idx, side + '_b', formttext % format_devise(data_item[3], 5))
+        add_cell_in_grid(grid, line_idx, side + '_b', data_item[3], formttext)
 
 
 def fill_grid(grid, index_begin, side, data_line):

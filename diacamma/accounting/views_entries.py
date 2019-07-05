@@ -47,6 +47,22 @@ from lucterios.CORE.parameters import Params
 from diacamma.accounting.models import EntryLineAccount, EntryAccount, FiscalYear, Journal, AccountLink, current_system_account, CostAccounting, ModelEntry
 
 
+def add_fiscalyear_result(xfer, col, row, colspan, year, comp_name):
+    old_model = xfer.model
+    old_item = xfer.item
+    xfer.model = FiscalYear
+    xfer.item = year
+    xfer.fill_from_model(col, row, True, ["total_result_text"])
+    result = xfer.get_components('total_result_text')
+    result.name = comp_name
+    result.colspan = colspan
+    result.set_centered()
+    xfer.remove_component('total_result_text')
+    xfer.add_component(result)
+    xfer.model = old_model
+    xfer.item = old_item
+
+
 @MenuManage.describ('accounting.change_entryaccount', FORMTYPE_NOMODAL, 'bookkeeping', _('Edition of accounting entry for current fiscal year'),)
 class EntryAccountList(XferListEditor):
     icon = "entry.png"
@@ -127,10 +143,7 @@ class EntryAccountList(XferListEditor):
 
     def fillresponse(self):
         XferListEditor.fillresponse(self)
-        lbl = XferCompLabelForm("result")
-        lbl.set_value_center(self.item.year.total_result_text)
-        lbl.set_location(0, 10, 2)
-        self.add_component(lbl)
+        add_fiscalyear_result(self, 0, 10, 2, self.item.year, 'result')
 
 
 @ActionsManage.affect_list(_("Search"), "diacamma.accounting/images/entry.png", modal=FORMTYPE_NOMODAL, close=CLOSE_YES, condition=lambda xfer: xfer.url_text.endswith('AccountList'))

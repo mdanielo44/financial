@@ -46,6 +46,7 @@ from django.utils import six, formats
 from os.path import basename
 from datetime import date
 from lucterios.framework.models import get_value_if_choices
+from diacamma.accounting.views_entries import add_fiscalyear_result
 
 MenuManage.add_sub("bookkeeping", "financial", "diacamma.accounting/images/accounting.png", _("Bookkeeping"), _("Manage of Bookkeeping"), 30)
 
@@ -81,10 +82,7 @@ class ChartsAccountList(XferListEditor):
 
     def fillresponse(self):
         XferListEditor.fillresponse(self)
-        lbl = XferCompLabelForm("result")
-        lbl.set_value_center(self.item.year.total_result_text)
-        lbl.set_location(0, 10, 2)
-        self.add_component(lbl)
+        add_fiscalyear_result(self, 0, 10, 2, self.item.year, "result")
 
         accompt_returned = []
         all_codes = list(self.item.year.chartsaccount_set.all().values_list('code', flat=True))

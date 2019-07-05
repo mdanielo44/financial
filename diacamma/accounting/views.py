@@ -48,6 +48,7 @@ from diacamma.accounting.models import Third, AccountThird, FiscalYear, EntryLin
 from diacamma.accounting.views_admin import Configuration, add_year_info
 from diacamma.accounting.tools import correct_accounting_code, current_system_account
 from django.db.models.aggregates import Count
+from diacamma.accounting.views_entries import add_fiscalyear_result
 
 MenuManage.add_sub("financial", None, "diacamma.accounting/images/financial.png", _("Financial"), _("Financial tools"), 50)
 
@@ -338,10 +339,7 @@ def summary_accounting(xfer):
             lbl.set_value_center(six.text_type(year))
             lbl.set_location(0, row + 1, 4)
             xfer.add_component(lbl)
-            lbl = XferCompLabelForm("accounting_result")
-            lbl.set_value_center(year.total_result_text)
-            lbl.set_location(0, row + 2, 4)
-            xfer.add_component(lbl)
+            add_fiscalyear_result(xfer, 0, row + 2, 4, year, "accounting_result")
             if len(ChartsAccount.objects.filter(year=year)) == 0:
                 add_year_info(xfer, True)
         except LucteriosException as lerr:

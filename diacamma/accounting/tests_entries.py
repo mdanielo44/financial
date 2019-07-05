@@ -71,7 +71,7 @@ class EntryTest(LucteriosTest):
         self.assert_json_equal('', '#entryline/headers/@6/@2', 'C2EUR')
         self.assert_json_equal('', '#entryline/headers/@6/@4', '{[font color="green"]}%s{[/font]};{[font color="blue"]}%s{[/font]};')
 
-        self.assert_json_equal('LABELFORM', 'result', '{[b]}Produit :{[/b]} 0.00€ - {[b]}Charge :{[/b]} 0.00€ = {[b]}Résultat :{[/b]} 0.00€{[br/]}{[b]}Trésorerie :{[/b]} 0.00€ - {[b]}Validé :{[/b]} 0.00€')
+        self.assert_json_equal('LABELFORM', 'result', [0.00,0.00,0.00,0.00,0.00])
 
     def test_add_entry(self):
         self.factory.xfer = EntryAccountEdit()
@@ -456,7 +456,7 @@ class EntryTest(LucteriosTest):
         self.assert_json_equal('', 'entryline/@1/entry_account', '[602] 602')
         self.assert_json_equal('', 'entryline/@1/link', None)
         self.assert_json_equal('', 'entryline/@1/costaccounting', None)
-        self.assert_json_equal('LABELFORM', 'result', '{[b]}Produit :{[/b]} 0.00€ - {[b]}Charge :{[/b]} 152.34€ = {[b]}Résultat :{[/b]} -152.34€{[br/]}{[b]}Trésorerie :{[/b]} 0.00€ - {[b]}Validé :{[/b]} 0.00€')
+        self.assert_json_equal('LABELFORM', 'result', [0.00, 152.34, -152.34, 0.00, 0.00])
 
         self.factory.xfer = EntryAccountOpenFromLine()
         self.calljson('/diacamma.accounting/entryAccountOpenFromLine',
@@ -489,7 +489,7 @@ class EntryTest(LucteriosTest):
         self.assert_json_equal('', 'entryline/@0/credit', 152.34)
         self.assert_json_equal('', 'entryline/@0/link', None)
         self.assert_json_equal('', 'entryline/@0/costaccounting', None)
-        self.assert_json_equal('LABELFORM', 'result', '{[b]}Produit :{[/b]} 0.00€ - {[b]}Charge :{[/b]} 152.34€ = {[b]}Résultat :{[/b]} -152.34€{[br/]}{[b]}Trésorerie :{[/b]} 0.00€ - {[b]}Validé :{[/b]} 0.00€')
+        self.assert_json_equal('LABELFORM', 'result', [0.00, 152.34, -152.34, 0.00, 0.00])
 
         self.factory.xfer = EntryAccountOpenFromLine()
         self.calljson('/diacamma.accounting/entryAccountOpenFromLine',
@@ -702,7 +702,7 @@ class EntryTest(LucteriosTest):
         self.assert_json_equal('', 'entryline/@2/debit', -152.34)
         self.assert_json_equal('', 'entryline/@3/entry_account', '[512] 512')
         self.assert_json_equal('', 'entryline/@3/link', None)
-        self.assert_json_equal('LABELFORM', 'result', '{[b]}Produit :{[/b]} 0.00€ - {[b]}Charge :{[/b]} 152.34€ = {[b]}Résultat :{[/b]} -152.34€{[br/]}{[b]}Trésorerie :{[/b]} -152.34€ - {[b]}Validé :{[/b]} 0.00€')
+        self.assert_json_equal('LABELFORM', 'result', [0.00, 152.34, -152.34, -152.34, 0.00])
 
     def test_valid_payment_canceled(self):
         self.factory.xfer = EntryAccountEdit()
@@ -826,7 +826,7 @@ class EntryTest(LucteriosTest):
         self.assert_json_equal('', 'entryline/@6/designation_ref', 'Règlement de belle facture{[br/]}BP N°987654')
         self.assert_json_equal('', 'entryline/@6/costaccounting', None)
 
-        self.assert_json_equal('LABELFORM', 'result', '{[b]}Produit :{[/b]} 364.91€ - {[b]}Charge :{[/b]} 0.00€ = {[b]}Résultat :{[/b]} 364.91€{[br/]}{[b]}Trésorerie :{[/b]} 364.91€ - {[b]}Validé :{[/b]} 0.00€')
+        self.assert_json_equal('LABELFORM', 'result', [364.91, 0.00, 364.91, 364.91, 0.00])
 
         self.factory.xfer = EntryAccountLink()
         self.calljson('/diacamma.accounting/entryAccountLink', {'year': '1', 'journal': '-1', 'filter': '0', 'entryline': '2;3'}, False)
@@ -979,7 +979,7 @@ class EntryTest(LucteriosTest):
         self.assert_json_equal('', 'entryline/@1/entry_account', '[512] 512')
         self.assert_json_equal('', 'entryline/@1/debit', -364.91)
         self.assert_json_equal('', 'entryline/@1/designation_ref', 'Règlement de belle facture{[br/]}BP N°987654')
-        self.assert_json_equal('LABELFORM', 'result', '{[b]}Produit :{[/b]} 0.00€ - {[b]}Charge :{[/b]} 0.00€ = {[b]}Résultat :{[/b]} 0.00€{[br/]}{[b]}Trésorerie :{[/b]} 364.91€ - {[b]}Validé :{[/b]} 364.91€')
+        self.assert_json_equal('LABELFORM', 'result', [0.00,0.00,0.00,364.91,364.91])
 
         self.factory.xfer = EntryAccountDel()
         self.calljson('/diacamma.accounting/entryAccountDel',

@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 from django.db import migrations, models
 import django.core.validators
 import django.db.models.deletion
+from lucterios.framework.models import LucteriosDecimalField
 
 
 class Migration(migrations.Migration):
@@ -53,7 +54,7 @@ class Migration(migrations.Migration):
                 ('supporting', models.ForeignKey(
                     to='payoff.Supporting', verbose_name='supporting', on_delete=models.CASCADE)),
                 ('date', models.DateField(verbose_name='date')),
-                ('amount', models.DecimalField(decimal_places=3, max_digits=10, validators=[django.core.validators.MinValueValidator(
+                ('amount', LucteriosDecimalField(decimal_places=3, max_digits=10, validators=[django.core.validators.MinValueValidator(
                     0.0), django.core.validators.MaxValueValidator(9999999.999)], verbose_name='amount', default=0.0)),
                 ('mode', models.IntegerField(choices=[(0, 'cash'), (1, 'cheque'), (2, 'transfer'), (
                     3, 'crédit card'), (4, 'other')], default=0, verbose_name='mode', db_index=True)),

@@ -50,7 +50,7 @@ from lucterios.CORE.models import Parameter
 from lucterios.CORE.parameters import Params
 from lucterios.contacts.models import AbstractContact, CustomField, CustomizeObject
 
-from diacamma.accounting.tools import get_amount_sum, format_devise, current_system_account, currency_round, correct_accounting_code,\
+from diacamma.accounting.tools import get_amount_sum, current_system_account, currency_round, correct_accounting_code,\
     get_currency_symbole, format_with_devise, get_amount_from_format_devise
 
 
@@ -219,13 +219,25 @@ class AccountThird(LucteriosModel):
         default_permissions = []
 
 
+def get_total_result_text_format():
+    value = {}
+    value['revenue'] = '{0}'
+    value['expense'] = '{1}'
+    value['result'] = '{2}'
+    value['cash'] = '{3}'
+    value['closed'] = '{4}'
+    res_text = _('{[b]}Revenue:{[/b]} %(revenue)s - {[b]}Expense:{[/b]} %(expense)s = {[b]}Result:{[/b]} %(result)s{[br/]}{[b]}Cash:{[/b]} %(cash)s - {[b]}Closed:{[/b]} %(closed)s')
+    return format_with_devise(7) + ";" + res_text % value
+
+
 class FiscalYear(LucteriosModel):
     begin = models.DateField(verbose_name=_('begin'))
     end = models.DateField(verbose_name=_('end'))
     status = models.IntegerField(verbose_name=_('status'), choices=((0, _('building')), (1, _('running')), (2, _('finished'))), default=0)
     is_actif = models.BooleanField(verbose_name=_('actif'), default=False, db_index=True)
-    last_fiscalyear = models.ForeignKey('FiscalYear', verbose_name=_(
-        'last fiscal year'), related_name='next_fiscalyear', null=True, on_delete=models.SET_NULL)
+    last_fiscalyear = models.ForeignKey('FiscalYear', verbose_name=_('last fiscal year'), related_name='next_fiscalyear', null=True, on_delete=models.SET_NULL)
+
+    total_result_text = LucteriosVirtualField(verbose_name='', compute_from='get_total_result_text', format_string=lambda: get_total_result_text_format())
 
     def init_dates(self):
         fiscal_years = FiscalYear.objects.order_by('end')
@@ -292,16 +304,14 @@ class FiscalYear(LucteriosModel):
         return get_amount_sum(EntryLineAccount.objects.filter(entry__close=True, account__code__regex=current_system_account().get_cash_mask(),
                                                               account__year=self, entry__date_value__gte=self.begin, entry__date_value__lte=self.end).aggregate(Sum('amount')))
 
-    @property
-    def total_result_text(self):
-        value = {}
-        value['revenue'] = format_devise(self.total_revenue, 5)
-        value['expense'] = format_devise(self.total_expense, 5)
-        value['result'] = format_devise(self.total_revenue - self.total_expense, 5)
-        value['cash'] = format_devise(self.total_cash, 5)
-        value['closed'] = format_devise(self.total_cash_close, 5)
-        res_text = _('{[b]}Revenue:{[/b]} %(revenue)s - {[b]}Expense:{[/b]} %(expense)s = {[b]}Result:{[/b]} %(result)s{[br/]}{[b]}Cash:{[/b]} %(cash)s - {[b]}Closed:{[/b]} %(closed)s')
-        return res_text % value
+    def get_total_result_text(self):
+        value = []
+        value.append(self.total_revenue)
+        value.append(self.total_expense)
+        value.append(self.total_revenue - self.total_expense)
+        value.append(self.total_cash)
+        value.append(self.total_cash_close)
+        return value
 
     @property
     def has_no_lastyear_entry(self):

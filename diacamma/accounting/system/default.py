@@ -31,6 +31,7 @@ from django.utils.translation import ugettext_lazy as _
 from lucterios.framework.tools import get_icon_path
 from lucterios.framework.xferadvance import TITLE_OK, TITLE_CANCEL
 from diacamma.accounting.models import AccountLink
+from diacamma.accounting.tools import get_amount_from_format_devise
 
 
 class DefaultSystemAccounting(object):
@@ -80,7 +81,6 @@ class DefaultSystemAccounting(object):
     def _create_custom_for_profit(self, year, custom, val_profit):
         from django.db.models import Q
         from lucterios.framework.xfercomponents import XferCompImage, XferCompLabelForm, XferCompSelect
-        from diacamma.accounting.models import format_devise
         if val_profit > 0.0001:
             type_profit = _('profit')
         else:
@@ -93,9 +93,7 @@ class DefaultSystemAccounting(object):
         lbl.set_value_as_headername(_("Profit and deficit"))
         lbl.set_location(1, 0)
         custom.add_component(lbl)
-        # text = "{[i]}Vous avez un %s de %s.{[br/]}Vous devez definir sur quel compte l'affecter.{[br/]}{[/i]}" % (type_profit, format_devise(val_profit, 4))
-        # text += "{[br/]}En validant, vous commencerez '%s'{[br/]}{[br/]}{[i]}{[u]}Attention:{[/u]} Votre report à nouveau doit être totalement fait.{[/i]}" % six.text_type(year)
-        text = _("{[i]}You have a %(type)s of %(value)s.{[br/]}You must to define the account to affect.{[br/]}{[/i]}") % {'type': type_profit, 'value': format_devise(val_profit, 4)}
+        text = _("{[i]}You have a %(type)s of %(value)s.{[br/]}You must to define the account to affect.{[br/]}{[/i]}") % {'type': type_profit, 'value': get_amount_from_format_devise(val_profit, 4)}
         text += _("{[br/]}After validation, you begin '%s'.{[br/]}{[br/]}{[i]}{[u]}Warning:{[/u]} Your retained earnings must be completed.{[/i]}") % six.text_type(year)
         lbl = XferCompLabelForm("info")
         lbl.set_value(text)
@@ -176,9 +174,6 @@ class DefaultSystemAccounting(object):
 
     def _create_thirds_ending_entry(self, year):
         from diacamma.accounting.models import EntryAccount, EntryLineAccount
-        from django.db.models.aggregates import Sum
-        sum_third = {}
-        entry_lines = []
         end_desig = _("Fiscal year closing - Third")
 
         last_account_id = 0
@@ -253,7 +248,6 @@ class DefaultSystemAccounting(object):
     def fill_fiscalyear_balancesheet(self, grid, currentfilter, lastfilter):
         from django.db.models import Q
         from diacamma.accounting.tools_reports import convert_query_to_account, add_cell_in_grid, add_item_in_grid, fill_grid, get_spaces
-        from diacamma.accounting.tools import format_devise
         cash_filter = Q(account__code__regex=self.get_cash_mask())
         third_filter = Q(account__code__regex=self.get_third_mask())
 
@@ -326,16 +320,16 @@ class DefaultSystemAccounting(object):
         show_left = False
         show_right = False
         if total1left < total1right:
-            add_cell_in_grid(grid, line_idx, 'left_n', "{[i]}{[b]}%s{[/b]}{[/i]}" % format_devise(total1right - total1left, 5))
+            add_cell_in_grid(grid, line_idx, 'left_n', total1right - total1left, "{[i]}{[b]}%s{[/b]}{[/i]}")
             show_left = True
         else:
-            add_cell_in_grid(grid, line_idx, 'right_n', "{[i]}{[b]}%s{[/b]}{[/i]}" % format_devise(total1left - total1right, 5))
+            add_cell_in_grid(grid, line_idx, 'right_n', total1left - total1right, "{[i]}{[b]}%s{[/b]}{[/i]}")
             show_right = True
         if total2left < total2right:
-            add_cell_in_grid(grid, line_idx, 'left_n_1', "{[i]}{[b]}%s{[/b]}{[/i]}" % format_devise(total2right - total2left, 5))
+            add_cell_in_grid(grid, line_idx, 'left_n_1', total2right - total2left, "{[i]}{[b]}%s{[/b]}{[/i]}")
             show_left = True
         else:
-            add_cell_in_grid(grid, line_idx, 'right_n_1', "{[i]}{[b]}%s{[/b]}{[/i]}" % format_devise(total2left - total2right, 5))
+            add_cell_in_grid(grid, line_idx, 'right_n_1', total2left - total2right, "{[i]}{[b]}%s{[/b]}{[/i]}")
             show_right = True
         if show_left:
             add_cell_in_grid(grid, line_idx, 'left', get_spaces(5) + "{[i]}{[b]}%s{[/b]}{[/i]}" % _('result (deficit)'))

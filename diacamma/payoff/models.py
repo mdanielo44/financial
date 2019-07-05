@@ -37,7 +37,8 @@ from django.utils.module_loading import import_module
 from django.utils import six
 from django_fsm import FSMIntegerField, transition
 
-from lucterios.framework.models import LucteriosModel, get_value_if_choices
+from lucterios.framework.models import LucteriosModel, get_value_if_choices,\
+    LucteriosVirtualField, LucteriosDecimalField
 from lucterios.framework.tools import get_date_formating, get_bool_textual
 from lucterios.framework.error import LucteriosException, IMPORTANT
 from lucterios.framework.printgenerators import ReportingGenerator
@@ -50,21 +51,24 @@ from lucterios.contacts.models import LegalEntity, Individual
 
 from diacamma.accounting.models import EntryAccount, FiscalYear, Third, Journal, \
     ChartsAccount, EntryLineAccount, AccountLink
-from diacamma.accounting.tools import format_devise, currency_round, correct_accounting_code
+from diacamma.accounting.tools import format_devise, currency_round, correct_accounting_code,\
+    format_with_devise
 
 
 class Supporting(LucteriosModel):
-    third = models.ForeignKey(
-        Third, verbose_name=_('third'), null=True, default=None, db_index=True, on_delete=models.PROTECT)
+    third = models.ForeignKey(Third, verbose_name=_('third'), null=True, default=None, db_index=True, on_delete=models.PROTECT)
     is_revenu = models.BooleanField(verbose_name=_('is revenu'), default=True)
+
+    total_payed = LucteriosVirtualField(verbose_name=_('total payed'), compute_from='get_total_payed', format_string=lambda: format_with_devise(5))
+    total_rest_topay = LucteriosVirtualField(verbose_name=_('rest to pay'), compute_from='get_total_rest_topay', format_string=lambda: format_with_devise(5))
 
     @classmethod
     def get_payoff_fields(cls):
-        return ['payoff_set', ((_('total payed'), 'total_payed'), (_('rest to pay'), 'total_rest_topay'))]
+        return ['payoff_set', 'total_payed', 'total_rest_topay']
 
     @classmethod
     def get_print_fields(cls):
-        return ['payoff_set', (_('total payed'), 'total_payed'), (_('rest to pay'), 'total_rest_topay')]
+        return ['payoff_set', 'total_payed', 'total_rest_topay']
 
     class Meta(object):
         verbose_name = _('supporting')
@@ -151,16 +155,8 @@ class Supporting(LucteriosModel):
                 IMPORTANT, _("third has not correct account"))
         return third_account
 
-    @property
-    def total_payed(self):
-        return format_devise(self.get_total_payed(), 5)
-
     def get_total_rest_topay(self, ignore_payoff=-1):
         return self.get_total() - self.get_total_payed(ignore_payoff)
-
-    @property
-    def total_rest_topay(self):
-        return format_devise(self.get_total_rest_topay(), 5)
 
     def get_tax_sum(self):
         return 0.0
@@ -305,8 +301,8 @@ class Payoff(LucteriosModel):
     supporting = models.ForeignKey(
         Supporting, verbose_name=_('supporting'), null=False, db_index=True, on_delete=models.CASCADE)
     date = models.DateField(verbose_name=_('date'), null=False)
-    amount = models.DecimalField(verbose_name=_('amount'), max_digits=10, decimal_places=3, default=0.0, validators=[
-        MinValueValidator(0.0), MaxValueValidator(9999999.999)])
+    amount = LucteriosDecimalField(verbose_name=_('amount'), max_digits=10, decimal_places=3, default=0.0, validators=[
+        MinValueValidator(0.0), MaxValueValidator(9999999.999)], format_string=lambda: format_with_devise(5))
     mode = models.IntegerField(verbose_name=_('mode'),
                                choices=((0, _('cash')), (1, _('cheque')), (2, _('transfer')), (3, _('crédit card')), (4, _('other')), (5, _('levy'))), null=False, default=0, db_index=True)
     payer = models.CharField(_('payer'), max_length=150, null=True, default='')
@@ -321,7 +317,7 @@ class Payoff(LucteriosModel):
 
     @classmethod
     def get_default_fields(cls):
-        return ["date", (_('value'), "value"), "mode", "reference", "payer", "bank_account"]
+        return ["date", "amount", "mode", "reference", "payer", "bank_account"]
 
     @classmethod
     def get_edit_fields(cls):
@@ -331,10 +327,6 @@ class Payoff(LucteriosModel):
     def get_search_fields(cls):
         search_fields = ["date", "amount", "mode", "reference", "payer", "bank_account"]
         return search_fields
-
-    @property
-    def value(self):
-        return format_devise(self.amount, 5)
 
     @property
     def bank_account_query(self):
@@ -520,12 +512,15 @@ class DepositSlip(LucteriosModel):
     reference = models.CharField(
         _('reference'), max_length=100, null=False, default='')
 
+    total = LucteriosVirtualField(verbose_name=_('total'), compute_from='get_total', format_string=lambda: format_with_devise(5))
+    nb = LucteriosVirtualField(verbose_name=_('number'), compute_from='get_nb', format_string="N0")
+
     def __str__(self):
         return "%s %s" % (self.reference, get_date_formating(self.date))
 
     @classmethod
     def get_default_fields(cls):
-        return ['status', 'bank_account', 'date', 'reference', (_('total'), 'total')]
+        return ['status', 'bank_account', 'date', 'reference', 'total']
 
     @classmethod
     def get_edit_fields(cls):
@@ -533,7 +528,7 @@ class DepositSlip(LucteriosModel):
 
     @classmethod
     def get_show_fields(cls):
-        return ['bank_account', 'bank_account.reference', ("date", "reference"), ((_('number'), "nb"), (_('total'), 'total')), "depositdetail_set"]
+        return ['bank_account', 'bank_account.reference', ("date", "reference"), ("nb", 'total'), "depositdetail_set"]
 
     def get_total(self):
         value = 0
@@ -541,12 +536,7 @@ class DepositSlip(LucteriosModel):
             value += detail.get_amount()
         return value
 
-    @property
-    def total(self):
-        return format_devise(self.get_total(), 5)
-
-    @property
-    def nb(self):
+    def get_nb(self):
         return len(self.depositdetail_set.all())
 
     def can_delete(self):
@@ -615,9 +605,11 @@ class DepositDetail(LucteriosModel):
     payoff = models.ForeignKey(
         Payoff, verbose_name=_('payoff'), null=True, default=None, db_index=True, on_delete=models.PROTECT)
 
+    amount = LucteriosVirtualField(verbose_name=_('amount'), compute_from='get_amount', format_string=lambda: format_with_devise(5))
+
     @classmethod
     def get_default_fields(cls):
-        return ['payoff.payer', 'payoff.date', 'payoff.reference', (_('amount'), 'amount')]
+        return ['payoff.payer', 'payoff.date', 'payoff.reference', 'amount']
 
     @classmethod
     def get_edit_fields(cls):
@@ -642,10 +634,6 @@ class DepositDetail(LucteriosModel):
         else:
             return 0
 
-    @property
-    def amount(self):
-        return format_devise(self.get_amount(), 5)
-
     class Meta(object):
         verbose_name = _('deposit detail')
         verbose_name_plural = _('deposit details')
@@ -660,9 +648,11 @@ class PaymentMethod(LucteriosModel):
                                      verbose_name=_('bank account'), null=False, default=None, db_index=True, on_delete=models.PROTECT)
     extra_data = models.TextField(_('data'), null=False)
 
+    info = LucteriosVirtualField(verbose_name=_('parameters'), compute_from='get_info')
+
     @classmethod
     def get_default_fields(cls):
-        return ['paytype', 'bank_account', (_('parameters'), 'info')]
+        return ['paytype', 'bank_account', 'info']
 
     @classmethod
     def get_edit_fields(cls):
@@ -698,8 +688,7 @@ class PaymentMethod(LucteriosModel):
             items.append("")
         return items
 
-    @property
-    def info(self):
+    def get_info(self):
         res = ""
         items = self.get_items()
         for fieldid, fieldtitle, fieldtype in self.get_extra_fields():
