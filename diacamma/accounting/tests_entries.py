@@ -71,7 +71,7 @@ class EntryTest(LucteriosTest):
         self.assert_json_equal('', '#entryline/headers/@6/@2', 'C2EUR')
         self.assert_json_equal('', '#entryline/headers/@6/@4', '{[font color="green"]}%s{[/font]};{[font color="blue"]}%s{[/font]};')
 
-        self.assert_json_equal('LABELFORM', 'result', [0.00,0.00,0.00,0.00,0.00])
+        self.assert_json_equal('LABELFORM', 'result', [0.00, 0.00, 0.00, 0.00, 0.00])
 
     def test_add_entry(self):
         self.factory.xfer = EntryAccountEdit()
@@ -979,7 +979,7 @@ class EntryTest(LucteriosTest):
         self.assert_json_equal('', 'entryline/@1/entry_account', '[512] 512')
         self.assert_json_equal('', 'entryline/@1/debit', -364.91)
         self.assert_json_equal('', 'entryline/@1/designation_ref', 'Règlement de belle facture{[br/]}BP N°987654')
-        self.assert_json_equal('LABELFORM', 'result', [0.00,0.00,0.00,364.91,364.91])
+        self.assert_json_equal('LABELFORM', 'result', [0.00, 0.00, 0.00, 364.91, 364.91])
 
         self.factory.xfer = EntryAccountDel()
         self.calljson('/diacamma.accounting/entryAccountDel',
