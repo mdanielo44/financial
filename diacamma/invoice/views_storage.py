@@ -29,7 +29,8 @@ from django.utils import six
 from django.db.models.aggregates import Sum
 from django.db.models import Q
 
-from lucterios.framework.tools import MenuManage, FORMTYPE_NOMODAL, ActionsManage, SELECT_SINGLE, SELECT_MULTI, CLOSE_YES, FORMTYPE_REFRESH, CLOSE_NO, SELECT_NONE, WrapAction
+from lucterios.framework.tools import MenuManage, FORMTYPE_NOMODAL, ActionsManage, SELECT_SINGLE, SELECT_MULTI, CLOSE_YES, FORMTYPE_REFRESH, CLOSE_NO, SELECT_NONE, WrapAction,\
+    format_to_string
 from lucterios.framework.xferadvance import XferListEditor, XferAddEditor, XferDelete, XferShowEditor, TITLE_ADD, TITLE_MODIFY, TITLE_DELETE, TITLE_EDIT, XferTransition, TITLE_PRINT, TITLE_CLOSE,\
     TITLE_OK, TITLE_CANCEL, TITLE_CREATE
 
@@ -39,7 +40,7 @@ from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompGrid, 
     XferCompEdit, XferCompImage
 from lucterios.framework.xferbasic import NULL_VALUE
 
-from diacamma.accounting.tools import format_devise
+from diacamma.accounting.tools import format_with_devise
 from diacamma.invoice.models import StorageSheet, StorageDetail, Article, Category, StorageArea
 
 
@@ -276,12 +277,12 @@ class StorageSituation(XferListEditor):
     def fillresponse_body(self):
         grid = XferCompGrid(self.field_id)
         grid.order_list = self.order_list
-        grid.add_header("article", Article._meta.verbose_name, 'str', 1)
+        grid.add_header("article", Article._meta.verbose_name, None, 1)
         grid.add_header("designation", _('designation'), 1)
-        grid.add_header('storagesheet__storagearea', _('Area'), 'str', 1)
+        grid.add_header('storagesheet__storagearea', _('Area'), None, 1)
         grid.add_header('qty', _('Quantity'))
-        grid.add_header('amount', _('Amount'))
-        grid.add_header('mean', _('Mean price'))
+        grid.add_header('amount', _('Amount'), format_with_devise(7))
+        grid.add_header('mean', _('Mean price'), format_with_devise(7))
         six.print_(self.items)
         item_id = 0
         total_val = 0.0
@@ -290,23 +291,24 @@ class StorageSituation(XferListEditor):
                 item_id += 1
                 area_id = item['storagesheet__storagearea']
                 art = Article.objects.get(id=item['article'])
-                format_txt = "%%.%df" % art.qtyDecimal
+                format_txt = "N%d" % art.qtyDecimal
                 qty = float(item['data_sum'])
                 amount = float(art.get_amount_from_area(qty, area_id))
                 total_val += amount
                 grid.set_value(item_id, "article", six.text_type(art))
                 grid.set_value(item_id, "designation", six.text_type(art.designation))
                 grid.set_value(item_id, 'storagesheet__storagearea', six.text_type(StorageArea.objects.get(id=area_id)))
-                grid.set_value(item_id, 'qty', format_txt % qty)
-                grid.set_value(item_id, 'amount', format_devise(amount, 5))
+                grid.set_value(item_id, 'qty', format_to_string(qty, format_txt, None))
+                grid.set_value(item_id, 'amount', amount)
                 if abs(qty) > 0.0001:
-                    grid.set_value(item_id, 'mean', format_devise(amount / qty, 5))
+                    grid.set_value(item_id, 'mean', amount / qty)
         grid.set_location(0, self.get_max_row() + 1, 2)
         grid.set_size(200, 500)
         self.add_component(grid)
 
         lbl = XferCompLabelForm("total")
-        lbl.set_value(format_devise(total_val, 5))
+        lbl.set_value(total_val)
+        lbl.set_format(format_with_devise(5))
         lbl.set_location(0, self.get_max_row() + 1, 2)
         lbl.description = _('total amount')
         self.add_component(lbl)
@@ -335,7 +337,7 @@ class StorageHistoric(XferListEditor):
     def __init__(self, **kwargs):
         XferListEditor.__init__(self, **kwargs)
         self.fieldnames = ["article", "article.designation", "storagesheet.date", "storagesheet.storagearea",
-                           (_('buying price'), "price_txt"), 'quantity']
+                           "price", 'quantity']
 
     def get_items_from_filter(self):
         items = XferListEditor.get_items_from_filter(self)

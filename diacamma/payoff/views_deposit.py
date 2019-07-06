@@ -19,6 +19,7 @@ from lucterios.CORE.xferprint import XferPrintAction
 
 from diacamma.payoff.models import DepositSlip, DepositDetail, BankTransaction, PaymentMethod
 from diacamma.accounting.models import FiscalYear
+from diacamma.accounting.tools import format_with_devise
 
 
 @MenuManage.describ('payoff.change_depositslip', FORMTYPE_NOMODAL, 'financial', _('Manage deposit of cheque'))
@@ -172,8 +173,8 @@ class DepositDetailAddModify(XferContainerCustom):
         record_min, record_max = grid.define_page(self)
         grid.add_header('bill', _('bill'))
         grid.add_header('payer', _('payer'), horderable=1)
-        grid.add_header('amount', _('amount'), horderable=1)
-        grid.add_header('date', _('date'), horderable=1, htype='date')
+        grid.add_header('amount', _('amount'), horderable=1, htype=format_with_devise(5))
+        grid.add_header('date', _('date'), horderable=1, htype='D')
         grid.add_header('reference', _('reference'), horderable=1)
         for payoff in payoff_nodeposit[record_min:record_max]:
             payoffid = payoff['id']

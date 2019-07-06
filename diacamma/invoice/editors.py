@@ -34,12 +34,13 @@ from django.utils import six
 from lucterios.framework.editors import LucteriosEditor
 from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompSelect, XferCompCheckList, XferCompGrid, XferCompButton, XferCompEdit,\
     XferCompUpLoad, XferCompImage
-from lucterios.framework.tools import CLOSE_NO, FORMTYPE_REFRESH, ActionsManage, FORMTYPE_MODAL
+from lucterios.framework.tools import CLOSE_NO, FORMTYPE_REFRESH, ActionsManage, FORMTYPE_MODAL,\
+    format_to_string
 from lucterios.framework.models import get_value_if_choices
 from lucterios.framework.filetools import save_from_base64, open_image_resize, get_user_path
 from lucterios.CORE.parameters import Params
 
-from diacamma.accounting.tools import current_system_account, format_devise
+from diacamma.accounting.tools import current_system_account, format_with_devise
 from diacamma.accounting.models import CostAccounting, FiscalYear, Third
 from diacamma.payoff.editors import SupportingEditor
 from diacamma.invoice.models import Provider, Category, CustomField, Article
@@ -114,6 +115,11 @@ class ArticleEditor(LucteriosEditor):
         self.item.set_custom_values(xfer.params)
 
     def show(self, xfer):
+        def get_value_formated(value, area_id):
+            if area_id == 0:
+                return {"value": value, "format": "{[b]}{0}{[/b]}"}
+            else:
+                return value
         if Params.getvalue("invoice-article-with-picture"):
             obj_ref = xfer.get_components('designation')
             xfer.tab = obj_ref.tab
@@ -129,25 +135,24 @@ class ArticleEditor(LucteriosEditor):
             grid = XferCompGrid('storage')
             grid.add_header('area', _('Area'))
             grid.add_header('qty', _('Quantity'))
-            grid.add_header('amount', _('Amount'))
-            grid.add_header('mean', _('Mean price'))
+            grid.add_header('amount', _('Amount'), format_with_devise(7))
+            grid.add_header('mean', _('Mean price'), format_with_devise(7))
             grid.set_location(1, 1)
             grid.description = _('quantities')
-            format_txt = "%%.%df" % self.item.qtyDecimal
+            format_txt = "N%d" % self.item.qtyDecimal
             for area_id, area, qty, amount in self.item.get_stockage_values():
-                valformat = "{[b]}%s{[/b]}" if area_id == 0 else "%s"
-                grid.set_value(area_id, 'area', valformat % area)
-                grid.set_value(area_id, 'qty', valformat % (format_txt % float(qty),))
-                grid.set_value(area_id, 'amount', valformat % format_devise(amount, 5))
+                grid.set_value(area_id, 'area', get_value_formated(area, area_id))
+                grid.set_value(area_id, 'qty', get_value_formated(format_to_string(float(qty), format_txt, None), area_id))
+                grid.set_value(area_id, 'amount', get_value_formated(amount, area_id))
                 if abs(qty) > 0.001:
-                    grid.set_value(area_id, 'mean', valformat % format_devise(amount / qty, 5))
+                    grid.set_value(area_id, 'mean', get_value_formated(amount / qty, area_id))
             xfer.add_component(grid)
 
             grid = XferCompGrid('moving')
             grid.set_location(1, 3)
             grid.description = _('moving')
             grid.set_model(self.item.storagedetail_set.filter(storagesheet__status=1).order_by('-storagesheet__date'),
-                           ['storagesheet.date', 'storagesheet.comment', 'quantity'], xfer)
+                           ['storagesheet.date', 'storagesheet.comment', 'quantity_txt'], xfer)
             xfer.add_component(grid)
         else:
             xfer.remove_component('provider')
@@ -356,7 +361,7 @@ class StorageSheetEditor(LucteriosEditor):
             xfer.remove_component("bill_date")
             xfer.remove_component("total")
             storagedetail = xfer.get_components("storagedetail")
-            storagedetail.delete_header("price_txt")
+            storagedetail.delete_header("price")
         if int(self.item.status) == 0:
             lbl = XferCompLabelForm('info')
             lbl.set_color('red')

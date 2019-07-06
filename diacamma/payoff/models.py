@@ -51,8 +51,7 @@ from lucterios.contacts.models import LegalEntity, Individual
 
 from diacamma.accounting.models import EntryAccount, FiscalYear, Third, Journal, \
     ChartsAccount, EntryLineAccount, AccountLink
-from diacamma.accounting.tools import format_devise, currency_round, correct_accounting_code,\
-    format_with_devise
+from diacamma.accounting.tools import currency_round, correct_accounting_code, format_with_devise
 
 
 class Supporting(LucteriosModel):
@@ -588,7 +587,7 @@ class DepositSlip(LucteriosModel):
                 bills.append(six.text_type(supporting.get_final_child()))
             payoff['bill'] = '{[br/]}'.join(bills)
             payoff['payer'] = values['payer']
-            payoff['amount'] = format_devise(values['amount'], 5)
+            payoff['amount'] = values['amount']
             payoff['date'] = values['date']
             payoff['reference'] = values['reference']
             payoff_nodeposit.append(payoff)

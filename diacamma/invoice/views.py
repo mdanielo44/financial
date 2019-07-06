@@ -57,7 +57,7 @@ from diacamma.payoff.views import PayoffAddModify, PayableEmail, can_send_email
 from diacamma.payoff.models import Payoff
 from diacamma.accounting.models import FiscalYear, Third
 from diacamma.accounting.views import get_main_third
-from diacamma.accounting.tools import current_system_account, format_devise
+from diacamma.accounting.tools import current_system_account, format_with_devise
 from lucterios.framework.xfersearch import get_criteria_list
 
 MenuManage.add_sub("invoice", None, "diacamma.invoice/images/invoice.png", _("Invoice"), _("Manage of billing"), 45)
@@ -638,8 +638,8 @@ class BillStatistic(XferContainerCustom):
         costumer_result = self.item.get_statistics_customer(self.getparam('without_reduct', False))
         grid = XferCompGrid("customers")
         grid.add_header("customer", _("customer"))
-        grid.add_header("amount", _("amount"))
-        grid.add_header("ratio", _("ratio (%)"))
+        grid.add_header("amount", _("amount"), htype=format_with_devise(7))
+        grid.add_header("ratio", _("ratio (%)"), htype='N2', formatstr='{0} %')
         index = 0
         for cust_val in costumer_result:
             grid.set_value(index, "customer", cust_val[0])
@@ -654,10 +654,10 @@ class BillStatistic(XferContainerCustom):
         articles_result = self.item.get_statistics_article(self.getparam('without_reduct', False))
         grid = XferCompGrid("articles")
         grid.add_header("article", _("article"))
-        grid.add_header("amount", _("amount"))
-        grid.add_header("number", _("number"))
-        grid.add_header("mean", _("mean"))
-        grid.add_header("ratio", _("ratio (%)"))
+        grid.add_header("amount", _("amount"), htype=format_with_devise(7))
+        grid.add_header("number", _("number"), htype='N2')
+        grid.add_header("mean", _("mean"), htype=format_with_devise(7))
+        grid.add_header("ratio", _("ratio (%)"), htype='N2', formatstr='{0} %')
         index = 0
         for art_val in articles_result:
             grid.set_value(index, "article", art_val[0])
@@ -674,8 +674,8 @@ class BillStatistic(XferContainerCustom):
         month_result = self.item.get_statistics_month(self.getparam('without_reduct', False))
         grid = XferCompGrid("months")
         grid.add_header("month", _("month"))
-        grid.add_header("amount", _("amount"))
-        grid.add_header("ratio", _("ratio (%)"))
+        grid.add_header("amount", _("amount"), htype=format_with_devise(7))
+        grid.add_header("ratio", _("ratio (%)"), htype='N2', formatstr='{0} %')
         index = 0
         for month_val in month_result:
             grid.set_value(index, "month", month_val[0])
@@ -813,8 +813,9 @@ def thirdaddon_invoice(item, xfer):
                         reduce_sum += detail.get_reduce()
                 gross_sum = total_sum + reduce_sum
                 lab = XferCompLabelForm('sum_summary')
-                lab.set_value(_("{[b]}Gross total{[/b]} : %(grosstotal)s - {[b]}total of reduces{[/b]} : %(reducetotal)s = {[b]}total to pay{[/b]} : %(total)s") %
-                              {'grosstotal': format_devise(gross_sum, 5), 'reducetotal': format_devise(reduce_sum, 5), 'total': format_devise(total_sum, 5)})
+                format_string = _("{[b]}Gross total{[/b]} : %(grosstotal)s - {[b]}total of reduces{[/b]} : %(reducetotal)s = {[b]}total to pay{[/b]} : %(total)s") % {'grosstotal': '{0}', 'reducetotal': '{1}', 'total': '{2}'}
+                lab.set_value([gross_sum, reduce_sum, total_sum])
+                lab.set_format(format_with_devise(7) + ';' + format_string)
                 lab.set_location(0, 3, 2)
                 xfer.add_component(lab)
                 if AutomaticReduce.objects.all().count() > 0:

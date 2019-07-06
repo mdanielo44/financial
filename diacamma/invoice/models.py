@@ -26,6 +26,7 @@ from __future__ import unicode_literals
 from re import match
 import logging
 from os.path import exists, join, dirname
+from datetime import timedelta
 
 from django.db import models
 from django.db.models.aggregates import Max, Sum
@@ -38,19 +39,20 @@ from django.utils.dateformat import DateFormat
 from django.utils import six, timezone
 from django_fsm import FSMIntegerField, transition
 
-from lucterios.framework.models import LucteriosModel, get_value_if_choices, get_obj_contains
+from lucterios.framework.models import LucteriosModel, get_value_if_choices, get_obj_contains,\
+    LucteriosVirtualField, LucteriosDecimalField
 from lucterios.framework.error import LucteriosException, IMPORTANT, GRAVE
 from lucterios.framework.signal_and_lock import Signal
 from lucterios.framework.filetools import get_user_path, readimage_to_base64, remove_accent
-from lucterios.framework.tools import same_day_months_after, get_date_formating
+from lucterios.framework.tools import same_day_months_after, get_date_formating, format_to_string
 from lucterios.CORE.models import Parameter, SavedCriteria
 from lucterios.CORE.parameters import Params
 from lucterios.contacts.models import CustomField, CustomizeObject
 
 from diacamma.accounting.models import FiscalYear, Third, EntryAccount, CostAccounting, Journal, EntryLineAccount, ChartsAccount, AccountThird
-from diacamma.accounting.tools import current_system_account, format_devise, currency_round, correct_accounting_code
+from diacamma.accounting.tools import current_system_account, currency_round, correct_accounting_code,\
+    format_with_devise, get_amount_from_format_devise
 from diacamma.payoff.models import Supporting, Payoff
-from datetime import timedelta
 
 
 class Vat(LucteriosModel):
@@ -169,9 +171,8 @@ class Article(LucteriosModel, CustomizeObject):
 
     reference = models.CharField(_('reference'), max_length=30)
     designation = models.TextField(_('designation'))
-    price = models.DecimalField(_('price'), max_digits=10, decimal_places=3,
-                                default=0.0, validators=[MinValueValidator(0.0),
-                                                         MaxValueValidator(9999999.999)])
+    price = LucteriosDecimalField(_('price'), max_digits=10, decimal_places=3,
+                                  default=0.0, validators=[MinValueValidator(0.0), MaxValueValidator(9999999.999)], format_string=lambda: format_with_devise(5))
     unit = models.CharField(_('unit'), null=True, default='', max_length=10)
     isdisabled = models.BooleanField(verbose_name=_('is disabled'), default=False)
     sell_account = models.CharField(_('sell account'), max_length=50)
@@ -181,6 +182,8 @@ class Article(LucteriosModel, CustomizeObject):
     categories = models.ManyToManyField(Category, verbose_name=_('categories'), blank=True)
     qtyDecimal = models.IntegerField(verbose_name=_('quantity decimal'), default=0, validators=[MinValueValidator(0), MaxValueValidator(3)])
     accountposting = models.ForeignKey(AccountPosting, verbose_name=_('account posting code'), null=True, default=None, on_delete=models.PROTECT)
+
+    stockage_total = LucteriosVirtualField(verbose_name=_('quantities'), compute_from='get_stockage_total')
 
     def __init__(self, *args, **kwargs):
         LucteriosModel.__init__(self, *args, **kwargs)
@@ -211,11 +214,11 @@ class Article(LucteriosModel, CustomizeObject):
         fields = []
         if Params.getvalue("invoice-article-with-picture"):
             fields.append((_('image'), 'image'))
-        fields.extend(["reference", "designation", (_('price'), "price_txt"), 'unit', "isdisabled", 'accountposting', "stockable"])
+        fields.extend(["reference", "designation", "price", 'unit', "isdisabled", 'accountposting', "stockable"])
         if len(Category.objects.all()) > 0:
             fields.append('categories')
         if len(StorageArea.objects.all()) > 0:
-            fields.append((_('quantities'), 'stockage_total'))
+            fields.append('stockage_total')
         return fields
 
     @classmethod
@@ -307,7 +310,7 @@ class Article(LucteriosModel, CustomizeObject):
 
     @property
     def price_txt(self):
-        return format_devise(self.price, 5)
+        return get_amount_from_format_devise(self.price, 5)
 
     @property
     def ref_price(self):
@@ -365,12 +368,11 @@ class Article(LucteriosModel, CustomizeObject):
             return False
         return True
 
-    @property
-    def stockage_total(self):
+    def get_stockage_total(self):
         for val in self.get_stockage_values():
             if val[0] == 0:
-                format_txt = "%%.%df" % self.qtyDecimal
-                return format_txt % float(val[2])
+                format_txt = "N%d" % int(self.qtyDecimal)
+                return format_to_string(float(val[2]), format_txt, None)
         return None
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
@@ -433,6 +435,15 @@ class Bill(Supporting):
     cost_accounting = models.ForeignKey(
         CostAccounting, verbose_name=_('cost accounting'), null=True, default=None, db_index=True, on_delete=models.PROTECT)
 
+    total = LucteriosVirtualField(verbose_name=_('total'), compute_from='get_total_ex', format_string=lambda: format_with_devise(5))
+    num_txt = LucteriosVirtualField(verbose_name=_('numeros'), compute_from='get_num_txt')
+    total_excltax = LucteriosVirtualField(verbose_name=_('total'), compute_from='get_total_excltax', format_string=lambda: format_with_devise(5))
+    vta_sum = LucteriosVirtualField(verbose_name=_('VTA sum'), compute_from='get_vta_sum', format_string=lambda: format_with_devise(5))
+    total_incltax = LucteriosVirtualField(verbose_name=_('total incl. taxes'), compute_from='get_total_incltax', format_string=lambda: format_with_devise(5))
+
+    title_vta_details = LucteriosVirtualField(verbose_name='', compute_from='get_title_vta_details')
+    vta_details = LucteriosVirtualField(verbose_name='', compute_from='get_vta_details', format_string=lambda: format_with_devise(5))
+
     def __str__(self):
         billtype = get_value_if_choices(self.bill_type, self.get_field_by_name('bill_type'))
         if self.num is None:
@@ -450,8 +461,7 @@ class Bill(Supporting):
 
     @classmethod
     def get_default_fields(cls, status=-1):
-        fields = ["bill_type", (_('numeros'), "num_txt"),
-                  "date", "third", "comment", (_('total'), 'total')]
+        fields = ["bill_type", "num_txt", "date", "third", "comment", 'total']
         if status < 0:
             fields.append("status")
         elif status == 1:
@@ -460,7 +470,7 @@ class Bill(Supporting):
 
     @classmethod
     def get_payment_fields(cls):
-        return ["third", ("bill_type", (_('numeros'), "num_txt"),), ("date", (_('total'), 'total'),)]
+        return ["third", ("bill_type", "num_txt",), ("date", 'total',)]
 
     def get_third_mask(self):
         return current_system_account().get_customer_mask()
@@ -482,15 +492,13 @@ class Bill(Supporting):
 
     @classmethod
     def get_show_fields(cls):
-        return [((_('numeros'), "num_txt"), "date"), "third", "detail_set", "comment", ("status", (_('total'), 'total_excltax'))]
+        return [("num_txt", "date"), "third", "detail_set", "comment", ("status", 'total_excltax')]
 
     @classmethod
     def get_print_fields(cls):
-        print_fields = [
-            (_("bill type"), "type_bill"), (_('numeros'), "num_txt"), "date", "third", "detail_set"]
+        print_fields = [(_("bill type"), "type_bill"), "num_txt", "date", "third", "detail_set"]
         print_fields.extend(Supporting.get_print_fields())
-        print_fields.extend(
-            ["comment", "status", (_('total'), 'total_excltax'), (_('VTA sum'), 'vta_sum'), (_('total incl. taxes'), 'total_incltax')])
+        print_fields.extend(["comment", "status", 'total_excltax', 'vta_sum', 'total_incltax'])
         print_fields.append('OUR_DETAIL')
         return print_fields
 
@@ -498,12 +506,11 @@ class Bill(Supporting):
     def type_bill(self):
         return get_value_if_choices(self.bill_type, self.get_field_by_name("bill_type")).upper()
 
-    @property
-    def total(self):
+    def get_total_ex(self):
         if Params.getvalue("invoice-vat-mode") == 2:
-            return self.total_incltax
+            return self.get_total_incltax()
         else:
-            return self.total_excltax
+            return self.get_total_excltax()
 
     def get_current_date(self):
         return self.date
@@ -534,10 +541,6 @@ class Bill(Supporting):
             val += detail.get_reduce_excltax()
         return val
 
-    @property
-    def total_excltax(self):
-        return format_devise(self.get_total_excltax(), 5)
-
     def get_vta_sum(self):
         val = 0
         for detail in self.detail_set.all():
@@ -546,10 +549,6 @@ class Bill(Supporting):
 
     def get_tax_sum(self):
         return self.get_vta_sum()
-
-    @property
-    def vta_sum(self):
-        return format_devise(self.get_vta_sum(), 5)
 
     def get_total_incltax(self):
         val = 0
@@ -560,18 +559,13 @@ class Bill(Supporting):
     def get_total(self):
         return self.get_total_incltax()
 
-    @property
-    def total_incltax(self):
-        return format_devise(self.get_total_incltax(), 5)
-
-    @property
-    def num_txt(self):
+    def get_num_txt(self):
         if (self.fiscal_year is None) or (self.num is None):
             return None
         else:
             return "%s-%d" % (self.fiscal_year.letter, self.num)
 
-    def get_vta_details(self):
+    def get_vta_detail_list(self):
         vtas = {}
         for detail in self.detail_set.all():
             if abs(detail.vta_rate) > 0.001:
@@ -581,19 +575,14 @@ class Bill(Supporting):
                 vtas[vta_txt] += detail.get_vta()
         return vtas
 
-    @property
-    def title_vta_details(self):
+    def get_title_vta_details(self):
         vtas = []
-        for vta in self.get_vta_details().keys():
+        for vta in self.get_vta_detail_list().keys():
             vtas.append(_("VAT %s %%") % vta)
-        return "{[br/]}".join(vtas)
+        return vtas
 
-    @property
-    def vta_details(self):
-        vtas = []
-        for value in self.get_vta_details().values():
-            vtas.append(format_devise(value, 5))
-        return "{[br/]}".join(vtas)
+    def get_vta_details(self):
+        return self.get_vta_detail_list().values()
 
     def payoff_is_revenu(self):
         return (self.bill_type != 0) and (self.bill_type != 2)
@@ -813,12 +802,12 @@ class Bill(Supporting):
                     total_cust += total_excltax
             for cust_id in costumers.keys():
                 try:
-                    ratio = "%.2f %%" % (100 * costumers[cust_id] / total_cust)
+                    ratio = (100 * costumers[cust_id] / total_cust)
                 except ZeroDivisionError:
-                    ratio = "---"
-                cust_list.append((six.text_type(Third.objects.get(id=cust_id)), format_devise(costumers[cust_id], 5), ratio, costumers[cust_id]))
-            cust_list.sort(key=lambda cust_item: (-1 * cust_item[3], cust_item[0]))
-            cust_list.append(("{[b]}%s{[/b]}" % _('total'), "{[b]}%s{[/b]}" % format_devise(total_cust, 5), "{[b]}%.2f %%{[/b]}" % 100, total_cust))
+                    ratio = None
+                cust_list.append((six.text_type(Third.objects.get(id=cust_id)), costumers[cust_id], ratio))
+            cust_list.sort(key=lambda cust_item: (-1 * cust_item[1], cust_item[0]))
+            cust_list.append(("{[b]}%s{[/b]}" % _('total'), {'format': "{[b]}{0}{[/b]}", 'value': total_cust}, {'format': "{[b]}{0}{[/b]}", 'value': 100}))
         return cust_list
 
     def get_statistics_article(self, without_reduct):
@@ -848,14 +837,14 @@ class Bill(Supporting):
                     art_text = six.text_type(Article.objects.get(id=art_id))
                 if abs(articles[art_id][1]) > 0.0001:
                     try:
-                        ratio = "%.2f %%" % (100 * articles[art_id][0] / total_art)
+                        ratio = (100 * articles[art_id][0] / total_art)
                     except ZeroDivisionError:
-                        ratio = "---"
-                    art_list.append((art_text, format_devise(articles[art_id][0], 5), "%.2f" % articles[art_id][1],
-                                     format_devise(articles[art_id][0] / articles[art_id][1], 5), ratio, articles[art_id][0]))
-            art_list.sort(key=lambda art_item: art_item[5], reverse=True)
-            art_list.append(("{[b]}%s{[/b]}" % _('total'), "{[b]}%s{[/b]}" % format_devise(total_art, 5),
-                             "{[b]}---{[/b]}", "{[b]}---{[/b]}", "{[b]}%.2f %%{[/b]}" % 100, total_art))
+                        ratio = 0
+                    art_list.append((art_text, articles[art_id][0], articles[art_id][1], articles[art_id][0] / articles[art_id][1], ratio))
+            art_list.sort(key=lambda art_item: art_item[1], reverse=True)
+            art_list.append(("{[b]}%s{[/b]}" % _('total'), {'format': "{[b]}{0}{[/b]}", 'value': total_art},
+                             {'format': "{[b]}{0}{[/b]}", 'value': None}, {'format': "{[b]}{0}{[/b]}", 'value': None},
+                             {'format': "{[b]}{0}{[/b]}", 'value': 100.0}))
         return art_list
 
     def get_statistics_month(self, without_reduct):
@@ -882,10 +871,10 @@ class Bill(Supporting):
                 months.append((begin_date, amount_sum))
             for begin_date, amount_sum in months:
                 try:
-                    ratio = "%.2f %%" % (100 * amount_sum / total_month)
+                    ratio = (100 * amount_sum / total_month)
                 except ZeroDivisionError:
-                    ratio = "---"
-                month_list.append((DateFormat(begin_date).format('F Y'), format_devise(amount_sum, 5), ratio))
+                    ratio = None
+                month_list.append((DateFormat(begin_date).format('F Y'), amount_sum, ratio))
         return month_list
 
     def support_validated(self, validate_date):
@@ -941,17 +930,26 @@ class Detail(LucteriosModel):
     article = models.ForeignKey(
         Article, verbose_name=_('article'), null=True, default=None, db_index=True, on_delete=models.PROTECT)
     designation = models.TextField(verbose_name=_('designation'))
-    price = models.DecimalField(verbose_name=_('price'), max_digits=10, decimal_places=3, default=0.0, validators=[
-        MinValueValidator(0.0), MaxValueValidator(9999999.999)])
-    unit = models.CharField(
-        verbose_name=_('unit'), null=True, default='', max_length=10)
-    quantity = models.DecimalField(verbose_name=_('quantity'), max_digits=12, decimal_places=3, default=1.0, validators=[
-        MinValueValidator(0.0), MaxValueValidator(9999999.999)])
-    reduce = models.DecimalField(verbose_name=_('reduce'), max_digits=10, decimal_places=3, default=0.0, validators=[
-        MinValueValidator(0.0), MaxValueValidator(9999999.999)])
-    vta_rate = models.DecimalField(_('vta rate'), max_digits=6, decimal_places=4, default=0.0, validators=[
-        MinValueValidator(0.0), MaxValueValidator(1.0)])
+    price = LucteriosDecimalField(verbose_name=_('price'), max_digits=10, decimal_places=3,
+                                  default=0.0, validators=[MinValueValidator(0.0), MaxValueValidator(9999999.999)], format_string=lambda: format_with_devise(5))
+    unit = models.CharField(verbose_name=_('unit'), null=True, default='', max_length=10)
+    quantity = LucteriosDecimalField(verbose_name=_('quantity'), max_digits=12, decimal_places=3,
+                                     default=1.0, validators=[MinValueValidator(0.0), MaxValueValidator(9999999.999)], format_string="N3")
+    reduce = LucteriosDecimalField(verbose_name=_('reduce'), max_digits=10, decimal_places=3,
+                                   default=0.0, validators=[MinValueValidator(0.0), MaxValueValidator(9999999.999)], format_string=lambda: format_with_devise(5))
+    vta_rate = LucteriosDecimalField(_('vta rate'), max_digits=6, decimal_places=4,
+                                     default=0.0, validators=[MinValueValidator(0.0), MaxValueValidator(1.0)], format_string=lambda: format_with_devise(5))
     storagearea = models.ForeignKey(StorageArea, verbose_name=_('storage area'), null=True, default=None, db_index=True, on_delete=models.PROTECT)
+
+    price_txt = LucteriosVirtualField(verbose_name=_('price'), compute_from="get_price")
+    reduce_txt = LucteriosVirtualField(verbose_name=_('reduce'), compute_from="get_reduce_txt")
+    total = LucteriosVirtualField(verbose_name=_('total'), compute_from='get_total_ex', format_string=lambda: format_with_devise(5))
+
+    reduce_amount = LucteriosVirtualField(verbose_name=_('reduce'), compute_from="get_reduce", format_string=lambda: format_with_devise(0))
+
+    total_excltax = LucteriosVirtualField(verbose_name=_('total'), compute_from="get_total_excltax", format_string=lambda: format_with_devise(5))
+    total_incltax = LucteriosVirtualField(verbose_name=_('total incl. taxes'), compute_from="get_total_incltax", format_string=lambda: format_with_devise(5))
+    price_vta = LucteriosVirtualField(verbose_name=_('VTA sum'), compute_from="get_vta", format_string=lambda: format_with_devise(5))
 
     def __init__(self, *args, **kwargs):
         LucteriosModel.__init__(self, *args, **kwargs)
@@ -990,7 +988,7 @@ class Detail(LucteriosModel):
 
     @classmethod
     def get_default_fields(cls):
-        return ["article", "designation", (_('price'), "price_txt"), "unit", "quantity", "storagearea", (_('reduce'), "reduce_txt"), (_('total'), 'total')]
+        return ["article", "designation", "price", "unit", "quantity", "storagearea", "reduce_txt", 'total']
 
     @classmethod
     def get_edit_fields(cls):
@@ -998,7 +996,7 @@ class Detail(LucteriosModel):
 
     @classmethod
     def get_show_fields(cls):
-        return ["article", "designation", (_('price'), "price_txt"), "unit", "quantity", (_('reduce'), "reduce_txt"), "storagearea"]
+        return ["article", "designation", "price", "unit", "quantity", "reduce_txt", "storagearea"]
 
     @classmethod
     def get_print_fields(cls):
@@ -1040,15 +1038,8 @@ class Detail(LucteriosModel):
         return float(self.reduce)
 
     @property
-    def price_txt(self):
-        return format_devise(self.get_price(), 5)
-
-    @property
     def reduce_amount_txt(self):
-        if self.reduce > 0.0001:
-            return format_devise(self.get_reduce(), 5)
-        else:
-            return None
+        return get_amount_from_format_devise(self.reduce_amount, 5)
 
     @property
     def reduce_ratio_txt(self):
@@ -1061,8 +1052,9 @@ class Detail(LucteriosModel):
         else:
             return None
 
-    @property
-    def reduce_txt(self):
+    def get_reduce_txt(self):
+        if self.id is None:
+            return None
         if self.reduce > 0.0001:
             if Params.getvalue('invoice-reduce-with-ratio'):
                 red_ratio = self.reduce_ratio_txt
@@ -1074,25 +1066,30 @@ class Detail(LucteriosModel):
         else:
             return None
 
-    @property
-    def total(self):
+    def get_total_ex(self):
         if Params.getvalue("invoice-vat-mode") == 2:
-            return self.total_incltax
+            return self.get_total_incltax()
         elif Params.getvalue("invoice-vat-mode") == 1:
-            return self.total_excltax
+            return self.get_total_excltax()
         else:
-            return format_devise(self.get_total(), 5)
+            return self.get_total()
 
     def get_total(self):
-        return currency_round(self.price * self.quantity - self.reduce)
+        if self.id is None:
+            return 0
+        return currency_round(float(self.price) * float(self.quantity) - float(self.reduce))
 
     def get_total_excltax(self):
+        if self.id is None:
+            return 0
         if self.vta_rate < -0.001:
             return self.get_total() - self.get_vta()
         else:
             return self.get_total()
 
     def get_reduce_vat(self):
+        if self.id is None:
+            return 0
         if self.vta_rate < -0.001:
             return currency_round(self.reduce * -1 * self.vta_rate / (1 - self.vta_rate))
         elif self.vta_rate > 0.001:
@@ -1101,26 +1098,24 @@ class Detail(LucteriosModel):
             return 0
 
     def get_reduce_excltax(self):
+        if self.id is None:
+            return 0
         if self.vta_rate < -0.001:
             return currency_round(self.reduce) - self.get_reduce_vat()
         else:
             return currency_round(self.reduce)
 
-    @property
-    def total_excltax(self):
-        return format_devise(self.get_total_excltax(), 5)
-
     def get_total_incltax(self):
+        if self.id is None:
+            return 0
         if self.vta_rate > 0.001:
             return self.get_total() + self.get_vta()
         else:
             return self.get_total()
 
-    @property
-    def total_incltax(self):
-        return format_devise(self.get_total_incltax(), 5)
-
     def get_vta(self):
+        if self.id is None:
+            return 0
         val = 0
         if self.vta_rate > 0.001:
             val = currency_round(self.price * self.quantity * self.vta_rate)
@@ -1129,10 +1124,6 @@ class Detail(LucteriosModel):
                 self.price * self.quantity * -1 * self.vta_rate / (1 - self.vta_rate))
         val -= self.get_reduce_vat()
         return val
-
-    @property
-    def price_vta(self):
-        return format_devise(self.get_vta(), 5)
 
     def define_autoreduce(self):
         if (self.bill.third_id is not None) and (self.bill.bill_type in (0, 1, 3)) and (self.bill.status in (0, 1)) and (float(self.reduce) < 0.0001):
@@ -1165,6 +1156,8 @@ class StorageSheet(LucteriosModel):
     bill_reference = models.CharField(_('bill reference'), blank=True, max_length=50)
     bill_date = models.DateField(verbose_name=_('bill date'), null=True)
 
+    total = LucteriosVirtualField(verbose_name=_('total amount'), compute_from="get_total", format_string=lambda: format_with_devise(5))
+
     def __str__(self):
         sheettype = get_value_if_choices(self.sheet_type, self.get_field_by_name('sheet_type'))
         sheetstatus = get_value_if_choices(self.status, self.get_field_by_name('status'))
@@ -1180,7 +1173,7 @@ class StorageSheet(LucteriosModel):
 
     @classmethod
     def get_show_fields(cls):
-        return [("sheet_type", "status"), ("date", "storagearea"), ("provider", "bill_date"), ("bill_reference"), ("comment", ), ("storagedetail_set", ), ((_('total amount'), 'total'),)]
+        return [("sheet_type", "status"), ("date", "storagearea"), ("provider", "bill_date"), ("bill_reference"), ("comment", ), ("storagedetail_set", ), ('total',)]
 
     @property
     def provider_query(self):
@@ -1192,12 +1185,11 @@ class StorageSheet(LucteriosModel):
             return _('"%s" cannot be deleted!') % six.text_type(self)
         return ''
 
-    @property
-    def total(self):
+    def get_total(self):
         value = 0.0
         for detail in self.storagedetail_set.all():
             value += float(detail.quantity) * float(detail.price)
-        return format_devise(value, 5)
+        return value
 
     def get_info_state(self):
         info = []
@@ -1238,17 +1230,18 @@ class StorageSheet(LucteriosModel):
 class StorageDetail(LucteriosModel):
     storagesheet = models.ForeignKey(StorageSheet, verbose_name=_('storage sheet'), null=False, db_index=True, on_delete=models.CASCADE)
     article = models.ForeignKey(Article, verbose_name=_('article'), null=False, db_index=True, on_delete=models.PROTECT)
-    price = models.DecimalField(verbose_name=_('buying price'), max_digits=10, decimal_places=3, default=0.0,
-                                validators=[MinValueValidator(0.0), MaxValueValidator(9999999.999)])
+    price = LucteriosDecimalField(verbose_name=_('buying price'), max_digits=10, decimal_places=3, default=0.0,
+                                  validators=[MinValueValidator(0.0), MaxValueValidator(9999999.999)], format_string=lambda: format_with_devise(5))
     quantity = models.DecimalField(verbose_name=_('quantity'), max_digits=12, decimal_places=3, default=1.0,
                                    validators=[MinValueValidator(0.0), MaxValueValidator(9999999.999)])
+    quantity_txt = LucteriosVirtualField(verbose_name=_('quantity'), compute_from="get_quantity_txt")
 
     def __str__(self):
         return "%s %d" % (self.article_id, self.quantity)
 
     @classmethod
     def get_default_fields(cls):
-        return ["article", (_('buying price'), "price_txt"), (_('quantity'), "quantity_txt")]
+        return ["article", "price", "quantity_txt"]
 
     @classmethod
     def get_edit_fields(cls):
@@ -1256,22 +1249,16 @@ class StorageDetail(LucteriosModel):
 
     @classmethod
     def get_show_fields(cls):
-        return ["article", (_('buying price'), "price_txt"), (_('quantity'), "quantity_txt")]
+        return ["article", "price", "quantity_txt"]
 
-    @property
-    def price_txt(self):
-        if self.quantity > 0:
-            return format_devise(self.price, 5)
-        else:
+    def get_quantity_txt(self):
+        if self.quantity is None:
             return None
-
-    @property
-    def quantity_txt(self):
         if self.article_id is not None:
-            format_txt = "%%.%df" % self.article.qtyDecimal
-            return format_txt % float(self.quantity)
+            format_txt = "N%d" % self.article.qtyDecimal
         else:
-            return abs(self.quantity)
+            format_txt = "N3"
+        return format_to_string(float(self.quantity), format_txt, None)
 
     def set_context(self, xfer):
         qty_field = self.get_field_by_name('quantity')
@@ -1325,12 +1312,14 @@ class AutomaticReduce(LucteriosModel):
     occurency = models.IntegerField(verbose_name=_('occurency'), default=0, validators=[MinValueValidator(0), MaxValueValidator(1000)])
     filtercriteria = models.ForeignKey(SavedCriteria, verbose_name=_('filter criteria'), null=True, on_delete=models.PROTECT)
 
+    amount_txt = LucteriosVirtualField(verbose_name=_('amount'), compute_from="get_amount_txt")
+
     def __str__(self):
         return self.name
 
     @classmethod
     def get_default_fields(cls):
-        return ["name", "category", "mode", (_('amount'), "amount_txt"), "occurency", "filtercriteria"]
+        return ["name", "category", "mode", "amount_txt", "occurency", "filtercriteria"]
 
     @classmethod
     def get_edit_fields(cls):
@@ -1338,7 +1327,7 @@ class AutomaticReduce(LucteriosModel):
 
     @classmethod
     def get_show_fields(cls):
-        return ["name", "category", "mode", (_('amount'), "amount_txt"), "occurency", "filtercriteria"]
+        return ["name", "category", "mode", "amount_txt", "occurency", "filtercriteria"]
 
     @property
     def filtercriteria_query(self):
@@ -1397,12 +1386,13 @@ class AutomaticReduce(LucteriosModel):
                     val_reduce = self._reduce_for_mode2(reduce_query, detail)
         return min(val_reduce, float(detail.quantity) * float(detail.price))
 
-    @property
-    def amount_txt(self):
+    def get_amount_txt(self):
+        if self.amount is None:
+            return None
         if self.mode == 0:
-            return format_devise(self.amount, 5)
+            return format_to_string(float(self.amount), format_with_devise(7), None)
         else:
-            return "%.2f%%" % self.amount
+            return "%.2f%%" % float(self.amount)
 
     class Meta(object):
         verbose_name = _('automatic reduce')

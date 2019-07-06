@@ -8,6 +8,7 @@ from django.conf import settings
 
 from lucterios.framework.tools import set_locale_lang
 from lucterios.CORE.models import PrintModel
+from lucterios.framework.models import LucteriosDecimalField
 
 
 def initial_values(*args):
@@ -48,7 +49,7 @@ class Migration(migrations.Migration):
                 ('reference', models.CharField(
                     verbose_name='reference', max_length=30)),
                 ('designation', models.TextField(verbose_name='designation')),
-                ('price', models.DecimalField(validators=[MinValueValidator(0.0), MaxValueValidator(
+                ('price', LucteriosDecimalField(validators=[MinValueValidator(0.0), MaxValueValidator(
                     9999999.999)], decimal_places=3, max_digits=10, verbose_name='price', default=0.0)),
                 ('unit', models.CharField(
                     verbose_name='unit', null=True, default='', max_length=10)),
@@ -96,15 +97,15 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(
                     auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('designation', models.TextField(verbose_name='designation')),
-                ('price', models.DecimalField(verbose_name='price', max_digits=10, default=0.0,
-                                              decimal_places=3, validators=[MinValueValidator(0.0), MaxValueValidator(9999999.999)])),
-                ('vta_rate', models.DecimalField(default=0.0, verbose_name='vta rate', decimal_places=4,
-                                                 max_digits=6, validators=[MinValueValidator(0.0), MaxValueValidator(1.0)])),
+                ('price', LucteriosDecimalField(verbose_name='price', max_digits=10, default=0.0,
+                                                decimal_places=3, validators=[MinValueValidator(0.0), MaxValueValidator(9999999.999)])),
+                ('vta_rate', LucteriosDecimalField(default=0.0, verbose_name='vta rate', decimal_places=4,
+                                                   max_digits=6, validators=[MinValueValidator(0.0), MaxValueValidator(1.0)])),
                 ('unit', models.CharField(
                     null=True, verbose_name='unit', default='', max_length=10)),
-                ('quantity', models.DecimalField(validators=[MinValueValidator(0.0), MaxValueValidator(
+                ('quantity', LucteriosDecimalField(validators=[MinValueValidator(0.0), MaxValueValidator(
                     9999999.99)], decimal_places=2, verbose_name='quantity', default=1.0, max_digits=10)),
-                ('reduce', models.DecimalField(validators=[MinValueValidator(0.0), MaxValueValidator(
+                ('reduce', LucteriosDecimalField(validators=[MinValueValidator(0.0), MaxValueValidator(
                     9999999.999)], decimal_places=3, verbose_name='reduce', default=0.0, max_digits=10)),
                 ('article', models.ForeignKey(null=True, default=None, to='invoice.Article',
                                               on_delete=deletion.PROTECT, verbose_name='article')),
