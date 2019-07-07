@@ -184,6 +184,7 @@ class Article(LucteriosModel, CustomizeObject):
     accountposting = models.ForeignKey(AccountPosting, verbose_name=_('account posting code'), null=True, default=None, on_delete=models.PROTECT)
 
     stockage_total = LucteriosVirtualField(verbose_name=_('quantities'), compute_from='get_stockage_total')
+    price_txt = LucteriosVirtualField(verbose_name=_('price'), compute_from='price', format_string=lambda: format_with_devise(5))
 
     def __init__(self, *args, **kwargs):
         LucteriosModel.__init__(self, *args, **kwargs)
@@ -309,12 +310,8 @@ class Article(LucteriosModel, CustomizeObject):
         return img.decode('ascii')
 
     @property
-    def price_txt(self):
-        return get_amount_from_format_devise(self.price, 5)
-
-    @property
     def ref_price(self):
-        return "%s [%s]" % (self.reference, self.price_txt)
+        return "%s [%s]" % (self.reference, get_amount_from_format_devise(self.price, 5))
 
     def get_designation(self):
         val = self.designation
@@ -945,7 +942,8 @@ class Detail(LucteriosModel):
     reduce_txt = LucteriosVirtualField(verbose_name=_('reduce'), compute_from="get_reduce_txt")
     total = LucteriosVirtualField(verbose_name=_('total'), compute_from='get_total_ex', format_string=lambda: format_with_devise(5))
 
-    reduce_amount = LucteriosVirtualField(verbose_name=_('reduce'), compute_from="get_reduce", format_string=lambda: format_with_devise(0))
+    reduce_amount = LucteriosVirtualField(verbose_name=_('reduce'), compute_from="get_reduce", format_string=lambda: format_with_devise(5))
+    reduce_amount_txt = LucteriosVirtualField(verbose_name=_('reduce'), compute_from="get_reduce", format_string=lambda: format_with_devise(5))
 
     total_excltax = LucteriosVirtualField(verbose_name=_('total'), compute_from="get_total_excltax", format_string=lambda: format_with_devise(5))
     total_incltax = LucteriosVirtualField(verbose_name=_('total incl. taxes'), compute_from="get_total_incltax", format_string=lambda: format_with_devise(5))
@@ -1038,10 +1036,6 @@ class Detail(LucteriosModel):
         return float(self.reduce)
 
     @property
-    def reduce_amount_txt(self):
-        return get_amount_from_format_devise(self.reduce_amount, 5)
-
-    @property
     def reduce_ratio_txt(self):
         if self.reduce > 0.0001:
             try:
@@ -1062,7 +1056,7 @@ class Detail(LucteriosModel):
                     red_ratio = "(%s)" % red_ratio
             else:
                 red_ratio = ''
-            return "%s%s" % (self.reduce_amount_txt, red_ratio)
+            return "%s%s" % (get_amount_from_format_devise(self.reduce_amount, 5), red_ratio)
         else:
             return None
 
