@@ -173,7 +173,7 @@ class DepositDetailAddModify(XferContainerCustom):
         record_min, record_max = grid.define_page(self)
         grid.add_header('bill', _('bill'))
         grid.add_header('payer', _('payer'), horderable=1)
-        grid.add_header('amount', _('amount'), horderable=1, htype=format_with_devise(5))
+        grid.add_header('amount', _('amount'), horderable=1, htype=format_with_devise(7))
         grid.add_header('date', _('date'), horderable=1, htype='D')
         grid.add_header('reference', _('reference'), horderable=1)
         for payoff in payoff_nodeposit[record_min:record_max]:
