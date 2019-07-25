@@ -1,3 +1,15 @@
+.. image:: https://img.shields.io/pypi/djversions/diacamma-financial
+    :target: https://pypi.org/project/diacamma-financial/
+    :alt: Django version
+
+.. image:: https://img.shields.io/pypi/v/diacamma-financial
+    :target: https://pypi.org/project/diacamma-financial/
+    :alt: Latest Version
+
+.. image:: https://img.shields.io/pypi/pyversions/diacamma-financial
+    :target: https://pypi.org/project/diacamma-financial/
+    :alt: Supported Python versions
+
 Diacamma Financial modules for Lucterios framework
 ===================================================
 
