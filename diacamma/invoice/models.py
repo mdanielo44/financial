@@ -44,7 +44,8 @@ from lucterios.framework.models import LucteriosModel, get_value_if_choices, get
 from lucterios.framework.error import LucteriosException, IMPORTANT, GRAVE
 from lucterios.framework.signal_and_lock import Signal
 from lucterios.framework.filetools import get_user_path, readimage_to_base64, remove_accent
-from lucterios.framework.tools import same_day_months_after, get_date_formating, format_to_string
+from lucterios.framework.tools import same_day_months_after, get_date_formating, format_to_string,\
+    get_format_value
 from lucterios.CORE.models import Parameter, SavedCriteria
 from lucterios.CORE.parameters import Params
 from lucterios.contacts.models import CustomField, CustomizeObject
@@ -53,6 +54,7 @@ from diacamma.accounting.models import FiscalYear, Third, EntryAccount, CostAcco
 from diacamma.accounting.tools import current_system_account, currency_round, correct_accounting_code,\
     format_with_devise, get_amount_from_format_devise
 from diacamma.payoff.models import Supporting, Payoff
+from lucterios.framework.auditlog import auditlog
 
 
 class Vat(LucteriosModel):
@@ -128,6 +130,28 @@ class ArticleCustomField(LucteriosModel):
     article = models.ForeignKey('Article', verbose_name=_('article'), null=False, on_delete=models.CASCADE)
     field = models.ForeignKey(CustomField, verbose_name=_('field'), null=False, on_delete=models.CASCADE)
     value = models.TextField(_('value'), default="")
+
+    data = LucteriosVirtualField(verbose_name=_('value'), compute_from='get_data')
+
+    def get_data(self):
+        data = None
+        if self.field.kind == 0:
+            data = six.text_type(self.value)
+        if self.value == '':
+            self.value = '0'
+        if self.field.kind == 1:
+            data = int(self.value)
+        if self.field.kind == 2:
+            data = float(self.value)
+        if self.field.kind == 3:
+            data = (self.value != 'False') and (self.value != '0') and (self.value != '') and (self.value != 'n')
+        if self.field.kind == 4:
+            data = int(self.value)
+        dep_field = CustomizeObject.get_virtualfield(self.field.get_fieldname())
+        return get_format_value(dep_field, data)
+
+    def get_auditlog_object(self):
+        return self.article.get_final_child()
 
     class Meta(object):
         verbose_name = _('custom field value')
@@ -984,6 +1008,9 @@ class Detail(LucteriosModel):
     def __str__(self):
         return "[%s] %s:%s" % (six.text_type(self.article), six.text_type(self.designation), self.price_txt)
 
+    def get_auditlog_object(self):
+        return self.bill.get_final_child()
+
     @classmethod
     def get_default_fields(cls):
         return ["article", "designation", "price", "unit", "quantity", "storagearea", "reduce_txt", 'total']
@@ -1233,6 +1260,9 @@ class StorageDetail(LucteriosModel):
     def __str__(self):
         return "%s %d" % (self.article_id, self.quantity)
 
+    def get_auditlog_object(self):
+        return self.storagesheet.get_final_child()
+
     @classmethod
     def get_default_fields(cls):
         return ["article", "price", "quantity_txt"]
@@ -1476,3 +1506,19 @@ def invoice_checkparam():
     Parameter.check_and_create(name='invoice-reduce-with-ratio', typeparam=3, title=_("invoice-reduce-with-ratio"), args="{}", value='True')
     Parameter.check_and_create(name='invoice-reduce-allow-article-empty', typeparam=3, title=_("invoice-reduce-allow-article-empty"), args="{}", value='True')
     convert_asset_and_revenue()
+
+
+@Signal.decorate('auditlog_register')
+def invoice_auditlog_register():
+    auditlog.register(Vat)
+    auditlog.register(Category)
+    auditlog.register(StorageArea)
+    auditlog.register(AccountPosting)
+    auditlog.register(Provider)
+    auditlog.register(AutomaticReduce, include_fields=["name", "category", "mode", "amount_txt", "occurency", "filtercriteria"])
+    auditlog.register(Article, include_fields=["reference", "designation", "price", "unit", "accountposting", 'vat', "stockable", "isdisabled", "qtyDecimal"])
+    auditlog.register(ArticleCustomField, include_fields=['field', 'data'], mapping_fields=['field'])
+    auditlog.register(Bill, include_fields=["bill_type", "status", "num_txt", "date", "third", "comment"])
+    auditlog.register(Detail, include_fields=["article", "designation", "price", "unit", "quantity", "storagearea", "reduce"])
+    auditlog.register(StorageSheet, include_fields=["sheet_type", "status", "date", "storagearea", "comment", "provider", "bill_date", "bill_reference"])
+    auditlog.register(StorageDetail, include_fields=["article", "price", "quantity"])

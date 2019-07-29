@@ -42,7 +42,7 @@ from django_fsm import FSMIntegerField, transition
 
 from lucterios.framework.models import LucteriosModel, get_value_if_choices,\
     LucteriosVirtualField
-from lucterios.framework.tools import get_date_formating
+from lucterios.framework.tools import get_date_formating, get_format_value
 from lucterios.framework.error import LucteriosException, IMPORTANT, GRAVE
 from lucterios.framework.filetools import read_file, xml_validator, save_file, get_user_path
 from lucterios.framework.signal_and_lock import RecordLocker, Signal
@@ -52,12 +52,35 @@ from lucterios.contacts.models import AbstractContact, CustomField, CustomizeObj
 
 from diacamma.accounting.tools import get_amount_sum, current_system_account, currency_round, correct_accounting_code,\
     get_currency_symbole, format_with_devise, get_amount_from_format_devise
+from lucterios.framework.auditlog import auditlog
 
 
 class ThirdCustomField(LucteriosModel):
     third = models.ForeignKey('Third', verbose_name=_('third'), null=False, on_delete=models.CASCADE)
     field = models.ForeignKey(CustomField, verbose_name=_('field'), null=False, on_delete=models.CASCADE)
     value = models.TextField(_('value'), default="")
+
+    data = LucteriosVirtualField(verbose_name=_('value'), compute_from='get_data')
+
+    def get_data(self):
+        data = None
+        if self.field.kind == 0:
+            data = six.text_type(self.value)
+        if self.value == '':
+            self.value = '0'
+        if self.field.kind == 1:
+            data = int(self.value)
+        if self.field.kind == 2:
+            data = float(self.value)
+        if self.field.kind == 3:
+            data = (self.value != 'False') and (self.value != '0') and (self.value != '') and (self.value != 'n')
+        if self.field.kind == 4:
+            data = int(self.value)
+        dep_field = CustomizeObject.get_virtualfield(self.field.get_fieldname())
+        return get_format_value(dep_field, data)
+
+    def get_auditlog_object(self):
+        return self.third.get_final_child()
 
     class Meta(object):
         verbose_name = _('custom field value')
@@ -173,6 +196,9 @@ class AccountThird(LucteriosModel):
     code = models.CharField(_('code'), max_length=50)
 
     total_txt = LucteriosVirtualField(verbose_name=_('total'), compute_from='get_total_txt', format_string=lambda: format_with_devise(2))
+
+    def get_auditlog_object(self):
+        return self.third.get_final_child()
 
     def __str__(self):
         return self.code
@@ -1041,6 +1067,9 @@ class EntryLineAccount(LucteriosModel):
     credit = LucteriosVirtualField(verbose_name=_('credit'), compute_from='get_credit', format_string=lambda: format_with_devise(6))
     designation_ref = LucteriosVirtualField(verbose_name=_('name'), compute_from='get_designation_ref')
 
+    def get_auditlog_object(self):
+        return self.entry.get_final_child()
+
     @classmethod
     def get_other_fields(cls):
         return ['entry_account', 'debit', 'credit', 'reference', 'costaccounting', 'link']
@@ -1305,6 +1334,9 @@ class ModelLineEntry(LucteriosModel):
     debit = LucteriosVirtualField(verbose_name=_('debit'), compute_from='get_debit', format_string=lambda: format_with_devise(0))
     credit = LucteriosVirtualField(verbose_name=_('credit'), compute_from='get_credit', format_string=lambda: format_with_devise(0))
 
+    def get_auditlog_object(self):
+        return self.model.get_final_child()
+
     @classmethod
     def get_default_fields(cls):
         return ['code', 'third', 'debit', 'credit']
@@ -1548,6 +1580,22 @@ def accounting_checkparam():
     Parameter.check_and_create(name='accounting-code-report-filter', typeparam=0, title=_("accounting-code-report-filter"), args="{'Multi':False}", value='')
     check_accountingcost()
     check_accountlink()
+
+
+@Signal.decorate('auditlog_register')
+def accounting_auditlog_register():
+    auditlog.register(Third, include_fields=["contact", "status"])
+    auditlog.register(ThirdCustomField, include_fields=['field', 'data'], mapping_fields=['field'])
+    auditlog.register(AccountThird, include_fields=["third", "code"])
+    auditlog.register(Journal)
+    auditlog.register(FiscalYear, include_fields=['begin', 'end', 'status', 'is_actif'])
+    auditlog.register(ModelEntry, include_fields=['journal', 'designation', 'costaccounting'])
+    auditlog.register(ModelLineEntry, include_fields=['code', 'third', 'debit', 'credit'])
+    auditlog.register(CostAccounting, include_fields=['name', 'description', 'year', 'last_costaccounting', 'status', 'is_default'])
+    auditlog.register(ChartsAccount, include_fields=['year', 'code', 'name', 'type_of_account'])
+    auditlog.register(Budget, include_fields=['budget', 'montant', 'year', 'cost_accounting'])
+    auditlog.register(EntryAccount, include_fields=['num', 'date_entry', 'date_value', 'journal', 'date_value', 'designation', 'year'])
+    auditlog.register(EntryLineAccount, include_fields=['entry_account', 'debit', 'credit', 'costaccounting', 'link', 'third', 'reference'])
 
 
 pre_save.connect(pre_save_datadb)

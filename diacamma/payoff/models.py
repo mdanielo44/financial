@@ -52,6 +52,7 @@ from lucterios.contacts.models import LegalEntity, Individual
 from diacamma.accounting.models import EntryAccount, FiscalYear, Third, Journal, \
     ChartsAccount, EntryLineAccount, AccountLink
 from diacamma.accounting.tools import currency_round, correct_accounting_code, format_with_devise
+from lucterios.framework.auditlog import auditlog
 
 
 class Supporting(LucteriosModel):
@@ -314,6 +315,9 @@ class Payoff(LucteriosModel):
     bank_fee = models.DecimalField(verbose_name=_('bank fee'), max_digits=10, decimal_places=3, default=0.0, validators=[
         MinValueValidator(0.0), MaxValueValidator(9999999.999)])
 
+    def __str__(self):
+        return "%s - %s - %s" % (self.payoff.payer, get_date_formating(self.payoff.date), self.payoff.reference)
+
     @classmethod
     def get_default_fields(cls):
         return ["date", "amount", "mode", "reference", "payer", "bank_account"]
@@ -497,6 +501,9 @@ class Payoff(LucteriosModel):
         self.delete_accounting()
         LucteriosModel.delete(self, using)
 
+    def get_auditlog_object(self):
+        return self.supporting.get_final_child()
+
     class Meta(object):
         verbose_name = _('payoff')
         verbose_name_plural = _('payoffs')
@@ -632,6 +639,9 @@ class DepositDetail(LucteriosModel):
             return values['amount__sum']
         else:
             return 0
+
+    def get_auditlog_object(self):
+        return self.deposit
 
     class Meta(object):
         verbose_name = _('deposit detail')
@@ -879,3 +889,12 @@ def payoff_checkparam():
                                args="{'Multi':False, 'HyperText': False}", value=_('#reference'))
     check_payoff_accounting()
     check_bank_account()
+
+
+@Signal.decorate('auditlog_register')
+def payoff_auditlog_register():
+    auditlog.register(BankAccount)
+    auditlog.register(PaymentMethod, include_fields=['paytype', 'bank_account', 'info'])
+    auditlog.register(DepositSlip, include_fields=['status', 'bank_account', 'date', 'reference', 'total'])
+    auditlog.register(DepositDetail)
+    auditlog.register(Payoff)
