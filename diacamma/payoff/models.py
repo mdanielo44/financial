@@ -64,7 +64,7 @@ class Supporting(LucteriosModel):
 
     @classmethod
     def get_payoff_fields(cls):
-        return ['payoff_set', 'total_payed', 'total_rest_topay']
+        return ['payoff_set', ('total_payed', 'total_rest_topay')]
 
     @classmethod
     def get_print_fields(cls):
@@ -316,7 +316,7 @@ class Payoff(LucteriosModel):
         MinValueValidator(0.0), MaxValueValidator(9999999.999)])
 
     def __str__(self):
-        return "%s - %s - %s" % (self.payoff.payer, get_date_formating(self.payoff.date), self.payoff.reference)
+        return "%s - %s - %s" % (self.payer, get_date_formating(self.date), self.reference)
 
     @classmethod
     def get_default_fields(cls):
@@ -893,8 +893,8 @@ def payoff_checkparam():
 
 @Signal.decorate('auditlog_register')
 def payoff_auditlog_register():
-    auditlog.register(BankAccount)
+    auditlog.register(BankAccount, exclude_fields=['ID'])
     auditlog.register(PaymentMethod, include_fields=['paytype', 'bank_account', 'info'])
     auditlog.register(DepositSlip, include_fields=['status', 'bank_account', 'date', 'reference', 'total'])
-    auditlog.register(DepositDetail)
-    auditlog.register(Payoff)
+    auditlog.register(DepositDetail, include_fields=['payoff', 'amount'])
+    auditlog.register(Payoff, include_fields=["date", "amount", "mode", "reference", "payer", "bank_account", "bank_fee"])

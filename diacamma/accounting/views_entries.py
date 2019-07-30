@@ -421,6 +421,10 @@ class EntryAccountEdit(XferAddEditor):
     caption_add = _("Add entry of account")
     caption_modify = _("Modify accounting entry")
 
+    def __init__(self, **kwargs):
+        XferAddEditor.__init__(self, **kwargs)
+        self.with_auditlog_btn = True
+
     def fillresponse(self):
         self.item.check_date()
         XferAddEditor.fillresponse(self)

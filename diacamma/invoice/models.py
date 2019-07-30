@@ -1509,11 +1509,11 @@ def invoice_checkparam():
 
 @Signal.decorate('auditlog_register')
 def invoice_auditlog_register():
-    auditlog.register(Vat)
-    auditlog.register(Category)
-    auditlog.register(StorageArea)
-    auditlog.register(AccountPosting)
-    auditlog.register(Provider)
+    auditlog.register(Vat, exclude_fields=['ID'])
+    auditlog.register(Category, exclude_fields=['ID'])
+    auditlog.register(StorageArea, exclude_fields=['ID'])
+    auditlog.register(AccountPosting, exclude_fields=['ID'])
+    auditlog.register(Provider, exclude_fields=['ID'])
     auditlog.register(AutomaticReduce, include_fields=["name", "category", "mode", "amount_txt", "occurency", "filtercriteria"])
     auditlog.register(Article, include_fields=["reference", "designation", "price", "unit", "accountposting", 'vat', "stockable", "isdisabled", "qtyDecimal"])
     auditlog.register(ArticleCustomField, include_fields=['field', 'data'], mapping_fields=['field'])

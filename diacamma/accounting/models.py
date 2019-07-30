@@ -42,7 +42,8 @@ from django_fsm import FSMIntegerField, transition
 
 from lucterios.framework.models import LucteriosModel, get_value_if_choices,\
     LucteriosVirtualField
-from lucterios.framework.tools import get_date_formating, get_format_value
+from lucterios.framework.tools import get_date_formating, get_format_value,\
+    convert_date
 from lucterios.framework.error import LucteriosException, IMPORTANT, GRAVE
 from lucterios.framework.filetools import read_file, xml_validator, save_file, get_user_path
 from lucterios.framework.signal_and_lock import RecordLocker, Signal
@@ -815,6 +816,9 @@ class EntryAccount(LucteriosModel):
     close = models.BooleanField(verbose_name=_('close'), default=False, db_index=True)
 
     description = LucteriosVirtualField(verbose_name=_('description'), compute_from='get_description')
+
+    def __str__(self):
+        return "%s [%s] %s" % (get_date_formating(convert_date(self.date_value)), self.journal, self.designation)
 
     @classmethod
     def get_default_fields(cls):
@@ -1592,7 +1596,7 @@ def accounting_auditlog_register():
     auditlog.register(Third, include_fields=["contact", "status"])
     auditlog.register(ThirdCustomField, include_fields=['field', 'data'], mapping_fields=['field'])
     auditlog.register(AccountThird, include_fields=["third", "code"])
-    auditlog.register(Journal)
+    auditlog.register(Journal, exclude_fields=['ID'])
     auditlog.register(FiscalYear, include_fields=['begin', 'end', 'status', 'is_actif'])
     auditlog.register(ModelEntry, include_fields=['journal', 'designation', 'costaccounting'])
     auditlog.register(ModelLineEntry, include_fields=['code', 'third', 'debit', 'credit'])
