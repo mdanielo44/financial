@@ -729,7 +729,10 @@ class AccountLink(LucteriosModel):
 
     @property
     def letter(self):
-        year = self.entrylineaccount_set.all()[0].entry.year
+        entrylines = self.entrylineaccount_set.all()
+        if len(entrylines) == 0:
+            return None
+        year = entrylines[0].entry.year
         nb_link = AccountLink.objects.filter(entrylineaccount__entry__year=year, id__lt=self.id).count()
         letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
         res = ''
