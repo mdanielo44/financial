@@ -44,8 +44,7 @@ from lucterios.framework.models import LucteriosModel, get_value_if_choices, get
 from lucterios.framework.error import LucteriosException, IMPORTANT, GRAVE
 from lucterios.framework.signal_and_lock import Signal
 from lucterios.framework.filetools import get_user_path, readimage_to_base64, remove_accent
-from lucterios.framework.tools import same_day_months_after, get_date_formating, format_to_string,\
-    get_format_value
+from lucterios.framework.tools import same_day_months_after, get_date_formating, format_to_string, get_format_value
 from lucterios.CORE.models import Parameter, SavedCriteria
 from lucterios.CORE.parameters import Params
 from lucterios.contacts.models import CustomField, CustomizeObject
