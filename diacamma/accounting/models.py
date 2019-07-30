@@ -724,14 +724,16 @@ class Journal(LucteriosModel):
 
 
 class AccountLink(LucteriosModel):
+
+    letter = LucteriosVirtualField(verbose_name=_('link'), compute_from='get_letter')
+
     def __str__(self):
         return self.letter
 
-    @property
-    def letter(self):
+    def get_letter(self):
         entrylines = self.entrylineaccount_set.all()
         if len(entrylines) == 0:
-            return None
+            return ''
         year = entrylines[0].entry.year
         nb_link = AccountLink.objects.filter(entrylineaccount__entry__year=year, id__lt=self.id).count()
         letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
