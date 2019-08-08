@@ -28,10 +28,9 @@ from datetime import date, timedelta
 from base64 import b64decode
 from django.utils import six
 
-from lucterios.framework.xfergraphic import XferContainerAcknowledge
 from lucterios.framework.test import LucteriosTest
 from lucterios.framework.filetools import get_user_dir
-from lucterios.CORE.views import StatusMenu, ParamEdit
+from lucterios.CORE.views import StatusMenu, ParamEdit, ObjectMerge
 from lucterios.contacts.views import CustomFieldAddModify
 
 from diacamma.accounting.views import ThirdList, ThirdAdd, ThirdSave, ThirdShow, AccountThirdAddModify, AccountThirdDel, ThirdListing, ThirdDisable, ThirdEdit, ThirdSearch
@@ -46,6 +45,7 @@ from diacamma.accounting.tools import current_system_account, clear_system_accou
 from diacamma.accounting.views_entries import EntryAccountModelSelector
 from lucterios.CORE.parameters import Params
 from lucterios.contacts.models import CustomField
+from lucterios.contacts.views_contacts import IndividualList
 
 
 class ThirdTest(LucteriosTest):
@@ -595,6 +595,64 @@ class ThirdTest(LucteriosTest):
         CustomField.objects.create(modelname='accounting.Third', name='value', kind=1, args="{'min':0,'max':100}")
         print_field_list = Third.get_all_print_fields()
         self.assertEqual(13, len(print_field_list), print_field_list)
+
+    def test_merge_contact(self):
+        fill_thirds_fr()
+
+        self.factory.xfer = ThirdList()
+        self.calljson('/diacamma.accounting/thirdList', {}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdList')
+        self.assert_count_equal('third', 7)
+        self.assert_json_equal('', 'third/@0/contact', 'Dalton Avrel')
+        self.assert_json_equal('', 'third/@1/contact', 'Dalton Jack')
+        self.assert_json_equal('', 'third/@2/contact', 'Dalton Joe')
+        self.assert_json_equal('', 'third/@3/contact', 'Dalton William')
+        self.assert_json_equal('', 'third/@4/contact', 'Luke Lucky')
+        self.assert_json_equal('', 'third/@5/contact', 'Maximum')
+        self.assert_json_equal('', 'third/@6/contact', 'Minimum')
+
+        self.factory.xfer = IndividualList()
+        self.calljson('/lucterios.contacts/individualList', {}, False)
+        self.assert_observer('core.custom', 'lucterios.contacts', 'individualList')
+        self.assert_count_equal('individual', 5)
+        self.assert_json_equal('', 'individual/@0/id', 2)
+        self.assert_json_equal('', 'individual/@0/firstname', 'Avrel')
+        self.assert_json_equal('', 'individual/@0/lastname', 'Dalton')
+        self.assert_json_equal('', 'individual/@1/id', 4)
+        self.assert_json_equal('', 'individual/@1/firstname', 'Jack')
+        self.assert_json_equal('', 'individual/@1/lastname', 'Dalton')
+        self.assert_json_equal('', 'individual/@2/id', 5)
+        self.assert_json_equal('', 'individual/@2/firstname', 'Joe')
+        self.assert_json_equal('', 'individual/@2/lastname', 'Dalton')
+        self.assert_json_equal('', 'individual/@3/id', 3)
+        self.assert_json_equal('', 'individual/@3/firstname', 'William')
+        self.assert_json_equal('', 'individual/@3/lastname', 'Dalton')
+        self.assert_json_equal('', 'individual/@4/id', 6)
+        self.assert_json_equal('', 'individual/@4/firstname', 'Lucky')
+        self.assert_json_equal('', 'individual/@4/lastname', 'Luke')
+
+        self.factory.xfer = ObjectMerge()
+        self.calljson('/CORE/objectMerge', {'modelname': 'contacts.Individual', 'field_id': 'individual',
+                                            'individual': '2;3;4;5', 'CONFIRME': 'YES', 'mrg_object': '3'}, False)
+        self.assert_observer('core.acknowledge', 'CORE', 'objectMerge')
+
+        self.factory.xfer = IndividualList()
+        self.calljson('/lucterios.contacts/individualList', {}, False)
+        self.assert_observer('core.custom', 'lucterios.contacts', 'individualList')
+        self.assert_count_equal('individual', 2)
+        self.assert_json_equal('', 'individual/@0/firstname', 'William')
+        self.assert_json_equal('', 'individual/@0/lastname', 'Dalton')
+        self.assert_json_equal('', 'individual/@1/firstname', 'Lucky')
+        self.assert_json_equal('', 'individual/@1/lastname', 'Luke')
+
+        self.factory.xfer = ThirdList()
+        self.calljson('/diacamma.accounting/thirdList', {}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdList')
+        self.assert_count_equal('third', 4)
+        self.assert_json_equal('', 'third/@0/contact', 'Dalton William')
+        self.assert_json_equal('', 'third/@1/contact', 'Luke Lucky')
+        self.assert_json_equal('', 'third/@2/contact', 'Maximum')
+        self.assert_json_equal('', 'third/@3/contact', 'Minimum')
 
 
 class AdminTest(LucteriosTest):

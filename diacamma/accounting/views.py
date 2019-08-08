@@ -445,3 +445,18 @@ def thirdaddon_accounting(item, xfer):
             xfer.add_component(link_grid_lines)
         except LucteriosException:
             pass
+
+
+@signal_and_lock.Signal.decorate('post_merge')
+def post_merge_accounting(item):
+    if isinstance(item, AbstractContact):
+        third_list = Third.objects.filter(contact=item).order_by('status', 'id')
+        main_third = third_list.first()
+        if main_third is not None:
+            main_third.merge_objects(list(third_list)[1:])
+            code_list = []
+            for accountthird in main_third.accountthird_set.all():
+                if accountthird.code in code_list:
+                    accountthird.delete()
+                else:
+                    code_list.append(accountthird.code)
