@@ -644,10 +644,11 @@ class Bill(Supporting):
                 if detail_account is None:
                     info.append(six.text_type(_("article has code account unknown!")))
                     break
-        try:
-            info.extend(self.check_date(self.date.isoformat()))
-        except LucteriosException:
-            pass
+        if self.bill_type != 0:
+            try:
+                info.extend(self.check_date(self.date.isoformat()))
+            except LucteriosException:
+                pass
         return info
 
     def can_delete(self):
