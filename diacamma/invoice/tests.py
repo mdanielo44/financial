@@ -2125,3 +2125,111 @@ class BillTest(InvoiceTest):
         self.assert_json_equal('', 'bill/@4/total', 75.00)
         self.assert_json_equal('', 'bill/@4/status', 0)
         self.assert_json_equal('', 'sum_summary', [510.0, 52.5, 457.5])
+
+    def test_valid_multiple(self):
+        default_articles()
+        details = [{'article': 0, 'designation': 'article 0', 'price': '20.00', 'quantity': 15}]
+        self._create_bill(details, 0, '2015-04-01', 6, False)  # 59.50
+        details = [{'article': 1, 'designation': 'article 1', 'price': '22.00', 'quantity': 3, 'reduce': '5.0'},
+                   {'article': 2, 'designation': 'article 2', 'price': '3.25', 'quantity': 7}]
+        self._create_bill(details, 1, '2015-04-01', 6, False)  # 83.75
+        details = [{'article': 0, 'designation': 'article 0', 'price': '50.00', 'quantity': 2},
+                   {'article': 5, 'designation': 'article 5', 'price': '6.33', 'quantity': 6.75}]
+        self._create_bill(details, 3, '2015-04-01', 4, False)  # 142.73
+        details = [{'article': 1, 'designation': 'article 1', 'price': '23.00', 'quantity': 3},
+                   {'article': 5, 'designation': 'article 5', 'price': '6.33', 'quantity': 3.50}]
+        self._create_bill(details, 1, '2015-04-01', 5, False)  # 91.16
+        details = [{'article': 2, 'designation': 'article 2', 'price': '3.30', 'quantity': 5},
+                   {'article': 5, 'designation': 'article 5', 'price': '6.35', 'quantity': 4.25, 'reduce': '2.0'}]
+        self._create_bill(details, 1, '2015-04-01', 6, False)  # 41.49
+        details = [{'article': 5, 'designation': 'article 5', 'price': '6.33', 'quantity': 1.25}]
+        self._create_bill(details, 2, '2015-04-01', 4, False)  # 7.91
+
+        self.factory.xfer = BillList()
+        self.calljson('/diacamma.invoice/billList', {'status_filter': 0}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'billList')
+        self.assert_count_equal('bill', 6)
+
+        self.factory.xfer = BillList()
+        self.calljson('/diacamma.invoice/billList', {'status_filter': 1}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'billList')
+        self.assert_count_equal('bill', 0)
+
+        self.factory.xfer = BillTransition()
+        self.calljson('/diacamma.invoice/billTransition',
+                      {'bill': '1;2;4;6', 'TRANSITION': 'valid'}, False)
+        self.assert_observer('core.dialogbox', 'diacamma.invoice', 'billTransition')
+
+        self.factory.xfer = BillTransition()
+        self.calljson('/diacamma.invoice/billTransition',
+                      {'CONFIRME': 'YES', 'bill': '1;2;4;6', 'TRANSITION': 'valid'}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'billTransition')
+
+        self.factory.xfer = BillList()
+        self.calljson('/diacamma.invoice/billList', {'status_filter': 0}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'billList')
+        self.assert_count_equal('bill', 2)
+
+        self.factory.xfer = BillList()
+        self.calljson('/diacamma.invoice/billList', {'status_filter': 1}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'billList')
+        self.assert_count_equal('bill', 4)
+
+    def test_archive_multiple(self):
+        default_articles()
+        details = [{'article': 0, 'designation': 'article 0', 'price': '20.00', 'quantity': 15}]
+        self._create_bill(details, 0, '2015-04-01', 6, True)  # 59.50
+        details = [{'article': 1, 'designation': 'article 1', 'price': '22.00', 'quantity': 3, 'reduce': '5.0'},
+                   {'article': 2, 'designation': 'article 2', 'price': '3.25', 'quantity': 7}]
+        self._create_bill(details, 1, '2015-04-01', 6, True)  # 83.75
+        details = [{'article': 0, 'designation': 'article 0', 'price': '50.00', 'quantity': 2},
+                   {'article': 5, 'designation': 'article 5', 'price': '6.33', 'quantity': 6.75}]
+        self._create_bill(details, 3, '2015-04-01', 4, True)  # 142.73
+        details = [{'article': 1, 'designation': 'article 1', 'price': '23.00', 'quantity': 3},
+                   {'article': 5, 'designation': 'article 5', 'price': '6.33', 'quantity': 3.50}]
+        self._create_bill(details, 1, '2015-04-01', 5, True)  # 91.16
+        details = [{'article': 2, 'designation': 'article 2', 'price': '3.30', 'quantity': 5},
+                   {'article': 5, 'designation': 'article 5', 'price': '6.35', 'quantity': 4.25, 'reduce': '2.0'}]
+        self._create_bill(details, 1, '2015-04-01', 6, True)  # 41.49
+        details = [{'article': 5, 'designation': 'article 5', 'price': '6.33', 'quantity': 1.25}]
+        self._create_bill(details, 2, '2015-04-01', 4, True)  # 7.91
+
+        self.factory.xfer = BillList()
+        self.calljson('/diacamma.invoice/billList', {'status_filter': 0}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'billList')
+        self.assert_count_equal('bill', 0)
+
+        self.factory.xfer = BillList()
+        self.calljson('/diacamma.invoice/billList', {'status_filter': 1}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'billList')
+        self.assert_count_equal('bill', 6)
+
+        self.factory.xfer = BillList()
+        self.calljson('/diacamma.invoice/billList', {'status_filter': 3}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'billList')
+        self.assert_count_equal('bill', 0)
+
+        self.factory.xfer = BillTransition()
+        self.calljson('/diacamma.invoice/billTransition',
+                      {'bill': '2;3;5;6', 'TRANSITION': 'archive'}, False)
+        self.assert_observer('core.dialogbox', 'diacamma.invoice', 'billTransition')
+
+        self.factory.xfer = BillTransition()
+        self.calljson('/diacamma.invoice/billTransition',
+                      {'CONFIRME': 'YES', 'bill': '2;3;5;6', 'TRANSITION': 'archive'}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'billTransition')
+
+        self.factory.xfer = BillList()
+        self.calljson('/diacamma.invoice/billList', {'status_filter': 0}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'billList')
+        self.assert_count_equal('bill', 0)
+
+        self.factory.xfer = BillList()
+        self.calljson('/diacamma.invoice/billList', {'status_filter': 1}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'billList')
+        self.assert_count_equal('bill', 2)
+
+        self.factory.xfer = BillList()
+        self.calljson('/diacamma.invoice/billList', {'status_filter': 3}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'billList')
+        self.assert_count_equal('bill', 4)

@@ -209,7 +209,9 @@ class PayableEmail(XferContainerAcknowledge):
             if modelname != '':
                 self.model = apps.get_model(modelname)
             self.items = self.model.objects.filter(id__in=self.getparam(item_name, ()))
-        self.items = [item.get_final_child() for item in self.items]
+        self.items = [item.get_final_child() for item in self.items if item.can_send_email()]
+        if len(self.items) == 0:
+            raise LucteriosException(MINOR, _('No send item !'))
         if len(self.items) > 0:
             self.item = self.items[0]
             self.model = self.item.__class__

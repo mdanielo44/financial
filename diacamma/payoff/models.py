@@ -164,6 +164,25 @@ class Supporting(LucteriosModel):
     def get_send_email_objects(self):
         return [self]
 
+    def can_send_email(self):
+        if self.third.contact.email != '':
+            return True
+        else:
+            cclist = self.get_cclist()
+            return isinstance(cclist, list) and (len(self.get_cclist()) > 0)
+
+    def get_cclist(self):
+        cclist = []
+        contact = self.third.contact.get_final_child()
+        if isinstance(contact, LegalEntity):
+            for indiv in Individual.objects.filter(responsability__legal_entity=self.third.contact).distinct():
+                if indiv.email != '':
+                    cclist.append(indiv.email)
+
+        if len(cclist) == 0:
+            cclist = None
+        return cclist
+
     def send_email(self, subject, message, model):
         fct_mailing_mod = import_module('lucterios.mailing.functions')
         pdf_name = "%s.pdf" % self.get_document_filename()
@@ -171,15 +190,7 @@ class Supporting(LucteriosModel):
         gen.items = self.get_send_email_objects()
         gen.model_text = PrintModel.objects.get(id=model).value
         pdf_file = BytesIO(gen.generate_report(None, False))
-        cclist = []
-        contact = self.third.contact.get_final_child()
-        if isinstance(contact, LegalEntity):
-            for indiv in Individual.objects.filter(responsability__legal_entity=self.third.contact).distinct():
-                if indiv.email != '':
-                    cclist.append(indiv.email)
-        if len(cclist) == 0:
-            cclist = None
-        fct_mailing_mod.send_email(self.third.contact.email, subject, message, [(pdf_name, pdf_file)], cclist=cclist, withcopy=True)
+        fct_mailing_mod.send_email(self.third.contact.email, subject, message, [(pdf_name, pdf_file)], cclist=self.get_cclist(), withcopy=True)
 
     def get_document_filename(self):
         return remove_accent(self.get_payment_name(), True)

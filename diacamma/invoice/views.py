@@ -188,7 +188,7 @@ class BillShow(XferShowEditor):
                         close=CLOSE_NO, params={'item_name': self.field_id}, pos_act=0)
 
 
-@ActionsManage.affect_transition("status", multi_list=('archive',))
+@ActionsManage.affect_transition("status", multi_list=('archive', 'valid'))
 @MenuManage.describ('invoice.add_bill')
 class BillTransition(XferTransition):
     icon = "bill.png"
@@ -229,7 +229,7 @@ class BillTransition(XferTransition):
                 check_payoff.java_script += "parent.get('bank_fee').setEnabled(type);\n"
             dlg.get_components("date").name = "date_payoff"
             dlg.get_components("mode").set_action(self.request, self.get_action(), close=CLOSE_NO, modal=FORMTYPE_REFRESH)
-        if (self.item.bill_type != 2) and can_send_email(dlg):
+        if (self.item.bill_type != 2) and can_send_email(dlg) and self.item.can_send_email():
             row = dlg.get_max_row()
             check_payoff = XferCompCheck('sendemail')
             check_payoff.set_value(sendemail)
@@ -267,7 +267,7 @@ class BillTransition(XferTransition):
     def fill_confirm(self, transition, trans):
         withpayoff = self.getparam('withpayoff', False)
         sendemail = self.getparam('sendemail', False)
-        if transition != 'valid':
+        if (transition != 'valid') or (len(self.items) > 1):
             XferTransition.fill_confirm(self, transition, trans)
             if transition == 'cancel':
                 if self.trans_result is not None:
@@ -283,7 +283,7 @@ class BillTransition(XferTransition):
                 self.redirect_action(PayableEmail.get_action("", ""), params={"item_name": self.field_id, "OK": "YES"})
 
 
-@ActionsManage.affect_grid(_('payoff'), '', close=CLOSE_NO, unique=SELECT_MULTI, condition=lambda xfer, gridname='': xfer.getparam('status_filter', -1) == 1)
+@ActionsManage.affect_grid(_('payoff'), "diacamma.payoff/images/payoff.png", close=CLOSE_NO, unique=SELECT_MULTI, condition=lambda xfer, gridname='': xfer.getparam('status_filter', -1) == 1)
 @MenuManage.describ('payoff.add_payoff')
 class BillMultiPay(XferContainerAcknowledge):
     caption = _("Multi-pay bill")
