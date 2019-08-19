@@ -166,6 +166,13 @@ class SupportingThird(XferListEditor):
         self.code_mask = code_mask
         XferListEditor.fillresponse(self)
         grid = self.get_components(self.field_id)
+        for action_idx in range(0, len(grid.actions)):
+            if grid.actions[action_idx][0].icon_path.endswith('images/new.png'):
+                params = grid.actions[action_idx][4]
+                if params is None:
+                    params = {}
+                params['REDIRECT_AFTER_SAVE'] = SupportingThirdValid.url_text
+                grid.actions[action_idx] = (grid.actions[action_idx][0], grid.actions[action_idx][1], CLOSE_YES, grid.actions[action_idx][3], params)
         grid.add_action(self.request, SupportingThirdValid.get_action(_('select'), 'images/ok.png'),
                         modal=FORMTYPE_MODAL, close=CLOSE_YES, unique=SELECT_SINGLE, pos_act=0)
         self.actions = []

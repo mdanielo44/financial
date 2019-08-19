@@ -154,7 +154,13 @@ class ThirdSave(XferContainerAcknowledge):
             old_account = self.item.accountthird_set.filter(code=correct_accounting_code(item_account))
             if len(old_account) == 0:
                 AccountThird.objects.create(third=self.item, code=correct_accounting_code(item_account))
-        self.redirect_action(ThirdShow.get_action(), params={'third': self.item.id})
+        redirect_after_save = self.getparam('REDIRECT_AFTER_SAVE')
+        if redirect_after_save is None:
+            self.redirect_action(ThirdShow.get_action(), params={'third': self.item.id})
+        else:
+            if 'URL_TO_REDIRECT' in self.params:
+                del self.params['URL_TO_REDIRECT']
+            self.redirect_action(WrapAction('', '', url_text=redirect_after_save), params={'third': self.item.id})
 
 
 @ActionsManage.affect_list(_('Disabled'), '')
@@ -196,15 +202,21 @@ class ThirdAdd(ContactSelection):
     model = Third
 
     def fillresponse(self):
+        third_filter = self.getparam('filter', '')
+        if (third_filter != '') and (self.getparam('CRITERIA') is None):
+            self.params['CRITERIA'] = "name||5||%s//lastname||5||%s" % (third_filter, third_filter)
         ContactSelection.fillresponse(self)
         grid = self.get_components(self.field_id)
         for action_idx in range(0, len(grid.actions)):
-            if grid.actions[action_idx][0].icon_path.endswith('images/add.png'):
+            if grid.actions[action_idx][0].icon_path.endswith('images/new.png'):
                 params = grid.actions[action_idx][4]
                 if params is None:
                     params = {}
                 params['URL_TO_REDIRECT'] = self.select_class.url_text
                 params['pkname'] = self.field_id
+                for criteria_item in self.criteria_list:
+                    if len(criteria_item) > 2:
+                        params[criteria_item[0]] = criteria_item[2]
                 grid.actions[action_idx] = (grid.actions[action_idx][0], grid.actions[action_idx][1], CLOSE_YES, grid.actions[action_idx][3], params)
 
 
