@@ -250,7 +250,12 @@ class BillTransition(XferTransition):
             contact = self.item.third.contact.get_final_child()
             memo = XferCompMemo('message')
             memo.description = _('message')
-            memo.set_value(Params.getvalue('payoff-email-message') % {'name': contact.get_presentation(), 'doc': self.item.get_docname()})
+            email_message = Params.getvalue('payoff-email-message')
+            email_message = email_message.replace('%(name)s', '#name')
+            email_message = email_message.replace('%(doc)s', '#doc')
+            email_message = email_message.replace('#name', contact.get_presentation())
+            email_message = email_message.replace('#doc', self.item.get_docname())
+            memo.set_value(email_message)
             memo.with_hypertext = True
             memo.set_size(130, 450)
             memo.set_location(2, row + 3)
