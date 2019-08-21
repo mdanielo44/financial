@@ -1564,7 +1564,7 @@ def get_meta_currency_iso():
     currency_file = join(dirname(__file__), 'currency_iso.csv')
     if isfile(currency_file):
         currency_list = []
-        with open(currency_file, 'r') as currency_hdl:
+        with open(currency_file, 'r', encoding='utf-8') as currency_hdl:
             for line in currency_hdl.readlines():
                 line = line.strip()
                 if line.count(';') == 1:
