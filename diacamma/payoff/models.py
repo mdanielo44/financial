@@ -321,8 +321,7 @@ class Payoff(LucteriosModel):
         _('reference'), max_length=100, null=True, default='')
     entry = models.ForeignKey(
         EntryAccount, verbose_name=_('entry'), null=True, default=None, db_index=True, on_delete=models.CASCADE)
-    bank_account = models.ForeignKey(BankAccount, verbose_name=_(
-        'bank account'), null=True, default=None, db_index=True, on_delete=models.PROTECT)
+    bank_account = models.ForeignKey(BankAccount, verbose_name=_('bank account'), null=True, default=None, db_index=True, on_delete=models.PROTECT)
     bank_fee = models.DecimalField(verbose_name=_('bank fee'), max_digits=10, decimal_places=3, default=0.0, validators=[
         MinValueValidator(0.0), MaxValueValidator(9999999.999)])
 
@@ -584,9 +583,13 @@ class DepositSlip(LucteriosModel):
 
     def get_payoff_not_deposit(self, payer, reference, order_list, date_begin, date_end):
         payoff_nodeposit = []
-        entity_known = DepositDetail.objects.values_list('payoff__entry_id', flat=True).distinct()
-        entity_unknown = Payoff.objects.filter(bank_account=self.bank_account, supporting__is_revenu=True, mode=1).exclude(entry_id__in=entity_known).values(
-            'entry_id', 'date', 'reference', 'payer').annotate(amount=Sum('amount'))
+        if self.bank_account_id is not None:
+            payoff_query = Q(supporting__is_revenu=True) & Q(bank_account=self.bank_account) & Q(mode=1)
+            entity_known = DepositDetail.objects.values_list('payoff__entry_id', flat=True).distinct()
+        else:
+            payoff_query = Q()
+            entity_known = []
+        entity_unknown = Payoff.objects.filter(payoff_query).exclude(entry_id__in=entity_known).values('entry_id', 'date', 'reference', 'payer', 'supporting__is_revenu').annotate(amount=Sum('amount'))
         if payer != '':
             entity_unknown = entity_unknown.filter(payer__icontains=payer)
         if reference != '':
@@ -608,6 +611,7 @@ class DepositSlip(LucteriosModel):
             payoff['amount'] = values['amount']
             payoff['date'] = values['date']
             payoff['reference'] = values['reference']
+            payoff['is_revenu'] = values['supporting__is_revenu']
             payoff_nodeposit.append(payoff)
         return payoff_nodeposit
 

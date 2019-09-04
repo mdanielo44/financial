@@ -29,6 +29,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.utils import formats, six
 from django.db.models.functions import Concat
 from django.db.models import Q, Value
+from django.db.models.aggregates import Sum, Count
 from django.db.models.query import QuerySet
 
 from lucterios.framework.xferadvance import TITLE_PRINT, TITLE_CLOSE, TITLE_DELETE, TITLE_MODIFY, TITLE_ADD, TITLE_CANCEL, TITLE_OK, TITLE_EDIT,\
@@ -36,10 +37,12 @@ from lucterios.framework.xferadvance import TITLE_PRINT, TITLE_CLOSE, TITLE_DELE
 from lucterios.framework.xferadvance import XferListEditor, XferShowEditor, XferAddEditor, XferDelete, XferTransition
 from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompSelect, XferCompImage, XferCompGrid, XferCompCheck, XferCompEdit, XferCompCheckList, XferCompMemo,\
     XferCompButton
-from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage, FORMTYPE_MODAL, CLOSE_YES, SELECT_SINGLE, FORMTYPE_REFRESH, CLOSE_NO, SELECT_MULTI, WrapAction
+from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage, FORMTYPE_MODAL, CLOSE_YES, SELECT_SINGLE, FORMTYPE_REFRESH, CLOSE_NO, SELECT_MULTI, WrapAction,\
+    get_format_from_field
 from lucterios.framework.xfergraphic import XferContainerAcknowledge, XferContainerCustom
 from lucterios.framework.error import LucteriosException, IMPORTANT
 from lucterios.framework import signal_and_lock
+from lucterios.framework.xfersearch import get_criteria_list
 
 from lucterios.CORE.xferprint import XferPrintAction, XferPrintReporting, XferPrintListing,\
     XferPrintLabel
@@ -54,11 +57,11 @@ from lucterios.contacts.models import Individual, LegalEntity
 from diacamma.invoice.models import Article, Bill, Detail, Category, Provider,\
     StorageArea, AutomaticReduce
 from diacamma.payoff.views import PayoffAddModify, PayableEmail, can_send_email
-from diacamma.payoff.models import Payoff
-from diacamma.accounting.models import FiscalYear, Third
+from diacamma.payoff.models import Payoff, DepositSlip
+from diacamma.accounting.models import FiscalYear, Third, EntryLineAccount, EntryAccount
 from diacamma.accounting.views import get_main_third
+from diacamma.accounting.views_entries import EntryAccountOpenFromLine
 from diacamma.accounting.tools import current_system_account, format_with_devise
-from lucterios.framework.xfersearch import get_criteria_list
 
 MenuManage.add_sub("invoice", None, "diacamma.invoice/images/invoice.png", _("Invoice"), _("Manage of billing"), 45)
 
@@ -642,6 +645,7 @@ class BillStatistic(XferContainerCustom):
     def fill_customers(self):
         costumer_result = self.item.get_statistics_customer(self.getparam('without_reduct', False))
         grid = XferCompGrid("customers")
+        grid.no_pager = True
         grid.add_header("customer", _("customer"))
         grid.add_header("amount", _("amount"), htype=format_with_devise(7))
         grid.add_header("ratio", _("ratio (%)"), htype='N2', formatstr='{0} %')
@@ -658,6 +662,7 @@ class BillStatistic(XferContainerCustom):
     def fill_articles(self):
         articles_result = self.item.get_statistics_article(self.getparam('without_reduct', False))
         grid = XferCompGrid("articles")
+        grid.no_pager = True
         grid.add_header("article", _("article"))
         grid.add_header("amount", _("amount"), htype=format_with_devise(7))
         grid.add_header("number", _("number"), htype='N2')
@@ -678,6 +683,7 @@ class BillStatistic(XferContainerCustom):
     def fill_month(self):
         month_result = self.item.get_statistics_month(self.getparam('without_reduct', False))
         grid = XferCompGrid("months")
+        grid.no_pager = True
         grid.add_header("month", _("month"))
         grid.add_header("amount", _("amount"), htype=format_with_devise(7))
         grid.add_header("ratio", _("ratio (%)"), htype='N2', formatstr='{0} %')
@@ -691,6 +697,29 @@ class BillStatistic(XferContainerCustom):
         grid.set_size(400, 800)
         self.add_component(grid)
 
+    def fill_payoff(self, is_revenu, title):
+        payoff_result = self.item.get_statistics_payoff(is_revenu)
+        grid = XferCompGrid("payoffs_%s" % is_revenu)
+        grid.no_pager = True
+        grid.add_header("mode", _('mode'))
+        grid.add_header("bank_account", _('bank account'))
+        grid.add_header("number", _("number"), htype='N0')
+        grid.add_header("amount", _("amount"), htype=format_with_devise(7))
+        grid.add_header("ratio", _("ratio (%)"), htype='N2', formatstr='{0} %')
+        index = 0
+        for payoff_val in payoff_result:
+            grid.set_value(index, "mode", payoff_val[0])
+            grid.set_value(index, "bank_account", payoff_val[1])
+            grid.set_value(index, "number", payoff_val[2])
+            grid.set_value(index, "amount", payoff_val[3])
+            grid.set_value(index, "ratio", payoff_val[4])
+            index += 1
+        grid.set_location(0, self.get_max_row() + 1, 3)
+        grid.description = title
+        if not is_revenu:
+            grid.set_size(200, 800)
+        self.add_component(grid)
+
     def fillresponse(self):
         self.fill_header()
         self.new_tab(_('Customers'))
@@ -699,7 +728,13 @@ class BillStatistic(XferContainerCustom):
         self.fill_articles()
         self.new_tab(_('By month'))
         self.fill_month()
-        self.add_action(BillStatisticPrint.get_action(TITLE_PRINT, "images/print.png"), close=CLOSE_NO, params={'classname': self.__class__.__name__})
+
+        self.new_tab(_('By payoff'))
+        self.fill_payoff(True, _('Payoff of bills and receipts'))
+        self.fill_payoff(False, _('Payoff of assets'))
+
+        self.add_action(BillAccountChecking.get_action(_('check'), "images/info.png"), close=CLOSE_YES)
+        self.add_action(BillStatisticPrint.get_action(TITLE_PRINT, "images/print.png"), close=CLOSE_NO)
         self.add_action(WrapAction(TITLE_CLOSE, 'images/close.png'))
 
 
@@ -710,6 +745,153 @@ class BillStatisticPrint(XferPrintAction):
     model = Bill
     field_id = 'bill'
     action_class = BillStatistic
+    with_text_export = True
+
+
+@MenuManage.describ('invoice.change_bill')
+class BillOpenEntryAccount(XferContainerAcknowledge):
+    icon = "report.png"
+    model = Bill
+    field_id = 'bill'
+    caption = ""
+
+    def fillresponse(self, payoff=None, showbill=False):
+        if showbill and (payoff is not None):
+            payoff_list = EntryAccount.objects.get(id=payoff).payoff_set.all()
+            if len(payoff_list) == 1:
+                bill_id = payoff_list.first().supporting.id
+                self.redirect_action(BillShow.get_action(), params={'bill': bill_id})
+            else:
+                self.message(_('No editable: Payoff assign to many bills.'))
+        else:
+            if payoff is None:
+                entry_id = self.item.entry_id
+            else:
+                entry_id = payoff
+            if entry_id is None:
+                self.message(_('No editable: Entry not found.'))
+            else:
+                self.redirect_action(EntryAccountOpenFromLine.get_action(), params={'entryaccount': entry_id})
+
+
+@MenuManage.describ('invoice.change_bill')
+class BillAccountChecking(XferContainerCustom):
+    icon = "report.png"
+    model = Bill
+    field_id = 'bill'
+    caption = _("Account checking")
+
+    def fill_header(self):
+        img = XferCompImage('img')
+        img.set_value(self.icon_path())
+        img.set_location(0, 0, 1, 2)
+        self.add_component(img)
+        select_year = self.getparam('fiscal_year')
+        lbl = XferCompLabelForm('lbl_title')
+        lbl.set_value_as_headername(self.caption)
+        lbl.set_location(1, 0, 2)
+        self.add_component(lbl)
+        self.item.fiscal_year = FiscalYear.get_current(select_year)
+        self.fill_from_model(1, 1, False, ['fiscal_year'])
+        fiscal_year = self.get_components('fiscal_year')
+        fiscal_year.set_needed(True)
+        fiscal_year.set_action(self.request, self.get_action(), close=CLOSE_NO, modal=FORMTYPE_REFRESH)
+
+    def fill_bill(self):
+        lbl = XferCompLabelForm('lbl_bill')
+        lbl.set_value_center(_('Bill with different amount in accounting.'))
+        lbl.set_location(0, 0, 3)
+        self.add_component(lbl)
+        grid = XferCompGrid("bill")
+        grid.no_pager = True
+        grid.add_header("bill", _("bill"))
+        grid.add_header("status", _('status'), htype=get_format_from_field(Bill.get_field_by_name('status')))
+        grid.add_header("amount", _('total'), htype=format_with_devise(7))
+        grid.add_header("account", _("account amount"), htype=format_with_devise(7))
+        for bill in Bill.objects.filter(fiscal_year=self.item.fiscal_year, status__in=(1, 2, 3), bill_type__in=(1, 2, 3)):
+            account_amount = None
+            if bill.entry is not None:
+                account_amount = bill.entry.entrylineaccount_set.filter(account__code__regex=current_system_account().get_customer_mask()).aggregate(Sum('amount'))['amount__sum']
+                if (bill.bill_type == 2):
+                    account_amount = -1 * account_amount
+            if ((account_amount is None) and (abs(bill.total) > 1e-4)) or ((account_amount is not None) and (abs(account_amount - bill.total) > 1e-4)):
+                grid.set_value(bill.id, "bill", bill)
+                grid.set_value(bill.id, "status", bill.status)
+                grid.set_value(bill.id, "amount", bill.total)
+                grid.set_value(bill.id, "account", account_amount)
+        grid.add_action(self.request, BillShow.get_action(TITLE_EDIT, "images/show.png"), close=CLOSE_NO, unique=SELECT_SINGLE)
+        grid.add_action(self.request, BillOpenEntryAccount.get_action(_('Entry'), "diacamma.accounting/images/financial.png"), close=CLOSE_NO, unique=SELECT_SINGLE)
+        grid.set_location(0, 1, 3)
+        grid.set_size(400, 800)
+        self.add_component(grid)
+
+    def fill_payoff(self):
+        lbl = XferCompLabelForm('lbl_payoff')
+        lbl.set_value_center(_('Payoff with different amount in accounting.'))
+        lbl.set_location(0, 0, 3)
+        self.add_component(lbl)
+        grid = XferCompGrid("payoff")
+        grid.no_pager = True
+        payoff_nodeposit = DepositSlip().get_payoff_not_deposit("", "", None, self.item.fiscal_year.begin, self.item.fiscal_year.end)
+        grid.add_header('bill', _('bill'))
+        grid.add_header('payer', _('payer'), horderable=1)
+        grid.add_header('amount', _('amount'), horderable=1, htype=format_with_devise(7))
+        grid.add_header('date', _('date'), horderable=1, htype='D')
+        grid.add_header('reference', _('reference'), horderable=1)
+        grid.add_header("account", _("account amount"), htype=format_with_devise(7))
+        for payoff in payoff_nodeposit:
+            payoffid = payoff['id']
+            account_amount = EntryAccount.objects.get(id=payoffid).entrylineaccount_set.filter(account__code__regex=current_system_account().get_customer_mask()).aggregate(Sum('amount'))['amount__sum']
+            if payoff['is_revenu']:
+                account_amount = -1 * account_amount
+            if ((account_amount is None) and (abs(payoff['amount']) > 1e-4)) or ((account_amount is not None) and (abs(account_amount - float(payoff['amount'])) > 1e-4)):
+                grid.set_value(payoffid, 'bill', payoff['bill'])
+                grid.set_value(payoffid, 'payer', payoff['payer'])
+                grid.set_value(payoffid, 'amount', payoff['amount'])
+                grid.set_value(payoffid, 'date', payoff['date'])
+                grid.set_value(payoffid, 'reference', payoff['reference'])
+                grid.set_value(payoffid, "account", account_amount)
+        grid.set_location(0, 3, 4)
+        grid.add_action(self.request, BillOpenEntryAccount.get_action(TITLE_EDIT, "images/show.png"), close=CLOSE_NO, unique=SELECT_SINGLE, params={'showbill': True})
+        grid.add_action(self.request, BillOpenEntryAccount.get_action(_('Entry'), "diacamma.accounting/images/financial.png"), close=CLOSE_NO, unique=SELECT_SINGLE)
+        grid.set_location(0, 1, 3)
+        grid.set_size(400, 800)
+        self.add_component(grid)
+
+    def fill_nobill(self):
+        lbl = XferCompLabelForm('lbl_entryline')
+        lbl.set_value_center(_('Entries of account no present in invoice.'))
+        lbl.set_location(0, 0, 3)
+        self.add_component(lbl)
+        grid = XferCompGrid("entryline")
+        entry_lines = EntryLineAccount.objects.filter(entry__journal__gt=1,
+                                                      entry__year=self.item.fiscal_year,
+                                                      account__code__regex=current_system_account().get_customer_mask()).annotate(billcount=Count('entry__bill')).annotate(payoffcount=Count('entry__payoff'))
+        grid.set_model(entry_lines.filter(billcount=0, payoffcount=0), None)
+        grid.add_action(self.request, EntryAccountOpenFromLine.get_action(_('Entry'), "diacamma.accounting/images/financial.png"), close=CLOSE_NO, unique=SELECT_SINGLE)
+        grid.set_location(0, 1, 3)
+        grid.set_size(400, 800)
+        self.add_component(grid)
+
+    def fillresponse(self):
+        self.fill_header()
+        self.new_tab(_('Bill'))
+        self.fill_bill()
+        self.new_tab(_('Payoff'))
+        self.fill_payoff()
+        self.new_tab(_('No bill'))
+        self.fill_nobill()
+        self.add_action(BillAccountCheckingPrint.get_action(TITLE_PRINT, "images/print.png"), close=CLOSE_NO)
+        self.add_action(WrapAction(TITLE_CLOSE, 'images/close.png'))
+
+
+@MenuManage.describ('invoice.change_bill')
+class BillAccountCheckingPrint(XferPrintAction):
+    caption = _("Print account checking")
+    icon = "report.png"
+    model = Bill
+    field_id = 'bill'
+    action_class = BillAccountChecking
     with_text_export = True
 
 

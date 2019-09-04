@@ -29,7 +29,7 @@ from os.path import exists, join, dirname
 from datetime import timedelta
 
 from django.db import models
-from django.db.models.aggregates import Max, Sum
+from django.db.models.aggregates import Max, Sum, Count
 from django.db.models.functions import Concat
 from django.db.models import Q, Value, F
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
@@ -52,7 +52,7 @@ from lucterios.contacts.models import CustomField, CustomizeObject
 from diacamma.accounting.models import FiscalYear, Third, EntryAccount, CostAccounting, Journal, EntryLineAccount, ChartsAccount, AccountThird
 from diacamma.accounting.tools import current_system_account, currency_round, correct_accounting_code,\
     format_with_devise, get_amount_from_format_devise
-from diacamma.payoff.models import Supporting, Payoff
+from diacamma.payoff.models import Supporting, Payoff, BankAccount
 from lucterios.framework.auditlog import auditlog
 
 
@@ -485,7 +485,7 @@ class Bill(Supporting):
         if status < 0:
             fields.append("status")
         elif status == 1:
-            fields.append(Supporting.get_payoff_fields()[-1])
+            fields.append(Supporting.get_payoff_fields()[-1][-1])
         return fields
 
     @classmethod
@@ -809,7 +809,7 @@ class Bill(Supporting):
             total_cust = 0
             costumers = {}
             for bill in Bill.objects.filter(Q(fiscal_year=self.fiscal_year) & Q(
-                    bill_type__in=(1, 2, 3)) & Q(status__in=(1, 3))):
+                    bill_type__in=(1, 2, 3)) & Q(status__in=(1, 2, 3))):
                 if bill.third_id not in costumers.keys():
                     costumers[bill.third_id] = 0
                 total_excltax = bill.get_total_excltax()
@@ -837,7 +837,7 @@ class Bill(Supporting):
             total_art = 0
             articles = {}
             for det in Detail.objects.filter(Q(bill__fiscal_year=self.fiscal_year) & Q(
-                    bill__bill_type__in=(1, 2, 3)) & Q(bill__status__in=(1, 3))):
+                    bill__bill_type__in=(1, 2, 3)) & Q(bill__status__in=(1, 2, 3))):
                 if det.article_id not in articles.keys():
                     articles[det.article_id] = [0, 0]
                 total_excltax = det.get_total_excltax()
@@ -879,7 +879,7 @@ class Bill(Supporting):
                 begin_date = begin_date - timedelta(days=begin_date.day - 1)
                 end_date = same_day_months_after(begin_date, months=1) - timedelta(days=1)
                 amount_sum = 0.0
-                for bill in Bill.objects.filter(Q(date__gte=begin_date) & Q(date__lte=end_date) & Q(bill_type__in=(1, 3)) & Q(status__in=(1, 3))):
+                for bill in Bill.objects.filter(Q(date__gte=begin_date) & Q(date__lte=end_date) & Q(bill_type__in=(1, 2, 3)) & Q(status__in=(1, 2, 3))):
                     total_excltax = bill.get_total_excltax()
                     if without_reduct:
                         total_excltax += bill.get_reduce_excltax()
@@ -896,7 +896,36 @@ class Bill(Supporting):
                 except ZeroDivisionError:
                     ratio = None
                 month_list.append((DateFormat(begin_date).format('F Y'), amount_sum, ratio))
+            month_list.append(("{[b]}%s{[/b]}" % _('total'), {'format': "{[b]}{0}{[/b]}", 'value': total_month},
+                               {'format': "{[b]}{0}{[/b]}", 'value': 100.0}))
         return month_list
+
+    def get_statistics_payoff(self, is_revenu):
+        payoff_list = []
+        if self.fiscal_year is not None:
+            payoffs = []
+            nb_payoff = 0
+            total_amount = 0
+            for mode_id, mode_title in Payoff.get_field_by_name('mode').choices:
+                payoff_items = Payoff.objects.filter(supporting__is_revenu=is_revenu, mode=mode_id, supporting__bill__fiscal_year=self.fiscal_year)
+                bank_list = payoff_items.values('bank_account').annotate(dcount=Count('bank_account'))
+                for bank_item in bank_list:
+                    bank = BankAccount.objects.get(id=bank_item['bank_account']) if bank_item['bank_account'] is not None else None
+                    payoff_subitems = payoff_items.filter(bank_account=bank)
+                    amount = float(payoff_subitems.aggregate(Sum('amount'))['amount__sum'])
+                    payoffs.append((mode_title, bank, len(payoff_subitems), amount))
+                    total_amount += amount
+                    nb_payoff += len(payoff_subitems)
+            for payoff_item in payoffs:
+                try:
+                    ratio = (100 * payoff_item[3] / total_amount)
+                except ZeroDivisionError:
+                    ratio = None
+                payoff_list.append((payoff_item[0], payoff_item[1], payoff_item[2], payoff_item[3], ratio))
+            payoff_list.sort(key=lambda payoff_item: payoff_item[3], reverse=True)
+            payoff_list.append(("{[b]}%s{[/b]}" % _('total'), None, {'format': "{[b]}{0}{[/b]}", 'value': nb_payoff},
+                                {'format': "{[b]}{0}{[/b]}", 'value': total_amount}, {'format': "{[b]}{0}{[/b]}", 'value': 100.0}))
+        return payoff_list
 
     def support_validated(self, validate_date):
         if (self.bill_type == 2) or (self.status != 1):
