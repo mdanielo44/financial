@@ -187,6 +187,19 @@ class BillShow(XferShowEditor):
 
     def fillresponse(self):
         XferShowEditor.fillresponse(self)
+        if self.item.parentbill is not None:
+            auditlogbtn = self.get_components('auditlogbtn')
+            if auditlogbtn is None:
+                posx = 0
+                posy = max(6, self.get_max_row()) + 20
+            else:
+                posx = 1
+                posy = auditlogbtn.row
+            btn = XferCompButton('parentbill')
+            btn.set_action(self.request, self.get_action(_('origin'), "origin.png"), modal=FORMTYPE_MODAL, close=CLOSE_NO, params={'bill': self.item.parentbill_id})
+            btn.set_is_mini(True)
+            btn.set_location(posx, posy)
+            self.add_component(btn)
         self.add_action(ActionsManage.get_action_url('payoff.Supporting', 'Show', self),
                         close=CLOSE_NO, params={'item_name': self.field_id}, pos_act=0)
 

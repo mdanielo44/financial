@@ -450,10 +450,9 @@ class Bill(Supporting):
     comment = models.TextField(_('comment'), null=False, default="")
     status = FSMIntegerField(verbose_name=_('status'),
                              choices=((0, _('building')), (1, _('valid')), (2, _('cancel')), (3, _('archive'))), null=False, default=0, db_index=True)
-    entry = models.ForeignKey(
-        EntryAccount, verbose_name=_('entry'), null=True, default=None, db_index=True, on_delete=models.PROTECT)
-    cost_accounting = models.ForeignKey(
-        CostAccounting, verbose_name=_('cost accounting'), null=True, default=None, db_index=True, on_delete=models.PROTECT)
+    entry = models.ForeignKey(EntryAccount, verbose_name=_('entry'), null=True, default=None, db_index=True, on_delete=models.PROTECT)
+    cost_accounting = models.ForeignKey(CostAccounting, verbose_name=_('cost accounting'), null=True, default=None, db_index=True, on_delete=models.PROTECT)
+    parentbill = models.ForeignKey("invoice.Bill", verbose_name=_('parent'), null=True, default=None, on_delete=models.SET_NULL)
 
     total = LucteriosVirtualField(verbose_name=_('total'), compute_from='get_total_ex', format_string=lambda: format_with_devise(5))
     num_txt = LucteriosVirtualField(verbose_name=_('numeros'), compute_from='get_num_txt')
@@ -731,7 +730,7 @@ class Bill(Supporting):
                     vat_account = ChartsAccount.get_account(vataccount, self.fiscal_year)
                     if vat_account is None:
                         raise LucteriosException(IMPORTANT, _("vta-account is not defined!"))
-                    EntryLineAccount.objects.create(account=vat_account, amount=is_bill * vatamount, entry=self.entry, costaccounting=self.cost_accounting)
+                    EntryLineAccount.objects.create(account=vat_account, amount=is_bill * vatamount, entry=self.entry)
         no_change, debit_rest, credit_rest = self.entry.serial_control(self.entry.get_serial())
         if not no_change and (len(self.entry.entrylineaccount_set.all()) == 0):
             entry_empty = self.entry
@@ -776,8 +775,7 @@ class Bill(Supporting):
     def cancel(self):
         new_asset = None
         if (self.bill_type in (1, 3)):
-            new_asset = Bill.objects.create(
-                bill_type=2, date=timezone.now(), third=self.third, status=0, cost_accounting=self.cost_accounting)
+            new_asset = Bill.objects.create(bill_type=2, date=timezone.now(), third=self.third, status=0, parentbill=self)
             for detail in self.detail_set.all():
                 detail.id = None
                 detail.bill = new_asset
@@ -794,11 +792,7 @@ class Bill(Supporting):
         if (self.status == 1) and (self.bill_type == 0):
             self.status = 3
             self.save()
-            new_bill = Bill.objects.create(bill_type=1, date=timezone.now(), third=self.third, status=0, comment=self.comment)
-            cost_accountings = CostAccounting.objects.filter(Q(status=0) & Q(is_default=True))
-            if len(cost_accountings) >= 1:
-                new_bill.cost_accounting = cost_accountings[0]
-                new_bill.save()
+            new_bill = Bill.objects.create(bill_type=1, date=timezone.now(), third=self.third, status=0, comment=self.comment, parentbill=self)
             for detail in self.detail_set.all():
                 detail.id = None
                 detail.bill = new_bill
@@ -1560,7 +1554,7 @@ def invoice_auditlog_register():
     auditlog.register(AutomaticReduce, include_fields=["name", "category", "mode", "amount_txt", "occurency", "filtercriteria"])
     auditlog.register(Article, include_fields=["reference", "designation", "price", "unit", "accountposting", 'vat', "stockable", "isdisabled", "qtyDecimal"])
     auditlog.register(ArticleCustomField, include_fields=['field', 'data'], mapping_fields=['field'])
-    auditlog.register(Bill, include_fields=["bill_type", "status", "num_txt", "date", "third", "comment"])
+    auditlog.register(Bill, include_fields=["bill_type", "status", "num_txt", "date", "third", "comment", "parentbill"])
     auditlog.register(Detail, include_fields=["article", "designation", "price", "unit", "quantity", "storagearea", "reduce"])
     auditlog.register(StorageSheet, include_fields=["sheet_type", "status", "date", "storagearea", "comment", "provider", "bill_date", "bill_reference"])
     auditlog.register(StorageDetail, include_fields=["article", "price", "quantity"])
