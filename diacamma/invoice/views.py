@@ -217,7 +217,9 @@ class BillTransition(XferTransition):
     var type=current.getValue();
     parent.get('date_payoff').setEnabled(type);
     parent.get('amount').setEnabled(type);
-    parent.get('payer').setEnabled(type);
+    if (parent.get('payer')) {
+        parent.get('payer').setEnabled(type);
+    }
     parent.get('mode').setEnabled(type);
     parent.get('reference').setEnabled(type);
     if (parent.get('bank_account')) {
