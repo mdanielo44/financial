@@ -474,6 +474,7 @@ class Bill(Supporting):
     @property
     def reference(self):
         billtype = get_value_if_choices(self.bill_type, self.get_field_by_name('bill_type'))
+        billtype = billtype[0].upper() + billtype[1:].lower()
         if self.num is None:
             return "%s" % billtype
         else:
@@ -680,7 +681,7 @@ class Bill(Supporting):
         else:
             is_bill = 1
         third_account = self.get_third_account(current_system_account().get_customer_mask(), self.fiscal_year)
-        self.entry = EntryAccount.objects.create(year=self.fiscal_year, date_value=self.date, designation=self.__str__(),
+        self.entry = EntryAccount.objects.create(year=self.fiscal_year, date_value=self.date, designation=self.reference,
                                                  journal=Journal.objects.get(id=3))
         if abs(self.get_total_incltax()) > 0.0001:
             EntryLineAccount.objects.create(account=third_account, amount=is_bill * self.get_total_incltax(), third=self.third, entry=self.entry)
@@ -741,15 +742,19 @@ class Bill(Supporting):
 
     transitionname__valid = _("Validate")
 
+    def affect_num(self):
+        if self.num is None:
+            self.fiscal_year = FiscalYear.get_current()
+            bill_list = Bill.objects.filter(Q(bill_type=self.bill_type) & Q(fiscal_year=self.fiscal_year)).exclude(status=0)
+            val = bill_list.aggregate(Max('num'))
+            if val['num__max'] is None:
+                self.num = 1
+            else:
+                self.num = val['num__max'] + 1
+
     @transition(field=status, source=0, target=1, conditions=[lambda item:item.get_info_state() == []])
     def valid(self):
-        self.fiscal_year = FiscalYear.get_current()
-        bill_list = Bill.objects.filter(Q(bill_type=self.bill_type) & Q(fiscal_year=self.fiscal_year)).exclude(status=0)
-        val = bill_list.aggregate(Max('num'))
-        if val['num__max'] is None:
-            self.num = 1
-        else:
-            self.num = val['num__max'] + 1
+        self.affect_num()
         self.status = 1
         if self.bill_type != 0:
             self.generate_entry()

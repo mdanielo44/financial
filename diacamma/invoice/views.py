@@ -286,6 +286,8 @@ class BillTransition(XferTransition):
             self.fill_dlg_payoff(withpayoff, sendemail)
         else:
             if (self.item.bill_type != 0) and withpayoff:
+                self.item.affect_num()
+                self.item.save()
                 Payoff.multi_save((self.item.id,), self.getparam('amount', 0.0), self.getparam('mode', 0), self.getparam('payer'),
                                   self.getparam('reference'), self.getparam('bank_account', 0), self.getparam('date_payoff'), self.getparam('bank_fee', 0.0), repartition=0)
             XferTransition.fill_confirm(self, transition, trans)

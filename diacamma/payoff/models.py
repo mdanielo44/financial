@@ -62,6 +62,10 @@ class Supporting(LucteriosModel):
     total_payed = LucteriosVirtualField(verbose_name=_('total payed'), compute_from='get_total_payed', format_string=lambda: format_with_devise(5))
     total_rest_topay = LucteriosVirtualField(verbose_name=_('rest to pay'), compute_from='get_total_rest_topay', format_string=lambda: format_with_devise(5))
 
+    @property
+    def reference(self):
+        return six.text_type(self)
+
     @classmethod
     def get_payoff_fields(cls):
         return ['payoff_set', ('total_payed', 'total_rest_topay')]
@@ -372,7 +376,7 @@ class Payoff(LucteriosModel):
         else:
             fiscal_year = FiscalYear.get_current()
         if designation is None:
-            designation = _("payoff for %s") % six.text_type(supporting)
+            designation = _("payoff for %s") % supporting.reference
         new_entry = EntryAccount.objects.create(
             year=fiscal_year, date_value=self.date, designation=designation, journal=Journal.objects.get(id=4))
         amount_to_bank = 0
@@ -495,7 +499,7 @@ class Payoff(LucteriosModel):
             if paypoff_item.supporting.third not in third_amounts.keys():
                 third_amounts[paypoff_item.supporting.third] = 0
             third_amounts[paypoff_item.supporting.third] += paypoff_item.amount
-            designation_items.append(six.text_type(paypoff_item.supporting.get_final_child()))
+            designation_items.append(six.text_type(paypoff_item.supporting.get_final_child().reference))
         designation = _("payoff for %s") % ",".join(designation_items)
         if len(designation) > 190:
             designation = _("payoff for %d multi-pay") % len(designation_items)
@@ -852,7 +856,7 @@ def check_payoff_accounting():
                 designation_items = []
                 for paypoff_item in payoff_list:
                     third_amounts.append((paypoff_item.supporting.third, float(paypoff_item.amount)))
-                    designation_items.append(six.text_type(paypoff_item.supporting.get_final_child()))
+                    designation_items.append(six.text_type(paypoff_item.supporting.get_final_child().reference))
                 designation = _("payoff for %s") % ",".join(designation_items)
                 if len(designation) > 190:
                     designation = _("payoff for %d multi-pay") % len(designation_items)

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-07-02 09:25+0000\n"
+"POT-Creation-Date: 2019-09-17 15:08+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -37,7 +37,7 @@ msgstr "deficit"
 msgid "Profit and deficit"
 msgstr "Profit and deficit"
 
-#: system/default.py:98
+#: system/default.py:96
 #, python-format
 msgid ""
 "{[i]}You have a %(type)s of %(value)s.{[br/]}You must to define the account "
@@ -46,7 +46,7 @@ msgstr ""
 "{[i]}You have a %(type)s of %(value)s.{[br/]}You must to define the account "
 "to affect.{[br/]}{[/i]}"
 
-#: system/default.py:99
+#: system/default.py:97
 #, python-format
 msgid ""
 "{[br/]}After validation, you begin '%s'.{[br/]}{[br/]}{[i]}{[u]}Warning:{[/"
@@ -55,11 +55,11 @@ msgstr ""
 "{[br/]}After validation, you begin '%s'.{[br/]}{[br/]}{[i]}{[u]}Warning:{[/"
 "u]} Your retained earnings must be completed.{[/i]}"
 
-#: system/default.py:127
+#: system/default.py:125
 msgid "Affect of profit/deficit"
 msgstr "Affect of profit/deficit"
 
-#: system/default.py:161
+#: system/default.py:159
 #, python-format
 msgid ""
 "Do you want to begin '%s'? {[br/]}{[br/]}{[i]}{[u]}Warning:{[/u]} Your "
@@ -68,55 +68,55 @@ msgstr ""
 "Do you want to begin '%s'? {[br/]}{[br/]}{[i]}{[u]}Warning:{[/u]} Your "
 "retained earnings must be completed.{[/i]}"
 
-#: system/default.py:169
+#: system/default.py:167
 msgid "Fiscal year closing - Result"
 msgstr "Fiscal year closing - Result"
 
-#: system/default.py:182
+#: system/default.py:177
 msgid "Fiscal year closing - Third"
 msgstr "Fiscal year closing - Third"
 
-#: system/default.py:228
+#: system/default.py:223
 msgid "Retained earnings - Balance sheet"
 msgstr "Retained earnings - Balance sheet"
 
-#: system/default.py:241
+#: system/default.py:236
 msgid "Retained earnings - Third party debt"
 msgstr "Retained earnings - Third party debt"
 
-#: system/default.py:264
+#: system/default.py:258
 msgid "immobilizations & stock"
 msgstr "immobilizations & stock"
 
-#: system/default.py:267 system/default.py:278 system/default.py:289
-#: system/default.py:301 system/default.py:312
+#: system/default.py:261 system/default.py:272 system/default.py:283
+#: system/default.py:295 system/default.py:306
 msgid "Sub-total"
 msgstr "Sub-total"
 
-#: system/default.py:275
+#: system/default.py:269
 msgid "receivables"
 msgstr "receivables"
 
-#: system/default.py:286
+#: system/default.py:280
 msgid "values & availabilities"
 msgstr "values & availabilities"
 
-#: system/default.py:298
+#: system/default.py:292
 msgid "capital"
 msgstr "capital"
 
-#: system/default.py:309
+#: system/default.py:303
 msgid "liabilities"
 msgstr "liabilities"
 
-#: system/default.py:323 system/default.py:324
+#: system/default.py:317 system/default.py:318
 msgid "Total"
 msgstr "Total"
 
-#: system/default.py:341
+#: system/default.py:335
 msgid "result (deficit)"
 msgstr "result (deficit)"
 
-#: system/default.py:343
+#: system/default.py:337
 msgid "result (profit)"
 msgstr "result (profit)"
