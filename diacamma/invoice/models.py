@@ -40,7 +40,7 @@ from django.utils import six, timezone
 from django_fsm import FSMIntegerField, transition
 
 from lucterios.framework.models import LucteriosModel, get_value_if_choices, get_obj_contains,\
-    LucteriosVirtualField, LucteriosDecimalField
+    LucteriosVirtualField, LucteriosDecimalField, correct_db_field
 from lucterios.framework.error import LucteriosException, IMPORTANT, GRAVE
 from lucterios.framework.signal_and_lock import Signal
 from lucterios.framework.filetools import get_user_path, readimage_to_base64, remove_accent
@@ -1535,6 +1535,14 @@ def invoice_checkparam():
     Parameter.check_and_create(name='invoice-reduce-with-ratio', typeparam=3, title=_("invoice-reduce-with-ratio"), args="{}", value='True')
     Parameter.check_and_create(name='invoice-reduce-allow-article-empty', typeparam=3, title=_("invoice-reduce-allow-article-empty"), args="{}", value='True')
     convert_asset_and_revenue()
+    correct_db_field({
+        'invoice_article': 'price',
+        'invoice_detail': 'price',
+        'invoice_detail': 'quantity',
+        'invoice_detail': 'reduce',
+        'invoice_detail': 'vta_rate',
+        'invoice_storagedetail': 'price',
+    })
 
 
 @Signal.decorate('auditlog_register')

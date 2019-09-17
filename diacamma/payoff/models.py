@@ -38,7 +38,7 @@ from django.utils import six
 from django_fsm import FSMIntegerField, transition
 
 from lucterios.framework.models import LucteriosModel, get_value_if_choices,\
-    LucteriosVirtualField, LucteriosDecimalField
+    LucteriosVirtualField, LucteriosDecimalField, correct_db_field
 from lucterios.framework.tools import get_date_formating, get_bool_textual
 from lucterios.framework.error import LucteriosException, IMPORTANT
 from lucterios.framework.printgenerators import ReportingGenerator
@@ -904,6 +904,9 @@ def payoff_checkparam():
                                args="{'Multi':False, 'HyperText': False}", value=_('#reference'))
     check_payoff_accounting()
     check_bank_account()
+    correct_db_field({
+        'payoff_payoff': 'amount',
+    })
 
 
 @Signal.decorate('auditlog_register')
