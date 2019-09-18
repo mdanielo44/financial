@@ -38,13 +38,15 @@ from lucterios.framework.tools import ActionsManage, MenuManage, WrapAction
 from lucterios.framework.xferadvance import action_list_sorted
 from lucterios.framework.xferadvance import XferListEditor, XferAddEditor
 from lucterios.framework.xfergraphic import XferContainerAcknowledge, XferContainerCustom
-from lucterios.framework.xfercomponents import XferCompSelect, XferCompLabelForm, XferCompImage, XferCompFloat
+from lucterios.framework.xfercomponents import XferCompSelect, XferCompLabelForm, XferCompImage, XferCompFloat,\
+    XferCompMemo, XferCompEdit, XferCompGrid
 from lucterios.framework.error import LucteriosException, IMPORTANT
 from lucterios.CORE.xferprint import XferPrintListing
 from lucterios.CORE.editors import XferSavedCriteriaSearchEditor
 from lucterios.CORE.parameters import Params
 
 from diacamma.accounting.models import EntryLineAccount, EntryAccount, FiscalYear, Journal, AccountLink, current_system_account, CostAccounting, ModelEntry
+from lucterios.CORE.views import ObjectImport
 
 
 def add_fiscalyear_result(xfer, col, row, colspan, year, comp_name):
@@ -238,6 +240,47 @@ class EntryAccountListing(XferPrintListing):
             info_list.append("{[b]}{[u]}%s{[/u]}{[/b]} : %s" % (_("Filter"), select_filter_list[select_filter]))
             self.info = '{[br]}'.join(info_list)
         XferPrintListing.fillresponse(self)
+
+
+@ActionsManage.affect_list(_('Import'), "images/new.png")
+@MenuManage.describ('accounting.add_entryaccount')
+class EntryAccountImport(ObjectImport):
+    icon = "entry.png"
+    model = EntryAccount
+    caption = _("Accounting entries import")
+
+    def _convert_record(self, fields_association, fields_description, row):
+        new_row = ObjectImport._convert_record(self, fields_association, fields_description, row)
+        new_row['entry.year'] = self.select_year
+        new_row['entry.journal'] = self.select_journal
+        return new_row
+
+    def change_gui(self):
+        self.item = EntryAccount()
+        model_name = self.get_components('modelname')
+        if model_name is not None:
+            readonly = isinstance(model_name, XferCompLabelForm)
+            self.tab = model_name.tab
+            self.remove_component('modelname')
+            self.item.year = FiscalYear.get_current(self.select_year)
+            self.item.journal = Journal.objects.get(id=self.select_journal)
+            self.fill_from_model(1, 0, readonly, [('year', 'journal')])
+            if not readonly:
+                self.get_components('year').set_action(self.request, self.get_action(), modal=FORMTYPE_REFRESH, close=CLOSE_NO)
+                self.get_components('journal').set_action(self.request, self.get_action(), modal=FORMTYPE_REFRESH, close=CLOSE_NO)
+
+    def fillresponse(self, quotechar="'", delimiter=";", encoding="utf-8", dateformat="%d/%m/%Y", step=0):
+        self.select_year = self.getparam('year')
+        self.select_journal = self.getparam('journal', 4)
+        ObjectImport.fillresponse(self, "accounting.EntryLineAccount", quotechar, delimiter, encoding, dateformat, step)
+        self.change_gui()
+        if step == 3:
+            grid = XferCompGrid("entryline")
+            grid.set_model(EntryLineAccount.objects.filter(entry_id__in=list(self.items_imported.keys())), None, None)
+            grid.set_location(1, self.get_max_row() + 1, 2)
+            grid.set_size(350, 500)
+            grid.description = _('entries imported')
+            self.add_component(grid)
 
 
 @ActionsManage.affect_grid(TITLE_DELETE, 'images/delete.png', unique=SELECT_MULTI, condition=lambda xfer, gridname='': (xfer.item.year.status in [0, 1]) and (xfer.getparam('filter', 0) != 2))

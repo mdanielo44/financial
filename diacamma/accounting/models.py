@@ -30,9 +30,10 @@ from csv import DictReader
 from _csv import QUOTE_NONE
 
 from django.db import models
-from django.db.models import Q
+from django.db.models.functions import Concat
+from django.db.models import Q, Value
 from django.db.models.query import QuerySet
-from django.db.models.aggregates import Sum, Max
+from django.db.models.aggregates import Sum, Max, Count
 from django.template import engines
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils.translation import ugettext_lazy as _
@@ -1096,6 +1097,10 @@ class EntryLineAccount(LucteriosModel):
         return ['entry.date_entry', 'entry.date_value', 'entry.designation', 'entry_account', 'debit', 'credit']
 
     @classmethod
+    def get_import_fields(cls):
+        return ['entry.date_value', 'entry.designation', 'account', 'debit', 'credit', 'third', 'reference', 'costaccounting']
+
+    @classmethod
     def get_show_fields(cls):
         return ['entry.date_entry', 'entry.date_value', 'entry.designation', 'entry_account', 'debit', 'credit']
 
@@ -1171,6 +1176,59 @@ class EntryLineAccount(LucteriosModel):
         else:
             res = res and (self.costaccounting.id == other.costaccounting.id)
         return res
+
+    @classmethod
+    def initialize_import(cls):
+        if hasattr(cls, 'entry_imported'):
+            del cls.entry_imported
+        if hasattr(cls, 'serial_entry_imported'):
+            del cls.serial_entry_imported
+
+    @classmethod
+    def import_data(cls, rowdata, dateformat):
+        new_item = None
+        if hasattr(cls, 'entry_imported'):
+            if (cls.entry_imported.date_value != rowdata['entry.date_value']) or (cls.entry_imported.designation != rowdata['entry.designation']):
+                new_item = cls.finalize_import()
+        if not hasattr(cls, 'entry_imported'):
+            cls.entry_imported = EntryAccount(year_id=rowdata['entry.year'], journal_id=rowdata['entry.journal'], date_value=rowdata['entry.date_value'], designation=rowdata['entry.designation'])
+        if not hasattr(cls, 'serial_entry_imported'):
+            cls.serial_entry_imported = ""
+        account = ChartsAccount.objects.filter(code=rowdata['account'], year_id=rowdata['entry.year']).first()
+        third = None
+        if 'third' in rowdata:
+            q_legalentity = Q(contact__legalentity__name=rowdata['third'])
+            q_individual = Q(completename=rowdata['third'])
+            third = Third.objects.annotate(completename=Concat('contact__individual__lastname',
+                                                               Value(' '),
+                                                               'contact__individual__firstname')).annotate(num_entryline=Count('entrylineaccount')).filter(q_legalentity | q_individual).first()
+
+        costaccounting = None
+        if 'costaccounting' in rowdata:
+            costaccounting = CostAccounting.objects.filter(name=rowdata['costaccounting']).first()
+        reference = rowdata['reference'] if 'reference' in rowdata else None
+        if account is not None:
+            cls.serial_entry_imported = cls.entry_imported.add_new_entryline(cls.serial_entry_imported, 0, account.id,
+                                                                             rowdata['credit'], rowdata['debit'],
+                                                                             third.id if third is not None else 0,
+                                                                             costaccounting.id if costaccounting is not None else 0,
+                                                                             reference)
+        return new_item
+
+    @classmethod
+    def finalize_import(cls):
+        new_item = None
+        if hasattr(cls, 'entry_imported'):
+            if not hasattr(cls, 'serial_entry_imported'):
+                cls.serial_entry_imported = ""
+            _no_change, debit_rest, credit_rest = cls.entry_imported.serial_control(cls.serial_entry_imported)
+            if (debit_rest < 0.0001) and (credit_rest < 0.0001) and (len(cls.serial_entry_imported) > 0):
+                new_item = cls.entry_imported
+                new_item.save()
+                new_item.save_entrylineaccounts(cls.serial_entry_imported)
+            del cls.serial_entry_imported
+            del cls.entry_imported
+        return new_item
 
     def get_serial(self):
         # return serial information: "<id>|<accound id>|<third id> or 0|<amount>|<cost id> or 0|<link id> or 0|<reference> or None"
