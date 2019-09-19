@@ -9,6 +9,7 @@ Aide relative aux fonctionnalités de gestion de factures.
    articles.rst
    create_bill.rst
    stock.rst
+   statistics.rst
    configuration.rst
 
 
