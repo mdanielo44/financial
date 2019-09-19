@@ -1,7 +1,7 @@
 Dépôt de chèques
 ================
 
-Depuis le menu *Finance/Dépôt de chèques*, vous pouvez ajouter et consulter des bordereaux de chèques.
+Depuis le menu *Comptabilité/Dépôt de chèques*, vous pouvez ajouter et consulter des bordereaux de chèques.
 
     .. image:: depositlist.png
 

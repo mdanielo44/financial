@@ -43,7 +43,7 @@ Fermez maintenant la liste des exercices afin de vous rendre dans la comptabilit
 pouvoir créer le plan comptable de l'exercice ainsi qu'affecter le
 report à nouveau avant de pouvoir commencer éà saisir des écritures.
 
-Pour ce faire, rendrez-vous dans le menu *Financier/Comptabilité/plan	comptable*
+Pour ce faire, rendrez-vous dans le menu *Comptabilité/Gestion comptable/Plan comptable*
 
     .. image:: account_list.png
 
@@ -69,7 +69,7 @@ Une fois ceci fait, plusieurs choix se présentent à vous:
 Création, modification et édition de comptes dans le plan
 ---------------------------------------------------------
 
-Plaçons nous dans le menu *finance/comptabilité/plan comptable de l'exercice*.
+Plaçons nous dans le menu *comptabilité/Gestion comptable/Plan comptable*.
 
 A tout moment au cours d'un exercice vous pouvez être amener à ajouter un nouveau compte dans votre plan.
 
@@ -96,7 +96,7 @@ Clôture d'un exercice
 A la fin de la période, vous devez clôturer votre exercice. Cette
 opération, définitive, se réalise sous le contrôle de votre
 vérificateur aux comptes.
-Dans le menu *Financier/Comptabilité/plan comptable*, cliquez sur le bouton "Clôturer".
+Dans le menu *Comptabilité/Gestion comptable/Plan comptable*, cliquez sur le bouton "Clôturer".
 
 **Attention:** Toutes les écritures doivent être validées avant de commencer cette procédure.
 

@@ -9,7 +9,7 @@ En effet, il n'est pas possible de ventiler une même ligne écriture sur plusie
 Les codes analytiques
 ---------------------
 
-Depuis le menu *Financier/Comptabilité/Comptabilités analytiques*, vous accédez à la liste des codes.
+Depuis le menu *Comptabilité/Gestion comptable/Comptabilités analytiques*, vous accédez à la liste des codes.
 
 Depuis cet écran vous pouvez créer, modifier ou supprimer un code analytique. Celui-ci est constitué
 en plus d'un titre et d'un description, d'un status (Ouvert ou Clôturé). 

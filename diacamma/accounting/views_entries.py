@@ -262,8 +262,10 @@ class EntryAccountImport(ObjectImport):
             readonly = isinstance(model_name, XferCompLabelForm)
             self.tab = model_name.tab
             self.remove_component('modelname')
+            self.params['no_year_close'] = True
             self.item.year = FiscalYear.get_current(self.select_year)
             self.item.journal = Journal.objects.get(id=self.select_journal)
+            self.item.set_context(self)
             self.fill_from_model(1, 0, readonly, [('year', 'journal')])
             if not readonly:
                 self.get_components('year').set_action(self.request, self.get_action(), modal=FORMTYPE_REFRESH, close=CLOSE_NO)

@@ -4,7 +4,7 @@ Création de facture
 Création
 --------
 
-Depuis le menu *Finance/Facturier/Les factures* vous pouvez éditer ou ajouter une nouvelle facture.
+Depuis le menu *Facturier/Facture* vous pouvez éditer ou ajouter une nouvelle facture.
 
 Commencez par définir le type de document (devis, facture, reçu ou avoir) que vous souhaitez créer ainsi que la date d'émission et un commentaire qui figurera dessus.
 
@@ -24,7 +24,7 @@ Il n'est bien sur pas possible de vendre plus d'article stockable que l'on poss�
 Changement d'état
 -----------------
 
-Depuis le menu *Finance/Facturier/Les factures* vous pouvez consulter les factures en cours, validé ou fini.
+Depuis le menu *Facturier/Facture* vous pouvez consulter les factures en cours, validé ou fini.
 
 Un devis, une facture, un reçu ou un avoir dans l'état « en cours » est un document en cours de conception et il n'est pas encore envoyé au client.
 
@@ -49,14 +49,14 @@ Depuis la fiche d'un document (devis, facture, reçu ou avoir) vous pouvez à to
 Paiement
 --------
 
-Si ceux-ci sont configurés (menu "Administration/Configuration du règlement"), vous pouvez consulter les moyens de paiement d'une facture, d'un reçu ou d'un devis.
+Si ceux-ci sont configurés (menu *Administration/Modules (conf.)/Configuration du règlement*), vous pouvez consulter les moyens de paiement d'une facture, d'un reçu ou d'un devis.
 Si vous l'envoyez par courriel, vous pouvez également les faire apparaitre dans votre message.
 
 Dans le cas d'un paiement via PayPal, si votre _Diacamma_ est accessible par internet, le logiciel sera automatiquement notifié du règlement.
 Dans le cas d'un devis, celui-ci sera automatiquement archivé et une facture équivalente sera générée.
 Un nouveau réglement sera ajouté dans votre facture.
 
-Dans l'écran "Financier/Transactions bancaires", vous pouvez consulté précisement la notification reçu de PayPal.
+Dans l'écran *Comptabilité/Transactions bancaires*, vous pouvez consulté précisement la notification reçu de PayPal.
 En cas d'état "échec", la raison est alors précisé: il vous faudra manuellement vérifier votre compte PayPal et rétablir l'éventuellement paiment erroné manuellement.
 
  

@@ -1016,21 +1016,23 @@ class EntryTest(LucteriosTest):
         fill_thirds_fr()
 
         csv_content = """date;code;description;debit;credit;third;cost;ref
-04/09/2018;512;  Retrait;1 000,00;;;;
-04/09/2018;531;  Retrait;;1 000,00;;;
-05/09/2018;512;Virement ;1234.56 EUR;;;;#ABC987654
-05/09/2018;411;Virement ;;1234.56 EUR;Minimum;;
-06/09/2018;701;Sell;;321.47;;open;
-06/09/2018;706;Sell;;366,51;;;
-06/09/2018;411;Sell;687,98;;Dalton Joe;;
-07/09/2018;512;Bad sum;123;;;;
-07/09/2018;531;Bad sum;;456;;;
-08/09/2018;515;Bad code;20,00;;;;
-08/09/2018;531;Bad code;;20,00;;;
-09/09/2018;106;alone;99999.99;;;;
-10/09/2018;601;Wrong buy;30.02;;;bad;
-10/09/2018;602;Wrong buy;37.01;;;close;
-10/09/2018;401;Wrong buy;;67.03;Valjean Jean;;
+04/09/2015;512;  Retrait;1 000,00;;;;
+04/09/2015;531;  Retrait;;1 000,00;;;
+05/09/2015;512;Virement ;1234.56 EUR;;;;#ABC987654
+05/09/2015;411;Virement ;;1234.56 EUR;Minimum;;
+06/09/2015;701;Sell;;321.47;;open;
+06/09/2015;706;Sell;;366,51;;;
+06/09/2015;411;Sell;687,98;;Dalton Joe;;
+07/09/2015;512;Bad sum;123;;;;
+07/09/2015;531;Bad sum;;456;;;
+08/09/2015;515;Bad code;20,00;;;;
+08/09/2015;531;Bad code;;20,00;;;
+09/09/2015;106;alone;99999.99;;;;
+10/09/2015;601;Wrong buy;30.02;;;bad;
+10/09/2015;602;Wrong buy;37.01;;;close;
+10/09/2015;401;Wrong buy;;67.03;Valjean Jean;;
+11/09/2016;512;Bad date;500,00;;;;
+11/09/2016;531;Bad date;;500,00;;;
 """
 
         self.factory.xfer = EntryAccountImport()
@@ -1048,7 +1050,7 @@ class EntryTest(LucteriosTest):
         self.assert_select_equal('fld_third', 9)
         self.assert_select_equal('fld_reference', 9)
         self.assert_select_equal('fld_costaccounting', 9)
-        self.assert_count_equal('CSV', 15)
+        self.assert_count_equal('CSV', 17)
         self.assert_count_equal('#CSV/actions', 0)
 
         self.factory.xfer = EntryAccountImport()
@@ -1059,7 +1061,7 @@ class EntryTest(LucteriosTest):
                                                                   'fld_reference': 'ref', 'fld_costaccounting': 'cost'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountImport')
         self.assert_count_equal('', 5)
-        self.assert_count_equal('CSV', 15)
+        self.assert_count_equal('CSV', 17)
         self.assert_count_equal('#CSV/actions', 0)
 
         self.factory.xfer = EntryAccountImport()
@@ -1074,7 +1076,7 @@ class EntryTest(LucteriosTest):
         self.assert_count_equal('entryline', 10)
         self.assert_json_equal('', 'entryline/@0/entry.num', None)
         self.assert_json_equal('', 'entryline/@0/link', None)
-        self.assert_json_equal('', 'entryline/@0/entry.date_value', '2018-09-04')
+        self.assert_json_equal('', 'entryline/@0/entry.date_value', '2015-09-04')
         self.assert_json_equal('', 'entryline/@0/designation_ref', 'Retrait')
         self.assert_json_equal('', 'entryline/@0/entry_account', '[512] 512')
         self.assert_json_equal('', 'entryline/@0/costaccounting', None)
@@ -1083,7 +1085,7 @@ class EntryTest(LucteriosTest):
         self.assert_json_equal('', 'entryline/@1/costaccounting', None)
         self.assert_json_equal('', 'entryline/@1/credit', 1000.00)
 
-        self.assert_json_equal('', 'entryline/@2/entry.date_value', '2018-09-05')
+        self.assert_json_equal('', 'entryline/@2/entry.date_value', '2015-09-05')
         self.assert_json_equal('', 'entryline/@2/designation_ref', 'Virement')
         self.assert_json_equal('', 'entryline/@2/entry_account', '[411 Minimum]')
         self.assert_json_equal('', 'entryline/@2/costaccounting', None)
@@ -1093,7 +1095,7 @@ class EntryTest(LucteriosTest):
         self.assert_json_equal('', 'entryline/@3/costaccounting', None)
         self.assert_json_equal('', 'entryline/@3/debit', -1234.56)
 
-        self.assert_json_equal('', 'entryline/@4/entry.date_value', '2018-09-06')
+        self.assert_json_equal('', 'entryline/@4/entry.date_value', '2015-09-06')
         self.assert_json_equal('', 'entryline/@4/designation_ref', 'Sell')
         self.assert_json_equal('', 'entryline/@4/entry_account', '[411 Dalton Joe]')
         self.assert_json_equal('', 'entryline/@4/costaccounting', None)
@@ -1105,7 +1107,7 @@ class EntryTest(LucteriosTest):
         self.assert_json_equal('', 'entryline/@6/costaccounting', None)
         self.assert_json_equal('', 'entryline/@6/credit', 366.51)
 
-        self.assert_json_equal('', 'entryline/@7/entry.date_value', '2018-09-10')
+        self.assert_json_equal('', 'entryline/@7/entry.date_value', '2015-09-10')
         self.assert_json_equal('', 'entryline/@7/designation_ref', 'Wrong buy')
         self.assert_json_equal('', 'entryline/@7/entry_account', '[401] 401')
         self.assert_json_equal('', 'entryline/@7/costaccounting', None)

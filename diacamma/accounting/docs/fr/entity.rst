@@ -6,7 +6,7 @@ Saisie d'une écriture
 
 	**Cas général**
 
-Plaçons nous dans le menu *Financier/Comptabilité/écritures comptables*.
+Plaçons nous dans le menu *Comptabilité/Gestion comptable/Écritures comptables*.
 
     .. image:: entity_list.png
 
@@ -135,3 +135,27 @@ de définir des critères de recherche d'écritures comptables.
 En cliquant sur 'Rechercher", l'outil va rechercher dans la base
 toutes les écritures correspondantes à ces critères. Vous pourrez alors
 imprimer cette liste ou éditer/modifier une écriture.
+
+Import d'écritures
+------------------
+
+Depuis la liste des écritures, le bouton *Import* vous permet d'importer des écritures comptables depuis un fichier CSV.
+
+Une fois avoir sélectionné l'exercice d'import, le journal et les information de format de votre fichier CSV,
+vous serez ammené à associer les champs des écritures aux colonnes de votre documents (la première ligne de votre document doit décrire la nature de chaque colonne).
+
+    .. image:: entity_import.png
+    
+Vous pouvez alors contrôler vos données avant de les validés.
+
+Une fois l'import réalisé, l'outil vous présentera le résultat des écritures réellement importées.
+
+**Notez que les lignes d'écritures ne seront pas importé si:**
+
+ * Si le code comptable précisé n'existe pas dans le plan comptable de l'exercice.
+ * La date n'est pas inclu dans l'exercice.
+ * L'ensemble des lignes comprenant même date et même intitulé ne s'équilibre pas.
+
+Bien que cela ne bloque pas l'import, le tiers et le code analytique seront laissé vide si ceux indiqué ne sont pas connus dans le logiciel.
+ 
+ 

@@ -847,6 +847,26 @@ class EntryAccount(LucteriosModel):
             result.append("entrylineaccount_set.third." + fieldname)
         return result
 
+    @property
+    def year_query(self):
+        if hasattr(self, 'no_year_close') and self.no_year_close:
+            return FiscalYear.objects.filter(status__in=(0, 1))
+        else:
+            return FiscalYear.objects.all()
+
+    @property
+    def journal_query(self):
+        if hasattr(self, 'no_year_close') and self.no_year_close and self.year.status == 1:
+            return Journal.objects.exclude(id=1)
+        else:
+            return Journal.objects.all()
+
+    def set_context(self, xfer):
+        if xfer.getparam('no_year_close', False):
+            self.no_year_close = True
+        elif hasattr(self, 'no_year_close'):
+            del self.no_year_close
+
     @classmethod
     def clear_ghost(cls):
         if not RecordLocker.has_item_lock(cls):
@@ -887,18 +907,25 @@ class EntryAccount(LucteriosModel):
         else:
             return ''
 
-    def check_date(self):
+    def check_date(self, checking=False):
+        res = True
         if self.date_value is None:
             self.date_value = date.today()
+            if checking:
+                res = False
         if isinstance(self.date_value, date):
             self.date_value = self.date_value.isoformat()
         if self.journal_id == 1:
             self.date_value = self.year.begin.isoformat()
         if self.date_value > self.year.end.isoformat():
             self.date_value = self.year.end.isoformat()
+            if checking:
+                res = False
         if self.date_value < self.year.begin.isoformat():
             self.date_value = self.year.begin.isoformat()
-        return
+            if checking:
+                res = False
+        return res
 
     def delete(self):
         self.unlink()
@@ -1222,7 +1249,7 @@ class EntryLineAccount(LucteriosModel):
             if not hasattr(cls, 'serial_entry_imported'):
                 cls.serial_entry_imported = ""
             _no_change, debit_rest, credit_rest = cls.entry_imported.serial_control(cls.serial_entry_imported)
-            if (debit_rest < 0.0001) and (credit_rest < 0.0001) and (len(cls.serial_entry_imported) > 0):
+            if (debit_rest < 0.0001) and (credit_rest < 0.0001) and (len(cls.serial_entry_imported) > 0) and cls.entry_imported.check_date(checking=True):
                 new_item = cls.entry_imported
                 new_item.save()
                 new_item.save_entrylineaccounts(cls.serial_entry_imported)

@@ -1,7 +1,7 @@
 Configuration
 =============
 
-Le menu *Administration/Configuration du règlement* vous permet quelques configurations pour votre structure.
+Le menu *Administration/Modules (conf.)/Configuration du règlement* vous permet quelques configurations pour votre structure.
 
 Compte bancaire
 ---------------

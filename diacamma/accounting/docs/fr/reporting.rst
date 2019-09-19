@@ -1,7 +1,7 @@
 Raports
 =======
 
-Dans le catégorie *Financier/Comptabilité*, vous avez accès à un ensemble de rapports relatifs à votre comptabilité.
+Dans le catégorie *Comptabilité/Rapports comptables*, vous avez accès à un ensemble de rapports relatifs à votre comptabilité.
 Vous pouvez consulter votre rapport ainsi qu'en réaliser une impression via une génération PDF de ce rapport.
 De plus, pour tout les exercices non-cloturés, vous pouvez préciser une période de consultation.
 Ceci est principalement utile pour vous aider à faire vos rapprochements bancaires ou si vous avez besoins d'éditer des situations financiéres trimestrielles.

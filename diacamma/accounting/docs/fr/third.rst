@@ -4,7 +4,7 @@ Tiers comptable
 Création d'un tiers
 -------------------
 
-Plaçons nous dans le menu *Finance/Tiers*.
+Plaçons nous dans le menu *Comptabilité/Tiers*.
 
 .. image:: third_list.png
 

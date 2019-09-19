@@ -5,7 +5,7 @@ Déclaration d'un modèle
 -----------------------
 
 Un modèle d'écriture est un ensemble de lignes d'écritures mémorisées à l'avance que vous pouvez rejouer aussi souvent que vous le voulez.
-Depuis le menu Financier/Comptabilité/Modèles d'écritures, vous accédez à la liste des modèles. 
+Depuis le menu *Comptabilité/Gestion comptable/Modèles d'écritures*, vous accédez à la liste des modèles. 
 
     .. image:: model_list.png
 
