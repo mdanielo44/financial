@@ -1205,14 +1205,14 @@ class EntryLineAccount(LucteriosModel):
 
         costaccounting = None
         if 'costaccounting' in rowdata:
-            costaccounting = CostAccounting.objects.filter(name=rowdata['costaccounting']).first()
+            costaccounting = CostAccounting.objects.filter(name=rowdata['costaccounting'], status=0).first()
         reference = rowdata['reference'] if 'reference' in rowdata else None
         if account is not None:
             cls.serial_entry_imported = cls.entry_imported.add_new_entryline(cls.serial_entry_imported, 0, account.id,
-                                                                             rowdata['credit'], rowdata['debit'],
-                                                                             third.id if third is not None else 0,
-                                                                             costaccounting.id if costaccounting is not None else 0,
-                                                                             reference)
+                                                                             credit_val=rowdata['credit'], debit_val=rowdata['debit'],
+                                                                             third=third.id if third is not None else 0,
+                                                                             costaccounting=costaccounting.id if costaccounting is not None else 0,
+                                                                             reference=reference)
         return new_item
 
     @classmethod

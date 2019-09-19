@@ -36,11 +36,12 @@ from diacamma.accounting.views_entries import EntryAccountList, \
     EntryLineAccountEdit, EntryAccountValidate, EntryAccountClose, \
     EntryAccountReverse, EntryAccountCreateLinked, EntryAccountLink, \
     EntryAccountDel, EntryAccountOpenFromLine, EntryAccountShow, \
-    EntryLineAccountDel, EntryAccountUnlock
+    EntryLineAccountDel, EntryAccountUnlock, EntryAccountImport
 from diacamma.accounting.test_tools import default_compta_fr, initial_thirds_fr,\
-    fill_entries_fr
+    fill_entries_fr, default_costaccounting, fill_thirds_fr
 from diacamma.accounting.models import EntryAccount, CostAccounting
 from diacamma.accounting.views_other import CostAccountingAddModify
+from _io import StringIO
 
 
 class EntryTest(LucteriosTest):
@@ -1009,3 +1010,109 @@ class EntryTest(LucteriosTest):
         self.calljson('/diacamma.accounting/entryLineAccountAdd', {'year': '1', 'journal': '1', 'entryaccount': '1', 'num_cpt_txt': '401',
                                                                    'num_cpt': '4', 'third': 0, 'debit_val': '0.0', 'credit_val': '152.34'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryLineAccountAdd')
+
+    def test_import_entries(self):
+        default_costaccounting()
+        fill_thirds_fr()
+
+        csv_content = """date;code;description;debit;credit;third;cost;ref
+04/09/2018;512;  Retrait;1 000,00;;;;
+04/09/2018;531;  Retrait;;1 000,00;;;
+05/09/2018;512;Virement ;1234.56 EUR;;;;#ABC987654
+05/09/2018;411;Virement ;;1234.56 EUR;Minimum;;
+06/09/2018;701;Sell;;321.47;;open;
+06/09/2018;706;Sell;;366,51;;;
+06/09/2018;411;Sell;687,98;;Dalton Joe;;
+07/09/2018;512;Bad sum;123;;;;
+07/09/2018;531;Bad sum;;456;;;
+08/09/2018;515;Bad code;20,00;;;;
+08/09/2018;531;Bad code;;20,00;;;
+09/09/2018;106;alone;99999.99;;;;
+10/09/2018;601;Wrong buy;30.02;;;bad;
+10/09/2018;602;Wrong buy;37.01;;;close;
+10/09/2018;401;Wrong buy;;67.03;Valjean Jean;;
+"""
+
+        self.factory.xfer = EntryAccountImport()
+        self.calljson('/diacamma.accounting/entryAccountImport', {'step': 1, 'year': 1, 'journal': 5, 'quotechar': "'",
+                                                                  'delimiter': ';', 'encoding': 'utf-8', 'dateformat': '%d/%m/%Y', 'csvcontent': StringIO(csv_content)}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountImport')
+        self.assert_count_equal('', 15)
+        self.assert_json_equal('LABELFORM', 'year', 'Exercice du 1 janvier 2015 au 31 décembre 2015 [en création]')
+        self.assert_json_equal('LABELFORM', 'journal', 'Opérations diverses')
+        self.assert_select_equal('fld_entry.date_value', 8)
+        self.assert_select_equal('fld_entry.designation', 8)
+        self.assert_select_equal('fld_account', 8)
+        self.assert_select_equal('fld_debit', 8)
+        self.assert_select_equal('fld_credit', 8)
+        self.assert_select_equal('fld_third', 9)
+        self.assert_select_equal('fld_reference', 9)
+        self.assert_select_equal('fld_costaccounting', 9)
+        self.assert_count_equal('CSV', 15)
+        self.assert_count_equal('#CSV/actions', 0)
+
+        self.factory.xfer = EntryAccountImport()
+        self.calljson('/diacamma.accounting/entryAccountImport', {'step': 2, 'year': 1, 'journal': 5, 'quotechar': "'", 'delimiter': ';',
+                                                                  'encoding': 'utf-8', 'dateformat': '%d/%m/%Y', 'csvcontent0': csv_content,
+                                                                  "fld_entry.date_value": "date", "fld_entry.designation": "description", "fld_account": "code",
+                                                                  'fld_debit': 'debit', 'fld_credit': 'credit', 'fld_third': 'third',
+                                                                  'fld_reference': 'ref', 'fld_costaccounting': 'cost'}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountImport')
+        self.assert_count_equal('', 5)
+        self.assert_count_equal('CSV', 15)
+        self.assert_count_equal('#CSV/actions', 0)
+
+        self.factory.xfer = EntryAccountImport()
+        self.calljson('/diacamma.accounting/entryAccountImport', {'step': 3, 'year': 1, 'journal': 5, 'quotechar': "'", 'delimiter': ';',
+                                                                  'encoding': 'utf-8', 'dateformat': '%d/%m/%Y', 'csvcontent0': csv_content,
+                                                                  "fld_entry.date_value": "date", "fld_entry.designation": "description", "fld_account": "code",
+                                                                  'fld_debit': 'debit', 'fld_credit': 'credit', 'fld_third': 'third',
+                                                                  'fld_reference': 'ref', 'fld_costaccounting': 'cost'}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountImport')
+        self.assert_count_equal('', 3)
+        self.assert_json_equal('LABELFORM', 'result', "4 éléments ont été importés")
+        self.assert_count_equal('entryline', 10)
+        self.assert_json_equal('', 'entryline/@0/entry.num', None)
+        self.assert_json_equal('', 'entryline/@0/link', None)
+        self.assert_json_equal('', 'entryline/@0/entry.date_value', '2018-09-04')
+        self.assert_json_equal('', 'entryline/@0/designation_ref', 'Retrait')
+        self.assert_json_equal('', 'entryline/@0/entry_account', '[512] 512')
+        self.assert_json_equal('', 'entryline/@0/costaccounting', None)
+        self.assert_json_equal('', 'entryline/@0/debit', -1000.00)
+        self.assert_json_equal('', 'entryline/@1/entry_account', '[531] 531')
+        self.assert_json_equal('', 'entryline/@1/costaccounting', None)
+        self.assert_json_equal('', 'entryline/@1/credit', 1000.00)
+
+        self.assert_json_equal('', 'entryline/@2/entry.date_value', '2018-09-05')
+        self.assert_json_equal('', 'entryline/@2/designation_ref', 'Virement')
+        self.assert_json_equal('', 'entryline/@2/entry_account', '[411 Minimum]')
+        self.assert_json_equal('', 'entryline/@2/costaccounting', None)
+        self.assert_json_equal('', 'entryline/@2/credit', 1234.56)
+        self.assert_json_equal('', 'entryline/@3/designation_ref', 'Virement{[br/]}#ABC987654')
+        self.assert_json_equal('', 'entryline/@3/entry_account', '[512] 512')
+        self.assert_json_equal('', 'entryline/@3/costaccounting', None)
+        self.assert_json_equal('', 'entryline/@3/debit', -1234.56)
+
+        self.assert_json_equal('', 'entryline/@4/entry.date_value', '2018-09-06')
+        self.assert_json_equal('', 'entryline/@4/designation_ref', 'Sell')
+        self.assert_json_equal('', 'entryline/@4/entry_account', '[411 Dalton Joe]')
+        self.assert_json_equal('', 'entryline/@4/costaccounting', None)
+        self.assert_json_equal('', 'entryline/@4/debit', -687.98)
+        self.assert_json_equal('', 'entryline/@5/entry_account', '[701] 701')
+        self.assert_json_equal('', 'entryline/@5/costaccounting', 'open')
+        self.assert_json_equal('', 'entryline/@5/credit', 321.47)
+        self.assert_json_equal('', 'entryline/@6/entry_account', '[706] 706')
+        self.assert_json_equal('', 'entryline/@6/costaccounting', None)
+        self.assert_json_equal('', 'entryline/@6/credit', 366.51)
+
+        self.assert_json_equal('', 'entryline/@7/entry.date_value', '2018-09-10')
+        self.assert_json_equal('', 'entryline/@7/designation_ref', 'Wrong buy')
+        self.assert_json_equal('', 'entryline/@7/entry_account', '[401] 401')
+        self.assert_json_equal('', 'entryline/@7/costaccounting', None)
+        self.assert_json_equal('', 'entryline/@7/credit', 67.03)
+        self.assert_json_equal('', 'entryline/@8/entry_account', '[601] 601')
+        self.assert_json_equal('', 'entryline/@8/costaccounting', None)
+        self.assert_json_equal('', 'entryline/@8/debit', -30.02)
+        self.assert_json_equal('', 'entryline/@9/entry_account', '[602] 602')
+        self.assert_json_equal('', 'entryline/@9/costaccounting', None)
+        self.assert_json_equal('', 'entryline/@9/debit', -37.01)
