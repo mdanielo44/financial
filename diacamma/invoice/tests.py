@@ -27,7 +27,7 @@ from shutil import rmtree
 from datetime import date
 from base64 import b64decode
 
-from django.utils import formats, six
+from django.utils import six
 
 from lucterios.framework.test import LucteriosTest
 from lucterios.framework.filetools import get_user_dir
@@ -568,6 +568,8 @@ class BillTest(InvoiceTest):
         self.assert_json_equal('LABELFORM', 'status', 0)
         self.assert_json_equal('LABELFORM', 'title', "avoir")
         self.assert_json_equal('LABELFORM', 'date', date.today().isoformat(), True)
+        self.assert_action_equal(self.get_json_path('#parentbill/action'), ("origine", "diacamma.invoice/images/origin.png",
+                                                                            "diacamma.invoice", "billShow", 0, 1, 1, {'bill': 1}))
         self.factory.xfer = BillAddModify()
         self.calljson('/diacamma.invoice/billAddModify',
                       {'bill': 2, 'date': '2015-04-01', 'SAVE': 'YES'}, False)
@@ -656,6 +658,8 @@ class BillTest(InvoiceTest):
         self.assert_json_equal('LABELFORM', 'status', 0)
         self.assert_json_equal('LABELFORM', 'title', "facture")
         self.assert_json_equal('LABELFORM', 'date', date.today().isoformat(), True)
+        self.assert_action_equal(self.get_json_path('#parentbill/action'), ("origine", "diacamma.invoice/images/origin.png",
+                                                                            "diacamma.invoice", "billShow", 0, 1, 1, {'bill': 1}))
 
     def test_compta_asset(self):
         default_articles()
