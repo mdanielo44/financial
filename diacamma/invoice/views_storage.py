@@ -278,7 +278,7 @@ class StorageSituation(XferListEditor):
         grid = XferCompGrid(self.field_id)
         grid.order_list = self.order_list
         grid.add_header("article", Article._meta.verbose_name, None, 1)
-        grid.add_header("designation", _('designation'), 1)
+        grid.add_header("designation", _('designation'))
         grid.add_header('storagesheet__storagearea', _('Area'), None, 1)
         grid.add_header('qty', _('Quantity'))
         grid.add_header('amount', _('Amount'), format_with_devise(7))
