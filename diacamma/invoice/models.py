@@ -830,13 +830,16 @@ class Bill(Supporting):
             cust_list.append(("{[b]}%s{[/b]}" % _('total'), {'format': "{[b]}{0}{[/b]}", 'value': total_cust}, {'format': "{[b]}{0}{[/b]}", 'value': 100}))
         return cust_list
 
-    def get_statistics_article(self, without_reduct):
+    def get_statistics_article(self, without_reduct, for_quotation):
         art_list = []
         if self.fiscal_year is not None:
             total_art = 0
             articles = {}
-            for det in Detail.objects.filter(Q(bill__fiscal_year=self.fiscal_year) & Q(
-                    bill__bill_type__in=(1, 2, 3)) & Q(bill__status__in=(1, 2, 3))):
+            if for_quotation:
+                bill_filter = Q(bill__bill_type=0) & Q(bill__status__in=(1, 3))
+            else:
+                bill_filter = Q(bill__bill_type__in=(1, 2, 3)) & Q(bill__status__in=(1, 2, 3))
+            for det in Detail.objects.filter(Q(bill__fiscal_year=self.fiscal_year) & bill_filter):
                 if det.article_id not in articles.keys():
                     articles[det.article_id] = [0, 0]
                 total_excltax = det.get_total_excltax()

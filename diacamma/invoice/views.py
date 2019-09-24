@@ -676,9 +676,9 @@ class BillStatistic(XferContainerCustom):
         grid.set_size(400, 800)
         self.add_component(grid)
 
-    def fill_articles(self):
-        articles_result = self.item.get_statistics_article(self.getparam('without_reduct', False))
-        grid = XferCompGrid("articles")
+    def fill_articles(self, for_quotation):
+        articles_result = self.item.get_statistics_article(self.getparam('without_reduct', False), for_quotation)
+        grid = XferCompGrid("articles" + ("_quote" if for_quotation else ""))
         grid.no_pager = True
         grid.add_header("article", _("article"))
         grid.add_header("amount", _("amount"), htype=format_with_devise(7))
@@ -742,13 +742,16 @@ class BillStatistic(XferContainerCustom):
         self.new_tab(_('Customers'))
         self.fill_customers()
         self.new_tab(_('Articles'))
-        self.fill_articles()
+        self.fill_articles(False)
         self.new_tab(_('By month'))
         self.fill_month()
 
         self.new_tab(_('By payoff'))
         self.fill_payoff(True, _('Payoff of bills and receipts'))
         self.fill_payoff(False, _('Payoff of assets'))
+
+        self.new_tab(_('Quotations'))
+        self.fill_articles(True)
 
         self.add_action(BillAccountChecking.get_action(_('check'), "images/info.png"), close=CLOSE_YES)
         self.add_action(BillStatisticPrint.get_action(TITLE_PRINT, "images/print.png"), close=CLOSE_NO)

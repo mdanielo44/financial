@@ -926,7 +926,7 @@ class BillTest(InvoiceTest):
         self.factory.xfer = BillStatistic()
         self.calljson('/diacamma.invoice/billStatistic', {}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'billStatistic')
-        self.assert_count_equal('', 13)
+        self.assert_count_equal('', 15)
 
         self.assert_count_equal('articles', 5)
         self.assert_json_equal('', 'articles/@0/article', "ABC1")
@@ -977,12 +977,14 @@ class BillTest(InvoiceTest):
         self.assert_count_equal('payoffs_True', 1)
         self.assert_count_equal('payoffs_False', 1)
 
+        self.assert_count_equal('articles_quote', 2)
+
         self.factory.xfer = BillStatisticPrint()
         self.calljson('/diacamma.invoice/billStatisticPrint', {'PRINT_MODE': '4'}, False)
         self.assert_observer('core.print', 'diacamma.invoice', 'billStatisticPrint')
         csv_value = b64decode(six.text_type(self.response_json['print']['content'])).decode("utf-8")
         content_csv = csv_value.split('\n')
-        self.assertEqual(len(content_csv), 59, str(content_csv))
+        self.assertEqual(len(content_csv), 68, str(content_csv))
         self.assertEqual(content_csv[1].strip(), '"Impression des statistiques"')
         self.assertEqual(content_csv[14].strip(), '"total";"351,22 €";"100,00 %";')
         self.assertEqual(content_csv[22].strip(), '"total";"351,22 €";"---";"---";"100,00 %";')
@@ -1013,7 +1015,7 @@ class BillTest(InvoiceTest):
         self.factory.xfer = BillStatistic()
         self.calljson('/diacamma.invoice/billStatistic', {'without_reduct': True}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'billStatistic')
-        self.assert_count_equal('', 13)
+        self.assert_count_equal('', 15)
 
         self.assert_count_equal('articles', 5)
         self.assert_json_equal('', 'articles/@0/article', "ABC1")
@@ -1069,6 +1071,13 @@ class BillTest(InvoiceTest):
 
         self.assert_count_equal('payoffs_True', 1)
         self.assert_count_equal('payoffs_False', 1)
+
+        self.assert_count_equal('articles_quote', 2)
+        self.assert_json_equal('', 'articles_quote/@0/article', "---")
+        self.assert_json_equal('', 'articles_quote/@0/amount', 300.00)
+        self.assert_json_equal('', 'articles_quote/@0/number', 15.00)
+        self.assert_json_equal('', 'articles_quote/@0/mean', 20.00)
+        self.assert_json_equal('', 'articles_quote/@0/ratio', 100.0)
 
     def test_payoff_bill(self):
         default_articles()
