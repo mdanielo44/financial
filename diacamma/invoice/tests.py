@@ -926,7 +926,7 @@ class BillTest(InvoiceTest):
         self.factory.xfer = BillStatistic()
         self.calljson('/diacamma.invoice/billStatistic', {}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'billStatistic')
-        self.assert_count_equal('', 15)
+        self.assert_count_equal('', 16)
 
         self.assert_count_equal('articles', 5)
         self.assert_json_equal('', 'articles/@0/article', "ABC1")
@@ -978,13 +978,18 @@ class BillTest(InvoiceTest):
         self.assert_count_equal('payoffs_False', 1)
 
         self.assert_count_equal('articles_quote', 2)
+        self.assert_json_equal('', 'articles_quote/@0/article', "---")
+        self.assert_json_equal('', 'articles_quote/@0/amount', 300.00)
+        self.assert_json_equal('', 'articles_quote/@0/number', 15.00)
+        self.assert_json_equal('', 'articles_quote/@0/mean', 20.00)
+        self.assert_json_equal('', 'articles_quote/@0/ratio', 100.0)
 
         self.factory.xfer = BillStatisticPrint()
         self.calljson('/diacamma.invoice/billStatisticPrint', {'PRINT_MODE': '4'}, False)
         self.assert_observer('core.print', 'diacamma.invoice', 'billStatisticPrint')
         csv_value = b64decode(six.text_type(self.response_json['print']['content'])).decode("utf-8")
         content_csv = csv_value.split('\n')
-        self.assertEqual(len(content_csv), 68, str(content_csv))
+        self.assertEqual(len(content_csv), 69, str(content_csv))
         self.assertEqual(content_csv[1].strip(), '"Impression des statistiques"')
         self.assertEqual(content_csv[14].strip(), '"total";"351,22 €";"100,00 %";')
         self.assertEqual(content_csv[22].strip(), '"total";"351,22 €";"---";"---";"100,00 %";')
@@ -995,7 +1000,7 @@ class BillTest(InvoiceTest):
 
     def test_statistic_without_reduce(self):
         default_articles()
-        details = [{'article': 0, 'designation': 'article 0', 'price': '20.00', 'quantity': 15}]
+        details = [{'article': 0, 'designation': 'article 0', 'price': '20.00', 'quantity': 15, 'reduce': '15.0'}]
         self._create_bill(details, 0, '2015-01-01', 6, True)  # 59.50
         details = [{'article': 1, 'designation': 'article 1', 'price': '22.00', 'quantity': 3, 'reduce': '5.0'},
                    {'article': 2, 'designation': 'article 2', 'price': '3.25', 'quantity': 7}]
@@ -1015,7 +1020,7 @@ class BillTest(InvoiceTest):
         self.factory.xfer = BillStatistic()
         self.calljson('/diacamma.invoice/billStatistic', {'without_reduct': True}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'billStatistic')
-        self.assert_count_equal('', 15)
+        self.assert_count_equal('', 16)
 
         self.assert_count_equal('articles', 5)
         self.assert_json_equal('', 'articles/@0/article', "ABC1")
@@ -1074,9 +1079,9 @@ class BillTest(InvoiceTest):
 
         self.assert_count_equal('articles_quote', 2)
         self.assert_json_equal('', 'articles_quote/@0/article', "---")
-        self.assert_json_equal('', 'articles_quote/@0/amount', 300.00)
+        self.assert_json_equal('', 'articles_quote/@0/amount', 285.00)
         self.assert_json_equal('', 'articles_quote/@0/number', 15.00)
-        self.assert_json_equal('', 'articles_quote/@0/mean', 20.00)
+        self.assert_json_equal('', 'articles_quote/@0/mean', 19.00)
         self.assert_json_equal('', 'articles_quote/@0/ratio', 100.0)
 
     def test_payoff_bill(self):

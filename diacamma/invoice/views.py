@@ -693,7 +693,7 @@ class BillStatistic(XferContainerCustom):
             grid.set_value(index, "mean", art_val[3])
             grid.set_value(index, "ratio", art_val[4])
             index += 1
-        grid.set_location(0, 1, 3)
+        grid.set_location(0, 2, 3)
         grid.set_size(400, 800)
         self.add_component(grid)
 
@@ -751,6 +751,10 @@ class BillStatistic(XferContainerCustom):
         self.fill_payoff(False, _('Payoff of assets'))
 
         self.new_tab(_('Quotations'))
+        lbl = XferCompLabelForm('lbl_info_quot')
+        lbl.set_value_center(_('Statistics of quotation in status "validated"'))
+        lbl.set_location(0, 0, 3)
+        self.add_component(lbl)
         self.fill_articles(True)
 
         self.add_action(BillAccountChecking.get_action(_('check'), "images/info.png"), close=CLOSE_YES)
@@ -980,15 +984,21 @@ def summary_invoice(xfer):
             lab.set_value_as_infocenter(_("Invoice"))
             lab.set_location(0, row, 4)
             xfer.add_component(lab)
-            nb_build = len(Bill.objects.filter(status=0))
-            nb_valid = len(Bill.objects.filter(status=1))
-            lab = XferCompLabelForm('invoiceinfo')
-            lab.set_value_as_header(_("There are %(build)d bills in building and %(valid)d validated") % {'build': nb_build, 'valid': nb_valid})
+            nb_build = len(Bill.objects.filter(status=0, bill_type__in=(1, 2, 3)))
+            nb_valid = len(Bill.objects.filter(status=1, bill_type__in=(1, 2, 3)))
+            lab = XferCompLabelForm('invoiceinfo1')
+            lab.set_value_as_header(_("There are %(build)d bills, assets or receipts in building and %(valid)d validated") % {'build': nb_build, 'valid': nb_valid})
             lab.set_location(0, row + 1, 4)
+            xfer.add_component(lab)
+            nb_build = len(Bill.objects.filter(status=0, bill_type=0))
+            nb_valid = len(Bill.objects.filter(status=1, bill_type=0))
+            lab = XferCompLabelForm('invoiceinfo2')
+            lab.set_value_as_header(_("There are %(build)d quotations in building and %(valid)d validated") % {'build': nb_build, 'valid': nb_valid})
+            lab.set_location(0, row + 2, 4)
             xfer.add_component(lab)
             lab = XferCompLabelForm('invoicesep')
             lab.set_value_as_infocenter("{[hr/]}")
-            lab.set_location(0, row + 2, 4)
+            lab.set_location(0, row + 3, 4)
             xfer.add_component(lab)
             return True
         else:

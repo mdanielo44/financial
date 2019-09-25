@@ -836,7 +836,7 @@ class Bill(Supporting):
             total_art = 0
             articles = {}
             if for_quotation:
-                bill_filter = Q(bill__bill_type=0) & Q(bill__status__in=(1, 3))
+                bill_filter = Q(bill__bill_type=0) & Q(bill__status=1)
             else:
                 bill_filter = Q(bill__bill_type__in=(1, 2, 3)) & Q(bill__status__in=(1, 2, 3))
             for det in Detail.objects.filter(Q(bill__fiscal_year=self.fiscal_year) & bill_filter):
