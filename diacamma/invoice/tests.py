@@ -1077,7 +1077,7 @@ class BillTest(InvoiceTest):
         self.assert_count_equal('payoffs_True', 1)
         self.assert_count_equal('payoffs_False', 1)
 
-        self.assert_count_equal('articles_quote', 2)      
+        self.assert_count_equal('articles_quote', 2)
         self.assert_json_equal('', 'articles_quote/@0/article', "---")
         self.assert_json_equal('', 'articles_quote/@0/amount', 300.00)
         self.assert_json_equal('', 'articles_quote/@0/number', 15.00)
