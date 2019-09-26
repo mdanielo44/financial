@@ -305,7 +305,7 @@ class BillTransition(XferTransition):
                                   self.getparam('reference'), self.getparam('bank_account', 0), self.getparam('date_payoff'), self.getparam('bank_fee', 0.0), repartition=0)
             XferTransition.fill_confirm(self, transition, trans)
             if sendemail:
-                self.redirect_action(PayableEmail.get_action("", ""), params={"item_name": self.field_id, "OK": "YES"})
+                self.redirect_action(PayableEmail.get_action("", ""), params={"item_name": self.field_id, "modelname": "", "OK": "YES"})
 
 
 @ActionsManage.affect_grid(_('payoff'), "diacamma.payoff/images/payoff.png", close=CLOSE_NO, unique=SELECT_MULTI, condition=lambda xfer, gridname='': xfer.getparam('status_filter', -1) == 1)
@@ -365,7 +365,7 @@ class BillPayableEmail(XferContainerAcknowledge):
 
     def fillresponse(self):
         self.redirect_action(ActionsManage.get_action_url('payoff.Supporting', 'Email', self),
-                             close=CLOSE_NO, params={'item_name': self.field_id})
+                             close=CLOSE_NO, params={'item_name': self.field_id, "modelname": ""})
 
 
 @ActionsManage.affect_grid(_("Print"), "images/print.png", close=CLOSE_NO, unique=SELECT_MULTI, condition=can_printing)

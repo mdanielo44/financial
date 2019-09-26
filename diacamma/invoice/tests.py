@@ -1677,12 +1677,13 @@ class BillTest(InvoiceTest):
             self.calljson('/diacamma.invoice/billPayableEmail', {'status_filter': 1, 'bill': '1;2;3;4'}, False)
             self.assert_observer('core.acknowledge', 'diacamma.invoice', 'billPayableEmail')
             self.assertEqual(self.response_json['action']['id'], "diacamma.payoff/payableEmail")
-            self.assertEqual(len(self.response_json['action']['params']), 1)
+            self.assertEqual(len(self.response_json['action']['params']), 2)
             self.assertEqual(self.response_json['action']['params']['item_name'], 'bill')
+            self.assertEqual(self.response_json['action']['params']['modelname'], '')
 
             self.factory.xfer = PayableEmail()
             self.calljson('/diacamma.payoff/payableEmail',
-                          {'item_name': 'bill', 'bill': "1;2;3;4"}, False)
+                          {'item_name': 'bill', 'bill': "1;2;3;4", 'modelname': ''}, False)
             self.assert_observer('core.custom', 'diacamma.payoff', 'payableEmail')
             self.assert_count_equal('', 5)
             self.assert_json_equal('LABELFORM', "nb_item", '4')

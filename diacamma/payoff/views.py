@@ -205,7 +205,7 @@ class PayableEmail(XferContainerAcknowledge):
     model = Supporting
     field_id = 'supporting'
 
-    def fillresponse(self, item_name='', subject='', message='', model=0):
+    def fillresponse(self, item_name='', subject='', message='', model=0, modelname=""):
         def replace_tag(contact, text):
             text = text.replace('#name', contact.get_final_child().get_presentation() if contact is not None else '???')
             text = text.replace('#doc', six.text_type(self.item.get_docname()))
@@ -213,6 +213,8 @@ class PayableEmail(XferContainerAcknowledge):
             return text
 
         if item_name != '':
+            if modelname != '':
+                self.model = apps.get_model(modelname)
             self.items = self.model.objects.filter(id__in=self.getparam(item_name, ()))
         self.items = [item.get_final_child() for item in self.items if item.can_send_email()]
         if len(self.items) == 0:
