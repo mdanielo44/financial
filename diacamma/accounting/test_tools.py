@@ -90,10 +90,13 @@ def create_year(status=0):
 
 
 def create_account(codes, type_of_account, year=None):
+    account_ids = []
     if year is None:
         year = FiscalYear.get_current()
     for code in codes:
-        ChartsAccount.objects.create(code=code, name=code, type_of_account=type_of_account, year=year)
+        chart = ChartsAccount.objects.create(code=code, name=code, type_of_account=type_of_account, year=year)
+        account_ids.append(chart.id)
+    return account_ids
 
 
 def fill_thirds_fr():

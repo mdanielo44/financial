@@ -179,7 +179,7 @@ class DefaultSystemAccounting(object):
         last_account_id = 0
         sum_account = 0.0
         new_entry = EntryAccount.objects.create(year=year, journal_id=5, designation=end_desig, date_value=year.end)
-        for entry_line in EntryLineAccount.objects.filter(account__code__regex=self.get_third_mask(), account__year=year, link__isnull=True).order_by('account'):
+        for entry_line in EntryLineAccount.objects.filter(account__code__regex=self.get_third_mask(), account__year=year, link__isnull=True, third__isnull=False).order_by('account'):
             if (last_account_id != entry_line.account_id) and (abs(sum_account) > 0.0001):
                 new_line = EntryLineAccount()
                 new_line.entry = new_entry
