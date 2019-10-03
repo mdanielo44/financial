@@ -36,6 +36,7 @@ from diacamma.accounting.models import FiscalYear
 from diacamma.accounting.views import ThirdList
 from diacamma.accounting.views_budget import BudgetList, BudgetAddModify, BudgetDel
 from diacamma.payoff.test_tools import PaymentTest
+from lucterios.documents.views import DocumentSearch
 
 
 class ChartsAccountTest(LucteriosTest):
@@ -412,8 +413,8 @@ class FiscalYearWorkflowTest(PaymentTest):
         rmtree(get_user_dir(), True)
 
     def _add_subvention(self):
-        ids1 = create_account(['441'], 1)  # subvention (état) N°18
-        ids2 = create_account(['740'], 3)  # subvention (revenu) N°19
+        create_account(['441'], 1)  # subvention (état) N°18
+        create_account(['740'], 3)  # subvention (revenu) N°19
         add_entry(1, 3, '2015-03-10', 'Subvention 1', '-1|19|0|35.500000|0|0|None|\n-2|18|0|-35.500000|0|0|None|', True)  # 23 24
         add_entry(1, 3, '2015-04-15', 'Subvention 2', '-1|19|0|99.950000|0|0|None|\n-2|18|0|-99.950000|0|0|None|', True)  # 25 26
 
@@ -575,6 +576,10 @@ class FiscalYearWorkflowTest(PaymentTest):
 
     def test_close(self):
         self._add_subvention()
+        self.factory.xfer = DocumentSearch()
+        self.calljson('/lucterios.documents/documentSearch', {}, False)
+        self.assert_observer('core.custom', 'lucterios.documents', 'documentSearch')
+        self.assert_count_equal('document', 0)
 
         self.assertEqual(FiscalYear.objects.get(id=1).status, 0)
         self.factory.xfer = FiscalYearClose()
@@ -681,6 +686,11 @@ class FiscalYearWorkflowTest(PaymentTest):
         self.assert_json_equal('', 'chartsaccount/@6/current_total', -125.97)
         self.assert_json_equal('', 'chartsaccount/@7/code', '441')
         self.assert_json_equal('', 'chartsaccount/@7/current_total', -135.45)
+
+        self.factory.xfer = DocumentSearch()
+        self.calljson('/lucterios.documents/documentSearch', {}, False)
+        self.assert_observer('core.custom', 'lucterios.documents', 'documentSearch')
+        self.assert_count_equal('document', 2)
 
     def test_import_lastyear(self):
         self._add_subvention()

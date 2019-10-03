@@ -48,13 +48,15 @@ from lucterios.framework.tools import get_date_formating, get_format_value,\
 from lucterios.framework.error import LucteriosException, IMPORTANT, GRAVE
 from lucterios.framework.filetools import read_file, xml_validator, save_file, get_user_path
 from lucterios.framework.signal_and_lock import RecordLocker, Signal
-from lucterios.CORE.models import Parameter
+from lucterios.framework.auditlog import auditlog
+from lucterios.framework.printgenerators import ActionGenerator
+from lucterios.CORE.models import Parameter, LucteriosUser
 from lucterios.CORE.parameters import Params
 from lucterios.contacts.models import AbstractContact, CustomField, CustomizeObject
+from lucterios.documents.models import FolderContainer
 
 from diacamma.accounting.tools import get_amount_sum, current_system_account, currency_round, correct_accounting_code,\
     get_currency_symbole, format_with_devise, get_amount_from_format_devise
-from lucterios.framework.auditlog import auditlog
 
 
 class ThirdCustomField(LucteriosModel):
@@ -265,6 +267,8 @@ class FiscalYear(LucteriosModel):
     is_actif = models.BooleanField(verbose_name=_('actif'), default=False, db_index=True)
     last_fiscalyear = models.ForeignKey('FiscalYear', verbose_name=_('last fiscal year'), related_name='next_fiscalyear', null=True, on_delete=models.SET_NULL)
 
+    folder = models.ForeignKey(FolderContainer, verbose_name=_('folder'), null=True, on_delete=models.PROTECT)
+
     total_result_text = LucteriosVirtualField(verbose_name='', compute_from='get_total_result_text', format_string=lambda: get_total_result_text_format())
 
     def init_dates(self):
@@ -292,6 +296,17 @@ class FiscalYear(LucteriosModel):
         self.entryaccount_set.all().delete()
         LucteriosModel.delete(self, using=using)
 
+    def create_folder(self):
+        if self.folder is None:
+            parent = None
+            if (self.last_fiscalyear is not None) and (self.last_fiscalyear.folder is not None):
+                parent = self.last_fiscalyear.folder.parent
+            name = _("Accounting from %(begin)s to %(end)s") % {'begin': get_date_formating(self.begin), 'end': get_date_formating(self.end)}
+            self.folder = FolderContainer.objects.create(name=name, description=name, parent=parent)
+            return True
+        else:
+            return False
+
     def set_has_actif(self):
         EntryAccount.clear_ghost()
         all_year = FiscalYear.objects.all()
@@ -307,7 +322,7 @@ class FiscalYear(LucteriosModel):
 
     @classmethod
     def get_edit_fields(cls):
-        return ['status', 'begin', 'end']
+        return ['status', 'begin', 'end', 'folder']
 
     @property
     def total_revenue(self):
@@ -457,9 +472,11 @@ class FiscalYear(LucteriosModel):
             return six.text_type(self.begin.year)
 
     def __str__(self):
-        status = get_value_if_choices(self.status, self._meta.get_field(
-            'status'))
+        status = get_value_if_choices(self.status, self._meta.get_field('status'))
         return _("Fiscal year from %(begin)s to %(end)s [%(status)s]") % {'begin': get_date_formating(self.begin), 'end': get_date_formating(self.end), 'status': status}
+
+    def set_context(self, xfer):
+        setattr(self, 'last_user', xfer.request.user)
 
     @property
     def letter(self):
@@ -489,6 +506,18 @@ class FiscalYear(LucteriosModel):
             raise LucteriosException(IMPORTANT, _("This fiscal year has entries not closed and not next fiscal year!"))
         return nb_entry_noclose
 
+    def save_reports(self):
+        from diacamma.accounting.views_reports import FiscalYearBalanceSheet, FiscalYearIncomeStatement
+        last_user = getattr(self, 'last_user', None)
+        if (last_user is not None) and last_user.is_authenticated:
+            user_modifier = LucteriosUser.objects.get(pk=last_user.id)
+        else:
+            user_modifier = None
+        self.folder.add_pdf_document(_("Balance sheet"), user_modifier, 'balancesheet-%d' % self.id,
+                                     ActionGenerator.createpdf_from_action(FiscalYearBalanceSheet, {'year': self.id}))
+        self.folder.add_pdf_document(_("Income statement"), user_modifier, 'incomestatement-%d' % self.id,
+                                     ActionGenerator.createpdf_from_action(FiscalYearIncomeStatement, {'year': self.id}))
+
     def closed(self):
         for cost in CostAccounting.objects.filter(year=self):
             cost.close()
@@ -497,6 +526,11 @@ class FiscalYear(LucteriosModel):
         current_system_account().finalize_year(self)
         self.status = 2
         self.save()
+        self.save_reports()
+
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+        self.create_folder()
+        return LucteriosModel.save(self, force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields)
 
     class Meta(object):
         verbose_name = _('fiscal year')
@@ -1663,6 +1697,14 @@ def get_meta_currency_iso():
         return None
 
 
+def check_fiscalyear():
+    for year in FiscalYear.objects.all().order_by('end'):
+        if year.create_folder():
+            year.save()
+            if year.status == 2:
+                year.save_reports()
+
+
 @Signal.decorate('checkparam')
 def accounting_checkparam():
     Parameter.check_and_create(name='accounting-devise-iso', typeparam=0, title=_("accounting-devise-iso"), args="{'Multi':False}",
@@ -1674,6 +1716,7 @@ def accounting_checkparam():
     Parameter.check_and_create(name='accounting-code-report-filter', typeparam=0, title=_("accounting-code-report-filter"), args="{'Multi':False}", value='')
     check_accountingcost()
     check_accountlink()
+    check_fiscalyear()
 
 
 @Signal.decorate('auditlog_register')

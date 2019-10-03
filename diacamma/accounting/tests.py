@@ -850,10 +850,11 @@ class AdminTest(LucteriosTest):
         self.factory.xfer = FiscalYearAddModify()
         self.calljson('/diacamma.accounting/fiscalYearAddModify', {'fiscalyear': '2'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'fiscalYearAddModify')
-        self.assert_count_equal('', 4)
+        self.assert_count_equal('', 5)
         self.assert_json_equal('LABELFORM', 'status', 0)
         self.assert_json_equal('LABELFORM', 'begin', '2016-07-01')
         self.assert_json_equal('DATE', 'end', '2017-06-30')
+        self.assert_json_equal('SELECT', 'folder', 2)
 
     def test_confi_delete(self):
         year1 = FiscalYear.objects.create(begin='2014-07-01', end='2015-06-30', status=2, is_actif=False, last_fiscalyear=None)

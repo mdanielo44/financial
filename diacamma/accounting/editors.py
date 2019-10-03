@@ -100,21 +100,24 @@ class AccountThirdEditor(LucteriosEditor):
 class FiscalYearEditor(LucteriosEditor):
 
     def edit(self, xfer):
-        fiscal_years = FiscalYear.objects.order_by(
-            'end')
+        fiscal_years = FiscalYear.objects.order_by('end')
         xfer.change_to_readonly('status')
         # modification case
         if self.item.id is not None:
+            folder = xfer.get_components('folder')
+            folder.set_needed(True)
             if (len(fiscal_years) != 0) and (fiscal_years[len(fiscal_years) - 1].id != self.item.id):
                 raise LucteriosException(IMPORTANT, _('This fiscal year is not the last!'))
             # modifcation and not the first in building
             if (len(fiscal_years) != 1) or (self.item.status != 0):
                 xfer.change_to_readonly('begin')
-        # creation and not the first
-        elif len(fiscal_years) > 0:
-            xfer.params['last_fiscalyear'] = fiscal_years[len(fiscal_years) - 1].id
-            xfer.params['begin'] = self.item.begin.isoformat()
-            xfer.change_to_readonly('begin')
+        else:  # creation
+            xfer.remove_component('folder')
+            if len(fiscal_years) > 0:
+                # not the first
+                xfer.params['last_fiscalyear'] = fiscal_years[len(fiscal_years) - 1].id
+                xfer.params['begin'] = self.item.begin.isoformat()
+                xfer.change_to_readonly('begin')
         if self.item.status == 2:
             xfer.change_to_readonly('end')
 
