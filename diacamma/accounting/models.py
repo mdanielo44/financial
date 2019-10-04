@@ -52,7 +52,8 @@ from lucterios.framework.auditlog import auditlog
 from lucterios.framework.printgenerators import ActionGenerator
 from lucterios.CORE.models import Parameter, LucteriosUser
 from lucterios.CORE.parameters import Params
-from lucterios.contacts.models import AbstractContact, CustomField, CustomizeObject
+from lucterios.contacts.models import AbstractContact, CustomField, CustomizeObject,\
+    LegalEntity
 from lucterios.documents.models import FolderContainer
 
 from diacamma.accounting.tools import get_amount_sum, current_system_account, currency_round, correct_accounting_code,\
@@ -513,10 +514,13 @@ class FiscalYear(LucteriosModel):
             user_modifier = LucteriosUser.objects.get(pk=last_user.id)
         else:
             user_modifier = None
-        self.folder.add_pdf_document(_("Balance sheet"), user_modifier, 'balancesheet-%d' % self.id,
-                                     ActionGenerator.createpdf_from_action(FiscalYearBalanceSheet, {'year': self.id}))
-        self.folder.add_pdf_document(_("Income statement"), user_modifier, 'incomestatement-%d' % self.id,
-                                     ActionGenerator.createpdf_from_action(FiscalYearIncomeStatement, {'year': self.id}))
+        own_struct = LegalEntity.objects.get(id=1)
+        self.folder.add_pdf_document(FiscalYearBalanceSheet.caption, user_modifier, '%s-%d' % (FiscalYearBalanceSheet.url_text, self.id),
+                                     ActionGenerator.createpdf_from_action(FiscalYearBalanceSheet, {'year': self.id},
+                                                                           "{[u]}{[b]}%s{[/b]}{[/u]}{[br/]}{[i]}%s{[/i]}" % (own_struct, FiscalYearBalanceSheet.caption), 297, 210))
+        self.folder.add_pdf_document(FiscalYearIncomeStatement.caption, user_modifier, '%s-%d' % (FiscalYearIncomeStatement.url_text, self.id),
+                                     ActionGenerator.createpdf_from_action(FiscalYearIncomeStatement, {'year': self.id},
+                                                                           "{[u]}{[b]}%s{[/b]}{[/u]}{[br/]}{[i]}%s{[/i]}" % (own_struct, FiscalYearIncomeStatement.caption), 297, 210))
 
     def closed(self):
         for cost in CostAccounting.objects.filter(year=self):

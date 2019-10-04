@@ -45,6 +45,7 @@ from diacamma.accounting.tools_reports import get_spaces, convert_query_to_accou
 from lucterios.CORE.parameters import Params
 import re
 from diacamma.accounting.views_entries import add_fiscalyear_result
+from lucterios.documents.models import DocumentContainer
 
 MenuManage.add_sub("bookkeeping_report", "financial", "diacamma.accounting/images/accounting.png", _("Reports"), _("Report of Bookkeeping"), 30)
 
@@ -552,10 +553,30 @@ class FiscalYearReportPrint(XferPrintAction):
     def __init__(self):
         XferPrintAction.__init__(self)
         self.action_class = self.__class__.action_class
-        self.caption = self.__class__.caption
+        if self.action_class is None:
+            self.caption = self.__class__.caption
+        else:
+            self.caption = self.action_class.caption
+
+    def _get_persistent_pdfreport(self):
+        self.action_class = getattr(sys.modules[self.getparam("modulename", __name__)], self.getparam("classname", ''))
+        if self.action_class is None:
+            self.caption = self.__class__.caption
+        else:
+            self.caption = self.action_class.caption
+        metadata = '%s-%d' % (self.action_class.url_text, self.item.id)
+        doc = DocumentContainer.objects.filter(metadata=metadata).first()
+        if doc is not None:
+            return doc.content.read()
+        else:
+            return None
 
     def get_report_generator(self):
         self.action_class = getattr(sys.modules[self.getparam("modulename", __name__)], self.getparam("classname", ''))
+        if self.action_class is None:
+            self.caption = self.__class__.caption
+        else:
+            self.caption = self.action_class.caption
         gen = XferPrintAction.get_report_generator(self)
         own_struct = LegalEntity.objects.get(id=1)
         if self.item.status != 2:
