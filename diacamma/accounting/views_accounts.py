@@ -297,4 +297,6 @@ class FiscalYearClose(XferContainerAcknowledge):
             dlg.add_action(WrapAction(TITLE_CANCEL, 'images/cancel.png'))
         else:
             signal_and_lock.Signal.call_signal("finalize_year", self)
+            current_year.set_context(self)
             current_year.closed()
+            signal_and_lock.Signal.call_signal("finalize_year_after", self)

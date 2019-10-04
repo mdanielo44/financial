@@ -54,7 +54,7 @@ from lucterios.CORE.models import Parameter, LucteriosUser
 from lucterios.CORE.parameters import Params
 from lucterios.contacts.models import AbstractContact, CustomField, CustomizeObject,\
     LegalEntity
-from lucterios.documents.models import FolderContainer
+from lucterios.documents.models import FolderContainer, DocumentContainer
 
 from diacamma.accounting.tools import get_amount_sum, current_system_account, currency_round, correct_accounting_code,\
     get_currency_symbole, format_with_devise, get_amount_from_format_devise
@@ -507,20 +507,28 @@ class FiscalYear(LucteriosModel):
             raise LucteriosException(IMPORTANT, _("This fiscal year has entries not closed and not next fiscal year!"))
         return nb_entry_noclose
 
+    def get_reports(self, printclass):
+        if self.status == 2:
+            metadata = '%s-%d' % (printclass.url_text, self.id)
+            doc = DocumentContainer.objects.filter(metadata=metadata).first()
+            if doc is None:
+                last_user = getattr(self, 'last_user', None)
+                if (last_user is not None) and (last_user.id is not None) and last_user.is_authenticated:
+                    user_modifier = LucteriosUser.objects.get(pk=last_user.id)
+                else:
+                    user_modifier = None
+                own_struct = LegalEntity.objects.get(id=1)
+                doc = self.folder.add_pdf_document(printclass.caption, user_modifier, '%s-%d' % (printclass.url_text, self.id),
+                                                   ActionGenerator.createpdf_from_action(printclass, {'year': self.id},
+                                                                                         "{[u]}{[b]}%s{[/b]}{[/u]}{[br/]}{[i]}%s{[/i]}" % (own_struct, printclass.caption), 297, 210))
+            return doc
+        else:
+            return None
+
     def save_reports(self):
         from diacamma.accounting.views_reports import FiscalYearBalanceSheet, FiscalYearIncomeStatement
-        last_user = getattr(self, 'last_user', None)
-        if (last_user is not None) and last_user.is_authenticated:
-            user_modifier = LucteriosUser.objects.get(pk=last_user.id)
-        else:
-            user_modifier = None
-        own_struct = LegalEntity.objects.get(id=1)
-        self.folder.add_pdf_document(FiscalYearBalanceSheet.caption, user_modifier, '%s-%d' % (FiscalYearBalanceSheet.url_text, self.id),
-                                     ActionGenerator.createpdf_from_action(FiscalYearBalanceSheet, {'year': self.id},
-                                                                           "{[u]}{[b]}%s{[/b]}{[/u]}{[br/]}{[i]}%s{[/i]}" % (own_struct, FiscalYearBalanceSheet.caption), 297, 210))
-        self.folder.add_pdf_document(FiscalYearIncomeStatement.caption, user_modifier, '%s-%d' % (FiscalYearIncomeStatement.url_text, self.id),
-                                     ActionGenerator.createpdf_from_action(FiscalYearIncomeStatement, {'year': self.id},
-                                                                           "{[u]}{[b]}%s{[/b]}{[/u]}{[br/]}{[i]}%s{[/i]}" % (own_struct, FiscalYearIncomeStatement.caption), 297, 210))
+        self.get_reports(FiscalYearBalanceSheet)
+        self.get_reports(FiscalYearIncomeStatement)
 
     def closed(self):
         for cost in CostAccounting.objects.filter(year=self):
@@ -1702,11 +1710,15 @@ def get_meta_currency_iso():
 
 
 def check_fiscalyear():
+    nb_folder = 0
     for year in FiscalYear.objects.all().order_by('end'):
         if year.create_folder():
             year.save()
             if year.status == 2:
                 year.save_reports()
+                nb_folder += 1
+    if nb_folder > 0:
+        six.print_(" * New folder pdf report = %d" % nb_folder)
 
 
 @Signal.decorate('checkparam')

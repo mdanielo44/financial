@@ -45,15 +45,16 @@ from lucterios.framework.error import LucteriosException, IMPORTANT, GRAVE
 from lucterios.framework.signal_and_lock import Signal
 from lucterios.framework.filetools import get_user_path, readimage_to_base64, remove_accent
 from lucterios.framework.tools import same_day_months_after, get_date_formating, format_to_string, get_format_value
+from lucterios.framework.auditlog import auditlog
 from lucterios.CORE.models import Parameter, SavedCriteria
 from lucterios.CORE.parameters import Params
 from lucterios.contacts.models import CustomField, CustomizeObject
 
-from diacamma.accounting.models import FiscalYear, Third, EntryAccount, CostAccounting, Journal, EntryLineAccount, ChartsAccount, AccountThird
+from diacamma.accounting.models import FiscalYear, Third, EntryAccount, CostAccounting, Journal, EntryLineAccount, ChartsAccount, AccountThird,\
+    check_fiscalyear
 from diacamma.accounting.tools import current_system_account, currency_round, correct_accounting_code,\
     format_with_devise, get_amount_from_format_devise
 from diacamma.payoff.models import Supporting, Payoff, BankAccount
-from lucterios.framework.auditlog import auditlog
 
 
 class Vat(LucteriosModel):
@@ -758,8 +759,14 @@ class Bill(Supporting):
         if self.bill_type != 0:
             self.generate_entry()
             self.generate_storage()
+        self.generate_pdfreport()
         self.save()
         Signal.call_signal("change_bill", 'valid', self, None)
+
+    def generate_pdfreport(self):
+        if self.status not in (0, 2):
+            return Supporting.generate_pdfreport(self)
+        return None
 
     transitionname__archive = _("Archive")
 
@@ -960,8 +967,7 @@ class Bill(Supporting):
         return (self.bill_type != 2) and (self.status == 1) and (self.get_total_rest_topay() > 0.001)
 
     def get_document_filename(self):
-        billtype = get_value_if_choices(
-            self.bill_type, self.get_field_by_name('bill_type'))
+        billtype = get_value_if_choices(self.bill_type, self.get_field_by_name('bill_type'))
         return remove_accent("%s_%s_%s" % (billtype, self.num_txt, six.text_type(self.third)))
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
@@ -1510,6 +1516,12 @@ def correct_quotation_asset_account():
         six.print_(" * account correction assert = %d / quotation = %s" % (nb_asset_correct, nb_quotation_correct))
 
 
+def check_billreport():
+    check_fiscalyear()
+    for bill in Bill.objects.filter(bill_type__in=(1, 2, 3), status__in=(1, 3)):
+        bill.get_saved_pdfreport()
+
+
 def convert_asset_and_revenue():
     nb_correct = 0
     for bill in Bill.objects.filter(Q(bill_type__in=(0, 2)) & Q(is_revenu=True)):
@@ -1545,6 +1557,7 @@ def invoice_checkparam():
         'invoice_detail': 'vta_rate',
         'invoice_storagedetail': 'price',
     })
+    check_billreport()
 
 
 @Signal.decorate('auditlog_register')

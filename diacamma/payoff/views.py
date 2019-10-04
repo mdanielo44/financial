@@ -49,11 +49,12 @@ from lucterios.framework.xfercomponents import XferCompLabelForm, \
     XferCompEdit, XferCompImage, XferCompMemo, XferCompSelect
 from lucterios.framework.error import LucteriosException, MINOR, IMPORTANT
 from lucterios.framework.models import get_value_if_choices
+from lucterios.CORE.models import PrintModel
+from lucterios.CORE.parameters import Params
+from lucterios.CORE.xferprint import XferPrintReporting
 
 from diacamma.payoff.models import Payoff, Supporting, PaymentMethod, BankTransaction
 from diacamma.accounting.models import Third
-from lucterios.CORE.models import PrintModel
-from lucterios.CORE.parameters import Params
 
 
 @ActionsManage.affect_grid(TITLE_ADD, "images/add.png", condition=lambda xfer, gridname='': abs(xfer.item.get_total_rest_topay()) > 0.001)
@@ -195,6 +196,19 @@ def can_send_email(xfer):
         return fct_mailing_mod.will_mail_send()
     else:
         return False
+
+
+class SupportingPrint(XferPrintReporting):
+
+    def _get_persistent_pdfreport(self):
+        if len(self.items) == 1:
+            doc = self.item.get_final_child().get_saved_pdfreport()
+        else:
+            doc = None
+        if doc is not None:
+            return doc.content.read()
+        else:
+            return None
 
 
 @ActionsManage.affect_show(_("Send"), "lucterios.mailing/images/email.png", condition=can_send_email)

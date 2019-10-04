@@ -44,8 +44,7 @@ from lucterios.framework.error import LucteriosException, IMPORTANT
 from lucterios.framework import signal_and_lock
 from lucterios.framework.xfersearch import get_criteria_list
 
-from lucterios.CORE.xferprint import XferPrintAction, XferPrintReporting, XferPrintListing,\
-    XferPrintLabel
+from lucterios.CORE.xferprint import XferPrintAction, XferPrintListing, XferPrintLabel
 from lucterios.CORE.parameters import Params
 from lucterios.CORE.editors import XferSavedCriteriaSearchEditor
 from lucterios.CORE.models import PrintModel
@@ -54,9 +53,8 @@ from lucterios.CORE.views import ObjectMerge
 from lucterios.contacts.views_contacts import AbstractContactFindDouble
 from lucterios.contacts.models import Individual, LegalEntity
 
-from diacamma.invoice.models import Article, Bill, Detail, Category, Provider,\
-    StorageArea, AutomaticReduce
-from diacamma.payoff.views import PayoffAddModify, PayableEmail, can_send_email
+from diacamma.invoice.models import Article, Bill, Detail, Category, Provider, StorageArea, AutomaticReduce
+from diacamma.payoff.views import PayoffAddModify, PayableEmail, can_send_email, SupportingPrint
 from diacamma.payoff.models import Payoff, DepositSlip
 from diacamma.accounting.models import FiscalYear, Third, EntryLineAccount, EntryAccount
 from diacamma.accounting.views import get_main_third
@@ -371,7 +369,7 @@ class BillPayableEmail(XferContainerAcknowledge):
 @ActionsManage.affect_grid(_("Print"), "images/print.png", close=CLOSE_NO, unique=SELECT_MULTI, condition=can_printing)
 @ActionsManage.affect_show(_("Print"), "images/print.png", close=CLOSE_NO, condition=lambda xfer: xfer.item.status in (1, 3))
 @MenuManage.describ('invoice.change_bill')
-class BillPrint(XferPrintReporting):
+class BillPrint(SupportingPrint):
     icon = "bill.png"
     model = Bill
     field_id = 'bill'

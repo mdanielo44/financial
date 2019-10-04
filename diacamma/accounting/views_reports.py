@@ -56,6 +56,7 @@ class FiscalYearReport(XferContainerCustom):
     field_id = 'year'
     add_filtering = False
     force_date_filter = False
+    saving_pdfreport = False
 
     def __init__(self, **kwargs):
         XferContainerCustom.__init__(self, **kwargs)
@@ -247,6 +248,7 @@ class FiscalYearReport(XferContainerCustom):
 @MenuManage.describ('accounting.change_fiscalyear', FORMTYPE_NOMODAL, 'bookkeeping_report', _('Show balance sheet for current fiscal year'))
 class FiscalYearBalanceSheet(FiscalYearReport):
     caption = _("Balance sheet")
+    saving_pdfreport = True
 
     def fill_filterheader(self):
         if self.item.last_fiscalyear is not None:
@@ -285,6 +287,7 @@ class FiscalYearBalanceSheet(FiscalYearReport):
 @MenuManage.describ('accounting.change_fiscalyear', FORMTYPE_NOMODAL, 'bookkeeping_report', _('Show income statement for current fiscal year'))
 class FiscalYearIncomeStatement(FiscalYearReport):
     caption = _("Income statement")
+    saving_pdfreport = True
 
     def define_gridheader(self):
         self.grid = XferCompGrid('report_%d' % self.item.id)
@@ -560,16 +563,15 @@ class FiscalYearReportPrint(XferPrintAction):
 
     def _get_persistent_pdfreport(self):
         self.action_class = getattr(sys.modules[self.getparam("modulename", __name__)], self.getparam("classname", ''))
-        if self.action_class is None:
-            self.caption = self.__class__.caption
-        else:
-            self.caption = self.action_class.caption
-        metadata = '%s-%d' % (self.action_class.url_text, self.item.id)
-        doc = DocumentContainer.objects.filter(metadata=metadata).first()
-        if doc is not None:
-            return doc.content.read()
-        else:
-            return None
+        if getattr(self.action_class, 'saving_pdfreport', False) is True:
+            if self.action_class is None:
+                self.caption = self.__class__.caption
+            else:
+                self.caption = self.action_class.caption
+            doc = self.item.get_reports(self.action_class)
+            if doc is not None:
+                return doc.content.read()
+        return None
 
     def get_report_generator(self):
         self.action_class = getattr(sys.modules[self.getparam("modulename", __name__)], self.getparam("classname", ''))

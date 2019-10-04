@@ -45,14 +45,15 @@ from lucterios.framework.printgenerators import ReportingGenerator
 from lucterios.framework.signal_and_lock import Signal
 from lucterios.framework.xferbasic import NULL_VALUE
 from lucterios.framework.filetools import remove_accent
-from lucterios.CORE.models import PrintModel, Parameter
+from lucterios.framework.auditlog import auditlog
+from lucterios.CORE.models import PrintModel, Parameter, LucteriosUser
 from lucterios.CORE.parameters import Params
 from lucterios.contacts.models import LegalEntity, Individual
+from lucterios.documents.models import DocumentContainer
 
 from diacamma.accounting.models import EntryAccount, FiscalYear, Third, Journal, \
     ChartsAccount, EntryLineAccount, AccountLink
 from diacamma.accounting.tools import currency_round, correct_accounting_code, format_with_devise
-from lucterios.framework.auditlog import auditlog
 
 
 class Supporting(LucteriosModel):
@@ -187,14 +188,43 @@ class Supporting(LucteriosModel):
             cclist = None
         return cclist
 
+    def set_context(self, xfer):
+        setattr(self, 'last_user', xfer.request.user)
+
+    def get_saved_pdfreport(self):
+        metadata = '%s-%d' % (self.__class__.__name__, self.id)
+        doc = DocumentContainer.objects.filter(metadata=metadata).first()
+        if doc is None:
+            doc = self.generate_pdfreport()
+        return doc
+
+    def generate_pdfreport(self):
+        model_value = PrintModel.objects.filter(kind=2, modelname=self.get_long_name()).order_by('-is_default', 'id').first()
+        if model_value is not None:
+            last_user = getattr(self, 'last_user', None)
+            if (last_user is not None) and last_user.is_authenticated:
+                user_modifier = LucteriosUser.objects.get(pk=last_user.id)
+            else:
+                user_modifier = None
+            return self.fiscal_year.folder.add_pdf_document(self.get_document_filename(), user_modifier, '%s-%d' % (self.__class__.__name__, self.id),
+                                                            ReportingGenerator.createpdf_from_action(self.get_send_email_objects(), model_value.value, model_value.mode))
+        return None
+
+    def get_pdfreport(self, printmodel):
+        if printmodel == 0:
+            doc = self.get_saved_pdfreport()
+            if doc is None:
+                raise LucteriosException(IMPORTANT, _('saved PDF report not found !'))
+            return (doc.name, doc.content)
+        else:
+            pdf_name = "%s.pdf" % self.get_document_filename()
+            model_value = PrintModel.objects.get(id=printmodel)
+            pdf_file = BytesIO(ReportingGenerator.createpdf_from_action(self.get_send_email_objects(), model_value.value, model_value.mode))
+            return (pdf_name, pdf_file)
+
     def send_email(self, subject, message, model):
         fct_mailing_mod = import_module('lucterios.mailing.functions')
-        pdf_name = "%s.pdf" % self.get_document_filename()
-        gen = ReportingGenerator()
-        gen.items = self.get_send_email_objects()
-        gen.model_text = PrintModel.objects.get(id=model).value
-        pdf_file = BytesIO(gen.generate_report(None, False))
-        fct_mailing_mod.send_email(self.third.contact.email, subject, message, [(pdf_name, pdf_file)], cclist=self.get_cclist(), withcopy=True)
+        fct_mailing_mod.send_email(self.third.contact.email, subject, message, [self.get_pdfreport(model)], cclist=self.get_cclist(), withcopy=True)
 
     def get_document_filename(self):
         return remove_accent(self.get_payment_name(), True)
@@ -216,7 +246,7 @@ class Supporting(LucteriosModel):
         raise Exception('no implemented!')
 
     def get_payment_name(self):
-        return six.text_type(self)
+        return six.text_type(self).strip()
 
     def get_docname(self):
         return six.text_type(self)
