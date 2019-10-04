@@ -202,7 +202,7 @@ class Supporting(LucteriosModel):
         model_value = PrintModel.objects.filter(kind=2, modelname=self.get_long_name()).order_by('-is_default', 'id').first()
         if model_value is not None:
             last_user = getattr(self, 'last_user', None)
-            if (last_user is not None) and last_user.is_authenticated:
+            if (last_user is not None) and (last_user.id is not None) and last_user.is_authenticated:
                 user_modifier = LucteriosUser.objects.get(pk=last_user.id)
             else:
                 user_modifier = None
