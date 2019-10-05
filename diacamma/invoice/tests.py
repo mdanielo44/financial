@@ -1622,7 +1622,7 @@ class BillTest(InvoiceTest):
             self.calljson('/diacamma.payoff/payableEmail',
                           {'item_name': 'bill', 'bill': bill_id}, False)
             self.assert_observer('core.custom', 'diacamma.payoff', 'payableEmail')
-            self.assert_count_equal('', 4)
+            self.assert_count_equal('', 6)
             self.assert_json_equal('EDIT', 'subject', 'Facture A-1')
             self.assert_json_equal('MEMO', 'message', 'Jack Dalton{[br/]}{[br/]}Veuillez trouver ci-Joint à ce courriel facture A-1 - 1 avril 2015.{[br/]}{[br/]}Sincères salutations')
 
@@ -1685,7 +1685,7 @@ class BillTest(InvoiceTest):
             self.calljson('/diacamma.payoff/payableEmail',
                           {'item_name': 'bill', 'bill': "1;2;3;4", 'modelname': ''}, False)
             self.assert_observer('core.custom', 'diacamma.payoff', 'payableEmail')
-            self.assert_count_equal('', 5)
+            self.assert_count_equal('', 6)
             self.assert_json_equal('LABELFORM', "nb_item", '4')
             self.assert_json_equal('EDIT', 'subject', '#reference')
             self.assert_json_equal('MEMO', 'message', '#name{[br/]}{[br/]}Veuillez trouver ci-Joint à ce courriel #doc.{[br/]}{[br/]}Sincères salutations')

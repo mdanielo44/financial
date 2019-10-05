@@ -396,7 +396,7 @@ class MethodTest(InvoiceTest, PaymentTest):
             self.factory.xfer = PayableEmail()
             self.calljson('/diacamma.payoff/payableEmail', {'item_name': 'bill', 'bill': 2}, False)
             self.assert_observer('core.custom', 'diacamma.payoff', 'payableEmail')
-            self.assert_count_equal('', 4)
+            self.assert_count_equal('', 6)
             self.assert_json_equal('EDIT', 'subject', 'Facture A-1')
             self.assert_json_equal('MEMO', 'message', 'William Dalton (Minimum)', True)
 

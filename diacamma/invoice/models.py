@@ -764,7 +764,7 @@ class Bill(Supporting):
         Signal.call_signal("change_bill", 'valid', self, None)
 
     def generate_pdfreport(self):
-        if self.status not in (0, 2):
+        if (self.status not in (0, 2)) and (self.bill_type != 0):
             return Supporting.generate_pdfreport(self)
         return None
 

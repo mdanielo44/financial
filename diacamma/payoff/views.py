@@ -46,7 +46,7 @@ from lucterios.framework.tools import ActionsManage, MenuManage, \
 from lucterios.framework.xfergraphic import XferContainerAcknowledge, \
     XferContainerCustom
 from lucterios.framework.xfercomponents import XferCompLabelForm, \
-    XferCompEdit, XferCompImage, XferCompMemo, XferCompSelect
+    XferCompEdit, XferCompImage, XferCompMemo, XferCompSelect, XferCompCheck
 from lucterios.framework.error import LucteriosException, MINOR, IMPORTANT
 from lucterios.framework.models import get_value_if_choices
 from lucterios.CORE.models import PrintModel
@@ -55,6 +55,7 @@ from lucterios.CORE.xferprint import XferPrintReporting
 
 from diacamma.payoff.models import Payoff, Supporting, PaymentMethod, BankTransaction
 from diacamma.accounting.models import Third
+from lucterios.framework.xferprinting import XferContainerPrint
 
 
 @ActionsManage.affect_grid(TITLE_ADD, "images/add.png", condition=lambda xfer, gridname='': abs(xfer.item.get_total_rest_topay()) > 0.001)
@@ -203,12 +204,17 @@ class SupportingPrint(XferPrintReporting):
     def _get_persistent_pdfreport(self):
         if len(self.items) == 1:
             doc = self.item.get_final_child().get_saved_pdfreport()
+            if doc is not None:
+                return doc.content.read()
         else:
-            doc = None
-        if doc is not None:
-            return doc.content.read()
-        else:
-            return None
+            docs = []
+            for item in self.items:
+                doc = item.get_final_child().get_saved_pdfreport()
+                if doc is not None:
+                    docs.append((doc.name, doc.content))
+            if len(docs) > 0:
+                return docs
+        return None
 
 
 @ActionsManage.affect_show(_("Send"), "lucterios.mailing/images/email.png", condition=can_send_email)
@@ -218,6 +224,24 @@ class PayableEmail(XferContainerAcknowledge):
     icon = "payments.png"
     model = Supporting
     field_id = 'supporting'
+
+    def fillresponse_send1message(self, subject, message, model):
+        html_message = "<html>"
+        html_message += message.replace('{[newline]}', '<br/>\n').replace('{[', '<').replace(']}', '>')
+        if self.item.payoff_have_payment() and (len(PaymentMethod.objects.all()) > 0):
+            html_message += get_html_payment(self.request.META.get('HTTP_REFERER', self.request.build_absolute_uri()), self.language, self.item)
+        html_message += "</html>"
+        self.item.send_email(subject, html_message, model)
+
+    def fillresponse_sendmultimessages(self, subject, message, model):
+        from lucterios.mailing.models import Message
+        model_obj = self.item.__class__
+        email_msg = Message.objects.create(subject=subject, body=message, email_to_send="%s:0:%s" % (model_obj.get_long_name(), model))
+        email_msg.add_recipient(model_obj.get_long_name(), 'id||8||%s' % ';'.join([six.text_type(item.id) for item in self.items]))
+        email_msg.save()
+        email_msg.valid()
+        email_msg.set_context(self)
+        email_msg.sending()
 
     def fillresponse(self, item_name='', subject='', message='', model=0, modelname=""):
         def replace_tag(contact, text):
@@ -237,6 +261,7 @@ class PayableEmail(XferContainerAcknowledge):
             self.item = self.items[0]
             self.model = self.item.__class__
         if self.getparam("OK") is None:
+            items_with_doc = [item for item in self.items if item.get_saved_pdfreport() is not None]
             dlg = self.create_custom()
             icon = XferCompImage('img')
             icon.set_location(0, 0, 1, 6)
@@ -269,31 +294,41 @@ class PayableEmail(XferContainerAcknowledge):
             memo.set_size(130, 450)
             memo.set_location(1, 3)
             dlg.add_component(memo)
+            if len(items_with_doc) == len(self.items):
+                presitent_report = XferCompCheck('PRINT_PERSITENT')
+                presitent_report.set_value(True)
+                presitent_report.set_location(1, 4)
+                presitent_report.description = _('Send saved report')
+                presitent_report.java_script = """
+var is_persitent=current.getValue();
+parent.get('model').setEnabled(!is_persitent);
+parent.get('print_sep').setEnabled(!is_persitent);
+    """
+                dlg.add_component(presitent_report)
+                sep = XferCompLabelForm('print_sep')
+                sep.set_value_center(XferContainerPrint.PRINT_REGENERATE_MSG)
+                sep.set_location(1, 5)
+                dlg.add_component(sep)
+            elif len(self.items) > 1:
+                sep = XferCompLabelForm('print_sep')
+                sep.set_value_center(_('{[u]}Warning:{[/u]} Items have saving report but regenerate report will be sending.'))
+                sep.set_location(1, 5)
+                dlg.add_component(sep)
             selectors = PrintModel.get_print_selector(2, self.model)[0]
             sel = XferCompSelect('model')
             sel.set_select(selectors[2])
-            sel.set_location(1, 4)
+            sel.set_location(1, 6)
             sel.description = selectors[1]
             dlg.add_component(sel)
             dlg.add_action(self.get_action(TITLE_OK, 'images/ok.png'), params={"OK": "YES"})
             dlg.add_action(WrapAction(TITLE_CANCEL, 'images/cancel.png'))
         else:
+            if (self.getparam("PRINT_PERSITENT", False) is True):
+                model = 0
             if len(self.items) == 1:
-                html_message = "<html>"
-                html_message += message.replace('{[newline]}', '<br/>\n').replace('{[', '<').replace(']}', '>')
-                if self.item.payoff_have_payment() and (len(PaymentMethod.objects.all()) > 0):
-                    html_message += get_html_payment(self.request.META.get('HTTP_REFERER', self.request.build_absolute_uri()), self.language, self.item)
-                html_message += "</html>"
-                self.item.send_email(subject, html_message, model)
+                self.fillresponse_send1message(subject, message, model)
             else:
-                from lucterios.mailing.models import Message
-                model_obj = self.item.__class__
-                email_msg = Message.objects.create(subject=subject, body=message, email_to_send="%s:0:%s" % (model_obj.get_long_name(), model))
-                email_msg.add_recipient(model_obj.get_long_name(), 'id||8||%s' % ';'.join([six.text_type(item.id) for item in self.items]))
-                email_msg.save()
-                email_msg.valid()
-                email_msg.set_context(self)
-                email_msg.sending()
+                self.fillresponse_sendmultimessages(subject, message, model)
 
 
 @ActionsManage.affect_show(_("Payment"), "diacamma.payoff/images/payments.png", condition=lambda xfer: xfer.item.payoff_have_payment() and (len(PaymentMethod.objects.all()) > 0))
