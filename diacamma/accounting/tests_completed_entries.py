@@ -944,7 +944,6 @@ class CompletedEntryTest(LucteriosTest):
         self.factory.xfer = FiscalYearReportPrint()
         self.calljson('/diacamma.accounting/fiscalYearReportPrint', {'classname': 'FiscalYearBalanceSheet', "PRINT_MODE": 3}, False)
         self.assert_observer('core.print', 'diacamma.accounting', 'fiscalYearReportPrint')
-        pdf_value = b64decode(six.text_type(self.response_json['print']["content"]))
         self.save_pdf()
 
     def test_fiscalyear_incomestatement(self):
@@ -1040,7 +1039,6 @@ class CompletedEntryTest(LucteriosTest):
         self.factory.xfer = FiscalYearReportPrint()
         self.calljson('/diacamma.accounting/fiscalYearReportPrint', {'classname': 'FiscalYearIncomeStatement', "PRINT_MODE": 3}, False)
         self.assert_observer('core.print', 'diacamma.accounting', 'fiscalYearReportPrint')
-        pdf_value = b64decode(six.text_type(self.response_json['print']["content"]))
         self.save_pdf()
 
     def test_fiscalyear_ledger(self):

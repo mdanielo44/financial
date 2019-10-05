@@ -31,9 +31,11 @@ from django.utils import six
 
 from lucterios.framework.test import LucteriosTest
 from lucterios.framework.filetools import get_user_dir
+from lucterios.framework.models import LucteriosScheduler
 from lucterios.CORE.models import Parameter, SavedCriteria
 from lucterios.CORE.parameters import Params
 from lucterios.mailing.tests import configSMTP, TestReceiver, decode_b64
+from lucterios.mailing.models import Message
 from lucterios.contacts.models import CustomField
 
 from diacamma.accounting.test_tools import initial_thirds_fr, default_compta_fr
@@ -41,15 +43,13 @@ from diacamma.accounting.models import CostAccounting, FiscalYear
 from diacamma.accounting.views import ThirdShow
 from diacamma.accounting.views_entries import EntryAccountList
 from diacamma.payoff.views import PayoffAddModify, PayoffDel, SupportingThird, SupportingThirdValid, PayableEmail
-from diacamma.payoff.test_tools import default_bankaccount_fr
+from diacamma.payoff.test_tools import default_bankaccount_fr, check_pdfreport
 from diacamma.invoice.models import Bill, AccountPosting
 from diacamma.invoice.test_tools import default_articles, InvoiceTest, default_categories, default_customize
 from diacamma.invoice.views_conf import AutomaticReduceAddModify, AutomaticReduceDel
 from diacamma.invoice.views import BillList, BillAddModify, BillShow, DetailAddModify, DetailDel, BillTransition, BillDel, BillFromQuotation, \
     BillStatistic, BillStatisticPrint, BillPrint, BillMultiPay, BillSearch,\
     BillCheckAutoreduce, BillPayableEmail
-from lucterios.mailing.models import Message
-from lucterios.framework.models import LucteriosScheduler
 
 
 class BillTest(InvoiceTest):
@@ -997,6 +997,7 @@ class BillTest(InvoiceTest):
         self.factory.xfer = BillPrint()
         self.calljson('/diacamma.invoice/billPrint', {'bill': '1;2;3;4;5', 'PRINT_MODE': 3, 'MODEL': 8}, False)
         self.assert_observer('core.print', 'diacamma.invoice', 'billPrint')
+        self.save_pdf()
 
     def test_statistic_without_reduce(self):
         default_articles()
@@ -1291,6 +1292,13 @@ class BillTest(InvoiceTest):
         self.factory.xfer = BillPrint()
         self.calljson('/diacamma.invoice/billPrint', {'bill': '1', 'PRINT_MODE': 3, 'MODEL': 9}, False)
         self.assert_observer('core.print', 'diacamma.invoice', 'billPrint')
+        self.save_pdf()
+        check_pdfreport(self, 'Bill', 1, False)
+
+        self.factory.xfer = BillPrint()
+        self.calljson('/diacamma.invoice/billPrint', {'bill': '1', 'PRINT_PERSITENT': True, 'PRINT_MODE': 3, 'MODEL': 9}, False)
+        self.assert_observer('core.print', 'diacamma.invoice', 'billPrint')
+        check_pdfreport(self, 'Bill', 1, True)
 
     def test_payoff_multi(self):
         default_articles()
@@ -1616,8 +1624,7 @@ class BillTest(InvoiceTest):
         try:
             self.assertEqual(0, server.count())
             details = [{'article': 0, 'designation': 'article 0', 'price': '100.00', 'quantity': 1}]
-            bill_id = self._create_bill(
-                details, 1, '2015-04-01', 6, True)  # 59.50
+            bill_id = self._create_bill(details, 1, '2015-04-01', 6, True)  # 59.50
             self.factory.xfer = PayableEmail()
             self.calljson('/diacamma.payoff/payableEmail',
                           {'item_name': 'bill', 'bill': bill_id}, False)
@@ -1640,6 +1647,32 @@ class BillTest(InvoiceTest):
             self.assertEqual('<html>this is a bill.</html>', decode_b64(msg.get_payload()))
             self.assertTrue('facture_A-1_Dalton Jack.pdf' in msg_file.get('Content-Type', ''), msg_file.get('Content-Type', ''))
             self.save_pdf(base64_content=msg_file.get_payload())
+            check_pdfreport(self, 'Bill', bill_id, False, b64decode(msg_file.get_payload()))
+        finally:
+            server.stop()
+
+    def test_send_bill_saved(self):
+        default_articles()
+        configSMTP('localhost', 2025)
+        server = TestReceiver()
+        server.start(2025)
+        try:
+            self.assertEqual(0, server.count())
+            details = [{'article': 0, 'designation': 'article 0', 'price': '100.00', 'quantity': 1}]
+            bill_id = self._create_bill(details, 1, '2015-04-01', 6, True)  # 59.50
+            self.factory.xfer = PayableEmail()
+            self.calljson('/diacamma.payoff/payableEmail',
+                          {'item_name': 'bill', 'bill': bill_id}, False)
+            self.assert_observer('core.custom', 'diacamma.payoff', 'payableEmail')
+            self.assert_count_equal('', 6)
+
+            self.factory.xfer = PayableEmail()
+            self.calljson('/diacamma.payoff/payableEmail',
+                          {'bill': bill_id, 'OK': 'YES', 'PRINT_PERSITENT': True, 'item_name': 'bill', 'subject': 'my bill', 'message': 'this is a bill.', 'model': 8, }, False)
+            self.assert_observer('core.acknowledge', 'diacamma.payoff', 'payableEmail')
+            self.assertEqual(1, server.count())
+            _msg, _msg_txt, msg_file = server.check_first_message('my bill', 3, {'To': 'Jack.Dalton@worldcompany.com'})
+            check_pdfreport(self, 'Bill', bill_id, True, msg_file.get_payload())
         finally:
             server.stop()
 
@@ -1652,7 +1685,7 @@ class BillTest(InvoiceTest):
             self._create_bill([{'article': 5, 'designation': 'article 5', 'price': '100', 'quantity': 1}], 1, '2015-04-01', 6, True)
             self._create_bill([{'article': 5, 'designation': 'article 5', 'price': '100', 'quantity': 1}], 3, '2015-04-02', 4, True)
             self._create_bill([{'article': 5, 'designation': 'article 5', 'price': '100', 'quantity': 1}], 2, '2015-04-03', 6, True)
-            self._create_bill([{'article': 5, 'designation': 'article 5', 'price': '100', 'quantity': 1}], 0, '2015-04-04', 5, True)
+            self._create_bill([{'article': 5, 'designation': 'article 5', 'price': '100', 'quantity': 1}], 1, '2015-04-04', 5, True)
 
             self.factory.xfer = BillList()
             self.calljson('/diacamma.invoice/billList', {'status_filter': -2}, False)
@@ -1685,7 +1718,7 @@ class BillTest(InvoiceTest):
             self.calljson('/diacamma.payoff/payableEmail',
                           {'item_name': 'bill', 'bill': "1;2;3;4", 'modelname': ''}, False)
             self.assert_observer('core.custom', 'diacamma.payoff', 'payableEmail')
-            self.assert_count_equal('', 6)
+            self.assert_count_equal('', 7)
             self.assert_json_equal('LABELFORM', "nb_item", '4')
             self.assert_json_equal('EDIT', 'subject', '#reference')
             self.assert_json_equal('MEMO', 'message', '#name{[br/]}{[br/]}Veuillez trouver ci-Joint à ce courriel #doc.{[br/]}{[br/]}Sincères salutations')
@@ -1710,6 +1743,42 @@ class BillTest(InvoiceTest):
             for msg_index in range(4):
                 _msg, _msg_txt, msg_file = server.get_msg_index(msg_index)
                 self.save_pdf(base64_content=msg_file.get_payload(), ident=msg_index + 1)
+                check_pdfreport(self, 'Bill', msg_index + 1, False, msg_file.get_payload())
+        finally:
+            server.stop()
+
+    def test_send_multi_bill_saved(self):
+        default_articles()
+        configSMTP('localhost', 2025)
+        server = TestReceiver()
+        server.start(2025)
+        try:
+            self._create_bill([{'article': 5, 'designation': 'article 5', 'price': '100', 'quantity': 1}], 1, '2015-04-01', 6, True)
+            self._create_bill([{'article': 5, 'designation': 'article 5', 'price': '100', 'quantity': 1}], 3, '2015-04-02', 4, True)
+            self._create_bill([{'article': 5, 'designation': 'article 5', 'price': '100', 'quantity': 1}], 2, '2015-04-03', 6, True)
+            self._create_bill([{'article': 5, 'designation': 'article 5', 'price': '100', 'quantity': 1}], 1, '2015-04-04', 5, True)
+
+            self.factory.xfer = PayableEmail()
+            self.calljson('/diacamma.payoff/payableEmail',
+                          {'bill': "1;2;3;4", 'OK': 'YES', 'item_name': 'bill', 'PRINT_PERSITENT': True, 'subject': '#reference',
+                           'message': '#name{[br/]}{[br/]}Veuillez trouver ci-Joint à ce courriel #doc.{[br/]}{[br/]}Sincères salutations', 'model': 8}, False)
+            self.assert_observer('core.acknowledge', 'diacamma.payoff', 'payableEmail')
+
+            email_msg = Message.objects.get(id=1)
+            self.assertEqual(email_msg.subject, '#reference')
+            self.assertEqual(email_msg.body, '#name{[br/]}{[br/]}Veuillez trouver ci-Joint à ce courriel #doc.{[br/]}{[br/]}Sincères salutations')
+            self.assertEqual(email_msg.status, 2)
+            self.assertEqual(email_msg.recipients, "invoice.Bill id||8||1;2;3;4\n")
+            self.assertEqual(email_msg.email_to_send, "invoice.Bill:4:0\ninvoice.Bill:3:0\ninvoice.Bill:2:0\ninvoice.Bill:1:0")
+
+            self.assertEqual(1, len(LucteriosScheduler.get_list()))
+            LucteriosScheduler.stop_scheduler()
+            email_msg.sendemail(10, "http://testserver")
+            self.assertEqual(4, server.count())
+            for msg_index in range(4):
+                _msg, _msg_txt, msg_file = server.get_msg_index(msg_index)
+                self.save_pdf(base64_content=msg_file.get_payload(), ident=msg_index + 1)
+                check_pdfreport(self, 'Bill', msg_index + 1, True, msg_file.get_payload())
         finally:
             server.stop()
 

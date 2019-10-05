@@ -26,9 +26,10 @@ from django.utils import six
 
 from lucterios.framework.test import LucteriosTest
 from lucterios.framework.filetools import get_user_dir
+from lucterios.documents.views import DocumentSearch
 
 from diacamma.accounting.test_tools import initial_thirds_fr, default_compta_fr, fill_entries_fr, set_accounting_system, add_entry,\
-    create_account
+    create_account, check_pdfreport
 from diacamma.accounting.views_accounts import ChartsAccountList, ChartsAccountDel, ChartsAccountShow, ChartsAccountAddModify, ChartsAccountListing, ChartsAccountImportFiscalYear
 from diacamma.accounting.views_accounts import FiscalYearBegin, FiscalYearClose, FiscalYearReportLastYear
 from diacamma.accounting.views_entries import EntryAccountEdit, EntryAccountList
@@ -36,7 +37,6 @@ from diacamma.accounting.models import FiscalYear
 from diacamma.accounting.views import ThirdList
 from diacamma.accounting.views_budget import BudgetList, BudgetAddModify, BudgetDel
 from diacamma.payoff.test_tools import PaymentTest
-from lucterios.documents.views import DocumentSearch
 
 
 class ChartsAccountTest(LucteriosTest):
@@ -686,6 +686,9 @@ class FiscalYearWorkflowTest(PaymentTest):
         self.assert_json_equal('', 'chartsaccount/@6/current_total', -125.97)
         self.assert_json_equal('', 'chartsaccount/@7/code', '441')
         self.assert_json_equal('', 'chartsaccount/@7/current_total', -135.45)
+
+        check_pdfreport(self, '1', 'Bilan.pdf', "FiscalYearBalanceSheet", "diacamma.accounting.views_reports")
+        check_pdfreport(self, '1', 'Compte de resultats.pdf', "FiscalYearIncomeStatement", "diacamma.accounting.views_reports")
 
         self.factory.xfer = DocumentSearch()
         self.calljson('/lucterios.documents/documentSearch', {}, False)

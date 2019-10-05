@@ -25,6 +25,7 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import unicode_literals
 
 from lucterios.framework.test import LucteriosTest
+from lucterios.contacts.models import CustomField
 
 from diacamma.accounting.models import FiscalYear
 from diacamma.accounting.test_tools import create_account, default_costaccounting
@@ -32,7 +33,6 @@ from diacamma.accounting.test_tools import create_account, default_costaccountin
 from diacamma.invoice.models import Article, Vat, Category, Provider,\
     StorageArea, StorageSheet, StorageDetail, AccountPosting
 from diacamma.invoice.views import BillTransition, DetailAddModify, BillAddModify
-from lucterios.contacts.models import CustomField
 
 
 def default_accountPosting():
@@ -144,3 +144,4 @@ class InvoiceTest(LucteriosTest):
                           {'CONFIRME': 'YES', 'bill': bill_id, 'withpayoff': False, 'TRANSITION': 'valid'}, False)
             self.assert_observer('core.acknowledge', 'diacamma.invoice', 'billTransition')
         return bill_id
+

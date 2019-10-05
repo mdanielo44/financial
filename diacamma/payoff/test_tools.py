@@ -28,11 +28,13 @@ from django.core.exceptions import ObjectDoesNotExist
 from urllib.parse import urlsplit, parse_qsl
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from threading import Thread
+from base64 import b64encode
 
 from django.utils import six
 from django.conf import settings
 
 from lucterios.framework.test import LucteriosTest
+from lucterios.documents.models import DocumentContainer
 
 from diacamma.accounting.test_tools import create_account
 from diacamma.accounting.models import FiscalYear, ChartsAccount
@@ -199,3 +201,15 @@ class TestHandle(BaseHTTPRequestHandler):
         self.send_header("Content-type", "text/plain")
         self.end_headers()
         self.wfile.write(self.result.encode())
+
+
+def check_pdfreport(testobj, objectname, itemid, is_saved, pdfreportB64=None):
+    doc = DocumentContainer.objects.filter(metadata='%s-%d' % (objectname, itemid)).first()
+    testobj.assertTrue(doc is not None)
+    doc_content = b64encode(doc.content.read()).decode()
+    if pdfreportB64 is None:
+        pdfreportB64 = testobj.response_json['print']["content"]
+    if is_saved:
+        testobj.assertEqual(doc_content, pdfreportB64, '%s-%d : %s' % (objectname, itemid, doc.name))
+    else:
+        testobj.assertNotEqual(doc_content, pdfreportB64, '%s-%d : %s' % (objectname, itemid, doc.name))

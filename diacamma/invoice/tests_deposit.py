@@ -24,12 +24,14 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
 from shutil import rmtree
-from base64 import b64decode
+
+from django.utils import six
+
 from lucterios.CORE.models import Parameter
 from lucterios.CORE.parameters import Params
-
-from lucterios.framework.xfergraphic import XferContainerAcknowledge
 from lucterios.framework.filetools import get_user_dir
+from lucterios.mailing.tests import configSMTP, TestReceiver
+from lucterios.contacts.views_contacts import ResponsabilityModify
 
 from diacamma.accounting.test_tools import initial_thirds_fr, default_compta_fr
 from diacamma.accounting.views_entries import EntryAccountList
@@ -40,9 +42,6 @@ from diacamma.payoff.views import PayoffAddModify, PayableShow, PayableEmail
 from diacamma.payoff.test_tools import default_bankaccount_fr,\
     default_paymentmethod, PaymentTest
 from diacamma.invoice.views import BillShow
-from django.utils import six
-from lucterios.mailing.tests import configSMTP, TestReceiver
-from lucterios.contacts.views_contacts import ResponsabilityModify
 from diacamma.invoice.models import Bill
 
 

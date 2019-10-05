@@ -23,19 +23,21 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
 from __future__ import unicode_literals
+from base64 import b64encode
 
 from lucterios.framework import signal_and_lock
-
 from lucterios.CORE.models import Parameter
 from lucterios.CORE.parameters import Params
 
 from lucterios.contacts.models import Individual, LegalEntity, AbstractContact
 from lucterios.contacts.tests_contacts import change_ourdetail
+from lucterios.documents.models import DocumentContainer
 
 from diacamma.accounting.tools import clear_system_account
 from diacamma.accounting.models import Third, AccountThird, FiscalYear, \
     ChartsAccount, EntryAccount, Journal, AccountLink, \
     CostAccounting, ModelEntry, ModelLineEntry, Budget
+from diacamma.accounting.views_reports import FiscalYearReportPrint
 
 
 def create_individual(firstname, lastname):
@@ -224,3 +226,19 @@ def fill_entries_fr(yearid):
     AccountLink.create_link(list(entry2.get_thirds()) + list(entry3.get_thirds()))
     AccountLink.create_link(list(entry4.get_thirds()) + list(entry5.get_thirds()))
     AccountLink.create_link(list(entry7.get_thirds()) + list(entry8.get_thirds()))
+
+
+def check_pdfreport(testobj, year, pdfname, printclassname, modulename):
+    doc = DocumentContainer.objects.filter(name=pdfname).first()
+    testobj.assertTrue(doc is not None)
+    doc_content = b64encode(doc.content.read()).decode()
+
+    testobj.factory.xfer = FiscalYearReportPrint()
+    testobj.calljson('/diacamma.accounting/fiscalYearReportPrint', {'year': year, 'classname': printclassname, "modulename": modulename, "PRINT_MODE": 3, 'PRINT_PERSITENT': True}, False)
+    testobj.assert_observer('core.print', 'diacamma.accounting', 'fiscalYearReportPrint')
+    testobj.assertEqual(doc_content, testobj.response_json['print']["content"], doc.name)
+
+    testobj.factory.xfer = FiscalYearReportPrint()
+    testobj.calljson('/diacamma.accounting/fiscalYearReportPrint', {'year': year, 'classname': printclassname, "modulename": modulename, "PRINT_MODE": 3, 'PRINT_PERSITENT': False}, False)
+    testobj.assert_observer('core.print', 'diacamma.accounting', 'fiscalYearReportPrint')
+    testobj.assertNotEqual(doc_content, testobj.response_json['print']["content"], doc.name)
