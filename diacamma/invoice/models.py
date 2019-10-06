@@ -50,8 +50,7 @@ from lucterios.CORE.models import Parameter, SavedCriteria
 from lucterios.CORE.parameters import Params
 from lucterios.contacts.models import CustomField, CustomizeObject
 
-from diacamma.accounting.models import FiscalYear, Third, EntryAccount, CostAccounting, Journal, EntryLineAccount, ChartsAccount, AccountThird,\
-    check_fiscalyear
+from diacamma.accounting.models import FiscalYear, Third, EntryAccount, CostAccounting, Journal, EntryLineAccount, ChartsAccount, AccountThird
 from diacamma.accounting.tools import current_system_account, currency_round, correct_accounting_code,\
     format_with_devise, get_amount_from_format_devise
 from diacamma.payoff.models import Supporting, Payoff, BankAccount
@@ -1516,9 +1515,9 @@ def correct_quotation_asset_account():
         six.print_(" * account correction assert = %d / quotation = %s" % (nb_asset_correct, nb_quotation_correct))
 
 
-def check_billreport():
-    check_fiscalyear()
-    for bill in Bill.objects.filter(bill_type__in=(1, 2, 3), status__in=(1, 3)):
+@Signal.decorate('check_report')
+def check_report_invoice(year):
+    for bill in Bill.objects.filter(fiscal_year=year, bill_type__in=(1, 2, 3), status__in=(1, 3)):
         bill.get_saved_pdfreport()
 
 
@@ -1557,7 +1556,6 @@ def invoice_checkparam():
         'invoice_detail': 'vta_rate',
         'invoice_storagedetail': 'price',
     })
-    check_billreport()
 
 
 @Signal.decorate('auditlog_register')

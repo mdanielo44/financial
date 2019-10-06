@@ -58,6 +58,7 @@ from lucterios.documents.models import FolderContainer, DocumentContainer
 
 from diacamma.accounting.tools import get_amount_sum, current_system_account, currency_round, correct_accounting_code,\
     get_currency_symbole, format_with_devise, get_amount_from_format_devise
+from lucterios.framework import signal_and_lock
 
 
 class ThirdCustomField(LucteriosModel):
@@ -539,6 +540,11 @@ class FiscalYear(LucteriosModel):
         self.status = 2
         self.save()
         self.save_reports()
+
+    def check_report(self):
+        if self.folder is None:
+            self.save()
+        signal_and_lock.Signal.call_signal("check_report", self)
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         self.create_folder()
@@ -1709,16 +1715,10 @@ def get_meta_currency_iso():
         return None
 
 
-def check_fiscalyear():
-    nb_folder = 0
-    for year in FiscalYear.objects.all().order_by('end'):
-        if year.create_folder():
-            year.save()
-            if year.status == 2:
-                year.save_reports()
-                nb_folder += 1
-    if nb_folder > 0:
-        six.print_(" * New folder pdf report = %d" % nb_folder)
+@Signal.decorate('check_report')
+def check_report_accounting(year):
+    if year.status == 2:
+        year.save_reports()
 
 
 @Signal.decorate('checkparam')
@@ -1732,7 +1732,8 @@ def accounting_checkparam():
     Parameter.check_and_create(name='accounting-code-report-filter', typeparam=0, title=_("accounting-code-report-filter"), args="{'Multi':False}", value='')
     check_accountingcost()
     check_accountlink()
-    check_fiscalyear()
+    for year in FiscalYear.objects.all().order_by('end'):
+        year.check_report()
 
 
 @Signal.decorate('auditlog_register')

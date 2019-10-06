@@ -191,6 +191,19 @@ class FiscalYearExport(XferContainerCustom):
         self.add_component(down)
 
 
+@ActionsManage.affect_grid(_("Check"), "images/PrintReport.png", unique=SELECT_SINGLE)
+@MenuManage.describ('accounting.add_fiscalyear')
+class FiscalYearCheckReport(XferContainerAcknowledge):
+    icon = "images/PrintReport.png"
+    model = FiscalYear
+    field_id = 'fiscalyear'
+    caption = _("Check saved reports")
+
+    def fillresponse(self):
+        if self.confirme(_('Do you want to check saving reports for this year?')):
+            self.item.check_report()
+
+
 @ActionsManage.affect_grid(TITLE_CREATE, "images/new.png")
 @ActionsManage.affect_grid(TITLE_MODIFY, "images/edit.png", unique=SELECT_SINGLE)
 @MenuManage.describ('accounting.add_fiscalyear')
