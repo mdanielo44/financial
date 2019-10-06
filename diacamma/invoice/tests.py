@@ -26,6 +26,7 @@ from __future__ import unicode_literals
 from shutil import rmtree
 from datetime import date
 from base64 import b64decode
+from os.path import isfile, join
 
 from django.utils import six
 
@@ -995,9 +996,31 @@ class BillTest(InvoiceTest):
         self.assertEqual(content_csv[22].strip(), '"total";"351,22 €";"---";"---";"100,00 %";')
 
         self.factory.xfer = BillPrint()
+        self.calljson('/diacamma.invoice/billPrint', {'bill': '1;2;3;4;5'}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'billPrint')
+        self.assert_count_equal('', 3)
+        self.assert_json_equal('LABELFORM', 'print_sep', '{[u]}Attention:{[/u]} Des éléments ont des raports sauvegardés mais devront être regénérés.')
+
+        self.factory.xfer = BillPrint()
         self.calljson('/diacamma.invoice/billPrint', {'bill': '1;2;3;4;5', 'PRINT_MODE': 3, 'MODEL': 8}, False)
         self.assert_observer('core.print', 'diacamma.invoice', 'billPrint')
         self.save_pdf()
+
+        self.factory.xfer = BillPrint()
+        self.calljson('/diacamma.invoice/billPrint', {'bill': '2;3;4;5'}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'billPrint')
+        self.assert_count_equal('', 4)
+        self.assert_json_equal('CHECK', 'PRINT_PERSITENT', True)
+        self.assert_json_equal('LABELFORM', 'print_sep', '{[hr/]}Re-générer un nouveau rapport')
+
+        download_file = join(get_user_dir(), "pdfreports.zip")
+        self.assertFalse(isfile(download_file))
+        self.factory.xfer = BillPrint()
+        self.calljson('/diacamma.invoice/billPrint', {'bill': '2;3;4;5', 'PRINT_PERSITENT': True}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'billPrint')
+        self.assert_json_equal('DOWNLOAD', 'filename', 'pdfreports.zip')
+        self.assert_json_equal('', '#filename/filename', "CORE/download?filename=pdfreports.zip&sign=", True)
+        self.assertTrue(isfile(download_file))
 
     def test_statistic_without_reduce(self):
         default_articles()

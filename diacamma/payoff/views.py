@@ -311,7 +311,7 @@ parent.get('print_sep').setEnabled(!is_persitent);
                 dlg.add_component(sep)
             elif len(self.items) > 1:
                 sep = XferCompLabelForm('print_sep')
-                sep.set_value_center(_('{[u]}Warning:{[/u]} Items have saving report but regenerate report will be sending.'))
+                sep.set_value_center(XferContainerPrint.PRINT_WARNING_SAVING_MSG)
                 sep.set_location(1, 5)
                 dlg.add_component(sep)
             selectors = PrintModel.get_print_selector(2, self.model)[0]
