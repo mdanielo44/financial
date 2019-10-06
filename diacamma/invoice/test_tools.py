@@ -144,4 +144,3 @@ class InvoiceTest(LucteriosTest):
                           {'CONFIRME': 'YES', 'bill': bill_id, 'withpayoff': False, 'TRANSITION': 'valid'}, False)
             self.assert_observer('core.acknowledge', 'diacamma.invoice', 'billTransition')
         return bill_id
-

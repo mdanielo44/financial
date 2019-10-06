@@ -1647,7 +1647,7 @@ class BillTest(InvoiceTest):
             self.assertEqual('<html>this is a bill.</html>', decode_b64(msg.get_payload()))
             self.assertTrue('facture_A-1_Dalton Jack.pdf' in msg_file.get('Content-Type', ''), msg_file.get('Content-Type', ''))
             self.save_pdf(base64_content=msg_file.get_payload())
-            check_pdfreport(self, 'Bill', bill_id, False, b64decode(msg_file.get_payload()))
+            check_pdfreport(self, 'Bill', bill_id, False, msg_file.get_payload())
         finally:
             server.stop()
 
@@ -1778,7 +1778,8 @@ class BillTest(InvoiceTest):
             for msg_index in range(4):
                 _msg, _msg_txt, msg_file = server.get_msg_index(msg_index)
                 self.save_pdf(base64_content=msg_file.get_payload(), ident=msg_index + 1)
-                check_pdfreport(self, 'Bill', msg_index + 1, True, msg_file.get_payload())
+                # print('Content-Type:', msg_file.get('Content-Type', ''))
+                check_pdfreport(self, 'Bill', 4 - msg_index, True, msg_file.get_payload())
         finally:
             server.stop()
 
