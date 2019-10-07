@@ -1543,10 +1543,14 @@ def invoice_checkparam():
     Parameter.check_and_create(name="invoice-account-third", typeparam=0, title=_("invoice-account-third"),
                                args="{'Multi':False}", value='',
                                meta='("accounting","ChartsAccount","import diacamma.accounting.tools;django.db.models.Q(code__regex=diacamma.accounting.tools.current_system_account().get_customer_mask()) & django.db.models.Q(year__is_actif=True)", "code", True)')
-    convert_articles()
     Parameter.check_and_create(name='invoice-article-with-picture', typeparam=3, title=_("invoice-article-with-picture"), args="{}", value='False')
     Parameter.check_and_create(name='invoice-reduce-with-ratio', typeparam=3, title=_("invoice-reduce-with-ratio"), args="{}", value='True')
     Parameter.check_and_create(name='invoice-reduce-allow-article-empty', typeparam=3, title=_("invoice-reduce-allow-article-empty"), args="{}", value='True')
+
+
+@Signal.decorate('convertdata')
+def invoice_convertdata():
+    convert_articles()
     convert_asset_and_revenue()
     correct_db_field({
         'invoice_article': 'price',

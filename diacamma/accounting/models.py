@@ -1730,6 +1730,10 @@ def accounting_checkparam():
     Parameter.check_and_create(name='accounting-sizecode', typeparam=1, title=_("accounting-sizecode"), args="{'Min':3, 'Max':50}", value='3')
     Parameter.check_and_create(name='accounting-needcost', typeparam=3, title=_("accounting-needcost"), args="{}", value='False')
     Parameter.check_and_create(name='accounting-code-report-filter', typeparam=0, title=_("accounting-code-report-filter"), args="{'Multi':False}", value='')
+
+
+@Signal.decorate('convertdata')
+def accounting_convertdata():
     check_accountingcost()
     check_accountlink()
     for year in FiscalYear.objects.all().order_by('end'):

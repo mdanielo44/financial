@@ -936,6 +936,10 @@ def payoff_checkparam():
                                args="{'Multi':True, 'HyperText': True}", value=_('#name{[br/]}{[br/]}Joint in this email #doc.{[br/]}{[br/]}Regards'))
     Parameter.check_and_create(name='payoff-email-subject', typeparam=0, title=_("payoff-email-subject"),
                                args="{'Multi':False, 'HyperText': False}", value=_('#reference'))
+
+
+@Signal.decorate('convertdata')
+def payoff_convertdata():
     check_payoff_accounting()
     check_bank_account()
     correct_db_field({
