@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-10-06 18:29+0000\n"
-"PO-Revision-Date: 2019-10-03 16:59+0200\n"
+"POT-Creation-Date: 2019-10-07 16:03+0000\n"
+"PO-Revision-Date: 2019-10-07 18:03+0200\n"
 "Last-Translator: b'Paul ARULATEDA <paul531@orange.fr>'\n"
 "Language-Team: \n"
 "Language: fr\n"
@@ -903,11 +903,11 @@ msgstr "Contrôle"
 
 #: views_admin.py:200
 msgid "Check saved reports"
-msgstr "Contrôler les raports sauvegardés"
+msgstr "Contrôler les rapports sauvegardés"
 
 #: views_admin.py:203
 msgid "Do you want to check saving reports for this year?"
-msgstr "Voulez-vous contrôler les raports sauvegardés de cette exercice ?"
+msgstr "Voulez-vous contrôler les rapports sauvegardés de cette exercice ?"
 
 #: views_admin.py:214
 msgid "Add fiscal year"

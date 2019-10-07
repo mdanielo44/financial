@@ -211,15 +211,16 @@ class Supporting(LucteriosModel):
         return None
 
     def get_pdfreport(self, printmodel):
+        doc = self.get_saved_pdfreport()
         if printmodel == 0:
-            doc = self.get_saved_pdfreport()
             if doc is None:
                 raise LucteriosException(IMPORTANT, _('saved PDF report not found !'))
             return (doc.name, doc.content)
         else:
+            from lucterios.framework.xferprinting import XferContainerPrint
             pdf_name = "%s.pdf" % self.get_document_filename()
             model_value = PrintModel.objects.get(id=printmodel)
-            pdf_file = BytesIO(ReportingGenerator.createpdf_from_model(self.get_send_email_objects(), model_value.value, model_value.mode))
+            pdf_file = BytesIO(ReportingGenerator.createpdf_from_model(self.get_send_email_objects(), model_value.value, model_value.mode, XferContainerPrint.PRINT_DUPLICATA if doc is not None else ''))
             return (pdf_name, pdf_file)
 
     def send_email(self, subject, message, model):

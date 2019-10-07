@@ -60,6 +60,7 @@ from diacamma.accounting.models import FiscalYear, Third, EntryLineAccount, Entr
 from diacamma.accounting.views import get_main_third
 from diacamma.accounting.views_entries import EntryAccountOpenFromLine
 from diacamma.accounting.tools import current_system_account, format_with_devise
+from lucterios.framework.xferprinting import XferContainerPrint
 
 MenuManage.add_sub("invoice", None, "diacamma.invoice/images/invoice.png", _("Invoice"), _("Manage of billing"), 45)
 
@@ -276,10 +277,26 @@ class BillTransition(XferTransition):
             memo.set_size(130, 450)
             memo.set_location(2, row + 3)
             dlg.add_component(memo)
+            if self.item.bill_type != 0:
+                check_payoff.java_script += "parent.get('PRINT_PERSITENT').setEnabled(type);\n"
+                presitent_report = XferCompCheck('PRINT_PERSITENT')
+                presitent_report.set_value(True)
+                presitent_report.set_location(2, row + 4)
+                presitent_report.description = _('Send saved report')
+                presitent_report.java_script = """
+var is_persitent=current.getValue();
+parent.get('model').setEnabled(!is_persitent);
+parent.get('print_sep').setEnabled(!is_persitent);
+"""
+                dlg.add_component(presitent_report)
+                sep = XferCompLabelForm('print_sep')
+                sep.set_value_center(XferContainerPrint.PRINT_REGENERATE_MSG)
+                sep.set_location(2, row + 5)
+                dlg.add_component(sep)
             selectors = PrintModel.get_print_selector(2, self.item.__class__)[0]
             sel = XferCompSelect('model')
             sel.set_select(selectors[2])
-            sel.set_location(2, row + 4)
+            sel.set_location(2, row + 6)
             sel.description = selectors[1]
             dlg.add_component(sel)
         dlg.add_action(self.get_action(TITLE_OK, 'images/ok.png'), params={"CONFIRME": "YES"})

@@ -423,7 +423,7 @@ class BillTest(InvoiceTest):
         self.factory.xfer = BillTransition()
         self.calljson('/diacamma.invoice/billTransition', {'bill': 1, 'TRANSITION': 'valid', 'mode': 1}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'billTransition')
-        self.assert_count_equal('', 2 + 9 + 4)
+        self.assert_count_equal('', 2 + 9 + 6)
         self.assert_json_equal('', 'withpayoff', False)
         self.assert_json_equal('', 'amount', '107.45')
         self.assert_json_equal('', 'sendemail', False)
