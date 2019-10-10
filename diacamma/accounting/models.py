@@ -25,6 +25,7 @@ from __future__ import unicode_literals
 
 from datetime import date, timedelta
 from os.path import join, isfile, dirname
+from logging import getLogger
 from re import match
 from csv import DictReader
 from _csv import QUOTE_NONE
@@ -513,15 +514,18 @@ class FiscalYear(LucteriosModel):
             metadata = '%s-%d' % (printclass.url_text, self.id)
             doc = DocumentContainer.objects.filter(metadata=metadata).first()
             if doc is None:
-                last_user = getattr(self, 'last_user', None)
-                if (last_user is not None) and (last_user.id is not None) and last_user.is_authenticated:
-                    user_modifier = LucteriosUser.objects.get(pk=last_user.id)
-                else:
-                    user_modifier = None
-                own_struct = LegalEntity.objects.get(id=1)
-                doc = self.folder.add_pdf_document(printclass.caption, user_modifier, '%s-%d' % (printclass.url_text, self.id),
-                                                   ActionGenerator.createpdf_from_action(printclass, {'year': self.id},
-                                                                                         "{[u]}{[b]}%s{[/b]}{[/u]}{[br/]}{[i]}%s{[/i]}" % (own_struct, printclass.caption), 297, 210))
+                try:
+                    last_user = getattr(self, 'last_user', None)
+                    if (last_user is not None) and (last_user.id is not None) and last_user.is_authenticated:
+                        user_modifier = LucteriosUser.objects.get(pk=last_user.id)
+                    else:
+                        user_modifier = None
+                    own_struct = LegalEntity.objects.get(id=1)
+                    doc = self.folder.add_pdf_document(printclass.caption, user_modifier, '%s-%d' % (printclass.url_text, self.id),
+                                                       ActionGenerator.createpdf_from_action(printclass, {'year': self.id},
+                                                                                             "{[u]}{[b]}%s{[/b]}{[/u]}{[br/]}{[i]}%s{[/i]}" % (own_struct, printclass.caption), 297, 210))
+                except Exception:
+                    getLogger("diacamma.accounting").exception("Failure to create '%s' report" % printclass.caption)
             return doc
         else:
             return None

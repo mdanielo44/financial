@@ -25,6 +25,7 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import unicode_literals
 from datetime import date
 from _io import BytesIO
+from logging import getLogger
 
 from django.conf import settings
 from django.db import models
@@ -201,13 +202,16 @@ class Supporting(LucteriosModel):
     def generate_pdfreport(self):
         model_value = PrintModel.objects.filter(kind=2, modelname=self.get_long_name()).order_by('-is_default', 'id').first()
         if model_value is not None:
-            last_user = getattr(self, 'last_user', None)
-            if (last_user is not None) and (last_user.id is not None) and last_user.is_authenticated:
-                user_modifier = LucteriosUser.objects.get(pk=last_user.id)
-            else:
-                user_modifier = None
-            return self.fiscal_year.folder.add_pdf_document(self.get_document_filename(), user_modifier, '%s-%d' % (self.__class__.__name__, self.id),
-                                                            ReportingGenerator.createpdf_from_model(self.get_send_email_objects(), model_value.value, model_value.mode))
+            try:
+                last_user = getattr(self, 'last_user', None)
+                if (last_user is not None) and (last_user.id is not None) and last_user.is_authenticated:
+                    user_modifier = LucteriosUser.objects.get(pk=last_user.id)
+                else:
+                    user_modifier = None
+                return self.fiscal_year.folder.add_pdf_document(self.get_document_filename(), user_modifier, '%s-%d' % (self.__class__.__name__, self.id),
+                                                                ReportingGenerator.createpdf_from_model(self.get_send_email_objects(), model_value.value, model_value.mode))
+            except Exception:
+                getLogger("diacamma.payoff").exception("Failure to create '%s' report" % self.get_document_filename())
         return None
 
     def get_pdfreport(self, printmodel):
