@@ -509,7 +509,7 @@ class FiscalYear(LucteriosModel):
             raise LucteriosException(IMPORTANT, _("This fiscal year has entries not closed and not next fiscal year!"))
         return nb_entry_noclose
 
-    def get_reports(self, printclass):
+    def get_reports(self, printclass, params={}):
         if self.status == 2:
             metadata = '%s-%d' % (printclass.url_text, self.id)
             doc = DocumentContainer.objects.filter(metadata=metadata).first()
@@ -521,8 +521,9 @@ class FiscalYear(LucteriosModel):
                     else:
                         user_modifier = None
                     own_struct = LegalEntity.objects.get(id=1)
+                    params['year'] = self.id
                     doc = self.folder.add_pdf_document(printclass.caption, user_modifier, '%s-%d' % (printclass.url_text, self.id),
-                                                       ActionGenerator.createpdf_from_action(printclass, {'year': self.id},
+                                                       ActionGenerator.createpdf_from_action(printclass, params,
                                                                                              "{[u]}{[b]}%s{[/b]}{[/u]}{[br/]}{[i]}%s{[/i]}" % (own_struct, printclass.caption), 297, 210))
                 except Exception:
                     getLogger("diacamma.accounting").exception("Failure to create '%s' report" % printclass.caption)
@@ -531,9 +532,11 @@ class FiscalYear(LucteriosModel):
             return None
 
     def save_reports(self):
-        from diacamma.accounting.views_reports import FiscalYearBalanceSheet, FiscalYearIncomeStatement
+        from diacamma.accounting.views_reports import FiscalYearBalanceSheet, FiscalYearIncomeStatement, FiscalYearLedger, FiscalYearTrialBalance
         self.get_reports(FiscalYearBalanceSheet)
         self.get_reports(FiscalYearIncomeStatement)
+        self.get_reports(FiscalYearLedger, {'filtercode': ''})
+        self.get_reports(FiscalYearTrialBalance, {'filtercode': ''})
 
     def closed(self):
         for cost in CostAccounting.objects.filter(year=self):

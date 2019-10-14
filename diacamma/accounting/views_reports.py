@@ -23,6 +23,7 @@ along with Lucterios.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
 import sys
+import re
 from datetime import date, datetime
 
 from django.utils.translation import ugettext_lazy as _
@@ -35,17 +36,13 @@ from lucterios.framework.xfergraphic import XferContainerCustom
 from lucterios.framework.xfercomponents import XferCompImage, XferCompSelect, XferCompLabelForm, XferCompGrid, XferCompEdit, XferCompCheck
 from lucterios.framework.xferadvance import TITLE_PRINT, TITLE_CLOSE
 from lucterios.contacts.models import LegalEntity
+from lucterios.CORE.parameters import Params
 from lucterios.CORE.xferprint import XferPrintAction
 
 from diacamma.accounting.models import FiscalYear, EntryLineAccount, ChartsAccount, CostAccounting, Third
-from diacamma.accounting.tools import correct_accounting_code, current_system_account,\
-    format_with_devise
-from diacamma.accounting.tools_reports import get_spaces, convert_query_to_account,\
-    add_cell_in_grid, fill_grid, add_item_in_grid
-from lucterios.CORE.parameters import Params
-import re
+from diacamma.accounting.tools import correct_accounting_code, current_system_account, format_with_devise
+from diacamma.accounting.tools_reports import get_spaces, convert_query_to_account, add_cell_in_grid, fill_grid, add_item_in_grid
 from diacamma.accounting.views_entries import add_fiscalyear_result
-from lucterios.documents.models import DocumentContainer
 
 MenuManage.add_sub("bookkeeping_report", "financial", "diacamma.accounting/images/accounting.png", _("Reports"), _("Report of Bookkeeping"), 30)
 

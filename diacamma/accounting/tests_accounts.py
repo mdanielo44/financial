@@ -693,7 +693,7 @@ class FiscalYearWorkflowTest(PaymentTest):
         self.factory.xfer = DocumentSearch()
         self.calljson('/lucterios.documents/documentSearch', {}, False)
         self.assert_observer('core.custom', 'lucterios.documents', 'documentSearch')
-        self.assert_count_equal('document', 2)
+        self.assert_count_equal('document', 4)
 
     def test_import_lastyear(self):
         self._add_subvention()
