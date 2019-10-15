@@ -1032,7 +1032,7 @@ def thirdaddon_invoice(item, xfer):
             bill_grid = XferCompGrid('bill')
             bill_grid.set_model(bills, Bill.get_default_fields(status_filter), xfer)
             bill_grid.add_action_notified(xfer, Bill)
-            bill_grid.set_location(0, 2, 2)
+            bill_grid.set_location(0, 3, 2)
             xfer.add_component(bill_grid)
             if len(bills) > 0:
                 reduce_sum = 0.0
@@ -1048,12 +1048,12 @@ def thirdaddon_invoice(item, xfer):
                 format_string = _("{[b]}Gross total{[/b]} : %(grosstotal)s - {[b]}total of reduces{[/b]} : %(reducetotal)s = {[b]}total to pay{[/b]} : %(total)s") % {'grosstotal': '{0}', 'reducetotal': '{1}', 'total': '{2}'}
                 lab.set_value([gross_sum, reduce_sum, total_sum])
                 lab.set_format(format_with_devise(7) + ';' + format_string)
-                lab.set_location(0, 3, 2)
+                lab.set_location(0, 4, 2)
                 xfer.add_component(lab)
                 if AutomaticReduce.objects.all().count() > 0:
                     btn = XferCompButton('btn_autoreduce')
                     btn.set_action(xfer.request, BillCheckAutoreduce.get_action(_('Reduce'), ''), modal=FORMTYPE_MODAL, close=CLOSE_NO, params={'third': item.id})
-                    btn.set_location(0, 4, 2)
+                    btn.set_location(0, 5, 2)
                     xfer.add_component(btn)
         except LucteriosException:
             pass
