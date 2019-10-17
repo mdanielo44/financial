@@ -125,6 +125,62 @@ class FiscalYearReport(XferContainerCustom):
         self.fill_filterheader()
         self.define_gridheader()
 
+    def _compute_result_get_position(self, total_in_left, total1_left, total2_left, totalb_left, total1_right, total2_right, totalb_right):
+        result_n = total1_right - total1_left
+        if (total2_left is not None) and (total2_right is not None):
+            result_n_1 = total2_right - total2_left
+        else:
+            result_n_1 = 0.0
+        if (totalb_left is not None) and (totalb_right is not None):
+            result_b = totalb_right - totalb_left
+        else:
+            result_b = 0.0
+        self.result = result_n, result_n_1, result_b
+        if total_in_left:
+            if result_n > 0:
+                pos_n = 'left_n'
+            else:
+                pos_n = 'right_n'
+            if result_n_1 > 0:
+                pos_n_1 = 'left_n_1'
+            else:
+                pos_n_1 = 'right_n_1'
+            if result_b > 0:
+                pos_b = 'left_b'
+            else:
+                pos_b = 'right_b'
+        else:
+            result_n = -1 * result_n
+            result_n_1 = -1 * result_n_1
+            if result_n > 0:
+                pos_n = 'right_n'
+            else:
+                pos_n = 'left_n'
+            if result_n_1 > 0:
+                pos_n_1 = 'right_n_1'
+            else:
+                pos_n_1 = 'left_n_1'
+            if result_b > 0:
+                pos_b = 'right_b'
+            else:
+                pos_b = 'left_b'
+        return pos_n, pos_n_1, pos_b
+
+    def _add_result_line(self, totalb_left, line_idx, pos_n, pos_n_1, pos_b):
+        add_cell_in_grid(self.grid, self.line_offset + line_idx, pos_n, abs(self.result[0]))
+        if (totalb_left is not None) and (abs(self.result[2]) > 0.0001):
+            add_cell_in_grid(self.grid, self.line_offset + line_idx, pos_b, abs(self.result[2]))
+        else:
+            pos_b = ""
+        if (self.lastfilter is not None) and (abs(self.result[1]) > 0.0001):
+            add_cell_in_grid(self.grid, self.line_offset + line_idx, pos_n_1, abs(self.result[1]))
+        else:
+            pos_n_1 = ""
+        if (pos_n != 'left_n') and (pos_n_1 != 'left_n_1') and (pos_b != 'left_b'):
+            add_cell_in_grid(self.grid, self.line_offset + line_idx, 'left', '')
+        if (pos_n != 'right_n') and (pos_n_1 != 'right_n_1') and (pos_b != 'right_b'):
+            add_cell_in_grid(self.grid, self.line_offset + line_idx, 'right', '')
+
     def add_total_in_grid(self, total_in_left, total1_left, total2_left, totalb_left, total1_right, total2_right, totalb_right, line_idx):
         self.result = (0.0, 0.0, 0.0)
         if (total2_left is None) or (total2_right is None):
@@ -162,57 +218,8 @@ class FiscalYearReport(XferContainerCustom):
             add_cell_in_grid(self.grid, self.line_offset + line_idx, 'left_n', '')
             add_cell_in_grid(self.grid, self.line_offset + line_idx, 'left_n_1', '')
             add_cell_in_grid(self.grid, self.line_offset + line_idx, 'left_b', '')
-            result_n = total1_right - total1_left
-            if (total2_left is not None) and (total2_right is not None):
-                result_n_1 = total2_right - total2_left
-            else:
-                result_n_1 = 0.0
-            if (totalb_left is not None) and (totalb_right is not None):
-                result_b = totalb_right - totalb_left
-            else:
-                result_b = 0.0
-            self.result = (result_n, result_n_1, result_b)
-            if total_in_left:
-                if result_n > 0:
-                    pos_n = 'left_n'
-                else:
-                    pos_n = 'right_n'
-                if result_n_1 > 0:
-                    pos_n_1 = 'left_n_1'
-                else:
-                    pos_n_1 = 'right_n_1'
-                if result_b > 0:
-                    pos_b = 'left_b'
-                else:
-                    pos_b = 'right_b'
-            else:
-                result_n = -1 * result_n
-                result_n_1 = -1 * result_n_1
-                if result_n > 0:
-                    pos_n = 'right_n'
-                else:
-                    pos_n = 'left_n'
-                if result_n_1 > 0:
-                    pos_n_1 = 'right_n_1'
-                else:
-                    pos_n_1 = 'left_n_1'
-                if result_b > 0:
-                    pos_b = 'right_b'
-                else:
-                    pos_b = 'left_b'
-            add_cell_in_grid(self.grid, self.line_offset + line_idx, pos_n, abs(result_n))
-            if (totalb_left is not None) and (abs(result_b) > 0.0001):
-                add_cell_in_grid(self.grid, self.line_offset + line_idx, pos_b, abs(result_b))
-            else:
-                pos_b = ""
-            if (self.lastfilter is not None) and (abs(result_n_1) > 0.0001):
-                add_cell_in_grid(self.grid, self.line_offset + line_idx, pos_n_1, abs(result_n_1))
-            else:
-                pos_n_1 = ""
-            if (pos_n != 'left_n') and (pos_n_1 != 'left_n_1') and (pos_b != 'left_b'):
-                add_cell_in_grid(self.grid, self.line_offset + line_idx, 'left', '')
-            if (pos_n != 'right_n') and (pos_n_1 != 'right_n_1') and (pos_b != 'right_b'):
-                add_cell_in_grid(self.grid, self.line_offset + line_idx, 'right', '')
+            pos_n, pos_n_1, pos_b = self._compute_result_get_position(total1_left, total_in_left, total2_left, totalb_left, total1_right, total2_right, totalb_right)
+            self._add_result_line(totalb_left, line_idx, pos_n, pos_n_1, pos_b)
         return line_idx
 
     def _add_left_right_accounting(self, left_filter, rigth_filter, total_in_left):
