@@ -344,23 +344,21 @@ class FiscalYearIncomeStatement(FiscalYearReport):
             max_line_idx = max(left_line_idx, right_line_idx)
             total1_left, total2_left, totalb_left = self.total_summary_left
             total1_right, total2_right, totalb_right = self.total_summary_right
-            add_cell_in_grid(self.grid, max_line_idx, 'left', get_spaces(10) + "{[u]}{[b]}%s{[/b]}{[/u]}" % _('total with annexe'))
             total1_left += anx_total1_left
-            add_cell_in_grid(self.grid, max_line_idx, 'left_n', max(total1_left, total1_right), "{[u]}{[b]}%s{[/b]}{[/u]}")
-            if self.lastfilter is not None:
-                total2_left += anx_total2_left
-                add_cell_in_grid(self.grid, max_line_idx, 'left_n_1', max(total2_left, total2_right), "{[u]}{[b]}%s{[/b]}{[/u]}")
-            if self.budgetfilter_left is not None:
-                totalb_left += anx_totalb_left
-                add_cell_in_grid(self.grid, max_line_idx, 'left_b', max(totalb_left, totalb_right), "{[u]}{[b]}%s{[/b]}{[/u]}")
-            add_cell_in_grid(self.grid, max_line_idx, 'right', get_spaces(10) + "{[u]}{[b]}%s{[/b]}{[/u]}" % _('total with annexe'))
             total1_right += anx_total1_right
+            add_cell_in_grid(self.grid, max_line_idx, 'left', get_spaces(10) + "{[u]}{[b]}%s{[/b]}{[/u]}" % _('total with annexe'))
+            add_cell_in_grid(self.grid, max_line_idx, 'right', get_spaces(10) + "{[u]}{[b]}%s{[/b]}{[/u]}" % _('total with annexe'))
+            add_cell_in_grid(self.grid, max_line_idx, 'left_n', max(total1_left, total1_right), "{[u]}{[b]}%s{[/b]}{[/u]}")
             add_cell_in_grid(self.grid, max_line_idx, 'right_n', max(total1_left, total1_right), "{[u]}{[b]}%s{[/b]}{[/u]}")
             if self.lastfilter is not None:
+                total2_left += anx_total2_left
                 total2_right += anx_total2_right
+                add_cell_in_grid(self.grid, max_line_idx, 'left_n_1', max(total2_left, total2_right), "{[u]}{[b]}%s{[/b]}{[/u]}")
                 add_cell_in_grid(self.grid, max_line_idx, 'right_n_1', max(total2_left, total2_right), "{[u]}{[b]}%s{[/b]}{[/u]}")
-            if self.budgetfilter_right is not None:
+            if self.budgetfilter_left is not None:
+                totalb_left += anx_totalb_left
                 totalb_right += anx_totalb_right
+                add_cell_in_grid(self.grid, max_line_idx, 'left_b', max(totalb_left, totalb_right), "{[u]}{[b]}%s{[/b]}{[/u]}")
                 add_cell_in_grid(self.grid, max_line_idx, 'right_b', max(totalb_left, totalb_right), "{[u]}{[b]}%s{[/b]}{[/u]}")
             add_cell_in_grid(self.grid, max_line_idx + 1, 'left', '')
             add_cell_in_grid(self.grid, max_line_idx + 1, 'right', '')
