@@ -419,14 +419,13 @@ class FiscalYear(LucteriosModel):
     def get_current(cls, select_year=None):
         if select_year is None:
             try:
-                year = FiscalYear.objects.get(
-                    is_actif=True)
+                year = FiscalYear.objects.get(is_actif=True)
             except ObjectDoesNotExist:
-                raise LucteriosException(
-                    IMPORTANT, _('No fiscal year define!'))
+                raise LucteriosException(IMPORTANT, _('No fiscal year define!'))
+        elif isinstance(select_year, date):
+            year = FiscalYear.objects.filter(begin__lte=select_year, end__gte=select_year).first()
         else:
-            year = FiscalYear.objects.get(
-                id=select_year)
+            year = FiscalYear.objects.get(id=select_year)
         return year
 
     def get_account_list(self, num_cpt_txt, num_cpt):

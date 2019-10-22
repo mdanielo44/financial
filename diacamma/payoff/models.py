@@ -117,6 +117,8 @@ class Supporting(LucteriosModel):
         return Q()
 
     def get_total_payed(self, ignore_payoff=-1):
+        if self.id is None:
+            return 0
         val = 0
         for payoff in self.payoff_set.filter(self.payoff_query):
             if payoff.id != ignore_payoff:
@@ -162,6 +164,8 @@ class Supporting(LucteriosModel):
         return third_account
 
     def get_total_rest_topay(self, ignore_payoff=-1):
+        if self.id is None:
+            return 0
         return self.get_total() - self.get_total_payed(ignore_payoff)
 
     def get_tax_sum(self):
