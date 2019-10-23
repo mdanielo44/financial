@@ -746,6 +746,9 @@ class Bill(Supporting):
         elif not no_change or (abs(debit_rest) > 0.001) or (abs(credit_rest) > 0.001):
             raise LucteriosException(GRAVE, _("Error in accounting generator!") + "{[br/]} no_change=%s debit_rest=%.3f credit_rest=%.3f" % (no_change, debit_rest, credit_rest))
 
+    def _error_transaction(self, transation):
+        return "%s: status=%d info_state = %s" % (transation, self.status, "\n".join(self.get_info_state()))
+
     transitionname__valid = _("Validate")
 
     def affect_num(self):
