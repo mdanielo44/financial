@@ -230,7 +230,7 @@ class DefaultSystemAccounting(object):
 
     def _create_report_third(self, year):
         from diacamma.accounting.models import EntryAccount
-        last_entry_account = list(year.last_fiscalyear.entryaccount_set.filter(journal__id=5).order_by('num'))[-1]
+        last_entry_account = year.last_fiscalyear.entryaccount_set.filter(journal__id=5).order_by('num').last()
         _no_change, debit_rest, credit_rest = last_entry_account.serial_control(last_entry_account.get_serial())
         if (abs(debit_rest - credit_rest) < 0.0001) and (len(last_entry_account.get_thirds()) > 0):
             end_desig = _("Retained earnings - Third party debt")
