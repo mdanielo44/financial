@@ -46,6 +46,10 @@ Impression
 
 Depuis la fiche d'un document (devis, facture, reçu ou avoir) vous pouvez à tout moment imprimer ou ré-impriment celui-ci s'il n'est pas à l'état «en cours».
 
+Pour les factures, les reçus ou les avoirs, une sauvegarde officiels (d'après le modèle d'impression par défaut) est automatiquement sauvegardé dans le gestionnaire de documents au moment de la validation.
+Lorsque vous voulez imprimer le justificatif, on vous propose alors par défaut de télécharger ce document sauvegarder.
+Vous pouvez re-générer un nouveau PDF, par exemple avec un autre modèle d'impression, par contre celui-ci comportera la notion "duplicata" en filigrame.
+
 Paiement
 --------
 

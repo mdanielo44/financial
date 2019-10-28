@@ -203,6 +203,9 @@ class Supporting(LucteriosModel):
             doc = self.generate_pdfreport()
         return doc
 
+    def add_pdf_document(self, title, user, metadata, pdf_content):
+        return self.fiscal_year.folder.add_pdf_document(title, user, metadata, pdf_content)
+
     def generate_pdfreport(self):
         model_value = PrintModel.objects.filter(kind=2, modelname=self.get_long_name()).order_by('-is_default', 'id').first()
         if model_value is not None:
@@ -212,8 +215,8 @@ class Supporting(LucteriosModel):
                     user_modifier = LucteriosUser.objects.get(pk=last_user.id)
                 else:
                     user_modifier = None
-                return self.fiscal_year.folder.add_pdf_document(self.get_document_filename(), user_modifier, '%s-%d' % (self.__class__.__name__, self.id),
-                                                                ReportingGenerator.createpdf_from_model(self.get_send_email_objects(), model_value.value, model_value.mode))
+                return self.add_pdf_document(self.get_document_filename(), user_modifier, '%s-%d' % (self.__class__.__name__, self.id),
+                                             ReportingGenerator.createpdf_from_model(self.get_send_email_objects(), model_value.value, model_value.mode))
             except Exception:
                 getLogger("diacamma.payoff").exception("Failure to create '%s' report" % self.get_document_filename())
         return None

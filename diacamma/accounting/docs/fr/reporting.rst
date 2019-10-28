@@ -6,7 +6,11 @@ Vous pouvez consulter votre rapport ainsi qu'en réaliser une impression via une
 De plus, pour tout les exercices non-cloturés, vous pouvez préciser une période de consultation.
 Ceci est principalement utile pour vous aider à faire vos rapprochements bancaires ou si vous avez besoins d'éditer des situations financiéres trimestrielles.
 
-Compte de résultats
+Ces rapports sont sauvegarder automatiquement dans le gestionnaire de documents au moment de la clôture de l'exercice.
+Lorsque vous voulez imprimer les re-éditer, on vous propose alors par défaut de télécharger ce document sauvegarder.
+Vous pouvez re-générer un nouveau PDF, par contre celui-ci comportera la notion "duplicata" en filigrame.
+
+Compte de résultat
 -------------------
 
 Le compte de résultat est un document comptable synthétisant l'ensemble des charges et des produits d'une entreprise ou autre organisme ayant une activité marchande, au cours d'un son exercice comptable.
