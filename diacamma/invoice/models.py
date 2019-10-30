@@ -520,6 +520,7 @@ class Bill(Supporting):
         print_fields.extend(Supporting.get_print_fields())
         print_fields.extend(["comment", "status", 'total_excltax', 'vta_sum', 'total_incltax'])
         print_fields.append('OUR_DETAIL')
+        print_fields.append('DEFAULT_DOCUMENTS')
         return print_fields
 
     @property

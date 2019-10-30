@@ -125,7 +125,7 @@ value = """
         #reference
         </cell>
         <cell display_align="center" border_color="black" border_style="solid" border_width="0.2" text_align="end" line_height="7" font_family="sans-serif" font_weight="" font_size="7">
-        #value
+        #amount
         </cell>
     </rows>
 </table>

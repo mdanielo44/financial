@@ -371,6 +371,8 @@ class Payoff(LucteriosModel):
     bank_fee = models.DecimalField(verbose_name=_('bank fee'), max_digits=10, decimal_places=3, default=0.0, validators=[
         MinValueValidator(0.0), MaxValueValidator(9999999.999)])
 
+    value = LucteriosVirtualField(verbose_name=_('amount'), compute_from='amount', format_string=lambda: format_with_devise(5))
+
     def __str__(self):
         return "%s - %s - %s" % (self.payer, get_date_formating(self.date), self.reference)
 
