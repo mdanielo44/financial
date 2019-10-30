@@ -603,7 +603,7 @@ class Bill(Supporting):
         return vtas
 
     def get_vta_details(self):
-        return self.get_vta_detail_list().values()
+        return list(self.get_vta_detail_list().values())
 
     def payoff_is_revenu(self):
         return (self.bill_type != 0) and (self.bill_type != 2)
