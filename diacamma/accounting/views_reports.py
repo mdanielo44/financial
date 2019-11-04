@@ -218,7 +218,7 @@ class FiscalYearReport(XferContainerCustom):
             add_cell_in_grid(self.grid, self.line_offset + line_idx, 'left_n', '')
             add_cell_in_grid(self.grid, self.line_offset + line_idx, 'left_n_1', '')
             add_cell_in_grid(self.grid, self.line_offset + line_idx, 'left_b', '')
-            pos_n, pos_n_1, pos_b = self._compute_result_get_position(total1_left, total_in_left, total2_left, totalb_left, total1_right, total2_right, totalb_right)
+            pos_n, pos_n_1, pos_b = self._compute_result_get_position(total_in_left, total1_left, total2_left, totalb_left, total1_right, total2_right, totalb_right)
             self._add_result_line(totalb_left, line_idx, pos_n, pos_n_1, pos_b)
         return line_idx
 
