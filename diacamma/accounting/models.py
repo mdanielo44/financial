@@ -32,7 +32,7 @@ from _csv import QUOTE_NONE
 
 from django.db import models
 from django.db.models.functions import Concat
-from django.db.models import Q, Value
+from django.db.models import Q, F, Value
 from django.db.models.query import QuerySet
 from django.db.models.aggregates import Sum, Max, Count
 from django.template import engines
@@ -390,8 +390,7 @@ class FiscalYear(LucteriosModel):
         try:
             return self.chartsaccount_set.get(code=code)
         except ObjectDoesNotExist:
-            descript, typeaccount = current_system_account().new_charts_account(
-                code)
+            descript, typeaccount = current_system_account().new_charts_account(code)
             if name is None:
                 name = descript
             return ChartsAccount.objects.create(year=self, code=code, name=name, type_of_account=typeaccount)
@@ -402,14 +401,11 @@ class FiscalYear(LucteriosModel):
             for entry_noclose in EntryAccount.objects.filter(close=False, entrylineaccount__account__year=self).distinct():
                 if next_ficalyear is None:
                     try:
-                        next_ficalyear = FiscalYear.objects.get(
-                            last_fiscalyear=self)
+                        next_ficalyear = FiscalYear.objects.get(last_fiscalyear=self)
                     except BaseException:
-                        raise LucteriosException(IMPORTANT, _(
-                            "This fiscal year has entries not closed and not next fiscal year!"))
+                        raise LucteriosException(IMPORTANT, _("This fiscal year has entries not closed and not next fiscal year!"))
                 for entryline in entry_noclose.entrylineaccount_set.all():
-                    entryline.account = next_ficalyear.getorcreate_chartaccount(
-                        entryline.account.code, entryline.account.name)
+                    entryline.account = next_ficalyear.getorcreate_chartaccount(entryline.account.code, entryline.account.name)
                     entryline.save()
                 entry_noclose.year = next_ficalyear
                 entry_noclose.date_value = next_ficalyear.begin
@@ -1744,6 +1740,9 @@ def accounting_convertdata():
     check_accountlink()
     for year in FiscalYear.objects.all().order_by('end'):
         year.check_report()
+    for entryline in EntryLineAccount.objects.exclude(Q(entry__year=F("account__year"))):  # check link between year of entry and year of account code
+        entryline.account = entryline.entry.year.getorcreate_chartaccount(entryline.account.code, entryline.account.name)
+        entryline.save()
 
 
 @Signal.decorate('auditlog_register')
