@@ -1304,6 +1304,8 @@ class StorageDetail(LucteriosModel):
                                    validators=[MinValueValidator(0.0), MaxValueValidator(9999999.999)])
     quantity_txt = LucteriosVirtualField(verbose_name=_('quantity'), compute_from="get_quantity_txt")
 
+    article_fake = LucteriosVirtualField(verbose_name=_('article'), compute_from=lambda _this: "article fake")
+
     def __str__(self):
         return "%s %d" % (self.article_id, self.quantity)
 
@@ -1316,11 +1318,15 @@ class StorageDetail(LucteriosModel):
 
     @classmethod
     def get_edit_fields(cls):
-        return ["article", "price", "quantity"]
+        return ["article_fake", "price", "quantity"]
 
     @classmethod
     def get_show_fields(cls):
         return ["article", "price", "quantity_txt"]
+
+    @classmethod
+    def get_import_fields(cls):
+        return ["article", "price", "quantity"]
 
     def get_quantity_txt(self):
         if self.quantity is None:

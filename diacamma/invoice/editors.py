@@ -280,7 +280,7 @@ class DetailFilter(object):
             if ((len(filter_cat) > 0) or not Params.getvalue("invoice-reduce-allow-article-empty")) and hasattr(sel_art, 'set_needed'):
                 sel_art.set_needed(True)
             has_filter = True
-        if has_select or (len(cat_list) > 0):
+        if not has_select or (len(cat_list) > 0):
             ref_filter = xfer.getparam('ref_filter', '')
             edt = XferCompEdit("ref_filter")
             edt.set_value(ref_filter)
