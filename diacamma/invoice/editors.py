@@ -211,14 +211,22 @@ class BillEditor(SupportingEditor):
 class DetailFilter(object):
 
     def refresh_article(self, xfer):
-        sel_art = xfer.get_components("article")
-
-        if (sel_art.value == 0) or (sel_art.value is None):
-            self.item.article_id = None
-            self.item.article = None
+        if self.item.article_query.count() > 100:
+            xfer.change_to_readonly("article_fake")
+            sel_art = xfer.get_components("article_fake")
+            sel_art.value = self.item.article.get_text_value() if self.item.article_id is not None else None
+            sel_art.colspan = 1
         else:
-            self.item.article_id = int(sel_art.value)
-            self.item.article = Article.objects.get(id=self.item.article_id)
+            comp_art = xfer.get_components("article_fake")
+            xfer.filltab_from_model(comp_art.col, comp_art.row, False, ['article'])
+            xfer.remove_component("article_fake")
+            sel_art = xfer.get_components("article")
+            if (sel_art.value == 0) or (sel_art.value is None):
+                self.item.article_id = None
+                self.item.article = None
+            else:
+                self.item.article_id = int(sel_art.value)
+                self.item.article = Article.objects.get(id=self.item.article_id)
         return sel_art
 
     def _add_provider_filter(self, xfer, sel_art, init_row):
@@ -245,9 +253,11 @@ class DetailFilter(object):
             sel_art.set_needed(True)
 
     def edit_filter(self, xfer, sel_art):
+        has_select = (xfer.get_components("article") is not None)
         init_row = sel_art.row
         xfer.move(sel_art.tab, 0, 10)
-        sel_art.set_action(xfer.request, xfer.get_action('', ''), modal=FORMTYPE_REFRESH, close=CLOSE_NO, params={'CHANGE_ART': 'YES'})
+        if hasattr(sel_art, 'set_action'):
+            sel_art.set_action(xfer.request, xfer.get_action('', ''), modal=FORMTYPE_REFRESH, close=CLOSE_NO, params={'CHANGE_ART': 'YES'})
 
         btn = XferCompButton('show_art')
         btn.set_is_mini(True)
@@ -267,8 +277,10 @@ class DetailFilter(object):
             edt.description = _('categories')
             edt.set_action(xfer.request, xfer.get_action('', ''), modal=FORMTYPE_REFRESH, close=CLOSE_NO, params={'CHANGE_ART': 'YES'})
             xfer.add_component(edt)
-            if (len(filter_cat) > 0) or not Params.getvalue("invoice-reduce-allow-article-empty"):
+            if ((len(filter_cat) > 0) or not Params.getvalue("invoice-reduce-allow-article-empty")) and hasattr(sel_art, 'set_needed'):
                 sel_art.set_needed(True)
+            has_filter = True
+        if has_select or (len(cat_list) > 0):
             ref_filter = xfer.getparam('ref_filter', '')
             edt = XferCompEdit("ref_filter")
             edt.set_value(ref_filter)
@@ -277,11 +289,17 @@ class DetailFilter(object):
             edt.set_action(xfer.request, xfer.get_action(), modal=FORMTYPE_REFRESH, close=CLOSE_NO, params={'CHANGE_ART': 'YES'})
             xfer.add_component(edt)
             has_filter = True
-
         if len(Provider.objects.all()) > 0:
             self._add_provider_filter(xfer, sel_art, init_row + 2)
             has_filter = True
+
         if has_filter:
+            if not has_select:
+                lbl = XferCompLabelForm('warning_filter')
+                lbl.set_color("red")
+                lbl.set_value_center(_("Modify filter to reduce articles list."))
+                lbl.set_location(sel_art.col, init_row + 8, 2)
+                xfer.add_component(lbl)
             lbl = XferCompLabelForm('sep_filter')
             lbl.set_value("{[hr/]}")
             lbl.set_location(sel_art.col, init_row + 9, 2)

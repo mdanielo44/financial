@@ -192,12 +192,12 @@ class Article(LucteriosModel, CustomizeObject):
     CustomFieldClass = ArticleCustomField
     FieldName = 'article'
 
-    reference = models.CharField(_('reference'), max_length=30)
+    reference = models.CharField(_('reference'), max_length=30, db_index=True)
     designation = models.TextField(_('designation'))
     price = LucteriosDecimalField(_('price'), max_digits=10, decimal_places=3,
                                   default=0.0, validators=[MinValueValidator(0.0), MaxValueValidator(9999999.999)], format_string=lambda: format_with_devise(5))
     unit = models.CharField(_('unit'), null=True, default='', max_length=10)
-    isdisabled = models.BooleanField(verbose_name=_('is disabled'), default=False)
+    isdisabled = models.BooleanField(verbose_name=_('is disabled'), default=False, db_index=True)
     sell_account = models.CharField(_('sell account'), max_length=50)
     vat = models.ForeignKey(Vat, verbose_name=_('vat'), null=True, default=None, on_delete=models.PROTECT)
     stockable = models.IntegerField(verbose_name=_('stockable'),
@@ -993,10 +993,8 @@ class Bill(Supporting):
 
 
 class Detail(LucteriosModel):
-    bill = models.ForeignKey(
-        Bill, verbose_name=_('bill'), null=False, db_index=True, on_delete=models.CASCADE)
-    article = models.ForeignKey(
-        Article, verbose_name=_('article'), null=True, default=None, db_index=True, on_delete=models.PROTECT)
+    bill = models.ForeignKey(Bill, verbose_name=_('bill'), null=False, db_index=True, on_delete=models.CASCADE)
+    article = models.ForeignKey(Article, verbose_name=_('article'), null=True, default=None, db_index=True, on_delete=models.PROTECT)
     designation = models.TextField(verbose_name=_('designation'))
     price = LucteriosDecimalField(verbose_name=_('price'), max_digits=10, decimal_places=3,
                                   default=0.0, validators=[MinValueValidator(0.0), MaxValueValidator(9999999.999)], format_string=lambda: format_with_devise(5))
@@ -1019,6 +1017,8 @@ class Detail(LucteriosModel):
     total_excltax = LucteriosVirtualField(verbose_name=_('total'), compute_from="get_total_excltax", format_string=lambda: format_with_devise(5))
     total_incltax = LucteriosVirtualField(verbose_name=_('total incl. taxes'), compute_from="get_total_incltax", format_string=lambda: format_with_devise(5))
     price_vta = LucteriosVirtualField(verbose_name=_('VTA sum'), compute_from="get_vta", format_string=lambda: format_with_devise(5))
+
+    article_fake = LucteriosVirtualField(verbose_name=_('article'), compute_from=lambda _this: "article fake")
 
     def __init__(self, *args, **kwargs):
         LucteriosModel.__init__(self, *args, **kwargs)
@@ -1064,7 +1064,7 @@ class Detail(LucteriosModel):
 
     @classmethod
     def get_edit_fields(cls):
-        return ["article", "designation", ("price", "reduce"), ("quantity", "unit"), "storagearea"]
+        return ["article_fake", "designation", ("price", "reduce"), ("quantity", "unit"), "storagearea"]
 
     @classmethod
     def get_show_fields(cls):
