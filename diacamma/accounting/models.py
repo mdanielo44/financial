@@ -1743,6 +1743,9 @@ def accounting_convertdata():
     for entryline in EntryLineAccount.objects.exclude(Q(entry__year=F("account__year"))):  # check link between year of entry and year of account code
         entryline.account = entryline.entry.year.getorcreate_chartaccount(entryline.account.code, entryline.account.name)
         entryline.save()
+    for entryline in EntryLineAccount.objects.filter(Q(third__isnull=False) & ~Q(account__code__regex=current_system_account().get_third_mask())):
+        entryline.third = None
+        entryline.save()
 
 
 @Signal.decorate('auditlog_register')
