@@ -669,6 +669,18 @@ class ChartsAccount(LucteriosModel):
     def get_print_fields(cls):
         return ['code', 'name', 'last_year_total', 'current_total', 'current_validated', 'entrylineaccount_set']
 
+    @classmethod
+    def get_current_total_from_code(cls, code, year=None):
+        if year is None:
+            year_filter = Q(year__is_actif=True)
+        else:
+            year_filter = Q(year=year)
+        account = ChartsAccount.objects.filter(Q(code__regex=code + '.*') & year_filter).first()
+        if account is None:
+            return None
+        else:
+            return account.current_total
+
     def __str__(self):
         return "[%s] %s" % (self.code, self.name)
 
