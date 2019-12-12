@@ -758,6 +758,7 @@ class ChartsAccount(LucteriosModel):
 
 class Journal(LucteriosModel):
     name = models.CharField(_('name'), max_length=50, unique=True)
+    is_default = models.BooleanField(verbose_name=_('default'), default=False, null=False)
 
     def __str__(self):
         return self.name
@@ -770,7 +771,23 @@ class Journal(LucteriosModel):
 
     @classmethod
     def get_default_fields(cls):
-        return ["name"]
+        return ["name", "is_default"]
+
+    @classmethod
+    def get_edit_fields(cls):
+        return ['name']
+
+    def change_has_default(self):
+        if self.is_default:
+            self.is_default = False
+            self.save()
+        else:
+            all_journal = Journal.objects.all()
+            for journal_item in all_journal:
+                journal_item.is_default = False
+                journal_item.save()
+            self.is_default = True
+            self.save()
 
     class Meta(object):
 

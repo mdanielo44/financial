@@ -264,7 +264,7 @@ class DepositTest(InvoiceTest):
 
         self.factory.xfer = EntryAccountList()
         self.calljson('/diacamma.accounting/entryAccountList',
-                      {'year': '1', 'journal': '-1', 'filter': '0'}, False)
+                      {'year': '1', 'journal': '0', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
         self.assert_count_equal('entryline', 12)
         self.assert_json_equal('', 'entryline/@8/entry.num', None)
@@ -292,7 +292,7 @@ class DepositTest(InvoiceTest):
 
         self.factory.xfer = EntryAccountList()
         self.calljson('/diacamma.accounting/entryAccountList',
-                      {'year': '1', 'journal': '-1', 'filter': '0'}, False)
+                      {'year': '1', 'journal': '0', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
         self.assert_count_equal('entryline', 12)
         self.assert_json_equal('', 'entryline/@8/entry.num', '2')

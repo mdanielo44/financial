@@ -31,16 +31,10 @@ from django.conf import settings
 
 from lucterios.CORE.models import PrintModel
 from lucterios.framework.tools import set_locale_lang
-from diacamma.accounting.models import Journal
 
 
 def initial_values(*args):
     set_locale_lang(settings.LANGUAGE_CODE)
-    Journal.objects.create(name=_("Last year report"), id=1)
-    Journal.objects.create(name=_("Buying"), id=2)
-    Journal.objects.create(name=_("Selling"), id=3)
-    Journal.objects.create(name=_("Payment"), id=4)
-    Journal.objects.create(name=_("Other"), id=5)
 
     PrintModel().load_model('diacamma.accounting', "Third_0001", is_default=True)
     PrintModel().load_model('diacamma.accounting', "ChartsAccount_0001", is_default=True)

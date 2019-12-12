@@ -251,6 +251,19 @@ class JournalDel(XferDelete):
     caption = _("Delete accounting journal")
 
 
+@ActionsManage.affect_grid(_("Default"), "images/default.png", unique=SELECT_SINGLE)
+@MenuManage.describ('accounting.add_fiscalyear')
+class JournalDefault(XferContainerAcknowledge):
+    icon = "images/default.png"
+    model = Journal
+    field_id = 'journal'
+    caption = _("Default")
+    readonly = True
+
+    def fillresponse(self):
+        self.item.change_has_default()
+
+
 @signal_and_lock.Signal.decorate('param_change')
 def paramchange_accounting(params):
     if 'accounting-sizecode' in params:

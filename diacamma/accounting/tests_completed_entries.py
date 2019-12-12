@@ -165,20 +165,20 @@ class CompletedEntryTest(LucteriosTest):
         return self.assert_json_equal('LABELFORM', 'result', [34.01, 0.00, 34.01, 70.64, 70.64])
 
     def test_all(self):
-        self._goto_entrylineaccountlist(-1, 0, 25)
+        self._goto_entrylineaccountlist(0, 0, 25)
         self._check_result()
 
     def test_noclose(self):
-        self._goto_entrylineaccountlist(-1, 1, 8)
+        self._goto_entrylineaccountlist(0, 1, 8)
 
     def test_close(self):
-        self._goto_entrylineaccountlist(-1, 2, 17)
+        self._goto_entrylineaccountlist(0, 2, 17)
 
     def test_letter(self):
-        self._goto_entrylineaccountlist(-1, 3, 12)
+        self._goto_entrylineaccountlist(0, 3, 12)
 
     def test_noletter(self):
-        self._goto_entrylineaccountlist(-1, 4, 13)
+        self._goto_entrylineaccountlist(0, 4, 13)
 
     def test_summary(self):
         self.factory.xfer = StatusMenu()
@@ -535,7 +535,7 @@ class CompletedEntryTest(LucteriosTest):
         self.assert_json_equal('', 'costaccounting/@2/total_revenue', 70.64)
         self.assert_json_equal('', 'costaccounting/@2/total_expense', 258.02)
 
-        self._goto_entrylineaccountlist(-1, 0, 25)
+        self._goto_entrylineaccountlist(0, 0, 25)
         self.assert_json_equal('', 'entryline/@3/id', '9')
         self.assert_json_equal('', 'entryline/@3/entry.num', None)
         self.assert_json_equal('', 'entryline/@3/entry_account', '[401 Dalton Avrel]')
@@ -572,7 +572,7 @@ class CompletedEntryTest(LucteriosTest):
         self.calljson('/diacamma.accounting/entryAccountCostAccounting', {"SAVE": "YES", 'entryline': '8;9;12;13;18;19', 'cost_accounting_id': '2'}, False)  # -78.24 / +125.97
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountCostAccounting')
 
-        self._goto_entrylineaccountlist(-1, 0, 25)
+        self._goto_entrylineaccountlist(0, 0, 25)
         self.assert_json_equal('', 'entryline/@3/id', '9')
         self.assert_json_equal('', 'entryline/@3/entry.num', None)
         self.assert_json_equal('', 'entryline/@3/entry_account', '[401 Dalton Avrel]')
@@ -614,7 +614,7 @@ class CompletedEntryTest(LucteriosTest):
         self.calljson('/diacamma.accounting/entryAccountCostAccounting', {"SAVE": "YES", 'entryline': '8;9;12;13;18;19', 'cost_accounting_id': '0'}, False)  # - -194.08 / 0
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountCostAccounting')
 
-        self._goto_entrylineaccountlist(-1, 0, 25)
+        self._goto_entrylineaccountlist(0, 0, 25)
         self.assert_json_equal('', 'entryline/@3/id', '9')
         self.assert_json_equal('', 'entryline/@3/entry.num', None)
         self.assert_json_equal('', 'entryline/@3/entry_account', '[401 Dalton Avrel]')
@@ -656,7 +656,7 @@ class CompletedEntryTest(LucteriosTest):
         self.calljson('/diacamma.accounting/entryAccountCostAccounting', {"SAVE": "YES", 'entryline': '8;9;12;13;18;19', 'cost_accounting_id': '3'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountCostAccounting')
 
-        self._goto_entrylineaccountlist(-1, 0, 25)
+        self._goto_entrylineaccountlist(0, 0, 25)
         self.assert_json_equal('', 'entryline/@3/id', '9')
         self.assert_json_equal('', 'entryline/@3/entry.num', None)
         self.assert_json_equal('', 'entryline/@3/entry_account', '[401 Dalton Avrel]')
@@ -704,7 +704,7 @@ class CompletedEntryTest(LucteriosTest):
         self.calljson('/diacamma.accounting/entryAccountCostAccounting', {"SAVE": "YES", 'entryline': '8;9;12;13;18;19', 'cost_accounting_id': '4'}, False)
         self.assert_observer('core.acknowledge', 'diacamma.accounting', 'entryAccountCostAccounting')
 
-        self._goto_entrylineaccountlist(-1, 0, 25)
+        self._goto_entrylineaccountlist(0, 0, 25)
         self.assert_json_equal('', 'entryline/@3/id', '9')
         self.assert_json_equal('', 'entryline/@3/entry.num', None)
         self.assert_json_equal('', 'entryline/@3/entry_account', '[401 Dalton Avrel]')

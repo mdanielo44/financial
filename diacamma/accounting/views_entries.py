@@ -38,15 +38,14 @@ from lucterios.framework.tools import ActionsManage, MenuManage, WrapAction
 from lucterios.framework.xferadvance import action_list_sorted
 from lucterios.framework.xferadvance import XferListEditor, XferAddEditor
 from lucterios.framework.xfergraphic import XferContainerAcknowledge, XferContainerCustom
-from lucterios.framework.xfercomponents import XferCompSelect, XferCompLabelForm, XferCompImage, XferCompFloat,\
-    XferCompMemo, XferCompEdit, XferCompGrid
+from lucterios.framework.xfercomponents import XferCompSelect, XferCompLabelForm, XferCompImage, XferCompFloat, XferCompGrid
 from lucterios.framework.error import LucteriosException, IMPORTANT
 from lucterios.CORE.xferprint import XferPrintListing
 from lucterios.CORE.editors import XferSavedCriteriaSearchEditor
 from lucterios.CORE.parameters import Params
+from lucterios.CORE.views import ObjectImport
 
 from diacamma.accounting.models import EntryLineAccount, EntryAccount, FiscalYear, Journal, AccountLink, current_system_account, CostAccounting, ModelEntry
-from lucterios.CORE.views import ObjectImport
 
 
 def add_fiscalyear_result(xfer, col, row, colspan, year, comp_name):
@@ -90,20 +89,22 @@ class EntryAccountList(XferListEditor):
     def _filter_by_year(self):
         select_year = self.getparam('year')
         self.item.year = FiscalYear.get_current(select_year)
-        self.item.journal = Journal.objects.get(id=1)
+        self.item.journal = Journal.objects.filter(is_default=True).first()
         self.fill_from_model(0, 1, False, ['year', 'journal'])
         self.get_components('year').set_action(self.request, self.get_action(), modal=FORMTYPE_REFRESH, close=CLOSE_NO)
         self.get_components('year').colspan = 2
         self.filter = Q(entry__year=self.item.year)
 
     def _filter_by_journal(self):
-        select_journal = self.getparam('journal', 4)
+        select_journal = self.getparam('journal', -1)
         journal = self.get_components('journal')
-        journal.select_list.append((-1, '---'))
+        journal.select_list.append((0, '---'))
+        if select_journal == -1:
+            select_journal = self.item.journal_id if self.item.journal_id is not None else 0
         journal.set_value(select_journal)
         journal.set_action(self.request, self.get_action(), modal=FORMTYPE_REFRESH, close=CLOSE_NO)
         journal.colspan = 2
-        if select_journal != -1:
+        if select_journal != 0:
             self.filter &= Q(entry__journal__id=select_journal)
 
     def _filter_by_nature(self):

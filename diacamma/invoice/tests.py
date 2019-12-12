@@ -437,7 +437,7 @@ class BillTest(InvoiceTest):
 
         self.factory.xfer = EntryAccountList()
         self.calljson('/diacamma.accounting/entryAccountList',
-                      {'year': '1', 'journal': '-1', 'filter': '0'}, False)
+                      {'year': '1', 'journal': '0', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
         self.assert_count_equal('entryline', 5 + 3)
 
@@ -479,7 +479,7 @@ class BillTest(InvoiceTest):
 
         self.factory.xfer = EntryAccountList()
         self.calljson('/diacamma.accounting/entryAccountList',
-                      {'year': '1', 'journal': '-1', 'filter': '0'}, False)
+                      {'year': '1', 'journal': '0', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
         self.assert_count_equal('entryline', 0)
 
@@ -498,7 +498,7 @@ class BillTest(InvoiceTest):
 
         self.factory.xfer = EntryAccountList()
         self.calljson('/diacamma.accounting/entryAccountList',
-                      {'year': '1', 'journal': '-1', 'filter': '0'}, False)
+                      {'year': '1', 'journal': '0', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
         self.assert_count_equal('entryline', 5)
 
@@ -589,7 +589,7 @@ class BillTest(InvoiceTest):
 
         self.factory.xfer = EntryAccountList()
         self.calljson('/diacamma.accounting/entryAccountList',
-                      {'year': '1', 'journal': '-1', 'filter': '0'}, False)
+                      {'year': '1', 'journal': '0', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
         self.assert_count_equal('entryline', 10)
         self.assert_json_equal('LABELFORM', 'result', [0.00, 0.00, 0.00, 0.00, 0.00])
@@ -617,7 +617,7 @@ class BillTest(InvoiceTest):
 
         self.factory.xfer = EntryAccountList()
         self.calljson('/diacamma.accounting/entryAccountList',
-                      {'year': '1', 'journal': '-1', 'filter': '0'}, False)
+                      {'year': '1', 'journal': '0', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
         self.assert_count_equal('entryline', 0)
 
@@ -669,7 +669,7 @@ class BillTest(InvoiceTest):
 
         self.factory.xfer = EntryAccountList()
         self.calljson('/diacamma.accounting/entryAccountList',
-                      {'year': '1', 'journal': '-1', 'filter': '0'}, False)
+                      {'year': '1', 'journal': '0', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
         self.assert_count_equal('entryline', 0)
 
@@ -690,7 +690,7 @@ class BillTest(InvoiceTest):
 
         self.factory.xfer = EntryAccountList()
         self.calljson('/diacamma.accounting/entryAccountList',
-                      {'year': '1', 'journal': '-1', 'filter': '0'}, False)
+                      {'year': '1', 'journal': '0', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
         self.assert_count_equal('entryline', 2)
 
@@ -712,7 +712,7 @@ class BillTest(InvoiceTest):
 
         self.factory.xfer = EntryAccountList()
         self.calljson('/diacamma.accounting/entryAccountList',
-                      {'year': '1', 'journal': '-1', 'filter': '0'}, False)
+                      {'year': '1', 'journal': '0', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
         self.assert_count_equal('entryline', 0)
 
@@ -734,7 +734,7 @@ class BillTest(InvoiceTest):
 
         self.factory.xfer = EntryAccountList()
         self.calljson('/diacamma.accounting/entryAccountList',
-                      {'year': '1', 'journal': '-1', 'filter': '0'}, False)
+                      {'year': '1', 'journal': '0', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
         self.assert_count_equal('entryline', 2)
 
@@ -782,7 +782,7 @@ class BillTest(InvoiceTest):
 
         self.factory.xfer = EntryAccountList()
         self.calljson('/diacamma.accounting/entryAccountList',
-                      {'year': '1', 'journal': '-1', 'filter': '0'}, False)
+                      {'year': '1', 'journal': '0', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
         self.assert_count_equal('entryline', 6)
         self.assert_json_equal('', 'entryline/@0/entry_account', "[411 Dalton Jack]")
@@ -833,7 +833,7 @@ class BillTest(InvoiceTest):
 
         self.factory.xfer = EntryAccountList()
         self.calljson('/diacamma.accounting/entryAccountList',
-                      {'year': '1', 'journal': '-1', 'filter': '0'}, False)
+                      {'year': '1', 'journal': '0', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
         self.assert_count_equal('entryline', 6)
         self.assert_json_equal('', 'entryline/@0/entry_account', "[411 Dalton Jack]")
@@ -1116,7 +1116,7 @@ class BillTest(InvoiceTest):
         self.assertEqual(bill_item.is_revenu, True)
 
         self.factory.xfer = EntryAccountList()
-        self.calljson('/diacamma.accounting/entryAccountList', {'year': '1', 'journal': '-1', 'filter': '0'}, False)
+        self.calljson('/diacamma.accounting/entryAccountList', {'year': '1', 'journal': '0', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
         self.assert_count_equal('entryline', 2)
         self.assert_json_equal('LABELFORM', 'result', [100.00, 0.00, 100.00, 0.00, 0.00])
@@ -1161,7 +1161,7 @@ class BillTest(InvoiceTest):
 
         self.factory.xfer = EntryAccountList()
         self.calljson('/diacamma.accounting/entryAccountList',
-                      {'year': '1', 'journal': '-1', 'filter': '0'}, False)
+                      {'year': '1', 'journal': '0', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
         self.assert_count_equal('entryline', 4)
         self.assert_json_equal('', 'entryline/@3/entry_account', "[531] 531")
@@ -1188,7 +1188,7 @@ class BillTest(InvoiceTest):
         self.assert_count_equal('#payoff/actions', 2)
 
         self.factory.xfer = EntryAccountList()
-        self.calljson('/diacamma.accounting/entryAccountList', {'year': '1', 'journal': '-1', 'filter': '0'}, False)
+        self.calljson('/diacamma.accounting/entryAccountList', {'year': '1', 'journal': '0', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
         self.assert_count_equal('entryline', 6)
         self.assert_json_equal('', 'entryline/@5/entry_account', "[581] 581")
@@ -1247,7 +1247,7 @@ class BillTest(InvoiceTest):
         self.assert_count_equal('#payoff/actions', 2)
 
         self.factory.xfer = EntryAccountList()
-        self.calljson('/diacamma.accounting/entryAccountList', {'year': '1', 'journal': '-1', 'filter': '0'}, False)
+        self.calljson('/diacamma.accounting/entryAccountList', {'year': '1', 'journal': '0', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
         self.assert_count_equal('entryline', 6)
         self.assert_json_equal('', 'entryline/@3/entry_account', "[581] 581")
@@ -1264,7 +1264,7 @@ class BillTest(InvoiceTest):
         self.assertEqual(bill_item.is_revenu, False)
 
         self.factory.xfer = EntryAccountList()
-        self.calljson('/diacamma.accounting/entryAccountList', {'year': '1', 'journal': '-1', 'filter': '0'}, False)
+        self.calljson('/diacamma.accounting/entryAccountList', {'year': '1', 'journal': '0', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
         self.assert_count_equal('entryline', 2)
         self.assert_json_equal('LABELFORM', 'result', [-50.00, 0.00, -50.00, 0.00, 0.00])
@@ -1295,7 +1295,7 @@ class BillTest(InvoiceTest):
         self.assert_json_equal('', 'payoff/@0/bank_account', "My bank")
 
         self.factory.xfer = EntryAccountList()
-        self.calljson('/diacamma.accounting/entryAccountList', {'year': '1', 'journal': '-1', 'filter': '0'}, False)
+        self.calljson('/diacamma.accounting/entryAccountList', {'year': '1', 'journal': '0', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
         self.assert_count_equal('entryline', 4)
         self.assert_json_equal('', 'entryline/@2/entry_account', "[411 Dalton Jack]")
@@ -1307,7 +1307,7 @@ class BillTest(InvoiceTest):
         self.assert_observer('core.acknowledge', 'diacamma.payoff', 'payoffDel')
 
         self.factory.xfer = EntryAccountList()
-        self.calljson('/diacamma.accounting/entryAccountList', {'year': '1', 'journal': '-1', 'filter': '0'}, False)
+        self.calljson('/diacamma.accounting/entryAccountList', {'year': '1', 'journal': '0', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
         self.assert_count_equal('entryline', 2)
         self.assert_json_equal('LABELFORM', 'result', [-50.00, 0.00, -50.00, 0.00, 0.00])
@@ -1331,7 +1331,7 @@ class BillTest(InvoiceTest):
         bill_id2 = self._create_bill(details, 1, '2015-04-01', 4, True)
 
         self.factory.xfer = EntryAccountList()
-        self.calljson('/diacamma.accounting/entryAccountList', {'year': '1', 'journal': '-1', 'filter': '0'}, False)
+        self.calljson('/diacamma.accounting/entryAccountList', {'year': '1', 'journal': '0', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
         self.assert_count_equal('entryline', 4)
         self.assert_json_equal('', 'entryline/@0/entry_account', '[411 Dalton Jack]')
@@ -1381,7 +1381,7 @@ class BillTest(InvoiceTest):
         self.assert_json_equal('LABELFORM', 'total_rest_topay', 16.67)
 
         self.factory.xfer = EntryAccountList()
-        self.calljson('/diacamma.accounting/entryAccountList', {'year': '1', 'journal': '-1', 'filter': '0'}, False)
+        self.calljson('/diacamma.accounting/entryAccountList', {'year': '1', 'journal': '0', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
         self.assert_count_equal('entryline', 7)
         self.assert_json_equal('', 'entryline/@0/designation_ref', 'Facture A-1')
@@ -1411,7 +1411,7 @@ class BillTest(InvoiceTest):
         self.assert_observer('core.acknowledge', 'diacamma.payoff', 'payoffAddModify')
 
         self.factory.xfer = EntryAccountList()
-        self.calljson('/diacamma.accounting/entryAccountList', {'year': '1', 'journal': '-1', 'filter': '0'}, False)
+        self.calljson('/diacamma.accounting/entryAccountList', {'year': '1', 'journal': '0', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
         self.assert_count_equal('entryline', 10)
         self.assert_json_equal('', 'entryline/@0/entry_account', '[411 Dalton Jack]')
@@ -1487,7 +1487,7 @@ class BillTest(InvoiceTest):
 
         self.factory.xfer = EntryAccountList()
         self.calljson('/diacamma.accounting/entryAccountList',
-                      {'year': '1', 'journal': '-1', 'filter': '0'}, False)
+                      {'year': '1', 'journal': '0', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
         self.assert_count_equal('entryline', 7)
         self.assert_json_equal('', 'entryline/@4/entry_account', '[411 Minimum]')
@@ -1508,7 +1508,7 @@ class BillTest(InvoiceTest):
 
         self.factory.xfer = EntryAccountList()
         self.calljson('/diacamma.accounting/entryAccountList',
-                      {'year': '1', 'journal': '-1', 'filter': '0'}, False)
+                      {'year': '1', 'journal': '0', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
         self.assert_count_equal('entryline', 4)
         self.assert_json_equal('', 'entryline/@0/link', None)
@@ -1554,7 +1554,7 @@ class BillTest(InvoiceTest):
 
         self.factory.xfer = EntryAccountList()
         self.calljson('/diacamma.accounting/entryAccountList',
-                      {'year': '1', 'journal': '-1', 'filter': '0'}, False)
+                      {'year': '1', 'journal': '0', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
         self.assert_count_equal('entryline', 6)
         self.assert_json_equal('', 'entryline/@0/entry_account', '[411 Dalton Jack]')
@@ -1580,7 +1580,7 @@ class BillTest(InvoiceTest):
 
         self.factory.xfer = EntryAccountList()
         self.calljson('/diacamma.accounting/entryAccountList',
-                      {'year': '1', 'journal': '-1', 'filter': '0'}, False)
+                      {'year': '1', 'journal': '0', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
         self.assert_count_equal('entryline', 4)
         self.assert_json_equal('', 'entryline/@3/link', None)
@@ -1628,7 +1628,7 @@ class BillTest(InvoiceTest):
 
         self.factory.xfer = EntryAccountList()
         self.calljson('/diacamma.accounting/entryAccountList',
-                      {'year': '1', 'journal': '-1', 'filter': '0'}, False)
+                      {'year': '1', 'journal': '0', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
         self.assert_count_equal('entryline', 6)
         self.assert_json_equal('', 'entryline/@5/link', None)

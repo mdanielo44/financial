@@ -626,13 +626,13 @@ class FiscalYearWorkflowTest(PaymentTest):
         self.assertTrue('4 écritures ne sont pas validées' in text_value, text_value)
 
         self.factory.xfer = EntryAccountList()
-        self.calljson('/diacamma.accounting/entryAccountList', {'year': '1', 'journal': '-1', 'filter': '0'}, False)
+        self.calljson('/diacamma.accounting/entryAccountList', {'year': '1', 'journal': '0', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
         self.assert_count_equal('entryline', 25)
         self.assert_json_equal('LABELFORM', 'result', [366.07, 348.60, 17.47, 1050.66, 1244.74])
 
         self.factory.xfer = EntryAccountList()
-        self.calljson('/diacamma.accounting/entryAccountList', {'year': '2', 'journal': '-1', 'filter': '0'}, False)
+        self.calljson('/diacamma.accounting/entryAccountList', {'year': '2', 'journal': '0', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
         self.assert_count_equal('entryline', 0)
         self.assert_json_equal('LABELFORM', 'result', [0.00, 0.00, 0.00, 0.00, 0.00])
@@ -644,7 +644,7 @@ class FiscalYearWorkflowTest(PaymentTest):
         self.assertEqual(FiscalYear.objects.get(id=1).status, 2)
 
         self.factory.xfer = EntryAccountList()
-        self.calljson('/diacamma.accounting/entryAccountList', {'year': '1', 'journal': '-1', 'filter': '0'}, False)
+        self.calljson('/diacamma.accounting/entryAccountList', {'year': '1', 'journal': '0', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
         self.assert_count_equal('entryline', 22)
         self.assert_json_equal('LABELFORM', 'result', [332.06, 76.28, 255.78, 1244.74, 1244.74])
@@ -668,7 +668,7 @@ class FiscalYearWorkflowTest(PaymentTest):
         self.assert_json_equal('', 'entryline/@4/link', "E")
 
         self.factory.xfer = EntryAccountList()
-        self.calljson('/diacamma.accounting/entryAccountList', {'year': '2', 'journal': '-1', 'filter': '0'}, False)
+        self.calljson('/diacamma.accounting/entryAccountList', {'year': '2', 'journal': '0', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
         self.assert_count_equal('entryline', 8)
         self.assert_json_equal('LABELFORM', 'result', [34.01, 272.32, -238.31, -194.08, 0.00])
@@ -716,7 +716,7 @@ class FiscalYearWorkflowTest(PaymentTest):
         self.assertEqual(FiscalYear.objects.get(id=2).status, 0)
 
         self.factory.xfer = EntryAccountList()
-        self.calljson('/diacamma.accounting/entryAccountList', {'year': '2', 'journal': '-1', 'filter': '0'}, False)
+        self.calljson('/diacamma.accounting/entryAccountList', {'year': '2', 'journal': '0', 'filter': '0'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'entryAccountList')
         self.assert_count_equal('entryline', 16)
         self.assert_json_equal('LABELFORM', 'result', [34.01, 272.32, -238.31, 1050.66, 1244.74])

@@ -34,7 +34,8 @@ from lucterios.CORE.views import StatusMenu, ParamEdit, ObjectMerge
 from lucterios.contacts.views import CustomFieldAddModify
 
 from diacamma.accounting.views import ThirdList, ThirdAdd, ThirdSave, ThirdShow, AccountThirdAddModify, AccountThirdDel, ThirdListing, ThirdDisable, ThirdEdit, ThirdSearch
-from diacamma.accounting.views_admin import Configuration, ConfigurationAccountingSystem, JournalAddModify, JournalDel, FiscalYearAddModify, FiscalYearActive, FiscalYearDel
+from diacamma.accounting.views_admin import Configuration, ConfigurationAccountingSystem, JournalAddModify, JournalDel, FiscalYearAddModify, FiscalYearActive, FiscalYearDel,\
+    JournalDefault
 from diacamma.accounting.views_other import ModelEntryList, ModelEntryAddModify, ModelLineEntryAddModify,\
     ModelEntryShow
 from diacamma.accounting.test_tools import initial_contacts, fill_entries_fr, initial_thirds_fr, create_third, fill_accounts_fr, fill_thirds_fr, default_compta_fr, set_accounting_system, add_models
@@ -689,12 +690,17 @@ class AdminTest(LucteriosTest):
         self.assert_count_equal('', 4 + 5 + 2 + 6)
         self.assert_grid_equal('fiscalyear', {"begin": "début", "end": "fin", "status": "status", "is_actif": "actif"}, 0)  # nb=4
 
-        self.assert_grid_equal('journal', {'name': "nom"}, 5)  # nb=1
+        self.assert_grid_equal('journal', {'name': "nom", "is_default": "défaut"}, 5)  # nb=1
         self.assert_json_equal('', 'journal/@0/name', 'Report à nouveau')
+        self.assert_json_equal('', 'journal/@0/is_default', False)
         self.assert_json_equal('', 'journal/@1/name', 'Achats')
+        self.assert_json_equal('', 'journal/@1/is_default', False)
         self.assert_json_equal('', 'journal/@2/name', 'Ventes')
+        self.assert_json_equal('', 'journal/@2/is_default', False)
         self.assert_json_equal('', 'journal/@3/name', 'Règlement')
+        self.assert_json_equal('', 'journal/@3/is_default', True)
         self.assert_json_equal('', 'journal/@4/name', 'Opérations diverses')
+        self.assert_json_equal('', 'journal/@4/is_default', False)
 
         self.assert_json_equal('LABELFORM', 'accounting-devise-iso', 'EUR')
         self.assert_json_equal('LABELFORM', 'accounting-devise-prec', '2')
@@ -767,6 +773,37 @@ class AdminTest(LucteriosTest):
         self.factory.xfer = Configuration()
         self.calljson('/diacamma.accounting/configuration', {}, False)
         self.assert_count_equal('journal', 5)
+        self.assert_json_equal('', 'journal/@0/is_default', False)
+        self.assert_json_equal('', 'journal/@1/is_default', False)
+        self.assert_json_equal('', 'journal/@2/is_default', False)
+        self.assert_json_equal('', 'journal/@3/is_default', True)
+        self.assert_json_equal('', 'journal/@4/is_default', False)
+
+        self.factory.xfer = JournalDefault()
+        self.calljson('/diacamma.accounting/journalDefault', {'journal': '2'}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.accounting', 'journalDefault')
+
+        self.factory.xfer = Configuration()
+        self.calljson('/diacamma.accounting/configuration', {}, False)
+        self.assert_count_equal('journal', 5)
+        self.assert_json_equal('', 'journal/@0/is_default', False)
+        self.assert_json_equal('', 'journal/@1/is_default', True)
+        self.assert_json_equal('', 'journal/@2/is_default', False)
+        self.assert_json_equal('', 'journal/@3/is_default', False)
+        self.assert_json_equal('', 'journal/@4/is_default', False)
+
+        self.factory.xfer = JournalDefault()
+        self.calljson('/diacamma.accounting/journalDefault', {'journal': '2'}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.accounting', 'journalDefault')
+
+        self.factory.xfer = Configuration()
+        self.calljson('/diacamma.accounting/configuration', {}, False)
+        self.assert_count_equal('journal', 5)
+        self.assert_json_equal('', 'journal/@0/is_default', False)
+        self.assert_json_equal('', 'journal/@1/is_default', False)
+        self.assert_json_equal('', 'journal/@2/is_default', False)
+        self.assert_json_equal('', 'journal/@3/is_default', False)
+        self.assert_json_equal('', 'journal/@4/is_default', False)
 
     def test_configuration_fiscalyear(self):
         to_day = date.today()
