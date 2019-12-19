@@ -408,12 +408,8 @@ class Payoff(LucteriosModel):
         if self.entry is not None:
             supporting.generate_accountlink()
 
-    def generate_accounting(self, third_amounts, designation=None):
+    def _create_entry(self, designation=None):
         supporting = self.supporting.get_final_child()
-        if self.supporting.is_revenu:
-            is_revenu = -1
-        else:
-            is_revenu = 1
         years = FiscalYear.objects.filter(begin__lte=self.date, end__gte=self.date)
         if len(years) == 1:
             fiscal_year = years[0]
@@ -421,35 +417,48 @@ class Payoff(LucteriosModel):
             fiscal_year = FiscalYear.get_current()
         if designation is None:
             designation = _("payoff for %s") % supporting.reference
-        new_entry = EntryAccount.objects.create(
-            year=fiscal_year, date_value=self.date, designation=designation, journal=Journal.objects.get(id=4))
+        return EntryAccount.objects.create(year=fiscal_year, date_value=self.date, designation=designation, journal=Journal.objects.get(id=4))
+
+    def _fill_entrylines(self, entry):
+        supporting = self.supporting.get_final_child()
+        if self.supporting.is_revenu:
+            is_revenu = -1
+        else:
+            is_revenu = 1
         amount_to_bank = 0
-        for third, amount in third_amounts:
-            for sub_mask, sub_amount in supporting.get_third_masks_by_amount(amount):
-                third_account = third.get_account(fiscal_year, sub_mask)
-                if third_account.type_of_account == 0:
-                    is_liability = 1
-                else:
-                    is_liability = -1
-                EntryLineAccount.objects.create(account=third_account, amount=is_liability * is_revenu * sub_amount, third=third, entry=new_entry)
-                amount_to_bank += float(sub_amount)
+        for sub_mask, sub_amount in supporting.get_third_masks_by_amount(float(self.amount)):
+            third_account = supporting.third.get_account(entry.year, sub_mask)
+            if third_account.type_of_account == 0:
+                is_liability = 1
+            else:
+                is_liability = -1
+            EntryLineAccount.objects.create(account=third_account, amount=is_liability * is_revenu * sub_amount, third=supporting.third, entry=entry)
+            amount_to_bank += float(sub_amount)
+        fee_code = Params.getvalue("payoff-bankcharges-account")
+        if (fee_code != '') and (float(self.bank_fee) > 0.001):
+            fee_account = ChartsAccount.get_account(fee_code, entry.year)
+            if fee_account is not None:
+                EntryLineAccount.objects.create(account=fee_account, amount=-1 * is_revenu * float(self.bank_fee), entry=entry)
+                amount_to_bank -= float(self.bank_fee)
+        return amount_to_bank, is_revenu
+
+    def _get_bankinfo(self, new_entry):
+        info = ""
+        if self.reference != '':
+            info = "%s : %s" % (get_value_if_choices(self.mode, self._meta.get_field('mode')), self.reference)
         if self.bank_account is None:
             bank_code = Params.getvalue("payoff-cash-account")
         else:
             bank_code = self.bank_account.account_code
-        bank_account = ChartsAccount.get_account(bank_code, fiscal_year)
+        bank_account = ChartsAccount.get_account(bank_code, new_entry.year)
         if bank_account is None:
-            raise LucteriosException(
-                IMPORTANT, _("account is not defined!"))
-        fee_code = Params.getvalue("payoff-bankcharges-account")
-        if (fee_code != '') and (float(self.bank_fee) > 0.001):
-            fee_account = ChartsAccount.get_account(fee_code, fiscal_year)
-            if fee_account is not None:
-                EntryLineAccount.objects.create(account=fee_account, amount=-1 * is_revenu * float(self.bank_fee), entry=new_entry)
-                amount_to_bank -= float(self.bank_fee)
-        info = ""
-        if self.reference != '':
-            info = "%s : %s" % (get_value_if_choices(self.mode, self._meta.get_field('mode')), self.reference)
+            raise LucteriosException(IMPORTANT, _("account is not defined!"))
+        return bank_account, info
+
+    def generate_accounting(self, designation=None):
+        new_entry = self._create_entry(designation)
+        amount_to_bank, is_revenu = self._fill_entrylines(new_entry)
+        bank_account, info = self._get_bankinfo(new_entry)
         EntryLineAccount.objects.create(account=bank_account, amount=-1 * is_revenu * amount_to_bank, entry=new_entry, reference=info)
         return new_entry
 
@@ -457,63 +466,31 @@ class Payoff(LucteriosModel):
              update_fields=None, do_generate=True, do_linking=True):
         if not force_insert and do_generate:
             self.delete_accounting()
-            self.entry = self.generate_accounting([(self.supporting.third, float(self.amount))])
+            self.entry = self.generate_accounting()
         res = LucteriosModel.save(self, force_insert, force_update, using, update_fields)
         if not force_insert and do_linking:
             self.generate_accountlink()
         return res
 
     @classmethod
-    def _correct_account_multipay(cls, new_entry, paypoff_list):
-        first_payoff = paypoff_list[0]
-        years = FiscalYear.objects.filter(begin__lte=first_payoff.date, end__gte=first_payoff.date)
-        if len(years) == 1:
-            fiscal_year = years[0]
-        else:
-            fiscal_year = FiscalYear.get_current()
-        first_supporting = first_payoff.supporting.get_final_child()
-        if first_supporting.is_revenu:
-            is_revenu = -1
-        else:
-            is_revenu = 1
-        first_third_account = first_supporting.third.get_account(fiscal_year, first_supporting.get_third_mask())
-        if first_third_account.type_of_account == 0:
-            is_liability = 1
-        else:
-            is_liability = -1
-        first_entry_lines = EntryLineAccount.objects.filter(account=first_third_account, entry=new_entry, third=first_supporting.third)
-        first_entry_line = first_entry_lines[0] if len(first_entry_lines) > 0 else None
-        for item_paypoff in paypoff_list:
-            item_supporting = item_paypoff.supporting.get_final_child()
-            item_third_account = item_supporting.third.get_account(fiscal_year, item_supporting.get_third_mask())
-            if (new_entry.close is False) and (first_entry_line is not None) and (item_third_account != first_third_account):
-                try:
-                    item_entry_line = EntryLineAccount.objects.get(account=item_third_account, entry=new_entry, third=item_supporting.third)
-                except ObjectDoesNotExist:
-                    item_entry_line = EntryLineAccount.objects.create(account=item_third_account, entry=new_entry, third=item_supporting.third, amount=0)
-                item_entry_line.amount += is_liability * is_revenu * item_paypoff.amount
-                item_entry_line.save()
-                first_entry_line.amount -= is_liability * is_revenu * item_paypoff.amount
-                first_entry_line.save()
-            item_paypoff.entry = new_entry
-            item_paypoff.save(do_generate=False)
-        new_entry.unlink()
-
-    @classmethod
-    def multi_save(cls, supportings, amount, mode, payer, reference, bank_account, date, bank_fee, repartition, entry=None):
-        supporting_list = []
+    def _get_supportings_amountsum(cls, supportings, amount):
         amount_sum = 0
         amount_max = 0
+        supporting_list = []
         for supporting in Supporting.objects.filter(id__in=supportings).distinct():
             supporting = supporting.get_final_child()
             amount_sum += supporting.get_final_child().get_total_rest_topay()
             amount_max += supporting.get_final_child().get_max_payoff()
             supporting_list.append(supporting)
+        supporting_list.sort(key=lambda item: item.get_current_date())
         if abs(amount_max) < 0.0001:
             raise LucteriosException(IMPORTANT, _('No-valid selection!'))
         if (amount > amount_sum) and (amount_sum < amount_max):
             amount_sum = amount
-        supporting_list.sort(key=lambda item: item.get_current_date())
+        return supporting_list, amount_sum
+
+    @classmethod
+    def _create_payoff(cls, amount, mode, payer, reference, bank_account, date, bank_fee, repartition, supporting_list, amount_sum):
         amount_rest = float(amount)
         paypoff_list = []
         for supporting in supporting_list:
@@ -537,21 +514,37 @@ class Payoff(LucteriosModel):
             new_paypoff.save(do_generate=False)
             if new_paypoff not in paypoff_list:
                 paypoff_list.append(new_paypoff)
-        third_amounts = {}
-        designation_items = []
-        for paypoff_item in paypoff_list:
-            if paypoff_item.supporting.third not in third_amounts.keys():
-                third_amounts[paypoff_item.supporting.third] = 0
-            third_amounts[paypoff_item.supporting.third] += paypoff_item.amount
-            designation_items.append(six.text_type(paypoff_item.supporting.get_final_child().reference))
-        designation = _("payoff for %s") % ",".join(designation_items)
-        if len(designation) > 190:
-            designation = _("payoff for %d multi-pay") % len(designation_items)
+        return paypoff_list
+
+    @classmethod
+    def _create_entry_from_multi(cls, paypoff_list, entry=None):
         if entry is None:
-            new_entry = paypoff_list[0].generate_accounting(third_amounts.items(), designation)
+            designation_items = []
+            for paypoff_item in paypoff_list:
+                designation_items.append(six.text_type(paypoff_item.supporting.get_final_child().reference))
+            designation = _("payoff for %s") % ",".join(designation_items)
+            if len(designation) > 190:
+                designation = _("payoff for %d multi-pay") % len(designation_items)
+            entry = paypoff_list[0]._create_entry(designation)
         else:
-            new_entry = entry
-        cls._correct_account_multipay(new_entry, paypoff_list)
+            entry.unlink()
+            for entryline in entry.entrylineaccount_set.all():
+                entryline.delete()
+        bank_account, info = paypoff_list[0]._get_bankinfo(entry)
+        amount_to_bank = 0.0
+        for paypoff_item in paypoff_list:
+            amount, is_revenu = paypoff_item._fill_entrylines(entry)
+            amount_to_bank += amount
+            paypoff_item.entry = entry
+            paypoff_item.save(do_generate=False)
+        EntryLineAccount.objects.create(account=bank_account, amount=-1 * is_revenu * amount_to_bank, entry=entry, reference=info)
+        return entry
+
+    @classmethod
+    def multi_save(cls, supportings, amount, mode, payer, reference, bank_account, date, bank_fee, repartition, entry=None):
+        supporting_list, amount_sum = cls._get_supportings_amountsum(supportings, amount)
+        paypoff_list = cls._create_payoff(amount, mode, payer, reference, bank_account, date, bank_fee, repartition, supporting_list, amount_sum)
+        cls._create_entry_from_multi(paypoff_list, entry)
         for supporting in supporting_list:
             supporting.generate_accountlink()
 
@@ -905,10 +898,7 @@ def check_payoff_accounting():
                 if len(designation) > 190:
                     designation = _("payoff for %d multi-pay") % len(designation_items)
                 entry.unlink()
-                new_entry = payoff_list[0].generate_accounting(third_amounts, designation)
-                for paypoff_item in payoff_list:
-                    paypoff_item.entry = new_entry
-                    paypoff_item.save(do_generate=False)
+                new_entry = Payoff._create_entry_from_multi(payoff_list)
                 new_entry.unlink()
                 entry.delete()
                 try:
