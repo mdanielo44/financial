@@ -111,7 +111,7 @@ def format_with_devise(mode):
         result.append('{[font color="green"]}%s{[/font]}')
         result.append('{[font color="blue"]}%s{[/font]}')
         result.append('')
-    return ";".join(result)
+    return ";".join(map(lambda item: "{[p align='right']}" + item + "{[/p]}" if ((item != '') and (currency_iso not in item) and (mode != 3)) else item, result))
 
 
 def get_amount_from_format_devise(amount, mode):

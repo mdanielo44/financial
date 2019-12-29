@@ -67,10 +67,10 @@ class EntryTest(LucteriosTest):
         self.assert_count_equal('entryline', 0)
         self.assert_json_equal('', '#entryline/headers/@5/@0', 'debit')
         self.assert_json_equal('', '#entryline/headers/@5/@2', 'C2EUR')
-        self.assert_json_equal('', '#entryline/headers/@5/@4', '{[font color="green"]}%s{[/font]};{[font color="blue"]}%s{[/font]};')
+        self.assert_json_equal('', '#entryline/headers/@5/@4', '{[p align=\'right\']}{[font color="green"]}%s{[/font]}{[/p]};{[p align=\'right\']}{[font color="blue"]}%s{[/font]}{[/p]};')
         self.assert_json_equal('', '#entryline/headers/@6/@0', 'credit')
         self.assert_json_equal('', '#entryline/headers/@6/@2', 'C2EUR')
-        self.assert_json_equal('', '#entryline/headers/@6/@4', '{[font color="green"]}%s{[/font]};{[font color="blue"]}%s{[/font]};')
+        self.assert_json_equal('', '#entryline/headers/@6/@4', '{[p align=\'right\']}{[font color="green"]}%s{[/font]}{[/p]};{[p align=\'right\']}{[font color="blue"]}%s{[/font]}{[/p]};')
 
         self.assert_json_equal('LABELFORM', 'result', [0.00, 0.00, 0.00, 0.00, 0.00])
 

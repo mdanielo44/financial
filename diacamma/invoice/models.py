@@ -334,7 +334,7 @@ class Article(LucteriosModel, CustomizeObject):
 
     @property
     def ref_price(self):
-        return "%s [%s]" % (self.reference, get_amount_from_format_devise(self.price, 5))
+        return "%s [%s]" % (self.reference, get_amount_from_format_devise(self.price, 7))
 
     def get_designation(self):
         val = self.designation
@@ -1130,7 +1130,7 @@ class Detail(LucteriosModel):
                     red_ratio = "(%s)" % red_ratio
             else:
                 red_ratio = ''
-            return "%s%s" % (get_amount_from_format_devise(self.reduce_amount, 5), red_ratio)
+            return "%s%s" % (get_amount_from_format_devise(self.reduce_amount, 7), red_ratio)
         else:
             return None
 

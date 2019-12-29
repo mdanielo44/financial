@@ -65,6 +65,9 @@ class FiscalYearReport(XferContainerCustom):
         self.total_summary_right = (0, 0, 0)
         self.result = (0, 0, 0)
         self.line_offset = 0
+        hfield = format_with_devise(5).split(';')
+        self.format_str = ";".join(hfield[1:])
+        self.hfield = hfield[0]
 
     def fillresponse(self):
         self.fill_header()
@@ -274,15 +277,15 @@ class FiscalYearBalanceSheet(FiscalYearReport):
     def define_gridheader(self):
         self.grid = XferCompGrid('report_%d' % self.item.id)
         self.grid.add_header('left', _('Assets'))
-        self.grid.add_header('left_n', self.item.get_identify(), format_with_devise(7))
+        self.grid.add_header('left_n', self.item.get_identify(), self.hfield, 0, self.format_str)
         if self.lastfilter is not None:
             self.grid.add_header(
-                'left_n_1', self.item.last_fiscalyear.get_identify(), format_with_devise(7))
+                'left_n_1', self.item.last_fiscalyear.get_identify(), self.hfield, 0, self.format_str)
         self.grid.add_header('space', '')
         self.grid.add_header('right', _('Liabilities'))
-        self.grid.add_header('right_n', self.item.get_identify(), format_with_devise(7))
+        self.grid.add_header('right_n', self.item.get_identify(), self.hfield, 0, self.format_str)
         if self.lastfilter is not None:
-            self.grid.add_header('right_n_1', self.item.last_fiscalyear.get_identify(), format_with_devise(7))
+            self.grid.add_header('right_n_1', self.item.last_fiscalyear.get_identify(), self.hfield, 0, self.format_str)
 
     def calcul_table(self):
         current_system_account().fill_fiscalyear_balancesheet(self.grid, self.filter, self.lastfilter)
@@ -296,16 +299,16 @@ class FiscalYearIncomeStatement(FiscalYearReport):
     def define_gridheader(self):
         self.grid = XferCompGrid('report_%d' % self.item.id)
         self.grid.add_header('left', _('Expense'))
-        self.grid.add_header('left_n', self.item.get_identify(), format_with_devise(7))
-        self.grid.add_header('left_b', _('Budget'), format_with_devise(7))
+        self.grid.add_header('left_n', self.item.get_identify(), self.hfield, 0, self.format_str)
+        self.grid.add_header('left_b', _('Budget'), self.hfield, 0, self.format_str)
         if self.lastfilter is not None:
-            self.grid.add_header('left_n_1', self.item.last_fiscalyear.get_identify(), format_with_devise(7))
+            self.grid.add_header('left_n_1', self.item.last_fiscalyear.get_identify(), self.hfield, 0, self.format_str)
         self.grid.add_header('space', '')
         self.grid.add_header('right', _('Revenue'))
-        self.grid.add_header('right_n', self.item.get_identify(), format_with_devise(7))
-        self.grid.add_header('right_b', _('Budget'), format_with_devise(7))
+        self.grid.add_header('right_n', self.item.get_identify(), self.hfield, 0, self.format_str)
+        self.grid.add_header('right_b', _('Budget'), self.hfield, 0, self.format_str)
         if self.lastfilter is not None:
-            self.grid.add_header('right_n_1', self.item.last_fiscalyear.get_identify(), format_with_devise(7))
+            self.grid.add_header('right_n_1', self.item.last_fiscalyear.get_identify(), self.hfield, 0, self.format_str)
 
     def fill_filterheader(self):
         if self.item.last_fiscalyear is not None:
@@ -415,8 +418,8 @@ class FiscalYearLedger(FiscalYearReport):
         self.grid.add_header('entry.date_value', _('date value'))
         self.grid.add_header('entry.designation', _('name'))
         self.grid.add_header('link', _('link'))
-        self.grid.add_header('debit', _('debit'), format_with_devise(7), formatstr='%s;%s;')
-        self.grid.add_header('credit', _('credit'), format_with_devise(7), formatstr='%s;%s;')
+        self.grid.add_header('debit', _('debit'), self.hfield, formatstr=';'.join([self.format_str, self.format_str, '']))
+        self.grid.add_header('credit', _('credit'), self.hfield, formatstr=';'.join([self.format_str, self.format_str, '']))
 
     def _add_total_account(self):
         if self.last_account is not None:
@@ -496,10 +499,10 @@ class FiscalYearTrialBalance(FiscalYearReport):
     def define_gridheader(self):
         self.grid = XferCompGrid('report_%d' % self.item.id)
         self.grid.add_header('designation', _('name'))
-        self.grid.add_header('total_debit', _('debit sum'), format_with_devise(7))
-        self.grid.add_header('total_credit', _('credit sum'), format_with_devise(7))
-        self.grid.add_header('solde_debit', _('debit'), format_with_devise(7))
-        self.grid.add_header('solde_credit', _('credit'), format_with_devise(7))
+        self.grid.add_header('total_debit', _('debit sum'), self.hfield, 0, self.format_str)
+        self.grid.add_header('total_credit', _('credit sum'), self.hfield, 0, self.format_str)
+        self.grid.add_header('solde_debit', _('debit'), self.hfield, 0, self.format_str)
+        self.grid.add_header('solde_credit', _('credit'), self.hfield, 0, self.format_str)
 
     def _get_balance_values(self):
         balance_values = {}
@@ -640,16 +643,16 @@ class CostAccountingReport(FiscalYearReport):
         if self.addNameCol:
             self.grid.add_header('name', _('Cost accounting'))
         self.grid.add_header('left', _('Expenses'))
-        self.grid.add_header('left_n', _('Value'), format_with_devise(7))
-        self.grid.add_header('left_b', _('Budget'), format_with_devise(7))
+        self.grid.add_header('left_n', _('Value'), self.hfield, 0, self.format_str)
+        self.grid.add_header('left_b', _('Budget'), self.hfield, 0, self.format_str)
         if self.lastfilter is not None:
-            self.grid.add_header('left_n_1', _('Last'), format_with_devise(7))
+            self.grid.add_header('left_n_1', _('Last'), self.hfield, 0, self.format_str)
         self.grid.add_header('space', '')
         self.grid.add_header('right', _('Revenues'))
-        self.grid.add_header('right_n', _('Value'), format_with_devise(7))
-        self.grid.add_header('right_b', _('Budget'), format_with_devise(7))
+        self.grid.add_header('right_n', _('Value'), self.hfield, 0, self.format_str)
+        self.grid.add_header('right_b', _('Budget'), self.hfield, 0, self.format_str)
         if self.lastfilter is not None:
-            self.grid.add_header('right_n_1', _('Last'), format_with_devise(7))
+            self.grid.add_header('right_n_1', _('Last'), self.hfield, 0, self.format_str)
 
     def fill_filterheader(self):
         pass

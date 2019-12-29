@@ -243,7 +243,7 @@ class ThirdTest(LucteriosTest):
         self.assert_json_equal('', '#accountthird/headers/@1/@0', 'total_txt')
         self.assert_json_equal('', '#accountthird/headers/@1/@1', 'total')
         self.assert_json_equal('', '#accountthird/headers/@1/@2', "C2EUR")
-        self.assert_json_equal('', '#accountthird/headers/@1/@4', '{[font color="green"]}Crédit: %s{[/font]};{[font color="blue"]}Débit: %s{[/font]};%s')
+        self.assert_json_equal('', '#accountthird/headers/@1/@4', '{[p align=\'right\']}{[font color="green"]}Crédit: %s{[/font]}{[/p]};{[p align=\'right\']}{[font color="blue"]}Débit: %s{[/font]}{[/p]};{[p align=\'right\']}%s{[/p]}')
 
         self.assert_json_equal('', 'accountthird/@0/id', '5')
         self.assert_json_equal('', 'accountthird/@0/code', '411')
@@ -547,7 +547,7 @@ class ThirdTest(LucteriosTest):
         self.assert_grid_equal('accountthird', {'code': "code", 'total_txt': "total"}, 0)  # nb=2
         self.assert_json_equal('LABELFORM', 'total', 0.0)
         self.assert_json_equal('', '#total/formatnum', "C2EUR")
-        self.assert_json_equal('', '#total/formatstr', "%s")
+        self.assert_json_equal('', '#total/formatstr', "{[p align='right']}%s{[/p]}")
 
         self.assert_json_equal('LABELFORM', 'custom_1', 0)
         self.assert_json_equal('', '#custom_1/formatnum', {'0': '---', '1': 'petit', '2': 'moyen', '3': 'gros'})
@@ -663,14 +663,14 @@ class AdminTest(LucteriosTest):
         rmtree(get_user_dir(), True)
 
     def test_format(self):
-        self.assertEqual(format_with_devise(0), 'C2EUR;%s;;')
-        self.assertEqual(format_with_devise(1), 'C2EUR;Crédit: %s;Débit: %s;%s')
-        self.assertEqual(format_with_devise(2), 'C2EUR;{[font color="green"]}Crédit: %s{[/font]};{[font color="blue"]}Débit: %s{[/font]};%s')
-        self.assertEqual(format_with_devise(3), 'N2;%s')
-        self.assertEqual(format_with_devise(4), 'C2EUR;%s;%s')
-        self.assertEqual(format_with_devise(5), 'C2EUR;%s')
-        self.assertEqual(format_with_devise(6), 'C2EUR;{[font color="green"]}%s{[/font]};{[font color="blue"]}%s{[/font]};')
-        self.assertEqual(format_with_devise(7), 'C2EUR')
+        self.assertEqual(format_with_devise(0), "C2EUR;{[p align='right']}%s{[/p]};;")
+        self.assertEqual(format_with_devise(1), "C2EUR;{[p align='right']}Crédit: %s{[/p]};{[p align='right']}Débit: %s{[/p]};{[p align='right']}%s{[/p]}")
+        self.assertEqual(format_with_devise(2), "C2EUR;{[p align='right']}{[font color=\"green\"]}Crédit: %s{[/font]}{[/p]};{[p align='right']}{[font color=\"blue\"]}Débit: %s{[/font]}{[/p]};{[p align='right']}%s{[/p]}")
+        self.assertEqual(format_with_devise(3), "N2;%s")
+        self.assertEqual(format_with_devise(4), "C2EUR;{[p align='right']}%s{[/p]};{[p align='right']}%s{[/p]}")
+        self.assertEqual(format_with_devise(5), "C2EUR;{[p align='right']}%s{[/p]}")
+        self.assertEqual(format_with_devise(6), "C2EUR;{[p align='right']}{[font color=\"green\"]}%s{[/font]}{[/p]};{[p align='right']}{[font color=\"blue\"]}%s{[/font]}{[/p]};")
+        self.assertEqual(format_with_devise(7), "C2EUR")
 
     def test_summary(self):
         self.factory.xfer = StatusMenu()
@@ -1045,7 +1045,7 @@ class ModelTest(LucteriosTest):
 
         self.assert_json_equal('', '#modelentry/headers/@2/@0', 'total')
         self.assert_json_equal('', '#modelentry/headers/@2/@2', "C2EUR")
-        self.assert_json_equal('', '#modelentry/headers/@2/@4', "%s")
+        self.assert_json_equal('', '#modelentry/headers/@2/@4', "{[p align='right']}%s{[/p]}")
 
         self.assert_json_equal('', 'modelentry/@0/journal', "Achats")
         self.assert_json_equal('', 'modelentry/@0/designation', "foo")
@@ -1060,10 +1060,10 @@ class ModelTest(LucteriosTest):
         self.assert_grid_equal('modellineentry', {'code': 'code', 'third': 'tiers', 'debit': 'débit', 'credit': 'crédit'}, 1)
         self.assert_json_equal('', '#modellineentry/headers/@2/@0', 'debit')
         self.assert_json_equal('', '#modellineentry/headers/@2/@2', "C2EUR")
-        self.assert_json_equal('', '#modellineentry/headers/@2/@4', "%s;;")
+        self.assert_json_equal('', '#modellineentry/headers/@2/@4', "{[p align='right']}%s{[/p]};;")
         self.assert_json_equal('', '#modellineentry/headers/@3/@0', 'credit')
         self.assert_json_equal('', '#modellineentry/headers/@3/@2', "C2EUR")
-        self.assert_json_equal('', '#modellineentry/headers/@3/@4', "%s;;")
+        self.assert_json_equal('', '#modellineentry/headers/@3/@4', "{[p align='right']}%s{[/p]};;")
 
         self.assert_json_equal('', 'modellineentry/@0/code', "411")
         self.assert_json_equal('', 'modellineentry/@0/third', "Luke Lucky")

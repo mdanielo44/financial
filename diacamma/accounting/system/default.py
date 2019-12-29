@@ -93,7 +93,7 @@ class DefaultSystemAccounting(object):
         lbl.set_value_as_headername(_("Profit and deficit"))
         lbl.set_location(1, 0)
         custom.add_component(lbl)
-        text = _("{[i]}You have a %(type)s of %(value)s.{[br/]}You must to define the account to affect.{[br/]}{[/i]}") % {'type': type_profit, 'value': get_amount_from_format_devise(val_profit, 4)}
+        text = _("{[i]}You have a %(type)s of %(value)s.{[br/]}You must to define the account to affect.{[br/]}{[/i]}") % {'type': type_profit, 'value': get_amount_from_format_devise(abs(val_profit), 7)}
         text += _("{[br/]}After validation, you begin '%s'.{[br/]}{[br/]}{[i]}{[u]}Warning:{[/u]} Your retained earnings must be completed.{[/i]}") % six.text_type(year)
         lbl = XferCompLabelForm("info")
         lbl.set_value(text)
