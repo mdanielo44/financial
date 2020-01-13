@@ -193,7 +193,7 @@ class CompletedEntryTest(LucteriosTest):
     def test_listing(self):
         self.factory.xfer = EntryAccountListing()
         self.calljson('/diacamma.accounting/entryAccountListing',
-                      {'PRINT_MODE': '4', 'MODEL': 7, 'year': '1', 'journal': '-1', 'filter': '0'}, False)
+                      {'PRINT_MODE': '4', 'MODEL': 7, 'year': '1', 'journal': '0', 'filter': '0'}, False)
         self.assert_observer('core.print', 'diacamma.accounting', 'entryAccountListing')
         csv_value = b64decode(six.text_type(self.response_json['print']['content'])).decode("utf-8")
         content_csv = csv_value.split('\n')
@@ -205,7 +205,7 @@ class CompletedEntryTest(LucteriosTest):
 
         self.factory.xfer = EntryAccountListing()
         self.calljson('/diacamma.accounting/entryAccountListing',
-                      {'PRINT_MODE': '4', 'MODEL': 7, 'year': '1', 'journal': '-1', 'filter': '1'}, False)
+                      {'PRINT_MODE': '4', 'MODEL': 7, 'year': '1', 'journal': '0', 'filter': '1'}, False)
         self.assert_observer('core.print', 'diacamma.accounting', 'entryAccountListing')
         csv_value = b64decode(six.text_type(self.response_json['print']['content'])).decode("utf-8")
         content_csv = csv_value.split('\n')
@@ -213,7 +213,7 @@ class CompletedEntryTest(LucteriosTest):
 
         self.factory.xfer = EntryAccountListing()
         self.calljson('/diacamma.accounting/entryAccountListing',
-                      {'PRINT_MODE': '4', 'MODEL': 7, 'year': '1', 'journal': '-1', 'filter': '2'}, False)
+                      {'PRINT_MODE': '4', 'MODEL': 7, 'year': '1', 'journal': '0', 'filter': '2'}, False)
         self.assert_observer('core.print', 'diacamma.accounting', 'entryAccountListing')
         csv_value = b64decode(six.text_type(self.response_json['print']['content'])).decode("utf-8")
         content_csv = csv_value.split('\n')
@@ -221,7 +221,7 @@ class CompletedEntryTest(LucteriosTest):
 
         self.factory.xfer = EntryAccountListing()
         self.calljson('/diacamma.accounting/entryAccountListing',
-                      {'PRINT_MODE': '4', 'MODEL': 7, 'year': '1', 'journal': '-1', 'filter': '3'}, False)
+                      {'PRINT_MODE': '4', 'MODEL': 7, 'year': '1', 'journal': '0', 'filter': '3'}, False)
         self.assert_observer('core.print', 'diacamma.accounting', 'entryAccountListing')
         csv_value = b64decode(six.text_type(self.response_json['print']['content'])).decode("utf-8")
         content_csv = csv_value.split('\n')
@@ -229,7 +229,7 @@ class CompletedEntryTest(LucteriosTest):
 
         self.factory.xfer = EntryAccountListing()
         self.calljson('/diacamma.accounting/entryAccountListing',
-                      {'PRINT_MODE': '4', 'MODEL': 7, 'year': '1', 'journal': '-1', 'filter': '4'}, False)
+                      {'PRINT_MODE': '4', 'MODEL': 7, 'year': '1', 'journal': '0', 'filter': '4'}, False)
         self.assert_observer('core.print', 'diacamma.accounting', 'entryAccountListing')
         csv_value = b64decode(
             six.text_type(self.response_json['print']['content'])).decode("utf-8")

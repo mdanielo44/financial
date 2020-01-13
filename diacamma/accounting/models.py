@@ -1220,7 +1220,7 @@ class EntryLineAccount(LucteriosModel):
 
     @classmethod
     def get_search_fields(cls):
-        result = ['entry.year', 'entry.date_value', 'account.code']
+        result = ['entry.year', 'entry.date_value', 'account.code', 'entry.journal']
         result.append(('amount', models.FloatField(_('amount')), 'amount__abs', Q()))
         result.extend(['reference', 'entry.num', 'entry.designation', 'entry.date_entry', 'costaccounting', 'account.name', 'account.type_of_account'])
         for fieldname in Third.get_search_fields():

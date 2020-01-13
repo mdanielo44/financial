@@ -213,7 +213,7 @@ class EntryAccountListing(XferPrintListing):
                 new_filter &= Q(entry__close=False)
             elif self.select_filter == 2:
                 new_filter &= Q(entry__close=True)
-            if select_journal != -1:
+            if select_journal != 0:
                 new_filter &= Q(entry__journal__id=select_journal)
         else:
             new_filter = XferPrintListing.get_filter(self)
@@ -234,7 +234,7 @@ class EntryAccountListing(XferPrintListing):
             select_year = self.getparam('year')
             info_list.append("{[b]}{[u]}%s{[/u]}{[/b]} : %s" % (_('fiscal year'), six.text_type(FiscalYear.get_current(select_year))))
             select_journal = self.getparam('journal', 4)
-            if select_journal >= 0:
+            if select_journal > 0:
                 info_list.append("{[b]}{[u]}%s{[/u]}{[/b]} : %s" % (_('journal'), six.text_type(Journal.objects.get(id=select_journal))))
             select_filter = self.getparam('filter', 1)
             select_filter_list = {0: _('All'), 1: _('In progress'), 2: _('Valid'), 3: _('Lettered'), 4: _('Not lettered')}
