@@ -4,16 +4,17 @@ Raports
 Dans le catégorie *Comptabilité/Rapports comptables*, vous avez accès à un ensemble de rapports relatifs à votre comptabilité.
 Vous pouvez consulter votre rapport ainsi qu'en réaliser une impression via une génération PDF de ce rapport.
 De plus, pour tout les exercices non-cloturés, vous pouvez préciser une période de consultation.
-Ceci est principalement utile pour vous aider à faire vos rapprochements bancaires ou si vous avez besoins d'éditer des situations financiéres trimestrielles.
+Ceci est principalement utile pour vous aider à faire vos rapprochements bancaires ou si vous avez besoin d'éditer des situations financiéres trimestrielles.
 
-Ces rapports sont sauvegarder automatiquement dans le gestionnaire de documents au moment de la clôture de l'exercice.
-Lorsque vous voulez imprimer les re-éditer, on vous propose alors par défaut de télécharger ce document sauvegarder.
-Vous pouvez re-générer un nouveau PDF, par contre celui-ci comportera la notion "duplicata" en filigrame.
+Ces rapports sont sauvegardés automatiquement dans le gestionnaire de documents au moment de la clôture de l'exercice.
+Lorsque vous voulez rééditer un document, on vous propose alors par défaut de télécharger la sauvegarde de ce document.
+Vous pouvez régénérer un nouveau PDF, par contre celui-ci comportera la mention "duplicata" en filigrane.
+
 
 Compte de résultat
--------------------
+------------------
 
-Le compte de résultat est un document comptable synthétisant l'ensemble des charges et des produits d'une entreprise ou autre organisme ayant une activité marchande, au cours d'un son exercice comptable.
+Le compte de résultat est un document comptable synthétisant l'ensemble des charges et des produits d'une entreprise ou d'un autre organisme ayant une activité marchande, pour une période donnée, appelée exercice comptable.
 Ce document donne le résultat net, c'est-à-dire ce que l'entreprise a gagné (bénéfice) ou perdu (perte) au cours de la période.
 
 Bilan

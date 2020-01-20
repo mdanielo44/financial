@@ -32,8 +32,9 @@ Votre nouvel exercice sera alors disponible dans la
 liste des exercices. Pour en continuer la création, il vous faudra le
 sélectionner dans la liste et cliquer sur le bouton Activer afin de
 pouvoir travailler dessus par défaut.
-Notez que le logiciel associé à chaque exercice un répertoire de stockage du gestionnaire de documents: certains documents officiels seront sauvegardé dans celui-ci.
-De plus, via le bouton *Contrôle*, vous pouvez vérifier que tout les documents officiels sont bien générés.
+Notez que le logiciel associe à chaque exercice un répertoire de stockage du gestionnaire de documents: certains documents officiels seront sauvegardés dans celui-ci.
+De plus, via le bouton *Contrôle*, vous pouvez vérifier que tous les documents officiels sont bien générés.
+
 
 Depuis ce même écran de configuration, vous pouvez également modifier 
 ou ajouter des journaux. 

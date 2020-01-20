@@ -132,30 +132,33 @@ de définir des critères de recherche d'écritures comptables.
 
     .. image:: entity_search.png
 
-En cliquant sur 'Rechercher", l'outil va rechercher dans la base
-toutes les écritures correspondantes à ces critères. Vous pourrez alors
-imprimer cette liste ou éditer/modifier une écriture.
+En cliquant sur 'Recherche", l'outil va rechercher dans la base
+toutes les écritures satisfaisant aux critères saisis. Vous pourrez alors
+
+ * imprimer les écritures extraites,
+ * éditer/modifier une écriture
+ * Clôturer, lettrer ou délettrer une écriture...
 
 Import d'écritures
 ------------------
 
 Depuis la liste des écritures, le bouton *Import* vous permet d'importer des écritures comptables depuis un fichier CSV.
 
-Une fois avoir sélectionné l'exercice d'import, le journal et les information de format de votre fichier CSV,
-vous serez ammené à associer les champs des écritures aux colonnes de votre documents (la première ligne de votre document doit décrire la nature de chaque colonne).
+Une fois avoir sélectionné l'exercice d'import, le journal et les informations de format de votre fichier CSV,
+vous serez ammené à associer les champs des écritures aux colonnes de votre document (la première ligne de votre document doit décrire la nature de chaque colonne).
 
     .. image:: entity_import.png
-    
-Vous pouvez alors contrôler vos données avant de les validés.
+  
+Vous pouvez alors contrôler vos données avant de les valider.
 
 Une fois l'import réalisé, l'outil vous présentera le résultat des écritures réellement importées.
 
-**Notez que les lignes d'écritures ne seront pas importé si:**
+**Notez que les lignes d'écritures ne seront pas importées si :**
 
- * Si le code comptable précisé n'existe pas dans le plan comptable de l'exercice.
- * La date n'est pas inclu dans l'exercice.
- * L'ensemble des lignes comprenant même date et même intitulé ne s'équilibre pas.
+ * Le code comptable précisé n'existe pas dans le plan comptable de l'exercice.
+ * La date n'est pas inclue dans l'exercice comptable actif.
+ * Non respect du principe de la partie double : les lignes portant sur une même date et ayant le même intitulé ne s'équilibrent pas (le total des débits est différent du total des crédits).
 
-Bien que cela ne bloque pas l'import, le tiers et le code analytique seront laissé vide si ceux indiqué ne sont pas connus dans le logiciel.
+Bien que cela ne bloque pas l'import, le tiers et le code analytique seront laissés vides si ceux indiqués ne sont pas connus dans le logiciel.
  
  
