@@ -15,19 +15,18 @@ précédemment saisies ainsi que d'en ajouter de nouvelles.
 
 Comme vous pouvez le voir dans cet écran, vous pouvez consulter les écritures
 par journaux ou par état. 5 filtres d'état vous sont proposés:
-
-* Tout: aucun filtrage n'est appliqué
-* En cours (Brouillard): seulement les écritures non encore validées
-* Validé: seulement les écritures déjé validées
-* Lettré: seulement les écritures rapprochées ou lettrées avecd'autres
-* Non lettré: seulement les écritures non encore lettrées
+ * Tout: aucun filtrage n'est appliqué
+ * En cours (Brouillard): seulement les écritures non encore validées
+ * Validé: seulement les écritures déjé validées
+ * Lettré: seulement les écritures rapprochées ou lettrées avecd'autres
+ * Non lettré: seulement les écritures non encore lettrées
 
 Ainsi que 5 journaux par défaut:
-* Journal des achats
-* Journal des ventes
-* Journal des encaissements
-* Journal des opérations diverses
-* Journal de report à nouveaux
+ * Journal des achats
+ * Journal des ventes
+ * Journal des encaissements
+ * Journal des opérations diverses
+ * Journal de report à nouveaux
 
 Pour ajouter une écriture, commençons d'abord par sélectionner sur quel
 journal nous souhaitons réaliser notre nouvelle écriture, puis cliquons
@@ -134,7 +133,6 @@ de définir des critères de recherche d'écritures comptables.
 
 En cliquant sur 'Recherche", l'outil va rechercher dans la base
 toutes les écritures satisfaisant aux critères saisis. Vous pourrez alors
-
  * imprimer les écritures extraites,
  * éditer/modifier une écriture
  * Clôturer, lettrer ou délettrer une écriture...
@@ -154,7 +152,6 @@ Vous pouvez alors contrôler vos données avant de les valider.
 Une fois l'import réalisé, l'outil vous présentera le résultat des écritures réellement importées.
 
 **Notez que les lignes d'écritures ne seront pas importées si :**
-
  * Le code comptable précisé n'existe pas dans le plan comptable de l'exercice.
  * La date n'est pas inclue dans l'exercice comptable actif.
  * Non respect du principe de la partie double : les lignes portant sur une même date et ayant le même intitulé ne s'équilibrent pas (le total des débits est différent du total des crédits).

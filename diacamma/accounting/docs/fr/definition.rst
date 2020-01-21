@@ -30,11 +30,11 @@ Journaux comptables
 Un journal comptable est un regroupement d'écritures comptables permettant de classer celles-ci.
 
 Les journaux par défaut sont:
-* journal d'achat contenant toutes les écritures relatives aux achats fait par une entité
-* journal de vente contenant toutes les écritures relatives aux dépenses effectuées par une entité
-* journal des encaissements contenant toutes les écritures relatives aux mouvement sur les comptes en monétaire (compte bancaires, compte caisse...) en relation avec les dépenses et recettes de l'entité
-* journal des reports à nouveau contenant les écritures permettant le passage d'un exercice comptable à son suivant
-* journal des opérations diverses contenant l'ensemble des autres écritures (ex: frais financiers...)
+ * journal d'achat contenant toutes les écritures relatives aux achats fait par une entité
+ * journal de vente contenant toutes les écritures relatives aux dépenses effectuées par une entité
+ * journal des encaissements contenant toutes les écritures relatives aux mouvement sur les comptes en monétaire (compte bancaires, compte caisse...) en relation avec les dépenses et recettes de l'entité
+ * journal des reports à nouveau contenant les écritures permettant le passage d'un exercice comptable à son suivant
+ * journal des opérations diverses contenant l'ensemble des autres écritures (ex: frais financiers...)
 
 Ecritures comptables
 --------------------
@@ -44,8 +44,8 @@ comptes comptables permettant un équilibre.
 La somme des crédits d'une écriture doit donc être égale à la somme des débits de cette même écriture.
 
 Par exemple, une écriture d'achat se schématise par:
-* une ligne au crédit du compte tiers fournisseur représentant l'ensemble de la somme de la facture
-* une ou plusieurs lignes au débit des comptes de charges correspondants au type de ressources achetées (matériel, service...)
+ * une ligne au crédit du compte tiers fournisseur représentant l'ensemble de la somme de la facture
+ * une ou plusieurs lignes au débit des comptes de charges correspondants au type de ressources achetées (matériel, service...)
  
 Le total des lignes dans les comptes de charge est donc égal au montant
 porté sur la ligne de compte tiers fournisseur.

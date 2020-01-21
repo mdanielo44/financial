@@ -13,14 +13,11 @@ Vous pouvez ajouter, modifier ou supprimer un article. La suppression n'est pas 
 A chaque article, vous devez définir un code comptable d'imputation pour la génération d'écritures automatique.
 
 Le champ *stockable* permet de définir si vous voulez gérer une gestion de stock de cet article:
-
-* non stockable
+ * non stockable
     Article sans gestion de stock, comme par exemple des articles de service.
-
-* stockable
+ * stockable
     Article stockable et facturable.
-
-* stockable & non vendable
+ * stockable & non vendable
     Article stockable non proposable à la vente.
     Utile pour suivre des stocks de matériel interne.
 
