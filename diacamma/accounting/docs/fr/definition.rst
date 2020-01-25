@@ -1,70 +1,82 @@
-Definitions
+Définitions
 ===========
 
-	**Remarques:** Ce module comptable est proche d'une comptabilité type "entreprise", néanmoins elle ne respecte pas certaines exigences légales et fiscale en la matiére.
-	Ce modules ne peux pas étre utilisé pour la tenu de compte de structures commerciales, concurrentielles ou professionnelles mais seulement des structures de type associative gérées par des bénévoles.
-	Le représentant légale de la structure utilisant ce module doit s'assurer que sa comptabilité respecte alors la législation de son pays en vigueur.
+	**Préambule :** Le module comptable s’apparente à une comptabilité de type « entreprise ». Néanmoins, il
+ne respecte pas certaines exigences légales et fiscales en la matière. Ce module ne peux pas être utilisé pour
+la tenue des comptes de structures commerciales, concurrentielles ou professionnelles mais seulement pour
+celle de structures de type associatif gérées par des bénévoles. Le représentant légal de la structure utilisant
+ce module doit s’assurer que sa comptabilité respecte aussi la législation en vigueur dans son pays.
+
 
 Exercice comptable
 ------------------
 
-Un exercice comptable est une période de temps sur laquelle une
-personne morale (entreprise, association ou autre) enregistre tous les
-mouvements d'argent la concernant.
+L’exercice comptable est la période qui sépare deux déterminations du résultat. Il commence par une ouverture des comptes
+et se termine par une clôture de ceux-ci.
+«L'exercice comptable du syndicat des copropriétaires couvre une période de douze mois. Les comptes sont arrêtés à la date
+de clôture de l'exercice. Pour le premier exercice, l'assemblée générale des copropriétaires fixe la date de clôture des
+comptes et la durée de cet exercice qui ne pourra excéder dix-huit mois.
+La date de clôture de l'exercice pourra être modifiée sur décision motivée de l'assemblée générale des copropriétaires.
+Un délai minimum de cinq ans devra être respecté entre les deux décisions d'assemblées générales modifiant la date
+de clôture. » Décret n°2005-240 du 14 mars 2005 relatif aux comptes du syndicat des copropriétaires – article 5
 
-Cette période est généralement de 12 mois consécutifs du 1er janvier au 31 décembre mais peut varier
-d'une entité à une autre. La durée légale est toutefois fixée à un
-maximum de 2 ans. La durée de l'exercice est fixée à l'avance et ne
-peut être modifiée que sur décision du conseil d'administration.
 
 Tiers comptable
 ---------------
 
-Un tiers comptable est une personne physique ou morale avec
-laquelle une entité va avoir des échanges monétaires (clients,
-fournisseurs, salariés, administrations...).
+Un tiers comptable est une personne physique ou morale avec laquelle une entité va avoir des échanges monétaires
+(clients, fournisseurs, salariés, administrations. . . ). Pour les copropriétés, s’y ajoutent les copropriétaires
+
 
 Journaux comptables
 -------------------
 
-Un journal comptable est un regroupement d'écritures comptables permettant de classer celles-ci.
+	**Réglementation (extrait)** : le Livre-journal, obligatoire, enregistre chronologiquement les opérations ayant une
+incidence sur le fonctionnement du syndicat des copropriétaires. Les écritures sont passées selon le système dit
+en partie-double. Pour chaque écriture, il doit y avoir Σ débits = Σ crédits.
 
-Les journaux par défaut sont:
- * journal d'achat contenant toutes les écritures relatives aux achats fait par une entité
- * journal de vente contenant toutes les écritures relatives aux dépenses effectuées par une entité
- * journal des encaissements contenant toutes les écritures relatives aux mouvement sur les comptes en monétaire (compte bancaires, compte caisse...) en relation avec les dépenses et recettes de l'entité
- * journal des reports à nouveau contenant les écritures permettant le passage d'un exercice comptable à son suivant
- * journal des opérations diverses contenant l'ensemble des autres écritures (ex: frais financiers...)
+Sous Diacamma Syndic, des livres-journaux auxiliaires se substituent au Livre-journal. Cela permet de regrouper les écritures
+comptables qui portent sur des opérations de même nature. Les opérations y seront enregistrées chronologiquement.
+Les journaux comptables par défaut sont :
+— Report à nouveau : reprise des à-nouveaux des comptes de bilan, en début d’exercice comptable
+— Dépenses : opérations qui donnent ou donneront lieu à des décaissements
+— Recettes : opérations qui donnent ou donneront lieu à des encaissements
+— Trésorerie : mouvements monétaires affectant les comptes banque et CCP
+— Opérations diverses : autres écritures
 
 Ecritures comptables
 --------------------
 
-Une écriture comptable est un ensemble de lignes inscrites dans divers
-comptes comptables permettant un équilibre.
-La somme des crédits d'une écriture doit donc être égale à la somme des débits de cette même écriture.
+Elles traduisent dans les comptes les opérations réalisées au bénéfice du syndicat des copropriétaires et ayant généré des
+flux financiers et/ou économiques.
+A moins que les opérations de même nature n’aient été regroupées, chaque opération donne lieu à une écriture comptable au
+journal. Cette écriture se compose d’au moins deux lignes, une pour le compte débité (traduisant l’Emploi de flux) et une
+pour le compte crédité (traduisant la Ressource de flux).
+La somme des débits d’une écriture doit être égale à la somme des crédits de cette même écriture (Emploi = Ressource).
 
-Par exemple, une écriture d'achat se schématise par:
- * une ligne au crédit du compte tiers fournisseur représentant l'ensemble de la somme de la facture
- * une ou plusieurs lignes au débit des comptes de charges correspondants au type de ressources achetées (matériel, service...)
- 
-Le total des lignes dans les comptes de charge est donc égal au montant
-porté sur la ligne de compte tiers fournisseur.
+*Exemple :*
+************* Glisser ici copie écran écriture passée
 
-Les écritures comptables d'encaissement peuvent et doivent être pointées afin de marquer le rapprochement avec les comptes bancaires et
-la caisse physique. De cette façon, on peut suivre facilement les écritures passées dans la comptabilité mais non encore effectives dans
-la réalité. Le pointage est nécessaire pour le passage d'un exercice comptable à son suivant.
+— Un numéro, les dates de l’écriture et de l’opération (généralement, elles concordent), la référence de la pièce
+justificative et, si utile, un descriptif de l’opération.
+— Un compte fournisseur crédité du TTC de la facture
+— Un (ou plusieurs) compte(s) débité(s) afin de ventiler la dépense selon la nature des charges
 
-Il est également possible et recommandé de lettrer les écritures, c'est à dire de créer un sous ensemble
-cohérent d'écritures en provenance de journaux divers afin de stipuler qu'elle correspondent à la même opération de la vie réelle.
+**Pointage** :
+Les mouvements enregistrés dans les comptes de trésorerie peuvent et devraient être pointées périodiquement afin de
+justifier l’écart entre les soldes dans votre comptabilité et ceux accusés par vos établissements financiers. Le pointage est aussi nécessaire en fin d’exercice comptable, avant clôture.
 
-Ex: l'écriture comptable d'achat d'un bien peut être lettrée avec son écriture d'encaissement.
+**Lettrage :**
+Il facilite la justification du solde des comptes de tiers (classe 4). Il consiste à rapprocher les montants débits et crédits en lien avec la même opération et pour lesquels la somme des débits est égale à la somme des crédits. Avant clôture, il faut
+aussi lettrer les comptes de tiers afin que seuls les mouvements non lettrés soient reportés sur l'exercice suivant.
+
+*Exemple :*
+ ************* Glisser ici copie écran écriture lettrée
 
 Plan comptable de l'exercice
 ----------------------------
 
-Le plan comptable de l'exercice est l'ensemble des comptes utilisés au
-cours d'un exercice comptable en se basant sur le plan comptable
-couramment admis par l'administration fiscale.
-
-les numéros de comptes doivent impérativement commencer par le préfixe donné par le
-plan comptable en vigueur au moment de la création du compte.
+Le plan comptable de l’exercice est l’ensemble des comptes utilisés au cours d’un exercice comptable, en respect de la
+nomenclature des comptes énoncée dans l’arrêté du 14 mars 2005 relatif aux comptes du syndicat des copropriétaires,
+avec possibilité de subdivision en cas de besoin (ex. 512 Banques → 512100 Mabanque).
+Un sous-compte ne peut être ouvert que si le compte parent existe dans le plan comptable de l’exercice.
