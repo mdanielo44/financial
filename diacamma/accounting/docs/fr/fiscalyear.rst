@@ -1,108 +1,132 @@
-Exercice
-========
+Exercice comptable
+==================
 
 Paramétrages
 ------------
 
+     Menu *Administration/Modules (conf.)/Configuration comptable*
+
+Ouvrez l’onglet « Paramètres » et éditez-les avec le bouton « Modifier ». Paramétrez la devise et sa précision, la taille des codes comptables. Précisez aussi si vous avez l’intention ou non de mettre en place une comptabilité analytique.
+
     .. image:: parameters.png
 
-Initialement, vous pouvez définir ici le type de système comptable que
-vous voulez utiliser (ex: Plan comptable générale Français). 
-*Attention:* une fois défini, ce système n'est plus modifiable.
-
-Vous pouvez changer également la monnaie courrante de votre comptabilité.
 
 Création d'un exercice comptable
 --------------------------------
 
-Pour créer un exercice comptable, rendez vous dans le menu *Administration/Modules (conf.)/Configuration comptable*.
+Lors de la mise en place de votre comptabilité sous *Diacamma Syndic*, vous aurez à spécifier le système comptable qui sera utilisé (ex. Plan comptable général français). **Attention :** une fois choisie, cette option ne sera plus modifiable.
+
+
+     Menu *Administration/Modules (conf.)/Configuration comptable*
+     
+     **Onglet "Liste d'exercices"**
 
     .. image:: fiscalyear_list.png
 
-De là, cliquez sur Ajouter afin de faire apparaître le formulaire vous permettant de renseigner les bornes de l'exercice
+Vérifiez que le système comptable a été choisi et cliquez sur "+ Créer" afin de renseigner les bornes du nouvel exercice. 
 
     .. image:: fiscalyear_create.png
 
-Indiquez la date de début (celle-ci doit étre le lendemain de la date
-de clôture de l'exercice précédent) et la date de fin (au maximum 2 ans
-aprés le début de l'exercice) de l'exercice puis cliquez sur le bouton
-OK.
+Pour le premier exercice sous *Diacamma Syndic*, saisissez la date de début et la date de fin de l’exercice puis cliquez sur le bouton "OK". Les exercices suivants ont comme date de début le lendemain de la date de clôture de l’exercice précédent et seule la date de fin est à saisir. 
 
-Votre nouvel exercice sera alors disponible dans la
-liste des exercices. Pour en continuer la création, il vous faudra le
-sélectionner dans la liste et cliquer sur le bouton Activer afin de
-pouvoir travailler dessus par défaut.
-Notez que le logiciel associe à chaque exercice un répertoire de stockage du gestionnaire de documents: certains documents officiels seront sauvegardés dans celui-ci.
-De plus, via le bouton *Contrôle*, vous pouvez vérifier que tous les documents officiels sont bien générés.
+Notez que le logiciel associe à chaque exercice un répertoire de stockage du gestionnaire de documents : certains documents
+officiels seront sauvegardés dans celui-ci. Le bouton "Contrôle" vous permet à tout moment de  vérifier que vos documents officiels ont bien été générés.
+
+Votre nouvel exercice figure maintenant dans la liste des exercices. Il est **[en création]**. Lorsque plusieurs exercices ont été créés, vous devez activer celui sur lequel vous souhaitez travailler par défaut, à l'aide du bouton "Activé".
 
 
-Depuis ce même écran de configuration, vous pouvez également modifier 
-ou ajouter des journaux. 
-Vous pouvez également créer des champs personnalisés (comme pour la fiche de contacte)
-pour la fiche de tiers. Ceci peut être interessant si vous voulez réaliser des recherches/filtrages
-sur des informations propres à votre fonctionnement.  
+     *Onglet "Journaux" et Onglet "Champ personnalisé des tiers"*
+     
+Depuis ce même écran de configuration, vous pouvez également modifier ou ajouter des journaux. Des champs personnalisés peuvent aussi être ajoutés à la fiche modèle de tiers comptable. Ceci peut être intéressant si vous voulez réaliser des recherches/filtrages sur des informations propres à votre fonctionnement.
 
-Fermez maintenant la liste des exercices afin de vous rendre dans la comptabilité et
-pouvoir créer le plan comptable de l'exercice ainsi qu'affecter le
-report à nouveau avant de pouvoir commencer éà saisir des écritures.
 
-Pour ce faire, rendrez-vous dans le menu *Comptabilité/Gestion comptable/Plan comptable*
+Maintenant, vous devez fermer la fenêtre "Configuration comptable" et créer le plan comptable de votre structure.
+
+     Menu *Comptabilité/Gestion comptable/Plan comptable*
 
     .. image:: account_list.png
 
-Ici, commencez par créer les comptes de base de votre exercice.
 
-Si vous avez déjà un précédent exercice, vous pouvez en importer la liste de code comptable.
+     **Premier exercice comptable** : Votre structure est juste créée, vous n’avez donc pas d'à-nouveaux.
 
-Une fois ceci fait, plusieurs choix se présentent à vous:
- - Il s'agit de votre premier exercice comptable
-	Vous venez de créer votre structure, vous n'avez pas de report à nouveau, cliquez donc dès maintenant sur le bouton commencer, vous aurez alors achevé la création de votre exercice.
- - Il ne s'agit pas de votre premier exercice mais vous n'utilisiez pas ce logiciel avant
-	Il va falloir saisir manuellement votre report à nouveau.
-	Pour cela, sortez du plan comptable de l'exercice, entrez dans la liste des écritures et saisissez manuellement une écriture complète, cohérente et équilibrée pour votre report à nouveau.
-	Une fois ceci fait, retournez dans votre plan comptable pour cliquer sur commencer.
- - Il ne s'agit pas de votre premier exercice et vous utilisiez déjà ce logiciel
-	Utilisez le bouton "report à nouveau"" afin d'importer le résultat de l'exercice précédent.
-	Comme il n'est pas possible de commencer un exercice avec un résultat (qu'il soit bénéficiaire ou déficitaire).
-	Vous devez avant de commencer votre exercice, ventiler cette somme sur un compte de capitaux (capital, réserve, ..).
-	La décision de cette affectation est prise par le conseil d'administration sous le contrôle de votre vérificateur aux comptes.
-	Pour cela, vous pouvez créer une écriture spécifique (journal 'report à nouveau') ou utilisez le questionnaire l'or du commencement de l'exercice.
-	Pour commencer l'exercice, clique sur le bouton afin de clore cette phase de création.
+Avec le bouton "+ Initiaux", générez automatiquement votre propre plan comptable général à partir du plan de comptes type fourni par le logiciel.
+Adaptez celui-ci aux besoins de votre structure avec les boutons "Ajouter" et "Supprimer".
 
-Création, modification et édition de comptes dans le plan
----------------------------------------------------------
+     
+     — **Première tenue de comptabilité sous Diacamma Syndic** : vous migrez sous Diacamma et avez des à-nouveaux à saisir.
 
-Plaçons nous dans le menu *comptabilité/Gestion comptable/Plan comptable*.
+Avec le bouton "+ Initiaux", générez automatiquement votre propre plan comptable général à partir du plan de comptes type.
+Adaptez celui-ci aux besoins de votre structure avec les boutons "Ajouter" et "Supprimer".
+Quittez l'écran *Plan comptable* et ouvrez le menu *Comptabilité/Gestion comptable/Ecritures comptables*.
+Saisissez vos soldes à-nouveaux en une seule écriture en prenant bien soin de la contrôler dans le journal "Report à nouveau".
+Ceci fait, réouvrez le menu *Comptabilité/Gestion comptable/Plan comptable*.
 
-A tout moment au cours d'un exercice vous pouvez être amener à ajouter un nouveau compte dans votre plan.
+     
+     — **Exercice comptable suivant** : Il ne s’agit pas de votre premier exercice sous *Diacamma*.
+
+Si ce n'est pas déjà réalisé, avec le bouton "Importer" (et non "Initiaux"), vous devez importer le plan comptable de l'exercice précédent.
+Contrôlez l'importation et mettez à jour, si besoin, le plan comptable de l'exercice.
+Suite à votre dernière assemblée générale, les excédents n-1 doivent être normalement ventilés avant clôture de l'exercice n-1. Si ce n'est pas le cas, vous devez passer cette écriture.
+Clôturez l'exercice n-1. Son état est maintenant **[terminé]**. Le nouvel exercice est toujours **[en création]**.
+Utilisez le bouton « Report à nouveau » afin que les soldes n-1 des comptes d'actif et de passif soient repris dans la comptabilité du nouvel exercice. Vous pouvez constater à l'écran que les soldes des comptes de bilan non soldés fin n-1 ont été repris. L'écriture correspondante  au journal "Report à nouveau" est générée et validée automatiquement.
+
+
+
+**Afin d'achever l'ouverture de votre nouvel exercice, vous devez maintenant cliquez sur "Commencer".**
+**Votre exercice est maintenant [en cours]**.
+
+
+
+Création, modification et édition de comptes du plan comptable
+--------------------------------------------------------------
+
+     Menu *Comptabilité/Gestion comptable/Plan comptable*
+
+A tout moment vous pouvez ajouter un nouveau compte dans votre plan comptable.
 
     .. image:: account_new.png
 
-Référez vous aux codes légaux définis par la réglementation de votre pays pour définir correctement les 3 premiers chiffres.
-Pour les associations dépendant du droit français, vous pourrez trouver des informations sur le site du gouvernement des finances français (http://www.minefe.gouv.fr/themes/entreprises/compta_entreprises/index.htm).
-Les 3 derniers chiffres du compte vous sont propres suivant votre besoin. Modifiez la désignation pour simplifier l'identification de votre compte.
+Référez-vous aux codes définis par la règlementation de votre pays. Comme déjà écrit, pour la France, votre plan comptable doit respecter la nomenclature des comptes énoncée dans l'arrêté du 14 mars 2005 relatif aux comptes du syndicat des copropriétaires. Des subdivisions sont possibles.
 
-Si vous vous étes trompé, vous pouvez changer le compte et sa désignation. Si des écritures ont été saisies avec ce compte, elles seront automatiquement migrées.
+Un compte peut être modifié, tant pour ce qui est de son numéro que de son intitulé. Les imputations (lignes d'écritures) qui lui sont associées seront automatiquement modifiées. Le changement n'est permis que si le nouveau compte relève de la même catégorie comptable (charge, produit...).
 
-Par contre, le nouveau compte doit rester dans la même catégorie comptable.
-Vous pouvez consulter un compte précis. Vous pouvez alors voir
-l'ensemble des lignes d'écritures associées à ce compte, ainsi que la
-valeur du compte au début (report à nouveau) et la valeur actuelle.
+Lorsque vous consultez un compte (bouton "Editer" ou double-clic), les écritures associées au compte sont affichées.
 
     .. image:: account_edit.png
 
-Il vous est aussi possible de supprimer un compte du plan si aucune opération n'y a été réalisée.
+Il vous est aussi possible de supprimer un compte du plan comptable à la condition qu'aucune écriture ne lui soit associée.
 
 Clôture d'un exercice
 ---------------------
 
-A la fin de la période, vous devez clôturer votre exercice. Cette
-opération, définitive, se réalise sous le contrôle de votre
+En fin d'exercice comptable, celui-ci est clôturé. Cette opération, définitive, se réalise sous le contrôle de votre
 vérificateur aux comptes.
-Dans le menu *Comptabilité/Gestion comptable/Plan comptable*, cliquez sur le bouton "Clôturer".
 
-**Attention:** Toutes les écritures doivent être validées avant de commencer cette procédure.
+Au préalable, vous devez :
 
-La phase de validation va réaliser un traitement consistant à
-créer une série d'écritures de fin d'exercice résumant le résultat et
-les dettes tiers (factures clients ou fournisseurs transmises mais pas encore réglées).
+     — Passer vos écritures d'inventaire (charges à payer, produits à recevoir, créances douteuses...)
+     — Contrôler que toutes les charges et les produits ont bien été imputés en comptabilité analytique
+     — Vérifier que vos dépenses et vos recettes sont bien ventilées sur vos différentes catégories
+     — Vérifier que toutes vos dépenses ont été ventilées sur les copropriétaires
+     — Affecter vos excédents conformément aux délibérations de votre assemblée générale
+     — Valider les écritures provisoires au brouillard
+     — Lettrer les comptes de tiers 
+     — Créer l'exercice suivant si cela n'a pas été réalisé
+     — Sauvegarder votre dossier
+
+
+     Menu *Comptabilité/Gestion comptable/Plan comptable*
+     
+Cliquez sur le bouton "Clôturer".
+
+La clôture a pour effet de :
+
+     — Solder les comptes de gestion
+     — Interdire tout ajout d'écriture
+     — Arrêter les comptes de bilan et les comptes de tiers (copropriétaires, fournisseurs...)
+     — Assurer qu'il ne pourra plus être apporté de modification à l'exercice clôturé
+
+**Remarques :**
+
+     — Les ASL conservent normalement les excédents sauf sur travaux votés d'où un possible "Report à nouveau"
+     — Tant qu'un exercice n'est pas clôturé, vous pouvez enregistrer des opérations sur celui-ci et le suivant
