@@ -42,24 +42,20 @@ from django.utils import six
 from django.db.models.signals import pre_save
 from django_fsm import FSMIntegerField, transition
 
-from lucterios.framework.models import LucteriosModel, get_value_if_choices,\
-    LucteriosVirtualField
-from lucterios.framework.tools import get_date_formating, get_format_value,\
-    convert_date
+from lucterios.framework.models import LucteriosModel, get_value_if_choices, LucteriosVirtualField
+from lucterios.framework.tools import get_date_formating, get_format_value, convert_date
 from lucterios.framework.error import LucteriosException, IMPORTANT, GRAVE
 from lucterios.framework.filetools import read_file, xml_validator, save_file, get_user_path
 from lucterios.framework.signal_and_lock import RecordLocker, Signal
 from lucterios.framework.auditlog import auditlog
 from lucterios.framework.printgenerators import ActionGenerator
-from lucterios.CORE.models import Parameter, LucteriosUser
+from lucterios.framework import signal_and_lock
+from lucterios.CORE.models import Parameter, LucteriosUser, LucteriosGroup
 from lucterios.CORE.parameters import Params
-from lucterios.contacts.models import AbstractContact, CustomField, CustomizeObject,\
-    LegalEntity
+from lucterios.contacts.models import AbstractContact, CustomField, CustomizeObject, LegalEntity
 from lucterios.documents.models import FolderContainer, DocumentContainer
 
-from diacamma.accounting.tools import get_amount_sum, current_system_account, currency_round, correct_accounting_code,\
-    get_currency_symbole, format_with_devise, get_amount_from_format_devise
-from lucterios.framework import signal_and_lock
+from diacamma.accounting.tools import get_amount_sum, current_system_account, currency_round, correct_accounting_code, get_currency_symbole, format_with_devise, get_amount_from_format_devise
 
 
 class ThirdCustomField(LucteriosModel):
@@ -1761,6 +1757,15 @@ def accounting_checkparam():
     Parameter.check_and_create(name='accounting-sizecode', typeparam=1, title=_("accounting-sizecode"), args="{'Min':3, 'Max':50}", value='3')
     Parameter.check_and_create(name='accounting-needcost', typeparam=3, title=_("accounting-needcost"), args="{}", value='False')
     Parameter.check_and_create(name='accounting-code-report-filter', typeparam=0, title=_("accounting-code-report-filter"), args="{'Multi':False}", value='')
+
+    LucteriosGroup.redefine_generic(_("# accounting (administrator)"), FiscalYear.get_permission(True, True, True),
+                                    ChartsAccount.get_permission(True, True, True), Budget.get_permission(True, True, True),
+                                    Third.get_permission(True, True, True), EntryAccount.get_permission(True, True, True))
+    LucteriosGroup.redefine_generic(_("# accounting (editor)"), FiscalYear.get_permission(True, True, False),
+                                    ChartsAccount.get_permission(True, True, False), Budget.get_permission(True, True, False),
+                                    Third.get_permission(True, True, False), EntryAccount.get_permission(True, True, False))
+    LucteriosGroup.redefine_generic(_("# accounting (shower)"), ChartsAccount.get_permission(True, False, False), Budget.get_permission(True, False, False),
+                                    Third.get_permission(True, False, False), EntryAccount.get_permission(True, False, False))
 
 
 @Signal.decorate('convertdata')
