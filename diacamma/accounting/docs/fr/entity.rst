@@ -126,6 +126,6 @@ L'import réalisé, l'outil vous présentera le résultat des écritures réelle
     — La date n'est pas inclue dans l'exercice comptable actif
     — Le principe de la partie double n'est pas respecté car pour toute opération, le total des débits doit être égal au total des crédits
 
-Bien que cela ne bloque pas l'import, le tiers et le code analytique seront laissés vides si ceux indiqués ne sont pas référencés dans votre dossier comptable. Vous devez donc contrôler l'importation et la modifier si besoin.
+Bien que cela ne bloque pas l'import, le tiers et le code analytique seront laissés vides si ceux indiqués ne sont pas référencés dans votre dossier comptable. Vous devez donc contrôler l'importation et la modifier si besoin. 
  
  
