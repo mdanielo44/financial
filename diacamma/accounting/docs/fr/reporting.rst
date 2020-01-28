@@ -22,6 +22,7 @@ Bilan
 
 Le bilan est une photographie du patrimoine de l'entreprise qui permet de réaliser une évaluation d'entreprise, et plus précisément de savoir après retraitement (par exemple d'une optique patrimoniale à celle sur option de juste valeur pour l'adoption des normes internationales) combien elle vaut et si elle est solvable.
 Il existe donc trois finalités au bilan:
+
  * Le bilan comptable interne, généralement détaillé, utilisé par les responsables de l'entreprise pour différentes analyses internes;
  * Le bilan comptable officiel, destiné aux contrôleurs de la comptabilité (auditeurs et commissaires aux comptes) et aux actionnaires (et plus généralement aux tiers);
  * Le bilan fiscal, qui sert à déterminer le bénéfice imposable;
@@ -32,13 +33,14 @@ Grand livre
 Le Grand livre est le recueil de l'ensemble des comptes utilisés d'une entreprise qui tient sa comptabilité en partie double. 
 
 Des options de filtrage sont à votre disposition:
+
  * L'exercice et la plage de dates désirées
- Afin de consulter que les opérations de la période concerné.
+   Afin de consulter que les opérations de la période concerné.
  * Code comptable commençant par
- En indiquant le début de code d'un compte, vous effectuerez un filtrage avec les opérations concernées par seulement ces comptes.
+   En indiquant le début de code d'un compte, vous effectuerez un filtrage avec les opérations concernées par seulement ces comptes.
  * Seulement les écritures non-lettrées
- En cochant cette coche, vous effectuerez n'afficherez que les opérations n'étant pas rapprocher par lettrage.
- Noter que seul le lettrage de ligne d'écriture de tiers n'a de sens.
+   En cochant cette coche, vous effectuerez n'afficherez que les opérations n'étant pas rapprocher par lettrage.
+   Noter que seul le lettrage de ligne d'écriture de tiers n'a de sens.
 
 Balance
 -------
@@ -46,14 +48,15 @@ Balance
 La balance comptable est un état d'une période, établi à partir de la liste de tous les comptes du grand livre de l'entreprise (qu'ils soient de bilan ou de gestion) et regroupant tous les totaux (ou masses) en débit et crédit de ces comptes et par différence tous les soldes débiteurs et créditeurs.
 
 Des options de filtrage sont à votre disposition:
+
  * L'exercice et la plage de dates désirées
- Afin de consulter que les opérations de la période concerné.
+   Afin de consulter que les opérations de la période concerné.
  * Code comptable commençant par
- En indiquant le début de code d'un compte, vous effectuerez un filtrage avec les opérations concernées par seulement ces comptes.
+   En indiquant le début de code d'un compte, vous effectuerez un filtrage avec les opérations concernées par seulement ces comptes.
  * Seulement les non-soldés
- Permet, en cochant cette coche, de n'afficher que les lignes n'ayant pas un solde nul.
+   Permet, en cochant cette coche, de n'afficher que les lignes n'ayant pas un solde nul.
  * Détail par tiers
- En cochant cette coche, vous afficherez pour les comptes de tiers le détail de leur balance par tiers.
+   En cochant cette coche, vous afficherez pour les comptes de tiers le détail de leur balance par tiers.
   
 Listing des écritures
 ---------------------
