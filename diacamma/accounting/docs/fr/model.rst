@@ -4,23 +4,29 @@ Modèle
 Déclaration d'un modèle
 -----------------------
 
-Un modèle d'écriture est un ensemble de lignes d'écritures mémorisées à l'avance que vous pouvez rejouer aussi souvent que vous le voulez.
-Depuis le menu *Comptabilité/Gestion comptable/Modèles d'écritures*, vous accédez à la liste des modèles. 
+Certaines opérations sont régulièrement enregistrées. Pour soulager la saisie de celles-ci, un modèle d'écriture ou masque de saisie peut être créé et enregistré afin d'être utilisé ultérieurement en saisie.
+Un modèle d'écriture peut aussi être utilisé pour faciliter la comptabilisation d'opérations complexes.
+
+Le modèle se présente comme une écriture.
+
+     Menu *Comptabilité/Gestion comptable/Modèles d'écritures* 
 
     .. image:: model_list.png
 
-Un modèle est associé à un journal et contient une description ainsi qu'une liste de lignes comprenant un code comptable et un montant.
+Il est associé à un journal, contient un descriptif, précise les comptes à débiter et ceux à créditer, avec indication des montants qui ne peuvent pas être laissés nuls.
 
     .. image:: model_item.png
 
-Nous vous conseillons de créer un modèle pour chacune de vos dèpenses (ou recette) règulières. Ainsi, vous gagnerez du temps sur la saisie de votre comptabilitè sans avoir à rechercher le bon code comptable.
+Nous vous conseillons de créer un modèle pour chacune de vos dépenses ou recettes règulières. Ainsi, vous gagnerez du temps sur la saisie de votre comptabilité et n'aurez pas à rechercher les bons codes comptables ni le sens des imputations.
 
 Utilisation d'un modèle
 -----------------------
 
-L'utilisation d'un modèle est très simple. Avec le bouton Modèle présent dans les liste d'écritures, une sélection de modèle vous est présentée. 
+L'utilisation d'un modèle est très simple.
+
+En saisie d'écriture, cliquez sur le bouton "+ Modèle".
 
     .. image:: model_add.png
 
-Sélectionnez votre modèle et précisez un coefficient multiplicateur. Ce facteur est très pratique lorsque l'on a des factures récurrentes mais dont le montant peut fluctuer. Il est alors possible, è l'aide de ce rèel, de l'affiner.
-Une fois validé, une écriture est générée suivant la description du modèle. Vous pouvez la corriger comme n'importe quelle écriture. 
+Sélectionnez votre modèle et précisez le coefficient multiplicateur qui devra être appliqué au montant présaisi dans le modèle. Ce facteur est très pratique lorsque l'on a des factures récurrentes mais dont le montant peut fluctuer. Il est alors possible, è l'aide de ce réel, de le faire varier.
+Validez votre sélection par "Ok". Une écriture est générée d'après le modèle. Vous pouvez la corriger comme n'importe quelle écriture. 
