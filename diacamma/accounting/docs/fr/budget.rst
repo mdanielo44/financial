@@ -10,7 +10,7 @@ Budgets analytiques
     
 Grâce à ce module, vous pouvez suivre les comptabilités analytiques.
 
-Chacune des comptabilité analytique est liée ou non à une catégorie de charges :
+Chacune des comptabilités analytiques est liée ou non à une catégorie de charges :
 
 - Liée à une catégorie : Lorsque que vous voulez ouvrir cette comptabilité analytique, vous avez le rappel que celle-ci est liée à un autre module et est donc protégée. A l'aide du bouton "Budget", vous ne pouvez qu'afficher le budget de la catégorie correspondante (cf. 2.2)
 - Non liée à une catégorie : La comptabilité étant  distincte des catégories de charges, toujours avec le bouton "Budget", vous pouvez ajouter des comptes de charges ou de produits ainsi que leurs montants prévisionnels à l'aide du bouton "+ Ajouter" situé au bas de l'écran. Vous pouvez également importer les montants des charges et des produits d'une comptabilité analytique précédente.
