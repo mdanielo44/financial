@@ -48,4 +48,4 @@ Impressions analytiques
 
 Depuis la liste des codes analytiques, vous pouvez réaliser un rapport type "Compte de résultat de comptabilité analytique".
 Pour cela, affichez les codes analytiques. Sélectionnez-les (un ou plusieurs) et cliquez sur le bouton "Rapport".
-Tout comme le Compte de résultat de la Comptabilité générale, ce rapport reprend pour chaque code analytique sélectionné, le montant des charges et des produits ainsi que le budget. Cela permet de comparer, là encore le résultat réel d'une activité au résultat attendu.
+Tout comme le Compte de résultat de la Comptabilité générale, ce rapport reprend pour chaque code analytique sélectionné, le montant des charges et des produits ainsi que le budget. Cela permet de comparer, là encore le résultat réel d'une activité au résultat attendu. 
