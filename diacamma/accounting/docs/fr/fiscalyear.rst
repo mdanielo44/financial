@@ -86,7 +86,7 @@ A tout moment vous pouvez ajouter un nouveau compte dans votre plan comptable.
 
     .. image:: account_new.png
 
-Référez-vous aux codes définis par la règlementation de votre pays. Comme déjà écrit, pour la France, votre plan comptable doit respecter la nomenclature des comptes énoncée dans l'arrêté du 14 mars 2005 relatif aux comptes du syndicat des copropriétaires. Des subdivisions sont possibles.
+Référez-vous aux codes définis par la règlementation de votre pays. Comme déjà écrit, pour les copropriétés françaises, votre plan comptable doit respecter la nomenclature des comptes énoncée dans l'arrêté du 14 mars 2005 relatif aux comptes du syndicat des copropriétaires. Des subdivisions sont possibles.
 
 Un compte peut être modifié, tant pour ce qui est de son numéro que de son intitulé. Les imputations (lignes d'écritures) qui lui sont associées seront automatiquement modifiées. Le changement n'est permis que si le nouveau compte relève de la même catégorie comptable (charge, produit...).
 
@@ -107,7 +107,7 @@ Au préalable, vous devez :
      — Passer vos écritures d'inventaire (charges à payer, produits à recevoir, créances douteuses...)
      — Contrôler que toutes les charges et les produits ont bien été imputés en comptabilité analytique
      — Vérifier que vos dépenses et vos recettes sont bien ventilées sur vos différentes catégories
-     — Vérifier que toutes vos dépenses ont été ventilées sur les copropriétaires
+     — Vérifier que toutes vos dépenses ont été ventilées sur les copropriétaires, pour ce qui est des copropriétés
      — Affecter vos excédents conformément aux délibérations de votre assemblée générale
      — Valider les écritures provisoires au brouillard
      — Lettrer les comptes de tiers 
@@ -128,5 +128,5 @@ La clôture a pour effet de :
 
 **Remarques :**
 
-     — Les ASL conservent normalement les excédents sauf sur travaux votés d'où un possible "Report à nouveau"
+     — Les associations conservent normalement les excédents sauf sur travaux votés d'où un possible "Report à nouveau"
      — Tant qu'un exercice n'est pas clôturé, vous pouvez enregistrer des opérations sur celui-ci et le suivant
