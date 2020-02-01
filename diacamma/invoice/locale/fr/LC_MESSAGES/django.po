@@ -239,7 +239,7 @@ msgstr "Total"
 
 #: models.py:403
 msgid "article reference is not unique !"
-msgstr "la reference de cet article n'est pas unique !"
+msgstr "la référence de cet article n'est pas unique !"
 
 #: models.py:408 views_conf.py:218
 msgid "articles"
@@ -263,7 +263,7 @@ msgstr "Fournisseurs"
 
 #: models.py:445
 msgid "fiscal year"
-msgstr "exercice"
+msgstr "exercice comptable"
 
 #: models.py:446 models.py:519
 msgid "bill type"
@@ -502,7 +502,7 @@ msgstr "occurence"
 
 #: models.py:1384
 msgid "filter criteria"
-msgstr "critère de filtrage"
+msgstr "critère de filtre"
 
 #: models.py:1469
 msgid "automatic reduce"
@@ -530,7 +530,7 @@ msgstr "non applicable"
 
 #: models.py:1553
 msgid "invoice-vat-mode.1"
-msgstr "prix hors taxe"
+msgstr "prix hors taxes"
 
 #: models.py:1553
 msgid "invoice-vat-mode.2"
@@ -595,23 +595,23 @@ msgstr "Facturier"
 #: views.py:65
 msgid "Manage of billing"
 msgstr ""
-"Ensemble d'actions permettant de gérer un petit facturier adapter à vos "
-"besoins:{[br/]}{[ul]}{[li]}Gérer et classer vos différents articles "
-"facturables.{[/li]}{[li]}Créer un devis ou une facture relatif à un de vos "
-"services.{[/li]}{[li]}Créer automatiquement une entrée dans votre "
-"comptabilité à la validation de vos factures.{[/li]}{[/ul]}"
+"Gérer un petit facturier adapté à vos "
+"besoins :{[br/]}{[ul]}{[li]}Gérer votre fichier articles "
+"facturables.{[/li]}{[li]}Créer les devis et les factures relatifs à vos "
+"services.{[/li]}{[li]}Générer automatiquement la comptabilisation des ventes et "
+"des avoirs à la validation de vos factures.{[/li]}{[/ul]}"
 
 #: views.py:75
 msgid "Filtrer by third"
-msgstr "Filtrer par tiers"
+msgstr "Filtrer sur tiers"
 
 #: views.py:92
 msgid "Filter by status"
-msgstr "Filtrer par status"
+msgstr "Filtrer sur le statut"
 
 #: views.py:104
 msgid "Filter by type"
-msgstr "Filtrer par type"
+msgstr "Filtrer sur le type"
 
 #: views.py:119
 msgid "Management of bill list"
@@ -656,7 +656,7 @@ msgstr "Voulez-vous valider '%s' ?"
 
 #: views.py:241
 msgid "Payment of deposit or cash"
-msgstr "Payement d'acompte ou comptant"
+msgstr "Paiement d'acompte ou comptant"
 
 #: views.py:260
 msgid "Send email with PDF"
@@ -676,7 +676,7 @@ msgstr "Envoyer le rapport sauvegardé"
 
 #: views.py:329
 msgid "Multi-pay bill"
-msgstr "Multi-règlement"
+msgstr "Multirèglement"
 
 #: views.py:338
 msgid "=> Bill"
@@ -854,7 +854,7 @@ msgstr "Par règlement"
 
 #: views.py:765
 msgid "Payoff of bills and receipts"
-msgstr "Règlements des factures et des reçus"
+msgstr "Les règlements des factures et des reçus"
 
 #: views.py:766
 msgid "Payoff of assets"
@@ -866,7 +866,7 @@ msgstr "Devis"
 
 #: views.py:770
 msgid "Statistics of quotation in status \"validated\""
-msgstr "Statistiques des devis en status \"validés\""
+msgstr "Statistiques des devis en statut \"validés\""
 
 #: views.py:775
 msgid "check"
@@ -878,7 +878,7 @@ msgstr "Impression des statistiques"
 
 #: views.py:804
 msgid "No editable: Payoff assign to many bills."
-msgstr "Non éditable: Règlement assigné à plusieurs factures."
+msgstr "Non éditable : Règlement affecté à plusieurs factures."
 
 #: views.py:811
 msgid "No editable: Entry not found."
@@ -943,12 +943,12 @@ msgid ""
 "There are %(build)d bills, assets or receipts in building and %(valid)d "
 "validated"
 msgstr ""
-"Il y a %(build)d factures, avoirs ou reçus en création et %(valid)d validées"
+"Il y a %(build)d factures, avoirs ou reçus en création et %(valid)d validés"
 
 #: views.py:1011
 #, python-format
 msgid "There are %(build)d quotations in building and %(valid)d validated"
-msgstr "Il y a %(build)d devis en création et %(valid)d validées"
+msgstr "Il y a %(build)d devis en création et %(valid)d validés"
 
 #: views.py:1048
 #, python-format
@@ -990,11 +990,11 @@ msgstr "Codes d'imputation comptable"
 
 #: views_conf.py:73
 msgid "Management of commercial configuration of invoice"
-msgstr "Gestion de la configuration commercial du facturier"
+msgstr "Gestion de la configuration commerciale du facturier"
 
 #: views_conf.py:78
 msgid "Invoice commercial configuration"
-msgstr "Configuration commercial du facturier"
+msgstr "Configuration commerciale du facturier"
 
 #: views_conf.py:93
 msgid "Custom field"
@@ -1066,11 +1066,11 @@ msgstr "Supprimer une catégorie"
 
 #: views_conf.py:202
 msgid "Tool to import articles from CSV file."
-msgstr "Outil d'import d'article depuis un fichier CSV."
+msgstr "Outil d'import d'articles depuis un fichier CSV."
 
 #: views_conf.py:204
 msgid "Article import"
-msgstr "Import d'article"
+msgstr "Import d'articles"
 
 #: views_conf.py:222
 msgid "parameters"
@@ -1082,23 +1082,23 @@ msgstr "Définissez les paramètres du facturier."
 
 #: views_conf.py:266
 msgid "Configuration of vat"
-msgstr "Configurez votre gestion de TVA."
+msgstr "Configurez votre gestion de la TVA."
 
 #: views_storage.py:47
 msgid "Manage of storage"
 msgstr ""
-"Ensemble d'actions vous permettant de gérer un stock:{[br/]}{[ul]}{[li]}"
-"Suiver le stock de votre centrale d'achats.{[/li]}{[li]}Gérer plusieurs "
+"Ensemble d'actions vous permettant de gérer un stock :{[br/]}{[ul]}{[li]}"
+"Suivez le stock de votre centrale d'achats.{[/li]}{[li]}Gérer plusieurs "
 "espaces de stockage.{[/li]}{[li]}Réaliser simplement des entrées et des "
 "sorties de stock.{[/li]}{[/ul]}"
 
 #: views_storage.py:57
 msgid "Management of storage sheet list"
-msgstr "Gestion de bordereaux de stock"
+msgstr "Gestion des bordereaux de stockage"
 
 #: views_storage.py:62
 msgid "Storage sheet"
-msgstr "Bordereau de stockage"
+msgstr "Bordereaux de stockage"
 
 #: views_storage.py:90
 msgid "Add storage sheet"
@@ -1106,7 +1106,7 @@ msgstr "Ajouter un bordereau de stockage"
 
 #: views_storage.py:91
 msgid "Modify storage sheet"
-msgstr "Modifier un bordereau de stock"
+msgstr "Modifier un bordereau de stockage"
 
 #: views_storage.py:97
 msgid "Show storage sheet"
@@ -1114,7 +1114,7 @@ msgstr "Voir un bordereau de stockage"
 
 #: views_storage.py:109
 msgid "Delete storage sheet"
-msgstr "Supprimer un bordereau de stock"
+msgstr "Supprimer un bordereau de stockage"
 
 #: views_storage.py:134
 msgid "target area"
@@ -1146,7 +1146,7 @@ msgstr "Import de détail de stock"
 
 #: views_storage.py:217
 msgid "Situation of storage"
-msgstr "Situation du stockage"
+msgstr "Situation de stock"
 
 #: views_storage.py:222
 msgid "Situation"
