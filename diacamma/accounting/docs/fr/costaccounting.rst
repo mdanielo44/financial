@@ -16,7 +16,7 @@ Les codes analytiques
        
 Vous accédez à la liste des codes analytiques créés.
 
-Depuis cet écran vous pouvez créer, modifier ou supprimer un code analytique à la condition qu'il ne soit pas lié à une catégorie de charges.
+Depuis cet écran vous pouvez créer, modifier ou supprimer un code analytique.
 
 Chaque code a un titre, un descriptif et un statut (ouvert ou clôturé).
 En mode "liste", figure le résultat comptable (les produits diminués des charges) de chaque code analytique.
