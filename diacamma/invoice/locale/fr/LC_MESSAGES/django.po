@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-25 10:14+0000\n"
+"POT-Creation-Date: 2020-01-25 16:35+0000\n"
 "PO-Revision-Date: 2019-11-25 11:13+0100\n"
 "Last-Translator: b'Paul ARULATEDA <paul531@orange.fr>'\n"
 "Language-Team: \n"
@@ -102,7 +102,7 @@ msgstr "Modifier le filtrage pour afficher une liste d'articles utilisables."
 msgid "max quantity"
 msgstr "quantité max."
 
-#: models.py:60 models.py:79 models.py:104 models.py:162 models.py:1379
+#: models.py:60 models.py:79 models.py:104 models.py:162 models.py:1385
 msgid "name"
 msgstr "nom"
 
@@ -149,8 +149,8 @@ msgid "Storage areas"
 msgstr "Lieux de stockage"
 
 #: models.py:129 models.py:407 models.py:413 models.py:997 models.py:1021
-#: models.py:1300 printmodel/Bill_0001.py:127 printmodel/Bill_0002.py:144
-#: views.py:698
+#: models.py:1300 models.py:1307 printmodel/Bill_0001.py:127
+#: printmodel/Bill_0002.py:144 views.py:698
 msgid "article"
 msgstr "article"
 
@@ -463,94 +463,106 @@ msgstr "bordereaux de stockage"
 msgid "buying price"
 msgstr "prix d'achat"
 
-#: models.py:1373
+#: models.py:1379
 msgid "storage detail"
 msgstr "détail de stock"
 
-#: models.py:1374
+#: models.py:1380
 msgid "storage details"
 msgstr "détails de stock"
 
-#: models.py:1380
+#: models.py:1386
 msgid "category"
 msgstr "catégorie"
 
-#: models.py:1381 printmodel/Bill_0002.py:155 views.py:736
+#: models.py:1387 printmodel/Bill_0002.py:155 views.py:736
 msgid "mode"
 msgstr "mode"
 
-#: models.py:1381
+#: models.py:1387
 msgid "by value"
 msgstr "par valeur"
 
-#: models.py:1381
+#: models.py:1387
 msgid "by percentage"
 msgstr "par pourcentage"
 
-#: models.py:1381
+#: models.py:1387
 msgid "by overall percentage sold"
 msgstr "par pourcentage global vendu"
 
-#: models.py:1382 models.py:1386 views.py:682 views.py:699 views.py:720
+#: models.py:1388 models.py:1392 views.py:682 views.py:699 views.py:720
 #: views.py:739 views.py:877
 msgid "amount"
 msgstr "montant"
 
-#: models.py:1383
+#: models.py:1389
 msgid "occurency"
 msgstr "occurence"
 
-#: models.py:1384
+#: models.py:1390
 msgid "filter criteria"
 msgstr "critère de filtrage"
 
-#: models.py:1469
+#: models.py:1475
 msgid "automatic reduce"
 msgstr "réduction automatique"
 
-#: models.py:1470
+#: models.py:1476
 msgid "automatic reduces"
 msgstr "réductions automatiques"
 
-#: models.py:1548
+#: models.py:1554
 msgid "invoice-default-sell-account"
 msgstr "compte de vente par défaut"
 
-#: models.py:1550
+#: models.py:1556
 msgid "invoice-reduce-account"
 msgstr "compte de réduction"
 
-#: models.py:1552
+#: models.py:1558
 msgid "invoice-vat-mode"
 msgstr "mode TVA"
 
-#: models.py:1553
+#: models.py:1559
 msgid "invoice-vat-mode.0"
 msgstr "non applicable"
 
-#: models.py:1553
+#: models.py:1559
 msgid "invoice-vat-mode.1"
 msgstr "prix hors taxe"
 
-#: models.py:1553
+#: models.py:1559
 msgid "invoice-vat-mode.2"
 msgstr "prix toutes taxes comprises"
 
-#: models.py:1554
+#: models.py:1560
 msgid "invoice-account-third"
 msgstr "Compte tiers par défaut"
 
-#: models.py:1557
+#: models.py:1563
 msgid "invoice-article-with-picture"
 msgstr "article avec image"
 
-#: models.py:1558
+#: models.py:1564
 msgid "invoice-reduce-with-ratio"
 msgstr "réduction affichée avec %"
 
-#: models.py:1559
+#: models.py:1565
 msgid "invoice-reduce-allow-article-empty"
 msgstr "autoriser les arcticles sans code dans la facture"
+
+#: models.py:1567
+msgid "# invoice (administrator)"
+msgstr "# facture (administrateur)"
+
+#: models.py:1570
+msgid "# invoice (editor)"
+msgstr "# facture (éditeur)"
+
+#: models.py:1572
+msgid "# invoice (shower)"
+msgstr "# facture (observateur)"
 
 #: printmodel/Article_0001.py:31
 msgid "listing"
@@ -1187,18 +1199,3 @@ msgstr "Vos factures"
 #: views_summary.py:69
 msgid "Payment"
 msgstr "Paiement"
-
-#~ msgid "short_quotation"
-#~ msgstr "D"
-
-#~ msgid "short_bill"
-#~ msgstr "F"
-
-#~ msgid "short_asset"
-#~ msgstr "A"
-
-#~ msgid "short_receipt"
-#~ msgstr "R"
-
-#~ msgid "invoice"
-#~ msgstr "facturier"
