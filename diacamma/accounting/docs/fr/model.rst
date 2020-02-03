@@ -29,4 +29,4 @@ En saisie d'écriture, cliquez sur le bouton "+ Modèle".
     .. image:: model_add.png
 
 Sélectionnez votre modèle et précisez le coefficient multiplicateur qui devra être appliqué au montant présaisi dans le modèle. Ce facteur est très pratique lorsque l'on a des factures récurrentes mais dont le montant peut fluctuer. Il est alors possible, è l'aide de ce réel, de le faire varier.
-Validez votre sélection par "Ok". Une écriture est générée d'après le modèle. Vous pouvez la corriger comme n'importe quelle écriture. 
+Validez votre sélection par "Ok". Une écriture est générée d'après le modèle. Vous pouvez la corriger comme n'importe quelle écriture.  

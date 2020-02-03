@@ -46,14 +46,14 @@ from lucterios.framework.signal_and_lock import Signal
 from lucterios.framework.filetools import get_user_path, readimage_to_base64, remove_accent
 from lucterios.framework.tools import same_day_months_after, get_date_formating, format_to_string, get_format_value
 from lucterios.framework.auditlog import auditlog
-from lucterios.CORE.models import Parameter, SavedCriteria
+from lucterios.CORE.models import Parameter, SavedCriteria, LucteriosGroup
 from lucterios.CORE.parameters import Params
 from lucterios.contacts.models import CustomField, CustomizeObject
 
 from diacamma.accounting.models import FiscalYear, Third, EntryAccount, CostAccounting, Journal, EntryLineAccount, ChartsAccount, AccountThird
 from diacamma.accounting.tools import current_system_account, currency_round, correct_accounting_code,\
     format_with_devise, get_amount_from_format_devise
-from diacamma.payoff.models import Supporting, Payoff, BankAccount
+from diacamma.payoff.models import Supporting, Payoff, BankAccount, BankTransaction, DepositSlip
 
 
 class Vat(LucteriosModel):
@@ -1563,6 +1563,14 @@ def invoice_checkparam():
     Parameter.check_and_create(name='invoice-article-with-picture', typeparam=3, title=_("invoice-article-with-picture"), args="{}", value='False')
     Parameter.check_and_create(name='invoice-reduce-with-ratio', typeparam=3, title=_("invoice-reduce-with-ratio"), args="{}", value='True')
     Parameter.check_and_create(name='invoice-reduce-allow-article-empty', typeparam=3, title=_("invoice-reduce-allow-article-empty"), args="{}", value='True')
+
+    LucteriosGroup.redefine_generic(_("# invoice (administrator)"), Vat.get_permission(True, True, True), BankAccount.get_permission(True, True, True), BankTransaction.get_permission(True, True, True),
+                                    Article.get_permission(True, True, True), Bill.get_permission(True, True, True),
+                                    StorageSheet.get_permission(True, True, True), Payoff.get_permission(True, True, True), DepositSlip.get_permission(True, True, True))
+    LucteriosGroup.redefine_generic(_("# invoice (editor)"), Article.get_permission(True, True, False), Bill.get_permission(True, True, False),
+                                    StorageSheet.get_permission(True, True, False), Payoff.get_permission(True, True, True), DepositSlip.get_permission(True, True, False))
+    LucteriosGroup.redefine_generic(_("# invoice (shower)"), Article.get_permission(True, False, False), Bill.get_permission(True, False, False),
+                                    StorageSheet.get_permission(True, False, False), Payoff.get_permission(True, False, False), DepositSlip.get_permission(True, False, False))
 
 
 @Signal.decorate('convertdata')
