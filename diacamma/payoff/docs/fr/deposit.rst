@@ -1,15 +1,26 @@
-Dépôt de chèques
+Dépôts de chèques
 ================
 
-Depuis le menu *Comptabilité/Dépôt de chèques*, vous pouvez ajouter et consulter des bordereaux de chèques.
+     Menu *Comptabilité/Dépôt de chèques*
+     
+Grâce à ce menu, vous pouvez préparer vos remises de chèques à l'encaissement.
+A l'écran s'affiche la liste des bordereaux de dépôt préparés, que vous pouvez filtrer sur le statut.
 
     .. image:: depositlist.png
 
-Dans une fiche de bordereau, vous pouvez sélectionner les règlements effectués par chèques dans vos différentes factures.
-Cela vous constitue une liasse de chèques que vous pourrez déposer à votre agence bancaire.
-Une fois réalisée, clôturez la sélection définie.
+Si vous souhaitez préparer une nouvelle remise, cliquez sur "+ Créer".
+Dans la boîte de dialogue ouverte, sélectionnez le compte courant concerné, la référence du dépôt et la date de la remise.
+Le détail du dépôt de chèques est complété avec le bouton "+ Ajouter".
+Sélectionnez ensuite dans la liste des créances, celles réglées et cliquez sur le bouton "Sélectionner" afin que les chèques correspondants soient repris dans le détail du bordereau.
+Votre détail étant maintenant actualisé, vous devez "Clôturer" votre dépôt de chèques après l'avoir contrôlé.
+
+Pour faciliter la recherche d'écritures, vous pouvez les filtrer.
+Le bouton "Historique" vous liste, lui, les manipulations enregistrées sur le dépôt de chèques actif.
+
+
+
 
     .. image:: deposititem.png
 
-Vous pouvez alors imprimer le bordereau de remise de chèques que vous pouvez joindre à votre liasse lors du dépôt de celle-ci.
-De plus, une fois que votre bordereau apparaît sur votre relevé de compte, vous pouvez valider l'ensemble de vos écritures comptables depuis la fiche elle-même. 
+Imprimez votre dépôt de chèques. Maintenant, vous pouvez procéder à la remise effective en banque des chèques assortis du dépôt.
+Mettez à jour votre comptabilité après encaissement des chèques.
