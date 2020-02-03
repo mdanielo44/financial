@@ -81,7 +81,7 @@ class DepositTest(InvoiceTest):
         self.factory.xfer = DepositSlipList()
         self.calljson('/diacamma.payoff/depositSlipList', {}, False)
         self.assert_observer('core.custom', 'diacamma.payoff', 'depositSlipList')
-        self.assert_grid_equal('depositslip', {"status": "status", "bank_account": "compte bancaire", "date": "date", "reference": "référence", "total": "total"}, 0)  # nb=5
+        self.assert_grid_equal('depositslip', {"status": "statut", "bank_account": "compte bancaire", "date": "date", "reference": "référence", "total": "total"}, 0)  # nb=5
 
         self.factory.xfer = DepositSlipAddModify()
         self.calljson('/diacamma.payoff/depositSlipAddModify', {}, False)
@@ -98,7 +98,7 @@ class DepositTest(InvoiceTest):
         self.assert_observer('core.custom', 'diacamma.payoff', 'depositSlipList')
         self.assert_count_equal('depositslip', 1)
         self.assert_json_equal('', '#depositslip/headers/@0/@0', 'status')
-        self.assert_json_equal('', '#depositslip/headers/@0/@1', 'status')
+        self.assert_json_equal('', '#depositslip/headers/@0/@1', 'statut')
         self.assert_json_equal('', '#depositslip/headers/@0/@2', {'0': 'en création', '1': 'clôturé', '2': 'validé'})
         self.assert_json_equal('', '#depositslip/headers/@0/@4', "%s")
 
@@ -356,7 +356,7 @@ class MethodTest(InvoiceTest, PaymentTest):
         self.assert_json_equal('LABELFORM', 'title', "devis")
         self.assert_json_equal('LABELFORM', 'status', 1)
         self.assertEqual(len(self.json_actions), 6)
-        self.assert_action_equal(self.json_actions[0], (six.text_type('Règlement'), 'diacamma.payoff/images/payments.png', 'diacamma.payoff', 'payableShow', 0, 1, 1))
+        self.assert_action_equal(self.json_actions[0], ('Règlements', 'diacamma.payoff/images/payments.png', 'diacamma.payoff', 'payableShow', 0, 1, 1))
 
         self.factory.xfer = PayableShow()
         self.calljson('/diacamma.payoff/payableShow', {'bill': 1, 'item_name': 'bill'}, False)
@@ -373,7 +373,7 @@ class MethodTest(InvoiceTest, PaymentTest):
         self.assert_json_equal('LABELFORM', 'status', 1)
         self.assert_json_equal('LABELFORM', 'total_rest_topay', 100.0)
         self.assertEqual(len(self.json_actions), 5)
-        self.assert_action_equal(self.json_actions[0], (six.text_type('Règlement'), 'diacamma.payoff/images/payments.png', 'diacamma.payoff', 'payableShow', 0, 1, 1))
+        self.assert_action_equal(self.json_actions[0], ('Règlements', 'diacamma.payoff/images/payments.png', 'diacamma.payoff', 'payableShow', 0, 1, 1))
 
         self.factory.xfer = PayableShow()
         self.calljson('/diacamma.payoff/payableShow', {'bill': 2, 'item_name': 'bill'}, False)
@@ -429,7 +429,7 @@ class MethodTest(InvoiceTest, PaymentTest):
         self.assert_json_equal('LABELFORM', 'total_rest_topay', 100.0)
         self.assert_json_equal('LABELFORM', 'vta_sum', 4.76)
         self.assertEqual(len(self.json_actions), 5)
-        self.assert_action_equal(self.json_actions[0], (six.text_type('Règlement'), 'diacamma.payoff/images/payments.png', 'diacamma.payoff', 'payableShow', 0, 1, 1))
+        self.assert_action_equal(self.json_actions[0], ('Règlements', 'diacamma.payoff/images/payments.png', 'diacamma.payoff', 'payableShow', 0, 1, 1))
 
         self.factory.xfer = PayableShow()
         self.calljson('/diacamma.payoff/payableShow', {'bill': 6, 'item_name': 'bill'}, False)
@@ -455,7 +455,7 @@ class MethodTest(InvoiceTest, PaymentTest):
         self.assert_json_equal('LABELFORM', 'total_rest_topay', 40.0)
         self.assert_json_equal('LABELFORM', 'vta_sum', 4.76)
         self.assertEqual(len(self.json_actions), 5)
-        self.assert_action_equal(self.json_actions[0], (six.text_type('Règlement'), 'diacamma.payoff/images/payments.png', 'diacamma.payoff', 'payableShow', 0, 1, 1))
+        self.assert_action_equal(self.json_actions[0], ('Règlements', 'diacamma.payoff/images/payments.png', 'diacamma.payoff', 'payableShow', 0, 1, 1))
 
         self.factory.xfer = PayableShow()
         self.calljson('/diacamma.payoff/payableShow', {'bill': 6, 'item_name': 'bill'}, False)
@@ -471,7 +471,7 @@ class MethodTest(InvoiceTest, PaymentTest):
         self.assert_json_equal('LABELFORM', 'status', 1)
         self.assert_json_equal('LABELFORM', 'total_rest_topay', 100.0)
         self.assertEqual(len(self.json_actions), 5)
-        self.assert_action_equal(self.json_actions[0], (six.text_type('Règlement'), 'diacamma.payoff/images/payments.png', 'diacamma.payoff', 'payableShow', 0, 1, 1))
+        self.assert_action_equal(self.json_actions[0], ('Règlements', 'diacamma.payoff/images/payments.png', 'diacamma.payoff', 'payableShow', 0, 1, 1))
 
         self.factory.xfer = PayableShow()
         self.calljson('/diacamma.payoff/payableShow', {'bill': 4, 'item_name': 'bill'}, False)

@@ -688,16 +688,16 @@ class AdminTest(LucteriosTest):
         self.assertTrue('__tab_4' in self.json_data.keys(), self.json_data.keys())
         self.assertFalse('__tab_5' in self.json_data.keys(), self.json_data.keys())
         self.assert_count_equal('', 4 + 5 + 2 + 6)
-        self.assert_grid_equal('fiscalyear', {"begin": "début", "end": "fin", "status": "status", "is_actif": "actif"}, 0)  # nb=4
+        self.assert_grid_equal('fiscalyear', {"begin": "début", "end": "fin", "status": "statut", "is_actif": "actif"}, 0)  # nb=4
 
         self.assert_grid_equal('journal', {'name': "nom", "is_default": "défaut"}, 5)  # nb=1
-        self.assert_json_equal('', 'journal/@0/name', 'Report à nouveau')
+        self.assert_json_equal('', 'journal/@0/name', 'Report-à-nouveau')
         self.assert_json_equal('', 'journal/@0/is_default', False)
         self.assert_json_equal('', 'journal/@1/name', 'Achats')
         self.assert_json_equal('', 'journal/@1/is_default', False)
         self.assert_json_equal('', 'journal/@2/name', 'Ventes')
         self.assert_json_equal('', 'journal/@2/is_default', False)
-        self.assert_json_equal('', 'journal/@3/name', 'Règlement')
+        self.assert_json_equal('', 'journal/@3/name', 'Règlements')
         self.assert_json_equal('', 'journal/@3/is_default', True)
         self.assert_json_equal('', 'journal/@4/name', 'Opérations diverses')
         self.assert_json_equal('', 'journal/@4/is_default', False)
@@ -834,10 +834,10 @@ class AdminTest(LucteriosTest):
         self.factory.xfer = Configuration()
         self.calljson('/diacamma.accounting/configuration', {}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'configuration')
-        self.assert_grid_equal('fiscalyear', {"begin": "début", "end": "fin", "status": "status", "is_actif": "actif"}, 1)  # nb=4
+        self.assert_grid_equal('fiscalyear', {"begin": "début", "end": "fin", "status": "statut", "is_actif": "actif"}, 1)  # nb=4
 
         self.assert_json_equal('', '#fiscalyear/headers/@2/@0', 'status')
-        self.assert_json_equal('', '#fiscalyear/headers/@2/@1', 'status')
+        self.assert_json_equal('', '#fiscalyear/headers/@2/@1', 'statut')
         self.assert_json_equal('', '#fiscalyear/headers/@2/@2', {'0': 'en création', '1': 'en cours', '2': 'terminé'})
         self.assert_json_equal('', '#fiscalyear/headers/@2/@4', "%s")
 

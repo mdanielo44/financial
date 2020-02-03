@@ -128,7 +128,7 @@ class PayoffTest(LucteriosTest):
         self.calljson('/diacamma.payoff/paymentMethodAddModify', {'paytype': 1}, False)
         self.assert_observer('core.custom', 'diacamma.payoff', 'paymentMethodAddModify')
         self.assert_count_equal('', 5)
-        self.assert_attrib_equal('item_1', 'description', 'libellé à')
+        self.assert_attrib_equal('item_1', 'description', "à l'ordre de")
         self.assert_json_equal('EDIT', 'item_1', "WoldCompany")
         self.assert_attrib_equal('item_2', 'description', 'adresse')
         self.assert_json_equal('MEMO', 'item_2', "Place des cocotiers{[newline]}97200 FORT DE FRANCE")
@@ -172,7 +172,7 @@ class PayoffTest(LucteriosTest):
 
         self.assert_json_equal('', 'paymentmethod/@1/paytype', 1)
         self.assert_json_equal('', 'paymentmethod/@1/bank_account', "My bank")
-        self.assert_json_equal('', 'paymentmethod/@1/info', '{[b]}libellé à{[/b]}{[br/]}Truc{[br/]}', True)
+        self.assert_json_equal('', 'paymentmethod/@1/info', "{[b]}à l'ordre de{[/b]}{[br/]}Truc{[br/]}", True)
 
         self.assert_json_equal('', 'paymentmethod/@2/paytype', 2)
         self.assert_json_equal('', 'paymentmethod/@2/bank_account', "My bank")

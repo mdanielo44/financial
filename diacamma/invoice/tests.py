@@ -67,7 +67,7 @@ class BillTest(InvoiceTest):
         self.factory.xfer = BillList()
         self.calljson('/diacamma.invoice/billList', {}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'billList')
-        self.assert_grid_equal('bill', {"bill_type": "type de facture", "num_txt": "N°", "date": "date", "third": "tiers", "comment": "commentaire", "total": "total", "status": "status"}, 0)  # nb=7
+        self.assert_grid_equal('bill', {"bill_type": "type de facture", "num_txt": "N°", "date": "date", "third": "tiers", "comment": "commentaire", "total": "total", "status": "statut"}, 0)  # nb=7
 
         self.factory.xfer = BillAddModify()
         self.calljson('/diacamma.invoice/billAddModify', {}, False)
@@ -793,7 +793,7 @@ class BillTest(InvoiceTest):
         self.factory.xfer = BillList()
         self.calljson('/diacamma.invoice/billList', {}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'billList')
-        self.assert_grid_equal('bill', {"bill_type": "type de facture", "num_txt": "N°", "date": "date", "third": "tiers", "comment": "commentaire", "total": "total TTC", "status": "status"}, 1)  # nb=7
+        self.assert_grid_equal('bill', {"bill_type": "type de facture", "num_txt": "N°", "date": "date", "third": "tiers", "comment": "commentaire", "total": "total TTC", "status": "statut"}, 1)  # nb=7
 
     def test_bill_price_without_vat(self):
         default_articles()
@@ -853,7 +853,7 @@ class BillTest(InvoiceTest):
         self.factory.xfer = BillList()
         self.calljson('/diacamma.invoice/billList', {}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'billList')
-        self.assert_grid_equal('bill', {"bill_type": "type de facture", "num_txt": "N°", "date": "date", "third": "tiers", "comment": "commentaire", "total": "total HT", "status": "status"}, 1)  # nb=7
+        self.assert_grid_equal('bill', {"bill_type": "type de facture", "num_txt": "N°", "date": "date", "third": "tiers", "comment": "commentaire", "total": "total HT", "status": "statut"}, 1)  # nb=7
 
     def test_list_sorted(self):
         default_articles()
@@ -1657,7 +1657,7 @@ class BillTest(InvoiceTest):
             self.assert_observer('core.custom', 'diacamma.payoff', 'payableEmail')
             self.assert_count_equal('', 6)
             self.assert_json_equal('EDIT', 'subject', 'Facture A-1')
-            self.assert_json_equal('MEMO', 'message', 'Jack Dalton{[br/]}{[br/]}Veuillez trouver ci-Joint à ce courriel facture A-1 - 1 avril 2015.{[br/]}{[br/]}Sincères salutations')
+            self.assert_json_equal('MEMO', 'message', 'Jack Dalton{[br/]}{[br/]}Veuillez trouver joint à ce courriel facture A-1 - 1 avril 2015.{[br/]}{[br/]}Sincères salutations.')
 
             self.factory.xfer = PayableEmail()
             self.calljson('/diacamma.payoff/payableEmail',
@@ -1747,17 +1747,17 @@ class BillTest(InvoiceTest):
             self.assert_count_equal('', 7)
             self.assert_json_equal('LABELFORM', "nb_item", '4')
             self.assert_json_equal('EDIT', 'subject', '#reference')
-            self.assert_json_equal('MEMO', 'message', '#name{[br/]}{[br/]}Veuillez trouver ci-Joint à ce courriel #doc.{[br/]}{[br/]}Sincères salutations')
+            self.assert_json_equal('MEMO', 'message', '#name{[br/]}{[br/]}Veuillez trouver joint à ce courriel #doc.{[br/]}{[br/]}Sincères salutations.')
 
             self.factory.xfer = PayableEmail()
             self.calljson('/diacamma.payoff/payableEmail',
                           {'bill': "1;2;3;4", 'OK': 'YES', 'item_name': 'bill', 'subject': '#reference',
-                           'message': '#name{[br/]}{[br/]}Veuillez trouver ci-Joint à ce courriel #doc.{[br/]}{[br/]}Sincères salutations', 'model': 8}, False)
+                           'message': '#name{[br/]}{[br/]}Veuillez trouver joint à ce courriel #doc.{[br/]}{[br/]}Sincères salutations.', 'model': 8}, False)
             self.assert_observer('core.acknowledge', 'diacamma.payoff', 'payableEmail')
 
             email_msg = Message.objects.get(id=1)
             self.assertEqual(email_msg.subject, '#reference')
-            self.assertEqual(email_msg.body, '#name{[br/]}{[br/]}Veuillez trouver ci-Joint à ce courriel #doc.{[br/]}{[br/]}Sincères salutations')
+            self.assertEqual(email_msg.body, '#name{[br/]}{[br/]}Veuillez trouver joint à ce courriel #doc.{[br/]}{[br/]}Sincères salutations.')
             self.assertEqual(email_msg.status, 2)
             self.assertEqual(email_msg.recipients, "invoice.Bill id||8||1;2;3;4\n")
             self.assertEqual(email_msg.email_to_send, "invoice.Bill:4:8\ninvoice.Bill:3:8\ninvoice.Bill:2:8\ninvoice.Bill:1:8")
@@ -1787,12 +1787,12 @@ class BillTest(InvoiceTest):
             self.factory.xfer = PayableEmail()
             self.calljson('/diacamma.payoff/payableEmail',
                           {'bill': "1;2;3;4", 'OK': 'YES', 'item_name': 'bill', 'PRINT_PERSITENT': True, 'subject': '#reference',
-                           'message': '#name{[br/]}{[br/]}Veuillez trouver ci-Joint à ce courriel #doc.{[br/]}{[br/]}Sincères salutations', 'model': 8}, False)
+                           'message': '#name{[br/]}{[br/]}Veuillez trouver joint à ce courriel #doc.{[br/]}{[br/]}Sincères salutations', 'model': 8}, False)
             self.assert_observer('core.acknowledge', 'diacamma.payoff', 'payableEmail')
 
             email_msg = Message.objects.get(id=1)
             self.assertEqual(email_msg.subject, '#reference')
-            self.assertEqual(email_msg.body, '#name{[br/]}{[br/]}Veuillez trouver ci-Joint à ce courriel #doc.{[br/]}{[br/]}Sincères salutations')
+            self.assertEqual(email_msg.body, '#name{[br/]}{[br/]}Veuillez trouver joint à ce courriel #doc.{[br/]}{[br/]}Sincères salutations')
             self.assertEqual(email_msg.status, 2)
             self.assertEqual(email_msg.recipients, "invoice.Bill id||8||1;2;3;4\n")
             self.assertEqual(email_msg.email_to_send, "invoice.Bill:4:0\ninvoice.Bill:3:0\ninvoice.Bill:2:0\ninvoice.Bill:1:0")

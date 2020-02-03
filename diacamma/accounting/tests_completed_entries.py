@@ -349,7 +349,7 @@ class CompletedEntryTest(LucteriosTest):
         self.assert_count_equal('', 5)
         self.assert_count_equal('costaccounting', 1)
         self.assert_json_equal('', '#costaccounting/headers/@6/@0', 'status')
-        self.assert_json_equal('', '#costaccounting/headers/@6/@1', 'status')
+        self.assert_json_equal('', '#costaccounting/headers/@6/@1', 'statut')
         self.assert_json_equal('', '#costaccounting/headers/@6/@2', {'0': 'ouverte', '1': 'clôturé'})
         self.assert_json_equal('', '#costaccounting/headers/@6/@4', "%s")
 

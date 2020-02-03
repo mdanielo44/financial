@@ -54,7 +54,7 @@ class ChartsAccountTest(LucteriosTest):
         self.calljson('/diacamma.accounting/chartsAccountList', {'year': '1', 'type_of_account': '-1'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'chartsAccountList')
         self.assert_count_equal('', 8)
-        self.assert_grid_equal('chartsaccount', {"code": "code", "name": "nom", "last_year_total": "total de l'exercice précédent", "current_total": "total exercice", "current_validated": "total validé"}, 17)  # nb=5
+        self.assert_grid_equal('chartsaccount', {"code": "code", "name": "nom", "last_year_total": "total de l'exercice précédent", "current_total": "total de l'exercice", "current_validated": "total validé"}, 17)  # nb=5
         self.assert_json_equal('LABELFORM', 'result', [230.62, 348.60, -117.98, 1050.66, 1244.74])
         self.assert_select_equal('type_of_account', {0: 'Actif', 1: 'Passif', 2: 'Capitaux', 3: 'Produit', 4: 'Charge', 5: 'Autres comptes', -1: '---'})
 
@@ -292,8 +292,8 @@ class ChartsAccountTest(LucteriosTest):
             six.text_type(self.response_json['print']['content'])).decode("utf-8")
         content_csv = csv_value.split('\n')
         self.assertEqual(len(content_csv), 25, str(content_csv))
-        self.assertEqual(content_csv[1].strip()[:27], '"Liste de plan comptable - ')
-        self.assertEqual(content_csv[4].strip(), '"code";"nom";"total de l\'exercice précédent";"total exercice";"total validé";')
+        self.assertEqual(content_csv[1].strip()[:27], '"Liste des comptes du plan ')
+        self.assertEqual(content_csv[4].strip(), '"code";"nom";"total de l\'exercice précédent";"total de l\'exercice";"total validé";')
         self.assertEqual(content_csv[5].strip(), '"106";"106";"Crédit: 1 250,38 €";"Crédit: 1 250,38 €";"Crédit: 1 250,38 €";')
         self.assertEqual(content_csv[12].strip(), '"512";"512";"Débit: 1 135,93 €";"Débit: 1 130,29 €";"Débit: 1 130,29 €";')
         self.assertEqual(content_csv[13].strip(), '"531";"531";"Débit: 114,45 €";"Crédit: 79,63 €";"Débit: 114,45 €";')
@@ -457,7 +457,7 @@ class FiscalYearWorkflowTest(PaymentTest):
         self.calljson('/diacamma.accounting/fiscalYearBegin',
                       {'year': '1', 'type_of_account': '-1'}, False)
         self.assert_observer('core.exception', 'diacamma.accounting', 'fiscalYearBegin')
-        self.assert_json_equal('', 'message', "Des écritures de report à nouveau ne sont pas validées !")
+        self.assert_json_equal('', 'message', "Des écritures au journal Report à nouveau ne sont pas validées !")
 
         new_entry.closed()
 
@@ -622,8 +622,8 @@ class FiscalYearWorkflowTest(PaymentTest):
         self.assert_observer('core.custom', 'diacamma.accounting', 'fiscalYearClose')
         text_value = self.json_data['info']
 
-        self.assertTrue('Voulez-vous cloturer cet exercice ?' in text_value, text_value)
-        self.assertTrue('4 écritures ne sont pas validées' in text_value, text_value)
+        self.assertTrue('Voulez-vous clôturer cet exercice ?' in text_value, text_value)
+        self.assertTrue('les 4 écritures non validées' in text_value, text_value)
 
         self.factory.xfer = EntryAccountList()
         self.calljson('/diacamma.accounting/entryAccountList', {'year': '1', 'journal': '0', 'filter': '0'}, False)
@@ -688,7 +688,7 @@ class FiscalYearWorkflowTest(PaymentTest):
         self.assert_json_equal('', 'chartsaccount/@7/current_total', -135.45)
 
         check_pdfreport(self, '1', 'Bilan.pdf', "FiscalYearBalanceSheet", "diacamma.accounting.views_reports")
-        check_pdfreport(self, '1', 'Compte de resultats.pdf', "FiscalYearIncomeStatement", "diacamma.accounting.views_reports")
+        check_pdfreport(self, '1', 'Compte de resultat.pdf', "FiscalYearIncomeStatement", "diacamma.accounting.views_reports")
 
         self.factory.xfer = DocumentSearch()
         self.calljson('/lucterios.documents/documentSearch', {}, False)

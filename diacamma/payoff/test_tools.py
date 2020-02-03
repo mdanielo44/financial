@@ -82,7 +82,7 @@ class PaymentTest(LucteriosTest):
         self.assertTrue('<html>this is a bill.<hr/>' in email_content, email_content)
         self.assertTrue(email_content.find('<u><i>IBAN</i></u>') != -1, email_content)
         self.assertTrue(email_content.find('123456789') != -1, email_content)
-        self.assertTrue(email_content.find('<u><i>libellé à</i></u>') != -1, email_content)
+        self.assertTrue(email_content.find("<u><i>à l'ordre de</i></u>") != -1, email_content)
         self.assertTrue(email_content.find('<u><i>adresse</i></u>') != -1, email_content)
         self.assertTrue(email_content.find('Truc') != -1, email_content)
         self.assertTrue(email_content.find('1 rue de la Paix<newline>99000 LA-BAS') != -1, email_content)
@@ -111,7 +111,7 @@ class PaymentTest(LucteriosTest):
 
             self.assert_attrib_equal('paymeth_2', 'description', 'chèque')
             txt_value = self.json_data["paymeth_2"]
-            self.assertTrue(txt_value.find('{[u]}{[i]}libellé à{[/i]}{[/u]}') != -1, txt_value)
+            self.assertTrue(txt_value.find("{[u]}{[i]}à l'ordre de{[/i]}{[/u]}") != -1, txt_value)
             self.assertTrue(txt_value.find('{[u]}{[i]}adresse{[/i]}{[/u]}') != -1, txt_value)
             self.assertTrue(txt_value.find('Truc') != -1, txt_value)
             self.assertTrue(txt_value.find('1 rue de la Paix{[newline]}99000 LA-BAS') != -1, txt_value)

@@ -158,7 +158,7 @@ class ConfigTest(LucteriosTest):
         self.factory.xfer = InvoiceConfCommercial()
         self.calljson('/diacamma.invoice/invoiceConfCommercial', {}, False)
         self.assert_observer('core.custom', 'diacamma.invoice', 'invoiceConfCommercial')
-        self.assert_grid_equal('automaticreduce', {'name': "nom", 'category': "catégorie", 'mode': 'mode', 'amount_txt': 'montant', 'occurency': 'occurence', 'filtercriteria': 'critère de filtrage'}, 0)
+        self.assert_grid_equal('automaticreduce', {'name': "nom", 'category': "catégorie", 'mode': 'mode', 'amount_txt': 'montant', 'occurency': 'occurence', 'filtercriteria': 'critère de filtre'}, 0)
 
         self.factory.xfer = AutomaticReduceAddModify()
         self.calljson('/diacamma.invoice/automaticReduceAddModify', {}, False)
