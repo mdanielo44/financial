@@ -1,27 +1,23 @@
-Budgets prévisionnels
-=====================
+Budget prévisionnel
+===================
 
-Tout budget prévisionnel est normalement équilibré. Toutefois, pour les budgets analytiques non liés aux catégories, cela peut ne pas être le cas.
+Budget par analytique
+---------------------
 
-Budgets analytiques
+Depuis l'interface des comptabilités analytiques, vous pouvez ajouter un budget prévisionnel à chacun.
+Cliquez simplement sur le bouton *Budget* après avoir sélectionner une comptabilité à compléter.
+
+L'interface vous permet alors d'ajouter des comptes de charges ou de produits ainsi qu'un solde prévisionnel.
+vous pouvez également importer les montants des charges et produits du résultat d'une comptabilités précédentes.
+
+Ce budget prévisionnel apparait alors dans les rapports afin de le comparer avec la comptabilité réalisé.
+
+Budget par exercice
 -------------------
 
-    Menu *Comptabilité/Gestion comptable/Comptabilités analytiques*
-    
-Grâce à ce module, vous pouvez suivre les comptabilités analytiques.
+Depuis l'interface du plan comptable courant, vous pouvez ajouter un budget prévisionnel à l'exercice via le bouton *Budget*.
 
-Chacune des comptabilité analytique est liée ou non à une catégorie de charges :
+Comme pour le budget analytique, vous pouvez ajouter des comptes de charges ou de produits ainsi que d'importer le résultat de l'exercice précédent.
+A noter qu'automatiquement, l'ensemble des budgets analytiques associés au même exercice sont automatiques consolidés dans ce budget d'exercice.
 
-- Liée à une catégorie : Lorsque que vous voulez ouvrir cette comptabilité analytique, vous avez le rappel que celle-ci est liée à un autre module et est donc protégée. A l'aide du bouton "Budget", vous ne pouvez qu'afficher le budget de la catégorie correspondante (cf. 2.2)
-- Non liée à une catégorie : La comptabilité étant  distincte des catégories de charges, toujours avec le bouton "Budget", vous pouvez ajouter des comptes de charges ou de produits ainsi que leurs montants prévisionnels à l'aide du bouton "+ Ajouter" situé au bas de l'écran. Vous pouvez également importer les montants des charges et des produits d'une comptabilité analytique précédente.
-
-Les budgets prévisionnels sont repris dans les rapports afin de comparer le prévisionnel avec le réalisé.
-
-
-Budget général de l'exercice
-----------------------------
-
-Depuis l'interface du plan comptable courant, vous pouvez afficher le budget prévisionnel de l'exercice via le bouton "Budget".
-
-L'ensemble des budgets analytiques associés au même exercice sont automatiquement consolidés dans le budget général.
-Le *Compte de résultat* de l'exercice reprend lui aussi ce budget général pour qu'il soit comparé aux charges et aux produits réels.
+Le *resultat d'exercice* presente également la comptabilité courant en affichant également le budget prévisionnel à des fins de comparaison.
