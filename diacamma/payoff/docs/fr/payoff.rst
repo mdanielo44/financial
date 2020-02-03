@@ -1,27 +1,26 @@
-Règlement
-=========
+Règlement des factures
+======================
 
-Depuis un module tel que la facturation, il vous est possible de gérer leur règlement.
+Depuis le module de facturation, il vous est possible de gérer le règlement des factures validées.
 
-Depuis la fiche du document, cliquez sur «ajouter» un paiement.
+     Menu Facturier/Facture
+
+Dans la fenêtre ouverte, filtrez vos factures afin de n'afficher que celles qui sont validées.
+Sélectionnez la ou les factures réglées par le tiers et cliquez sur le bouton "Règlement"
 
     .. image:: payoff.png
 
-Vous pouvez alors saisir le mode de paiement de votre client ainsi que le compte bancaire à imputer de ce mouvement financier.
+Dans la boîte de dialogue, saisissez le détail du règlement reçu de votre client en précisant le mode de paiement ainsi que le  compte bancaire sur lequel imputer ce mouvement financier.
 
-Dans la facture, vous pouvez consulter en plus de son montant total, la somme versée ainsi que le résidu de paiement à effectuer.
+Dans la facture, maintenant figurent le net-à-payer  et le ou les règlements correspondants ainsi que le reste dû.
 
-Chaque règlement génère automatiquement une écriture comptable dans le journal d'encaissement.
-
-Il est aussi possible d'effectuer un seul règlement sur plusieurs document financier (comme les factures). Pour cela sélectionnez dans la liste des éléments "valides" celles que vous souhaitez et cliquez sur Réglement.
+Chaque règlement génère automatiquement une écriture comptable au journal.
 
     .. image:: multi-payoff.png
 
-Suivant le type de document sur lequel ce paiement est associé, vous pouvez avoir plusieurs modes de répartition:
+Suivant le type de document sur lequel ce paiement est associé, vous pouvez avoir plusieurs modes de répartition :
 
- - Par date
-   Ce paiement est d'abort ventilé sur le document financier le plus ancien, puis le suivant, etc.
- - Par prorata
-   Ce paiement multiple sera automatique ventilé sur document financier au prorata de leur montant. 
+ - Par date : le paiement est d'abord ventilé sur la facture la plus ancienne, puis la suivante, etc.
+ - Par prorata : le paiement est automatiquement ventilé sur les toutes les factures sélectionnées, au prorata de leurs montants. 
 
-Dans tout les cas, une seule écriture comptable d'encaissement sera alors réalisée.
+Quelque soit le mode de répartition, une seule écriture comptable d'encaissement sera alors passée.
