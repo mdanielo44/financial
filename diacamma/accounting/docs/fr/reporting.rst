@@ -117,5 +117,5 @@ Depuis l'écran du plan comptable de l'exercice :
      
 Pour un exercice donné et par type de comptes (ou tous), vous pouvez visualiser, pour l'ensemble des comptes ouverts, le récapitulatif des soldes de début et de fin d'exercice avec l'indication des soldes de fin compte-tenu des seules écritures validées.
 
-Ce récapitulatif peut être imprimé, exporté au format PDF ou CSV (ce qui permet l'import de vos soldes dans un tableur).
+Ce récapitulatif peut être imprimé, exporté au format PDF ou CSV (ce qui permet l'import de vos soldes dans un tableur). 
  
