@@ -33,7 +33,7 @@ Depuis cet écran, vous pouvez aussi créer un nouveau contact à l'aide du bout
 
 .. image:: third_edit.png
 
-Il est possible d'associer un tiers comptable à un ou plusieurs comptes comptables : fournisseur, client.... Cela permet en comptabilité de distinguer les opérations selon la nature des échanges que vous avez avec lui. Retenez que l'arrêté du 14 mars 2005 relatif aux comptes du syndicat des copropriétaires énonce dans son article 9 qu'"Aucune compensation ne doit être effectuée entre les comptes dont le solde est débiteur et les comptes dont le solde est créditeur".
+Il est possible d'associer un tiers comptable à un ou plusieurs comptes comptables : fournisseur, client.... Cela permet en comptabilité de distinguer les opérations selon la nature des échanges que vous avez avec lui. 
 
 
 Situation d'un tiers

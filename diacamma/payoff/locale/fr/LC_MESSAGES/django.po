@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-01-25 16:35+0000\n"
+"POT-Creation-Date: 2020-02-03 11:52+0000\n"
 "PO-Revision-Date: 2019-10-07 18:02+0200\n"
 "Last-Translator: b'Paul ARULATEDA <paul531@orange.fr>'\n"
 "Language-Team: \n"
@@ -329,8 +329,8 @@ msgstr "message de courriel par défaut"
 #: models.py:940
 msgid "#name{[br/]}{[br/]}Joint in this email #doc.{[br/]}{[br/]}Regards"
 msgstr ""
-"#name{[br/]}{[br/]}Veuillez trouver joint à ce courriel #doc.{[br/]}"
-"{[br/]}Sincères salutations."
+"#name{[br/]}{[br/]}Veuillez trouver joint à ce courriel #doc.{[br/]}{[br/]}"
+"Sincères salutations."
 
 #: models.py:941
 msgid "payoff-email-subject"
@@ -483,8 +483,8 @@ msgstr "Definissez vos paramètrages de règlement"
 #: views_conf.py:163
 msgid "Configuration of bank account"
 msgstr ""
-"Ajoutez vos comptes bancaires.{[br/]}Ils apparaitront dans la liste de "
-"vos établissements financiers."
+"Ajoutez vos comptes bancaires.{[br/]}Ils apparaitront dans la liste de vos "
+"établissements financiers."
 
 #: views_conf.py:166
 msgid "Configuration of payment method"
