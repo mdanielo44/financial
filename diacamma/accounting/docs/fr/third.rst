@@ -1,47 +1,53 @@
 Tiers comptable
 ===============
 
-Création d'un tiers
--------------------
+**Préambule** :
+Les opérations réalisées par votre structure avec ses partenaires donnent lieu à des échanges. Les flux physiques (échanges de biens et de services) et les flux monétaires (échanges de monnaie) doivent être constatés en comptabilité.
 
-Plaçons nous dans le menu *Comptabilité/Tiers*.
+Pour chacun de vos partenaires, que ce soit des personnes physiques (individus) ou des personnes morales (administrations, associations, sociétés...) vous devez, afin de comptabiliser distinctement les opérations réalisées avec lui, lui ouvrir une subdivision d'un compte général appelé aussi compte auxiliaire (ou compte nominatif).
+
+Exemple : vous achetez régulièrement des fournitures de bureau à la SARL "Papeterie du Centre" dont la gérante est Mme VERGER Louise
+
+Sous DIACAMMA :
+     Fonction : Gérante                                  --> 
+          Personne physique : VERGER Louise 
+               Personne morale : Papeterie du Centre (SARL) avec pour membre VERGER Louise, gérante
+                    Tiers comptable : Papeterie du Centre - Code 401
+
+
+Création d'un tiers comptable
+-----------------------------
+    
+     Menu *Comptabilité/Tiers*
 
 .. image:: third_list.png
 
+La liste des tiers précédemment enregistrés s'affiche à l'écran. Dans cette liste, notez la présence des membres de votre structure.
+Vous pouvez filtrer cette liste par contact ou type de tiers et imprimer la liste obtenue.
 
-La liste des tiers précédemment enregistrés apparaît.
-Vous pouvez réaliser un certain nombre de fitrage rapide suivant le nom ou
-la situation. Vous pouvez alors imprimer la liste.
-Pour ajouter un nouveau tiers, vous devez commencer par choisir un contact (physique
-ou moral) associé à ce tiers comptable.
+Pour ajouter un nouveau tiers comptable, cliquez sur "+ Créer" et sélectionnez le contact (personne physique ou morale) associé à ce tiers comptable.
 
 .. image:: third_add.png
 
-Depuis cet écran, vous pouvez aussi créer un nouveau contact avant de le sélectionner.
+Depuis cet écran, vous pouvez aussi créer un nouveau contact à l'aide du bouton "+ Créer" avant de le sélectionner.
 
 .. image:: third_edit.png
 
-Pour chaque tiers, vous pouvez associer des comptes comptables
-correspondant à la nature de vos tiers: fournisseur, client, salarié et
-sociétaire. Vous pouvez changer ces comptes pour imputer dans votre
-comptabilité comme vous le souhaitez cette personne au cours
-d'opérations financières.
+Il est possible d'associer un tiers comptable à un ou plusieurs comptes comptables : fournisseur, client.... Cela permet en comptabilité de distinguer les opérations selon la nature des échanges que vous avez avec lui. Retenez que l'arrêté du 14 mars 2005 relatif aux comptes du syndicat des copropriétaires énonce dans son article 9 qu'"Aucune compensation ne doit être effectuée entre les comptes dont le solde est débiteur et les comptes dont le solde est créditeur".
+
 
 Situation d'un tiers
 --------------------
 
-La fiche d'un tiers vous permet d'avoir une vue globale de l'état des recettes et dépenses liées à ce tiers.
+L'onglet "Ecritures comptables" de la fiche d'un tiers vous donne une vue sur les écritures comptables le concernant,
+avec possibilité de les filtrer.
 
 .. image:: third_state.png
 
-Vous retrouverez ici l'ensemble des écritures comptables de
-l'exercice liées à ce tiers. Vous trouverez également un résumé des
-débits et crédits permettant en un seul regard de savoir s'il reste des
-dettes impayées. Avec d'autres modules financiers, vous pourrez
-également consulter des opérations liées.
+Champs personnalisés de tiers
+-----------------------------
 
-Configuration
--------------
-
-Depuis le menu *Administration/Modules (conf.)/Configuration comptable* vous avez la possibilité d'ajouter à tout tiers des champs personnalisés.
-Le mécanisme est similaire à ce que vous pouvez trouver dans la configuration des contacts.
+     Menu *Administration/Modules (conf.)/Configuration comptable* - onglet "Champ personnalisé de tiers"
+     
+Grâce à l'ajout de vos propres champs dans la fiche type de tiers comptable, vous allez pouvoir personnaliser cette fiche.
+La méthode est similaire à celle utilisée pour personnaliser la fiche des contacts.
