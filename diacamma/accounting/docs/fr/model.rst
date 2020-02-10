@@ -1,5 +1,5 @@
-Modèle
-======
+Modèle d'écriture
+=================
 
 Déclaration d'un modèle
 -----------------------
