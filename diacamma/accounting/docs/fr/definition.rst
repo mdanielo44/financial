@@ -55,4 +55,4 @@ Plan comptable de l'exercice
 
 Le plan comptable de l'exercice est l'ensemble des comptes utilisés au cours d'un exercice comptable en se basant sur le plan comptable couramment admis par l'administration fiscale.
 
-les numéros de comptes doivent impérativement commencer par le préfixe donné par le plan comptable en vigueur au moment de la création du compte.
+les numéros de comptes doivent impérativement commencer par le préfixe donné par le plan comptable en vigueur au moment de la création du compte. 
