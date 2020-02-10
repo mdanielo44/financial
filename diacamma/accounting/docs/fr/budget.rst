@@ -1,23 +1,30 @@
-Budget prévisionnel
-===================
+Budgets prévisionnels
+=====================
 
-Budget par analytique
----------------------
+Budget analytique
+-----------------
 
-Depuis l'interface des comptabilités analytiques, vous pouvez ajouter un budget prévisionnel à chacun.
-Cliquez simplement sur le bouton *Budget* après avoir sélectionner une comptabilité à compléter.
+     Menu *Comptabilité/Gestion comptable/Comptabilités analytiques*
 
-L'interface vous permet alors d'ajouter des comptes de charges ou de produits ainsi qu'un solde prévisionnel.
-vous pouvez également importer les montants des charges et produits du résultat d'une comptabilités précédentes.
+Vous pouvez pour chacune, à la condition qu'elle ne soit pas liée à une catégorie de charges, ajouter un budget analytique prévisionnel depuis l'interface des comptabilités analytiques. Si la comptabilité analytique est liée à une catégorie, c'est le budget de la catégorie qui est reporté automatiquement en analytique.
 
-Ce budget prévisionnel apparait alors dans les rapports afin de le comparer avec la comptabilité réalisé.
+Cliquez simplement sur le bouton "Budget" après avoir sélectionné la comptabilité à compléter.
 
-Budget par exercice
--------------------
+L'interface vous permet alors d'ajouter (comptes et montants) des charges ou des produits ; le budget peut être en déséquilibre.
+Vous pouvez également importer les montants des charges et produits réels d'une comptabilité précédente.
 
-Depuis l'interface du plan comptable courant, vous pouvez ajouter un budget prévisionnel à l'exercice via le bouton *Budget*.
+Ce budget prévisionnel apparait alors dans les rapports afin de le comparer avec le réalisé.
 
-Comme pour le budget analytique, vous pouvez ajouter des comptes de charges ou de produits ainsi que d'importer le résultat de l'exercice précédent.
-A noter qu'automatiquement, l'ensemble des budgets analytiques associés au même exercice sont automatiques consolidés dans ce budget d'exercice.
+Budget prévisionnel de la copropriété
+-------------------------------------
 
-Le *resultat d'exercice* presente également la comptabilité courant en affichant également le budget prévisionnel à des fins de comparaison.
+Quelque soit la taille de votre copropriété, ce budget est obligatoire et est présenté en assemblée générale aux copropriétaires. Il doit être en équilibre.
+
+     Menu *Comptabilité/Gestion comptable/Plan comptable*
+
+Depuis l'interface du plan comptable courant, vous pouvez renseigner le budget prévisionnel de l'exercice via le bouton "Budget".
+
+Comme pour un budget analytique, vous pouvez ajouter des comptes de charges ou de produits ainsi qu'importer le réalisé d'un exercice précédent.
+A noter qu'automatiquement, l'ensemble des budgets analytiques associés au même exercice sont automatiquement consolidés dans le budget prévisionnel de la copropriété.
+
+Le *Compte de résultat* reprend également le budget prévisionnel à des fins de comparaison.
