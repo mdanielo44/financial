@@ -4,7 +4,7 @@ Dépôts de chèques
      Menu *Comptabilité/Dépôt de chèques*
      
 Grâce à ce menu, vous pouvez préparer vos remises de chèques à l'encaissement.
-A l'écran s'affiche la liste des bordereaux de dépôt préparés, que vous pouvez filtrer sur le statut.
+A l'écran s'affiche la liste des bordereaux de dépôt préparés que vous pouvez filtrer sur le statut.
 
     .. image:: depositlist.png
 
@@ -16,9 +16,6 @@ Votre détail étant maintenant actualisé, vous devez "Clôturer" votre dépôt
 
 Pour faciliter la recherche d'écritures, vous pouvez les filtrer.
 Le bouton "Historique" vous liste, lui, les manipulations enregistrées sur le dépôt de chèques actif.
-
-
-
 
     .. image:: deposititem.png
 
