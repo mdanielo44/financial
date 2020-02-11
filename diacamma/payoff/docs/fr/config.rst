@@ -39,4 +39,4 @@ Paramètres
 2 Paramètres actuellement :
 
  - compte de caisse : code comptable à mouvementer pour les règlements en espèces
- - compte de frais bancaires : code comptable devant être utilisé pour comptabiliser les frais bancaires liés au règlement. Une ligne d'écriture est alors ajoutée directement à l'écriture comptable correspondante si le champ "compte de frais bancaires" est renseigné, ce qui permet de saisir le montant des frais
+ - compte de frais bancaires : code comptable devant être utilisé pour comptabiliser les frais bancaires liés aux règlements. Une ligne d'écriture est alors ajoutée directement à l'écriture comptable correspondante si le champ "compte de frais bancaires" est renseigné, ce qui permet de saisir le montant des frais.
