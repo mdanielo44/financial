@@ -10,7 +10,7 @@ Sélectionnez la ou les factures réglées par le tiers et cliquez sur le bouton
 
     .. image:: payoff.png
 
-Dans la boîte de dialogue, saisissez le détail du règlement reçu de votre client en précisant le mode de paiement ainsi que le  compte bancaire sur lequel imputer ce mouvement financier.
+Dans la boîte de dialogue, saisissez le détail du règlement reçu du tiers en précisant le mode de paiement ainsi que le  compte bancaire sur lequel imputer ce mouvement financier.
 
 Dans la facture, maintenant figurent le net-à-payer  et le ou les règlements correspondants ainsi que le reste dû.
 
@@ -21,6 +21,6 @@ Chaque règlement génère automatiquement une écriture comptable au journal.
 Suivant le type de document sur lequel ce paiement est associé, vous pouvez avoir plusieurs modes de répartition :
 
  - Par date : le paiement est d'abord ventilé sur la facture la plus ancienne, puis la suivante, etc.
- - Par prorata : le paiement est automatiquement ventilé sur les toutes les factures sélectionnées, au prorata de leurs montants. 
+ - Par prorata : le paiement est automatiquement ventilé sur toutes les factures sélectionnées, au prorata de leurs montants. 
 
 Quelque soit le mode de répartition, une seule écriture comptable d'encaissement sera alors passée.
