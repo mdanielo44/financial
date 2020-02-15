@@ -50,4 +50,4 @@ Champs personnalisés de tiers
      Menu *Administration/Modules (conf.)/Configuration comptable* - onglet "Champ personnalisé de tiers"
      
 Grâce à l'ajout de vos propres champs dans la fiche type de tiers comptable, vous allez pouvoir personnaliser cette fiche.
-La méthode est similaire à celle utilisée pour personnaliser la fiche des contacts.
+La méthode est similaire à celle utilisée pour personnaliser la fiche des contacts. 
