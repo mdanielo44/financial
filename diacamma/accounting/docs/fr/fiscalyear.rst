@@ -27,7 +27,7 @@ Vérifiez que le système comptable a été choisi et cliquez sur "+ Créer" afi
 
 Pour le premier exercice sous *Diacamma Syndic*, saisissez la date de début et la date de fin de l’exercice puis cliquez sur le bouton "OK". Les exercices suivants ont comme date de début le lendemain de la date de clôture de l’exercice précédent et seule la date de fin est à saisir. 
 
-Notez que le logiciel associe à chaque exercice un répertoire de stockage du gestionnaire de documents : certains documents
+Notez que le logiciel associe à chaque exercice un répertoire de stockage du *Gestionnaire de documents* : certains documents
 officiels seront sauvegardés dans celui-ci. Le bouton "Contrôle" vous permet à tout moment de  vérifier que vos documents officiels ont bien été générés.
 
 Votre nouvel exercice figure maintenant dans la liste des exercices. Il est **[en création]**. Lorsque plusieurs exercices ont été créés, vous devez activer celui sur lequel vous souhaitez travailler par défaut, à l'aide du bouton "Activé".
@@ -50,11 +50,11 @@ Maintenant, vous devez fermer la fenêtre "Configuration comptable" et créer le
 Avec le bouton "+ Initiaux", générez automatiquement votre propre plan comptable général à partir du plan de comptes type fourni par le logiciel.
 Adaptez celui-ci aux besoins de votre structure avec les boutons "Ajouter" et "Supprimer".
      
- * **Première tenue de comptabilité sous Diacamma Syndic** : vous migrez sous Diacamma et avez des à-nouveaux à saisir.
+ * **Première tenue de comptabilité sous Diacamma** : vous migrez sous Diacamma et avez des à-nouveaux à saisir.
 	Avec le bouton "+ Initiaux", générez automatiquement votre propre plan comptable général à partir du plan de comptes type.
 	Adaptez celui-ci aux besoins de votre structure avec les boutons "Ajouter" et "Supprimer".
 	Quittez l'écran *Plan comptable* et ouvrez le menu *Comptabilité/Gestion comptable/Ecritures comptables*.
-	Saisissez vos soldes à-nouveaux en une seule écriture en prenant bien soin de la contrôler dans le journal "Report à nouveau".
+	Saisissez vos soldes à-nouveaux en une seule écriture, en prenant bien soin de la contrôler, dans le journal "Report à nouveau".
 	Ceci fait, réouvrez le menu *Comptabilité/Gestion comptable/Plan comptable*.   
  * **Exercice comptable suivant** : Il ne s’agit pas de votre premier exercice sous *Diacamma*.
 	Si ce n'est pas déjà réalisé, avec le bouton "Importer" (et non "Initiaux"), vous devez importer le plan comptable de l'exercice précédent.
@@ -77,7 +77,7 @@ A tout moment vous pouvez ajouter un nouveau compte dans votre plan comptable.
 
     .. image:: account_new.png
 
-Référez-vous aux codes définis par la règlementation de votre pays. Comme déjà écrit, pour les copropriétés françaises, votre plan comptable doit respecter la nomenclature des comptes énoncée dans l'arrêté du 14 mars 2005 relatif aux comptes du syndicat des copropriétaires. Des subdivisions sont possibles.
+Référez-vous à la règlementation de votre pays. Votre structure peut avoir l'obligation de respecter certaines obligations pour ce qui est de leur plan comptable.
 
 Un compte peut être modifié, tant pour ce qui est de son numéro que de son intitulé. Les imputations (lignes d'écritures) qui lui sont associées seront automatiquement modifiées. Le changement n'est permis que si le nouveau compte relève de la même catégorie comptable (charge, produit...).
 
