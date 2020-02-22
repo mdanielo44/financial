@@ -6,7 +6,7 @@ Budget analytique
 
      Menu *Comptabilité/Gestion comptable/Comptabilités analytiques*
 
-Depuis l'interface des comptabilités analytiques, vous pouvez ajouter un budget prévisionnel à chacun.
+Depuis l'interface des comptabilités analytiques, vous pouvez ajouter un budget prévisionnel à chacune.
 
 Cliquez simplement sur le bouton "Budget" après avoir sélectionné la comptabilité à compléter.
 
