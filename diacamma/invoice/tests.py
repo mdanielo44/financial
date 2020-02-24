@@ -1140,6 +1140,13 @@ class BillTest(InvoiceTest):
         self.assert_json_equal('EDIT', 'payer', "Dalton Jack")
 
         self.factory.xfer = PayoffAddModify()
+        self.calljson('/diacamma.payoff/payoffAddModify', {'supporting': bill_id, 'amount': '60.0', 'payer': "Ma'a Dalton", 'date': '2015-04-03'}, False)
+        self.assert_observer('core.custom', 'diacamma.payoff', 'payoffAddModify')
+        self.assert_json_equal('FLOAT', 'amount', "60.00")
+        self.assert_json_equal('DATE', 'date', "2015-04-03")
+        self.assert_json_equal('EDIT', 'payer', "Ma'a Dalton")
+
+        self.factory.xfer = PayoffAddModify()
         self.calljson('/diacamma.payoff/payoffAddModify', {'SAVE': 'YES', 'supporting': bill_id, 'amount': '60.0', 'payer': "Ma'a Dalton", 'date': '2015-04-03', 'mode': 0, 'reference': 'abc', 'bank_account': 0}, False)
         self.assert_observer('core.acknowledge', 'diacamma.payoff', 'payoffAddModify')
 
@@ -2252,6 +2259,119 @@ class BillTest(InvoiceTest):
         self.assert_json_equal('', 'bill/@4/total', 75.00)
         self.assert_json_equal('', 'bill/@4/status', 0)
         self.assert_json_equal('', 'sum_summary', [510.0, 52.5, 457.5])
+
+    def test_autoreduce_with_asset1(self):
+        initial_thirds_fr()
+        default_categories()
+        default_articles()
+
+        self.factory.xfer = AutomaticReduceAddModify()
+        self.calljson('/diacamma.invoice/automaticReduceAddModify', {'name': "reduct #1", 'category': 2, 'mode': 0, 'amount': '15.0', 'occurency': '4', 'filtercriteria': '0', 'SAVE': 'YES'}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'automaticReduceAddModify')
+
+        self.factory.xfer = BillList()
+        self.calljson('/diacamma.invoice/billList', {'status_filter': 1}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'billList')
+        self.assert_count_equal('bill', 0)
+
+        self._create_bill([{'article': 5, 'designation': 'article 5', 'price': '100', 'quantity': 5}], 1, '2015-04-01', 6, True)  # +470€
+        self._create_bill([{'article': 5, 'designation': 'article 5', 'price': '100', 'quantity': 3}], 2, '2015-04-02', 6, True)  # -270€
+        self._create_bill([{'article': 5, 'designation': 'article 5', 'price': '100', 'quantity': 2}], 1, '2015-04-03', 6, True)  # +185€
+
+        self.factory.xfer = ThirdShow()
+        self.calljson('/diacamma.accounting/thirdShow', {'third': 6, 'status_filter': -2, 'GRID_ORDER%bill': 'id'}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdShow')
+        self.assert_count_equal('bill', 3)
+        self.assert_json_equal('', 'bill/@0/bill_type', 1)
+        self.assert_json_equal('', 'bill/@0/third', 'Dalton Jack')
+        self.assert_json_equal('', 'bill/@0/total', 470.00)
+        self.assert_json_equal('', 'bill/@0/date', '2015-04-01')
+        self.assert_json_equal('', 'bill/@1/bill_type', 2)
+        self.assert_json_equal('', 'bill/@1/third', 'Dalton Jack')
+        self.assert_json_equal('', 'bill/@1/total', 270.00)
+        self.assert_json_equal('', 'bill/@1/date', '2015-04-02')
+        self.assert_json_equal('', 'bill/@2/bill_type', 1)
+        self.assert_json_equal('', 'bill/@2/third', 'Dalton Jack')
+        self.assert_json_equal('', 'bill/@2/total', 185.00)
+        self.assert_json_equal('', 'bill/@2/date', '2015-04-03')
+        self.assert_json_equal('LABELFORM', 'sum_summary', [400.0, 15.0, 385.0])
+
+    def test_autoreduce_with_asset2(self):
+        initial_thirds_fr()
+        default_categories()
+        default_articles()
+
+        self.factory.xfer = AutomaticReduceAddModify()
+        self.calljson('/diacamma.invoice/automaticReduceAddModify', {'name': "reduct #2", 'category': 2, 'mode': 1, 'amount': '20.0', 'occurency': '4', 'filtercriteria': '0', 'SAVE': 'YES'}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'automaticReduceAddModify')
+
+        self.factory.xfer = BillList()
+        self.calljson('/diacamma.invoice/billList', {'status_filter': 1}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'billList')
+        self.assert_count_equal('bill', 0)
+
+        self._create_bill([{'article': 5, 'designation': 'article 5', 'price': '100', 'quantity': 5}], 1, '2015-04-01', 6, True)  # +460€
+        self._create_bill([{'article': 5, 'designation': 'article 5', 'price': '100', 'quantity': 3}], 2, '2015-04-02', 6, True)  # -260€
+        self._create_bill([{'article': 5, 'designation': 'article 5', 'price': '100', 'quantity': 2}], 1, '2015-04-03', 6, True)  # +180€
+
+        self.factory.xfer = ThirdShow()
+        self.calljson('/diacamma.accounting/thirdShow', {'third': 6, 'status_filter': -2, 'GRID_ORDER%bill': 'id'}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdShow')
+        self.assert_count_equal('bill', 3)
+        self.assert_json_equal('', 'bill/@0/bill_type', 1)
+        self.assert_json_equal('', 'bill/@0/third', 'Dalton Jack')
+        self.assert_json_equal('', 'bill/@0/total', 460.00)
+        self.assert_json_equal('', 'bill/@0/date', '2015-04-01')
+        self.assert_json_equal('', 'bill/@1/bill_type', 2)
+        self.assert_json_equal('', 'bill/@1/third', 'Dalton Jack')
+        self.assert_json_equal('', 'bill/@1/total', 260.00)
+        self.assert_json_equal('', 'bill/@1/date', '2015-04-02')
+        self.assert_json_equal('', 'bill/@2/bill_type', 1)
+        self.assert_json_equal('', 'bill/@2/third', 'Dalton Jack')
+        self.assert_json_equal('', 'bill/@2/total', 180.00)
+        self.assert_json_equal('', 'bill/@2/date', '2015-04-03')
+        self.assert_json_equal('LABELFORM', 'sum_summary', [400.0, 20.0, 380.0])
+
+    def test_autoreduce_with_asset3(self):
+        initial_thirds_fr()
+        default_categories()
+        default_articles()
+
+        self.factory.xfer = AutomaticReduceAddModify()
+        self.calljson('/diacamma.invoice/automaticReduceAddModify', {'name': "reduct #3", 'category': 2, 'mode': 2, 'amount': '10.0', 'occurency': '4', 'filtercriteria': '0', 'SAVE': 'YES'}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.invoice', 'automaticReduceAddModify')
+
+        self.factory.xfer = BillList()
+        self.calljson('/diacamma.invoice/billList', {'status_filter': 1}, False)
+        self.assert_observer('core.custom', 'diacamma.invoice', 'billList')
+        self.assert_count_equal('bill', 0)
+
+        self._create_bill([{'article': 5, 'designation': 'article 5', 'price': '100', 'quantity': 5}], 1, '2015-04-01', 6, True)  # +450€
+        self._create_bill([{'article': 5, 'designation': 'article 5', 'price': '100', 'quantity': 3}], 2, '2015-04-02', 6, True)  # -250€
+        self._create_bill([{'article': 5, 'designation': 'article 5', 'price': '100', 'quantity': 4}], 1, '2015-04-03', 6, True)  # +340€
+        self._create_bill([{'article': 5, 'designation': 'article 5', 'price': '100', 'quantity': 1}], 2, '2015-04-02', 6, True)  # -90€
+
+        self.factory.xfer = ThirdShow()
+        self.calljson('/diacamma.accounting/thirdShow', {'third': 6, 'status_filter': -2, 'GRID_ORDER%bill': 'id'}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'thirdShow')
+        self.assert_count_equal('bill', 4)
+        self.assert_json_equal('', 'bill/@0/bill_type', 1)
+        self.assert_json_equal('', 'bill/@0/third', 'Dalton Jack')
+        self.assert_json_equal('', 'bill/@0/total', 450.00)
+        self.assert_json_equal('', 'bill/@0/date', '2015-04-01')
+        self.assert_json_equal('', 'bill/@1/bill_type', 2)
+        self.assert_json_equal('', 'bill/@1/third', 'Dalton Jack')
+        self.assert_json_equal('', 'bill/@1/total', 250.00)
+        self.assert_json_equal('', 'bill/@1/date', '2015-04-02')
+        self.assert_json_equal('', 'bill/@2/bill_type', 1)
+        self.assert_json_equal('', 'bill/@2/third', 'Dalton Jack')
+        self.assert_json_equal('', 'bill/@2/total', 340.00)
+        self.assert_json_equal('', 'bill/@2/date', '2015-04-03')
+        self.assert_json_equal('', 'bill/@3/bill_type', 2)
+        self.assert_json_equal('', 'bill/@3/third', 'Dalton Jack')
+        self.assert_json_equal('', 'bill/@3/total', 90.00)
+        self.assert_json_equal('', 'bill/@3/date', '2015-04-02')
+        self.assert_json_equal('LABELFORM', 'sum_summary', [500.0, 50.0, 450.0])
 
     def test_valid_multiple(self):
         default_articles()

@@ -182,11 +182,10 @@ class PayoffEditor(LucteriosEditor):
         amount = xfer.get_components("amount")
         if self.item.id is None:
             amount.value = min(max(amount_min, amount_sum), amount_max)
-            xfer.get_components("payer").value = six.text_type(supporting_list[0].third)
-            if xfer.getparam('date') is None:
-                xfer.get_components("date").value = supporting_list[0].get_final_child().default_date()
-        elif xfer.getparam('amount') is not None:
-            amount.value = amount_sum
+            xfer.get_components("payer").value = xfer.getparam('payer', str(supporting_list[0].third))
+            xfer.get_components("date").value = xfer.getparam('date', supporting_list[0].get_final_child().default_date())
+        else:
+            amount.value = xfer.getparam('amount', amount_sum)
         amount.prec = currency_decimal
         amount.min = float(amount_min)
         amount.max = float(amount_max)
@@ -202,7 +201,7 @@ class PayoffEditor(LucteriosEditor):
             mode.select_list.insert(3, levy)
             del mode.select_list[6]
             xfer.get_components("mode").set_action(xfer.request, xfer.get_action(), close=CLOSE_NO, modal=FORMTYPE_REFRESH)
-        if self.item.mode == 0:
+        if int(self.item.mode) == 0:
             xfer.remove_component("bank_account")
         else:
             banks = xfer.get_components("bank_account")

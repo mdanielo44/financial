@@ -1040,9 +1040,10 @@ def thirdaddon_invoice(item, xfer):
                 for bill in bills:
                     if ((bill.bill_type == 0) and (bill.status == 3)) or (bill.status == 2):
                         continue
-                    total_sum += bill.get_total()
+                    direction = -1 if bill.bill_type == 2 else 1
+                    total_sum += direction * bill.get_total()
                     for detail in bill.detail_set.all():
-                        reduce_sum += detail.get_reduce()
+                        reduce_sum += direction * detail.get_reduce()
                 gross_sum = total_sum + reduce_sum
                 lab = XferCompLabelForm('sum_summary')
                 format_string = _("{[b]}Gross total{[/b]} : %(grosstotal)s - {[b]}total of reduces{[/b]} : %(reducetotal)s = {[b]}total to pay{[/b]} : %(total)s") % {'grosstotal': '{0}', 'reducetotal': '{1}', 'total': '{2}'}
