@@ -44,6 +44,8 @@ from diacamma.accounting.tools import clear_system_account, correct_accounting_c
     current_system_account
 from django.utils import six
 from lucterios.contacts.models import CustomField
+from diacamma.accounting.views_accounts import ChartsAccountInitial,\
+    ChartsAccountImportFiscalYear
 
 MenuManage.add_sub("financial.conf", "core.extensions", "", _("Financial"), "", 2)
 
@@ -213,6 +215,7 @@ class FiscalYearAddModify(XferAddEditor):
     field_id = 'fiscalyear'
     caption_add = _("Add fiscal year")
     caption_modify = _("Modify fiscal year")
+    redirect_to_show = 'InitAccount'
 
     def fillresponse(self):
         if self.item.id is None:
@@ -220,6 +223,21 @@ class FiscalYearAddModify(XferAddEditor):
                 raise LucteriosException(IMPORTANT, _('Account system not defined!'))
             self.item.init_dates()
         XferAddEditor.fillresponse(self)
+
+
+@ActionsManage.affect_other(TITLE_CREATE, "images/new.png")
+@MenuManage.describ('accounting.add_fiscalyear')
+class FiscalYearInitAccount(XferContainerAcknowledge):
+    icon = "accountingYear.png"
+    model = FiscalYear
+    field_id = 'fiscalyear'
+    caption = _("Add fiscal year")
+
+    def fillresponse(self, init_account=0):
+        if init_account == 1:
+            self.redirect_action(ChartsAccountInitial.get_action(), params={'year': self.item.id, 'CONFIRME': 'YES'})
+        elif init_account == 2:
+            self.redirect_action(ChartsAccountImportFiscalYear.get_action(), params={'year': self.item.id, 'CONFIRME': 'YES'})
 
 
 @ActionsManage.affect_grid(TITLE_DELETE, "images/delete.png", unique=SELECT_MULTI)

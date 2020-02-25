@@ -715,6 +715,10 @@ class ChartsAccount(LucteriosModel):
     def is_cash(self):
         return match(current_system_account().get_cash_mask(), self.code) is not None
 
+    @property
+    def has_validated(self):
+        return EntryAccount.objects.filter(entrylineaccount__account=self, close=True).distinct().count() > 0
+
     @classmethod
     def get_account(cls, code, year):
         accounts = ChartsAccount.objects.filter(year=year, code=code)

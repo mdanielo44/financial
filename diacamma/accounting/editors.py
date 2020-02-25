@@ -26,14 +26,12 @@ from __future__ import unicode_literals
 from re import match
 from datetime import datetime
 
-from django.db.models.aggregates import Sum
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils.translation import ugettext_lazy as _
 from django.utils import six
 from django.db.models import Q
 
 from lucterios.framework.signal_and_lock import Signal
-from lucterios.framework.models import get_value_if_choices
 from lucterios.framework.error import LucteriosException, IMPORTANT
 from lucterios.framework.editors import LucteriosEditor
 from lucterios.framework.xfercomponents import XferCompLabelForm, XferCompSelect, XferCompButton, XferCompGrid, XferCompEdit, XferCompFloat
@@ -41,7 +39,8 @@ from lucterios.framework.tools import FORMTYPE_REFRESH, CLOSE_NO, ActionsManage,
 from lucterios.framework.xferadvance import TITLE_MODIFY
 from lucterios.CORE.parameters import Params
 
-from diacamma.accounting.models import current_system_account, FiscalYear, EntryLineAccount, EntryAccount, get_amount_sum, Third, CostAccounting
+from diacamma.accounting.models import current_system_account, FiscalYear, EntryLineAccount, EntryAccount, Third, CostAccounting,\
+    ChartsAccount
 from lucterios.framework import signal_and_lock
 from lucterios.contacts.models import CustomField
 
@@ -120,6 +119,16 @@ class FiscalYearEditor(LucteriosEditor):
                 xfer.change_to_readonly('begin')
         if self.item.status == 2:
             xfer.change_to_readonly('end')
+        if self.item.id is None:
+            init_select = [(0, _('Blank')), (1, _("Initial"))]
+            if len(fiscal_years) > 0:
+                init_select.append((2, _("Import")))
+            sel = XferCompSelect('init_account')
+            sel.description = _("Charts of account")
+            sel.set_select(init_select)
+            sel.set_value(len(init_select) - 1)
+            sel.set_location(1, xfer.get_max_row() + 1)
+            xfer.add_component(sel)
 
     def before_save(self, xfer):
         if isinstance(self.item.end, six.text_type):
@@ -168,11 +177,23 @@ class CostAccountingEditor(LucteriosEditor):
 
 class ChartsAccountEditor(LucteriosEditor):
 
+    def before_save(self, xfer):
+        if xfer.item.id is not None:
+            old_item = ChartsAccount.objects.get(id=xfer.item.id)
+            xfer.item.type_of_account = old_item.type_of_account
+            if xfer.item.has_validated:
+                xfer.item.code = old_item.code
+        return
+
     def edit(self, xfer):
         xfer.change_to_readonly('type_of_account')
-        code_ed = xfer.get_components('code')
-        code_ed.mask = current_system_account().get_general_mask()
-        code_ed.set_action(xfer.request, xfer.get_action(), modal=FORMTYPE_REFRESH, close=CLOSE_NO)
+        if xfer.item.has_validated:
+            xfer.change_to_readonly('code')
+            code_ed = xfer.get_components('code')
+        else:
+            code_ed = xfer.get_components('code')
+            code_ed.mask = current_system_account().get_general_mask()
+            code_ed.set_action(xfer.request, xfer.get_action(), modal=FORMTYPE_REFRESH, close=CLOSE_NO)
         descript, typeaccount = current_system_account().new_charts_account(self.item.code)
         error_msg = ''
         if typeaccount < 0:

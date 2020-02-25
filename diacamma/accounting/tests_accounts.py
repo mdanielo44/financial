@@ -235,53 +235,101 @@ class ChartsAccountTest(LucteriosTest):
     def test_modify(self):
         self.factory.xfer = ChartsAccountAddModify()
         self.calljson('/diacamma.accounting/chartsAccountAddModify',
-                      {'year': '1', 'type_of_account': '-1', 'chartsaccount': '10'}, False)
+                      {'year': '1', 'type_of_account': '-1', 'chartsaccount': '9'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'chartsAccountAddModify')
         self.assert_count_equal('', 5)
-        self.assert_json_equal('EDIT', 'code', '707')
-        self.assert_json_equal('EDIT', 'name', '707')
+        self.assert_json_equal('EDIT', 'code', '706')
+        self.assert_json_equal('EDIT', 'name', '706')
         self.assert_json_equal('LABELFORM', 'type_of_account', 3)
         self.assert_json_equal('LABELFORM', 'error_code', "")
 
         self.factory.xfer = ChartsAccountAddModify()
         self.calljson('/diacamma.accounting/chartsAccountAddModify',
-                      {'year': '1', 'type_of_account': '-1', 'chartsaccount': '10', 'code': '7061'}, False)
+                      {'year': '1', 'type_of_account': '-1', 'chartsaccount': '9', 'code': '7061'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'chartsAccountAddModify')
         self.assert_count_equal('', 5)
         self.assert_json_equal('EDIT', 'code', '7061')
-        self.assert_json_equal('EDIT', 'name', '707')
+        self.assert_json_equal('EDIT', 'name', '706')
         self.assert_json_equal('LABELFORM', 'type_of_account', 3)
         self.assert_json_equal('LABELFORM', 'error_code', "")
 
         self.factory.xfer = ChartsAccountAddModify()
         self.calljson('/diacamma.accounting/chartsAccountAddModify',
-                      {'year': '1', 'type_of_account': '-1', 'chartsaccount': '10', 'code': '3015'}, False)
+                      {'year': '1', 'type_of_account': '-1', 'chartsaccount': '9', 'code': '3015'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'chartsAccountAddModify')
         self.assert_count_equal('', 5)
         self.assert_json_equal('EDIT', 'code', '3015!')
-        self.assert_json_equal('EDIT', 'name', '707')
+        self.assert_json_equal('EDIT', 'name', '706')
         self.assert_json_equal('LABELFORM', 'type_of_account', 3)
         self.assert_json_equal('LABELFORM', 'error_code', "Code invalide !")
 
         self.factory.xfer = ChartsAccountAddModify()
         self.calljson('/diacamma.accounting/chartsAccountAddModify',
-                      {'year': '1', 'type_of_account': '-1', 'chartsaccount': '10', 'code': 'abcd'}, False)
+                      {'year': '1', 'type_of_account': '-1', 'chartsaccount': '9', 'code': 'abcd'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'chartsAccountAddModify')
         self.assert_count_equal('', 5)
         self.assert_json_equal('EDIT', 'code', 'abcd!')
-        self.assert_json_equal('EDIT', 'name', '707')
+        self.assert_json_equal('EDIT', 'name', '706')
         self.assert_json_equal('LABELFORM', 'type_of_account', 3)
         self.assert_json_equal('LABELFORM', 'error_code', "Code invalide !")
 
         self.factory.xfer = ChartsAccountAddModify()
         self.calljson('/diacamma.accounting/chartsAccountAddModify',
-                      {'year': '1', 'type_of_account': '-1', 'chartsaccount': '10', 'code': '6125'}, False)
+                      {'year': '1', 'type_of_account': '-1', 'chartsaccount': '9', 'code': '6125'}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'chartsAccountAddModify')
         self.assert_count_equal('', 5)
         self.assert_json_equal('EDIT', 'code', '6125!')
-        self.assert_json_equal('EDIT', 'name', '707')
+        self.assert_json_equal('EDIT', 'name', '706')
         self.assert_json_equal('LABELFORM', 'type_of_account', 3)
         self.assert_json_equal('LABELFORM', 'error_code', "Changement non permis !")
+
+    def test_modify_with_validated_line(self):
+        entry = add_entry(1, 3, '2015-04-15', 'Subvention 2', '-1|9|0|100.000000|0|0|None|\n-2|2|0|100.000000|0|0|None|', False)
+        self.factory.xfer = ChartsAccountAddModify()
+        self.calljson('/diacamma.accounting/chartsAccountAddModify',
+                      {'year': '1', 'type_of_account': '-1', 'chartsaccount': '9'}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'chartsAccountAddModify')
+        self.assert_count_equal('', 5)
+        self.assert_json_equal('EDIT', 'code', '706')
+        self.assert_json_equal('EDIT', 'name', '706')
+        self.assert_json_equal('LABELFORM', 'type_of_account', 3)
+        self.assert_json_equal('LABELFORM', 'error_code', "")
+
+        entry.closed()
+        self.factory.xfer = ChartsAccountAddModify()
+        self.calljson('/diacamma.accounting/chartsAccountAddModify',
+                      {'year': '1', 'type_of_account': '-1', 'chartsaccount': '9'}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'chartsAccountAddModify')
+        self.assert_count_equal('', 5)
+        self.assert_json_equal('LABELFORM', 'code', '706')
+        self.assert_json_equal('EDIT', 'name', '706')
+        self.assert_json_equal('LABELFORM', 'type_of_account', 3)
+        self.assert_json_equal('LABELFORM', 'error_code', "")
+
+        self.factory.xfer = ChartsAccountAddModify()
+        self.calljson('/diacamma.accounting/chartsAccountAddModify',
+                      {'year': '1', 'type_of_account': '-1', 'chartsaccount': '9', 'code': '7061'}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'chartsAccountAddModify')
+        self.assert_count_equal('', 5)
+        self.assert_json_equal('LABELFORM', 'code', '706')
+        self.assert_json_equal('EDIT', 'name', '706')
+        self.assert_json_equal('LABELFORM', 'type_of_account', 3)
+        self.assert_json_equal('LABELFORM', 'error_code', "")
+
+        self.factory.xfer = ChartsAccountAddModify()
+        self.calljson('/diacamma.accounting/chartsAccountAddModify',
+                      {'SAVE': 'YES', 'year': '1', 'type_of_account': '-1', 'chartsaccount': '9', 'code': '7061', 'name': "new code name"}, False)
+        self.assert_observer('core.acknowledge', 'diacamma.accounting', 'chartsAccountAddModify')
+
+        self.factory.xfer = ChartsAccountAddModify()
+        self.calljson('/diacamma.accounting/chartsAccountAddModify',
+                      {'year': '1', 'type_of_account': '-1', 'chartsaccount': '9'}, False)
+        self.assert_observer('core.custom', 'diacamma.accounting', 'chartsAccountAddModify')
+        self.assert_count_equal('', 5)
+        self.assert_json_equal('LABELFORM', 'code', '706')
+        self.assert_json_equal('EDIT', 'name', 'new code name')
+        self.assert_json_equal('LABELFORM', 'type_of_account', 3)
+        self.assert_json_equal('LABELFORM', 'error_code', "")
 
     def test_listing(self):
         self.factory.xfer = ChartsAccountListing()
@@ -291,7 +339,7 @@ class ChartsAccountTest(LucteriosTest):
         csv_value = b64decode(
             six.text_type(self.response_json['print']['content'])).decode("utf-8")
         content_csv = csv_value.split('\n')
-        self.assertEqual(len(content_csv), 25, str(content_csv))
+        self.assertEqual(len(content_csv), 27, str(content_csv))
         self.assertEqual(content_csv[1].strip()[:27], '"Liste des comptes du plan ')
         self.assertEqual(content_csv[4].strip(), '"code";"nom";"total de l\'exercice précédent";"total de l\'exercice";"total validé";')
         self.assertEqual(content_csv[5].strip(), '"106";"106";"Crédit: 1 250,38 €";"Crédit: 1 250,38 €";"Crédit: 1 250,38 €";')
@@ -305,7 +353,7 @@ class ChartsAccountTest(LucteriosTest):
         csv_value = b64decode(
             six.text_type(self.response_json['print']['content'])).decode("utf-8")
         content_csv = csv_value.split('\n')
-        self.assertEqual(len(content_csv), 13, str(content_csv))
+        self.assertEqual(len(content_csv), 15, str(content_csv))
 
     def test_budget(self):
         self.factory.xfer = BudgetList()
@@ -550,7 +598,7 @@ class FiscalYearWorkflowTest(PaymentTest):
         self.assert_count_equal('chartsaccount', 0)
         self.assert_count_equal('#chartsaccount/actions', 6)
         self.assert_action_equal('#chartsaccount/actions/@3',
-                                 ('importer', None, 'diacamma.accounting', 'chartsAccountImportFiscalYear', 0, 1, 1))
+                                 ('Import', 'images/right.png', 'diacamma.accounting', 'chartsAccountImportFiscalYear', 0, 1, 1))
 
         self.factory.xfer = ChartsAccountImportFiscalYear()
         self.calljson('/diacamma.accounting/chartsAccountImportFiscalYear',

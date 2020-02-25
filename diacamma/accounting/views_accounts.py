@@ -107,7 +107,10 @@ class ChartsAccountAddModify(XferAddEditor):
     redirect_to_show = None
 
     def fill_simple_fields(self):
-        for old_key in ['type_of_account']:
+        keys_to_remove = ['type_of_account']
+        if self.item.has_validated:
+            keys_to_remove.append("code")
+        for old_key in keys_to_remove:
             if old_key in self.params.keys():
                 del self.params[old_key]
         return XferAddEditor.fill_simple_fields(self)
@@ -131,7 +134,7 @@ class ChartsAccountDel(XferDelete):
     caption = _("Delete an account")
 
 
-@ActionsManage.affect_grid(_("import"), '', unique=SELECT_NONE, condition=lambda xfer, gridname: (xfer.item.year.status != 2) and (xfer.item.year.last_fiscalyear is not None))
+@ActionsManage.affect_grid(_("Import"), 'images/right.png', unique=SELECT_NONE, condition=lambda xfer, gridname: (xfer.item.year.status != 2) and (xfer.item.year.last_fiscalyear is not None))
 @MenuManage.describ('accounting.add_chartsaccount')
 class ChartsAccountImportFiscalYear(XferContainerAcknowledge):
     icon = "accountingYear.png"
@@ -160,7 +163,7 @@ class ChartsAccountMerge(ObjectMerge):
         ObjectMerge.fillresponse(self, 'chartsaccount')
 
 
-@ActionsManage.affect_grid(_("initial"), 'images/add.png', close=CLOSE_NO, unique=SELECT_NONE, condition=lambda xfer, gridname='': (xfer.item.year.status != 2) and (signal_and_lock.Signal.call_signal("initial_account", None) > 0))
+@ActionsManage.affect_grid(_("Initial"), 'images/add.png', close=CLOSE_NO, unique=SELECT_NONE, condition=lambda xfer, gridname='': (xfer.item.year.status != 2) and (signal_and_lock.Signal.call_signal("initial_account", None) > 0))
 @MenuManage.describ('accounting.add_chartsaccount')
 class ChartsAccountInitial(XferContainerAcknowledge):
     icon = "account.png"
