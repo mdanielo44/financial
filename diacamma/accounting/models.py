@@ -367,12 +367,7 @@ class FiscalYear(LucteriosModel):
         if self.status == 2:
             raise LucteriosException(IMPORTANT, _('Fiscal year finished!'))
         for last_charts_account in self.last_fiscalyear.chartsaccount_set.all():
-            try:
-                self.chartsaccount_set.get(
-                    code=correct_accounting_code(last_charts_account.code))
-            except ObjectDoesNotExist:
-                ChartsAccount.objects.create(year=self, code=last_charts_account.code, name=last_charts_account.name,
-                                             type_of_account=last_charts_account.type_of_account)
+            self.getorcreate_chartaccount(last_charts_account.code, last_charts_account.name)
 
     def run_report_lastyear(self, import_result):
         if self.last_fiscalyear is None:
