@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-02-26 14:38+0000\n"
-"PO-Revision-Date: 2020-02-26 15:36+0100\n"
+"POT-Creation-Date: 2020-02-26 18:41+0000\n"
+"PO-Revision-Date: 2020-02-26 19:30+0100\n"
 "Last-Translator: b'Paul ARULATEDA <paul531@orange.fr>'\n"
 "Language-Team: \n"
 "Language: fr\n"
@@ -1100,7 +1100,7 @@ msgstr "Voulez-vous déletter cette ligne d'écriture ?"
 
 #: views_entries.py:361
 msgid "Cost"
-msgstr "Comptabilité analytique"
+msgstr "Analytique"
 
 #: views_entries.py:368
 msgid "cost accounting for entry"

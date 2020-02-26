@@ -55,7 +55,7 @@ def fill_params(xfer, param_lists=None, is_mini=False):
     xfer.add_component(btn)
 
 
-@MenuManage.describ('invoice.change_vat', FORMTYPE_NOMODAL, 'financial.conf', _('Management of parameters and financial configuration of invoice'))
+@MenuManage.describ('invoice.change_vat', FORMTYPE_MODAL, 'financial.conf', _('Management of parameters and financial configuration of invoice'))
 class InvoiceConfFinancial(XferListEditor):
     icon = "invoice_conf.png"
     model = Vat
@@ -70,7 +70,7 @@ class InvoiceConfFinancial(XferListEditor):
         self.new_tab(_('VAT'))
 
 
-@MenuManage.describ('invoice.change_vat', FORMTYPE_NOMODAL, 'financial.conf', _('Management of commercial configuration of invoice'))
+@MenuManage.describ('invoice.change_vat', FORMTYPE_MODAL, 'financial.conf', _('Management of commercial configuration of invoice'))
 class InvoiceConfCommercial(XferListEditor):
     icon = "invoice_conf.png"
     model = AutomaticReduce

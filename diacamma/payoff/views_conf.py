@@ -7,8 +7,8 @@ from django.db.models import Q
 from lucterios.framework.xferadvance import XferListEditor, XferDelete,\
     TITLE_MODIFY, TITLE_ADD, TITLE_DELETE
 from lucterios.framework.xferadvance import XferAddEditor
-from lucterios.framework.tools import FORMTYPE_NOMODAL, ActionsManage, MenuManage,\
-    CLOSE_NO, SELECT_SINGLE, SELECT_MULTI, FORMTYPE_REFRESH
+from lucterios.framework.tools import ActionsManage, MenuManage,\
+    CLOSE_NO, SELECT_SINGLE, SELECT_MULTI, FORMTYPE_REFRESH, FORMTYPE_MODAL
 from lucterios.framework.xfercomponents import XferCompButton, XferCompCheck
 from lucterios.framework.xfergraphic import XferContainerAcknowledge
 from lucterios.framework import signal_and_lock
@@ -31,7 +31,7 @@ def fill_params(xfer, is_mini=False):
     xfer.add_component(btn)
 
 
-@MenuManage.describ('payoff.change_bankaccount', FORMTYPE_NOMODAL, 'financial.conf', _('Management of parameters and configuration of payoff'))
+@MenuManage.describ('payoff.change_bankaccount', FORMTYPE_MODAL, 'financial.conf', _('Management of parameters and configuration of payoff'))
 class PayoffConf(XferListEditor):
     icon = "bank.png"
     model = BankAccount
