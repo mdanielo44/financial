@@ -1,9 +1,9 @@
 Règlement des factures
 ======================
 
-Depuis le module de facturation, il vous est possible de gérer le règlement des factures validées.
+Depuis le module du facturier, si vous l'avez installé, il vous est possible de gérer le règlement des factures validées.
 
-     Menu Facturier/Facture
+     *Menu Facturier/Facture*
 
 Dans la fenêtre ouverte, filtrez vos factures afin de n'afficher que celles qui sont validées.
 Sélectionnez la ou les factures réglées par le tiers et cliquez sur le bouton "Règlement"
