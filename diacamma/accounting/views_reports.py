@@ -39,7 +39,8 @@ from lucterios.contacts.models import LegalEntity
 from lucterios.CORE.parameters import Params
 from lucterios.CORE.xferprint import XferPrintAction
 
-from diacamma.accounting.models import FiscalYear, EntryLineAccount, ChartsAccount, CostAccounting, Third
+from diacamma.accounting.models import FiscalYear, EntryLineAccount, ChartsAccount, CostAccounting, Third,\
+    EntryAccount
 from diacamma.accounting.tools import correct_accounting_code, current_system_account, format_with_devise
 from diacamma.accounting.tools_reports import get_spaces, convert_query_to_account, add_cell_in_grid, fill_grid, add_item_in_grid
 from diacamma.accounting.views_entries import add_fiscalyear_result
@@ -279,8 +280,7 @@ class FiscalYearBalanceSheet(FiscalYearReport):
         self.grid.add_header('left', _('Assets'))
         self.grid.add_header('left_n', self.item.get_identify(), self.hfield, 0, self.format_str)
         if self.lastfilter is not None:
-            self.grid.add_header(
-                'left_n_1', self.item.last_fiscalyear.get_identify(), self.hfield, 0, self.format_str)
+            self.grid.add_header('left_n_1', self.item.last_fiscalyear.get_identify(), self.hfield, 0, self.format_str)
         self.grid.add_header('space', '')
         self.grid.add_header('right', _('Liabilities'))
         self.grid.add_header('right_n', self.item.get_identify(), self.hfield, 0, self.format_str)
@@ -327,9 +327,9 @@ class FiscalYearIncomeStatement(FiscalYearReport):
             self.add_component(lbl)
             add_fiscalyear_result(self, 0, 13, 6, self.item.last_fiscalyear, "last_result")
 
-    def show_annexe(self, line_idx, budgetfilter):
+    def show_annexe(self, line_idx, budgetfilter, excludefilter):
         add_cell_in_grid(self.grid, self.line_offset + line_idx + 1, 'left', '')
-        other_filter = Q(account__code__regex=current_system_account().get_annexe_mask())
+        other_filter = Q(account__code__regex=current_system_account().get_annexe_mask()) & ~excludefilter
         budget_other = Q(code__regex=current_system_account().get_annexe_mask())
         data_line_left, anx_total1_left, anx_total2_left, anx_totalb_left = convert_query_to_account(self.filter & other_filter,
                                                                                                      self.lastfilter & other_filter if self.lastfilter is not None else None,
@@ -370,10 +370,11 @@ class FiscalYearIncomeStatement(FiscalYearReport):
         return max_line_idx + 1 - self.line_offset
 
     def calcul_table(self):
+        filter_exclude = Q(entry__in=self.item.get_result_entries())
         self.budgetfilter_right = Q(year=self.item) & Q(code__regex=current_system_account().get_revenue_mask())
         self.budgetfilter_left = Q(year=self.item) & Q(code__regex=current_system_account().get_expence_mask())
-        line_idx = self._add_left_right_accounting(Q(account__type_of_account=4), Q(account__type_of_account=3), True)
-        self.show_annexe(line_idx, Q(year=self.item))
+        line_idx = self._add_left_right_accounting(Q(account__type_of_account=4) & ~filter_exclude, Q(account__type_of_account=3) & ~filter_exclude, True)
+        self.show_annexe(line_idx, Q(year=self.item), filter_exclude)
 
 
 @MenuManage.describ('accounting.change_fiscalyear', FORMTYPE_NOMODAL, 'bookkeeping_report', _('Show ledger for current fiscal year'))
@@ -532,12 +533,17 @@ class FiscalYearTrialBalance(FiscalYearReport):
         return balance_values
 
     def calcul_table(self):
+        balance_total = [_('total'), 0, 0, 0, 0]
         line_idx = 1
         balance_values = self._get_balance_values()
         keys = sorted(balance_values.keys())
         for key in keys:
             diff = balance_values[key][1] - balance_values[key][2]
             if (self.only_nonull is False) or (abs(diff) > 0.0001):
+                balance_total[1] += balance_values[key][1]
+                balance_total[2] += balance_values[key][2]
+                balance_total[3] += max(0, diff)
+                balance_total[4] += max(0, -1 * diff)
                 add_cell_in_grid(self.grid, self.line_offset + line_idx, 'designation', balance_values[key][0])
                 add_cell_in_grid(self.grid, self.line_offset + line_idx, 'total_debit', balance_values[key][1])
                 add_cell_in_grid(self.grid, self.line_offset + line_idx, 'total_credit', balance_values[key][2])
@@ -547,6 +553,13 @@ class FiscalYearTrialBalance(FiscalYearReport):
                 else:
                     add_cell_in_grid(self.grid, self.line_offset + line_idx, 'solde_credit', max(0, -1 * diff))
                 line_idx += 1
+        add_cell_in_grid(self.grid, self.line_offset + line_idx, 'designation', "")
+        line_idx += 1
+        add_cell_in_grid(self.grid, self.line_offset + line_idx, 'designation', get_spaces(10) + "{[u]}{[b]}%s{[/b]}{[/u]}" % balance_total[0])
+        add_cell_in_grid(self.grid, self.line_offset + line_idx, 'total_debit', balance_total[1], "{[u]}{[b]}%s{[/b]}{[/u]}")
+        add_cell_in_grid(self.grid, self.line_offset + line_idx, 'total_credit', balance_total[2], "{[u]}{[b]}%s{[/b]}{[/u]}")
+        add_cell_in_grid(self.grid, self.line_offset + line_idx, 'solde_debit', balance_total[3], "{[u]}{[b]}%s{[/b]}{[/u]}")
+        add_cell_in_grid(self.grid, self.line_offset + line_idx, 'solde_credit', balance_total[4], "{[u]}{[b]}%s{[/b]}{[/u]}")
 
 
 @MenuManage.describ('accounting.change_fiscalyear')
@@ -790,8 +803,9 @@ class CostAccountingIncomeStatement(CostAccountingReport, FiscalYearIncomeStatem
         else:
             self.budgetfilter_right = Q(cost_accounting=self.item) & Q(code__regex=current_system_account().get_revenue_mask())
             self.budgetfilter_left = Q(cost_accounting=self.item) & Q(code__regex=current_system_account().get_expence_mask())
-        line_idx = self._add_left_right_accounting(Q(account__type_of_account=4), Q(account__type_of_account=3), True)
-        self.show_annexe(line_idx, Q(cost_accounting=self.item))
+        filter_exclude = Q(entry__in=[entry for entry in EntryAccount.objects.filter(journal_id=5, entrylineaccount__account__code__in=current_system_account().result_accounting_codes)])
+        line_idx = self._add_left_right_accounting(Q(account__type_of_account=4) & ~filter_exclude, Q(account__type_of_account=3) & ~filter_exclude, True)
+        self.show_annexe(line_idx, Q(cost_accounting=self.item), filter_exclude)
 
 
 @ActionsManage.affect_grid(_("Ledger"), 'images/print.png', unique=SELECT_MULTI, modal=FORMTYPE_NOMODAL)

@@ -31,13 +31,18 @@ from django.utils.translation import ugettext_lazy as _
 from lucterios.framework.tools import get_icon_path
 from lucterios.framework.xferadvance import TITLE_OK, TITLE_CANCEL
 from diacamma.accounting.models import AccountLink
-from diacamma.accounting.tools import get_amount_from_format_devise
+from diacamma.accounting.tools import get_amount_from_format_devise,\
+    correct_accounting_code
 
 
 class DefaultSystemAccounting(object):
 
     NEGATIF_ACCOUNT = ""
     POSITIF_ACCOUNT = ""
+
+    @property
+    def result_accounting_codes(self):
+        return (correct_accounting_code(self.NEGATIF_ACCOUNT), correct_accounting_code(self.POSITIF_ACCOUNT))
 
     def has_minium_code_size(self):
         return True
@@ -159,6 +164,11 @@ class DefaultSystemAccounting(object):
             text = _("Do you want to begin '%s'? {[br/]}{[br/]}{[i]}{[u]}Warning:{[/u]} Your retained earnings must be completed.{[/i]}") % six.text_type(year)
             return xfer.confirme(text)
 
+    def _add_total_income_entrylines(self, year, new_entry):
+        for chart_account in year.chartsaccount_set.filter(type_of_account__in=(3, 4, 5)).order_by('code'):
+            if abs(chart_account.current_validated) > 1e-4:
+                new_entry.add_entry_line(-1 * chart_account.get_current_validated(False), chart_account.code)
+
     def _create_result_entry(self, year):
         revenue = year.total_revenue
         expense = year.total_expense
@@ -166,11 +176,12 @@ class DefaultSystemAccounting(object):
             from diacamma.accounting.models import EntryAccount
             end_desig = _("Fiscal year closing - Result")
             new_entry = EntryAccount.objects.create(year=year, journal_id=5, designation=end_desig, date_value=year.end)
+            self._add_total_income_entrylines(year, new_entry)
             if expense > revenue:
                 new_entry.add_entry_line(revenue - expense, self.NEGATIF_ACCOUNT)
-            else:
+            elif abs(expense - revenue) > 1e-4:
                 new_entry.add_entry_line(revenue - expense, self.POSITIF_ACCOUNT)
-            new_entry.closed(check_balance=False)
+            new_entry.closed()
 
     def _create_thirds_ending_entry(self, year):
         from diacamma.accounting.models import EntryAccount, EntryLineAccount
@@ -319,16 +330,16 @@ class DefaultSystemAccounting(object):
 
         show_left = False
         show_right = False
-        if total1left < total1right:
+        if (total1left - total1right) < -1e-4:
             add_cell_in_grid(grid, line_idx, 'left_n', total1right - total1left, "{[i]}{[b]}%s{[/b]}{[/i]}")
             show_left = True
-        else:
+        elif abs(total1left - total1right) > 1e-4:
             add_cell_in_grid(grid, line_idx, 'right_n', total1left - total1right, "{[i]}{[b]}%s{[/b]}{[/i]}")
             show_right = True
-        if total2left < total2right:
+        if (total2left - total2right) < -1e-4:
             add_cell_in_grid(grid, line_idx, 'left_n_1', total2right - total2left, "{[i]}{[b]}%s{[/b]}{[/i]}")
             show_left = True
-        else:
+        elif abs(total2left - total2right) > 1e-4:
             add_cell_in_grid(grid, line_idx, 'right_n_1', total2left - total2right, "{[i]}{[b]}%s{[/b]}{[/i]}")
             show_right = True
         if show_left:

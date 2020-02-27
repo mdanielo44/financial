@@ -897,8 +897,8 @@ class CompletedEntryTest(LucteriosTest):
         self.assert_count_equal('', 2 + 2 * 2)
         self.assertTrue('__tab_2' in self.json_data.keys(), self.json_data.keys())
         self.assertFalse('__tab_3' in self.json_data.keys(), self.json_data.keys())
-        self.assert_count_equal('report_1', 1)
-        self.assert_count_equal('report_2', 3)
+        self.assert_count_equal('report_1', 3)
+        self.assert_count_equal('report_2', 5)
 
         self.factory.xfer = CostAccountingTrialBalance()
         self.calljson('/diacamma.accounting/costAccountingTrialBalance', {'costaccounting': '2', 'begin_date': '2015-02-14', 'end_date': '2015-02-20'}, False)
@@ -906,7 +906,7 @@ class CompletedEntryTest(LucteriosTest):
         self.assert_count_equal('', 5 + 2 * 1)
         self.assertTrue('__tab_1' in self.json_data.keys(), self.json_data.keys())
         self.assertFalse('__tab_2' in self.json_data.keys(), self.json_data.keys())
-        self.assert_count_equal('report_2', 3)
+        self.assert_count_equal('report_2', 5)
 
     def test_fiscalyear_balancesheet(self):
         self.factory.xfer = FiscalYearBalanceSheet()
@@ -933,6 +933,11 @@ class CompletedEntryTest(LucteriosTest):
         self.assert_json_equal('', 'report_1/@5/right', '[401] 401')
         self.assert_json_equal('', 'report_1/@5/right_n', 78.24)
         self.assert_json_equal('', 'report_1/@5/right_n_1', '')
+
+        self.assert_json_equal('', 'report_1/@10/left', "&#160;&#160;&#160;&#160;&#160;{[i]}{[b]}résultat (déficit){[/b]}{[/i]}")
+        self.assert_json_equal('', 'report_1/@10/left_n', {"format": "{[i]}{[b]}{0}{[/b]}{[/i]}", "value": 117.98})
+        self.assert_json_equal('', 'report_1/@10/right', "")
+        self.assert_json_equal('', 'report_1/@10/right_n', "")
 
     def test_fiscalyear_balancesheet_filter(self):
         self.factory.xfer = FiscalYearBalanceSheet()
@@ -1064,7 +1069,7 @@ class CompletedEntryTest(LucteriosTest):
         self.calljson('/diacamma.accounting/fiscalYearTrialBalance', {}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'fiscalYearTrialBalance')
         self._check_result()
-        self.assert_count_equal('report_1', 12)
+        self.assert_count_equal('report_1', 14)
         self.assert_json_equal('', 'report_1/@0/designation', '[106] 106')
         self.assert_json_equal('', 'report_1/@0/total_debit', 0.00)
         self.assert_json_equal('', 'report_1/@0/total_credit', 1250.38)
@@ -1137,6 +1142,12 @@ class CompletedEntryTest(LucteriosTest):
         self.assert_json_equal('', 'report_1/@11/solde_debit', 1234.00)
         self.assert_json_equal('', 'report_1/@11/solde_credit', 0)
 
+        self.assert_json_equal('', 'report_1/@13/designation', "&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;{[u]}{[b]}total{[/b]}{[/u]}")
+        self.assert_json_equal('', 'report_1/@13/total_debit', {"value": 3392.26, "format": "{[u]}{[b]}{0}{[/b]}{[/u]}"})
+        self.assert_json_equal('', 'report_1/@13/total_credit', {"value": 3392.26, "format": "{[u]}{[b]}{0}{[/b]}{[/u]}"})
+        self.assert_json_equal('', 'report_1/@13/solde_debit', {"value": 2872.87, "format": "{[u]}{[b]}{0}{[/b]}{[/u]}"})
+        self.assert_json_equal('', 'report_1/@13/solde_credit', {"value": 2872.8700000000003, "format": "{[u]}{[b]}{0}{[/b]}{[/u]}"})
+
     def test_fiscalyear_trialbalance_filter(self):
         self.factory.xfer = FiscalYearTrialBalance()
         self.calljson('/diacamma.accounting/fiscalYearTrialBalance', {'begin': '2015-02-22', 'end': '2015-02-28'}, False)
@@ -1147,12 +1158,12 @@ class CompletedEntryTest(LucteriosTest):
         self.factory.xfer = FiscalYearTrialBalance()
         self.calljson('/diacamma.accounting/fiscalYearTrialBalance', {'filtercode': '4', 'with_third': 1}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'fiscalYearTrialBalance')
-        self.assert_count_equal('report_1', 6)
+        self.assert_count_equal('report_1', 8)
 
         self.factory.xfer = FiscalYearTrialBalance()
         self.calljson('/diacamma.accounting/fiscalYearTrialBalance', {'filtercode': '4', 'with_third': 1, 'only_nonull': 1}, False)
         self.assert_observer('core.custom', 'diacamma.accounting', 'fiscalYearTrialBalance')
-        self.assert_count_equal('report_1', 3)
+        self.assert_count_equal('report_1', 5)
 
     def test_fiscalyear_trialbalance_print(self):
         self.factory.xfer = FiscalYearReportPrint()

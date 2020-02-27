@@ -32,7 +32,7 @@ from diacamma.accounting.tools import correct_accounting_code
 
 
 def get_spaces(size):
-    return ''.ljust(size, '-').replace('-', '&#160;')
+    return '&#160;' * size
 
 
 def credit_debit_way(data_line):

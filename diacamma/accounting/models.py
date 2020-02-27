@@ -29,6 +29,7 @@ from logging import getLogger
 from re import match
 from csv import DictReader
 from _csv import QUOTE_NONE
+from functools import reduce
 
 from django.db import models
 from django.db.models.functions import Concat
@@ -323,26 +324,32 @@ class FiscalYear(LucteriosModel):
     def get_edit_fields(cls):
         return ['status', 'begin', 'end', 'folder']
 
+    def get_result_entries(self):
+        if not hasattr(self, "_result_entries"):
+            self._result_entries = [entry for entry in self.entryaccount_set.filter(journal_id=5, entrylineaccount__account__code__in=current_system_account().result_accounting_codes)]
+        return self._result_entries
+
+    def get_total_income(self, type_of_account):
+        entrylines = EntryLineAccount.objects.filter(account__type_of_account=type_of_account, account__year=self,
+                                                     entry__date_value__gte=self.begin, entry__date_value__lte=self.end)
+        entrylines = entrylines.exclude(entry__in=self.get_result_entries())
+        return get_amount_sum(entrylines.aggregate(Sum('amount')))
+
     @property
     def total_revenue(self):
-        return get_amount_sum(EntryLineAccount.objects.filter(account__type_of_account=3, account__year=self,
-                                                              entry__date_value__gte=self.begin, entry__date_value__lte=self.end).aggregate(Sum('amount')))
+        return self.get_total_income(3)
 
     @property
     def total_expense(self):
-
-        return get_amount_sum(EntryLineAccount.objects.filter(account__type_of_account=4, account__year=self,
-                                                              entry__date_value__gte=self.begin, entry__date_value__lte=self.end).aggregate(Sum('amount')))
+        return self.get_total_income(4)
 
     @property
     def total_cash(self):
-
         return get_amount_sum(EntryLineAccount.objects.filter(account__code__regex=current_system_account().get_cash_mask(),
                                                               account__year=self, entry__date_value__gte=self.begin, entry__date_value__lte=self.end).aggregate(Sum('amount')))
 
     @property
     def total_cash_close(self):
-
         return get_amount_sum(EntryLineAccount.objects.filter(entry__close=True, account__code__regex=current_system_account().get_cash_mask(),
                                                               account__year=self, entry__date_value__gte=self.begin, entry__date_value__lte=self.end).aggregate(Sum('amount')))
 
@@ -685,16 +692,22 @@ class ChartsAccount(LucteriosModel):
             return get_amount_sum(self.entrylineaccount_set.filter(entry__journal__id=1).aggregate(Sum('amount')))
 
     def get_current_total(self, with_correction=True):
+        entrylines = self.entrylineaccount_set.all()
+        if self.type_of_account in (3, 4, 5):
+            entrylines = entrylines.exclude(entry__in=self.year.get_result_entries())
         if with_correction:
-            return self.credit_debit_way() * get_amount_sum(self.entrylineaccount_set.all().aggregate(Sum('amount')))
+            return self.credit_debit_way() * get_amount_sum(entrylines.aggregate(Sum('amount')))
         else:
-            return get_amount_sum(self.entrylineaccount_set.all().aggregate(Sum('amount')))
+            return get_amount_sum(entrylines.aggregate(Sum('amount')))
 
     def get_current_validated(self, with_correction=True):
+        entrylines = self.entrylineaccount_set.filter(entry__close=True)
+        if self.type_of_account in (3, 4, 5):
+            entrylines = entrylines.exclude(entry__in=self.year.get_result_entries())
         if with_correction:
-            return self.credit_debit_way() * get_amount_sum(self.entrylineaccount_set.filter(entry__close=True).aggregate(Sum('amount')))
+            return self.credit_debit_way() * get_amount_sum(entrylines.aggregate(Sum('amount')))
         else:
-            return get_amount_sum(self.entrylineaccount_set.filter(entry__close=True).aggregate(Sum('amount')))
+            return get_amount_sum(entrylines.aggregate(Sum('amount')))
 
     def credit_debit_way(self):
         if self.type_of_account in [0, 4]:
@@ -954,18 +967,18 @@ class EntryAccount(LucteriosModel):
 
     def get_description(self):
         res = self.designation
-        res += "{[br/]}"
-        res += "{[table style='min-width:200px;']}"
+        res += "{[br/]}\n"
+        res += "{[table style='min-width:200px;']}\n"
         for line in self.entrylineaccount_set.all():
-            res += "{[tr]}"
-            res += "{[td]}%s{[/td]}" % line.entry_account
-            res += "{[td]}%s{[/td]}" % get_amount_from_format_devise(line.debit, 6)
-            res += "{[td]}%s{[/td]}" % get_amount_from_format_devise(line.credit, 6)
-            res += "{[td]}%s{[/td]}" % (line.costaccounting if line.costaccounting is not None else '---',)
-            res += "{[td]}%s{[/td]}" % (line.link if line.link is not None else '---',)
+            res += "{[tr]}\n"
+            res += "{[td]}%s{[/td]}\n" % line.entry_account
+            res += "{[td]}%s{[/td]}\n" % get_amount_from_format_devise(line.debit, 6)
+            res += "{[td]}%s{[/td]}\n" % get_amount_from_format_devise(line.credit, 6)
+            res += "{[td]}%s{[/td]}\n" % (line.costaccounting if line.costaccounting is not None else '---',)
+            res += "{[td]}%s{[/td]}\n" % (line.link if line.link is not None else '---',)
             if (line.reference is not None) and (line.reference != ''):
-                res += "{[td]}%s{[/td]}" % line.reference
-            res += "{[/tr]}"
+                res += "{[td]}%s{[/td]}\n" % line.reference
+            res += "{[/tr]}\n"
         res += "{[/table]}"
         return res
 
@@ -1087,7 +1100,7 @@ class EntryAccount(LucteriosModel):
             if check_balance:
                 _no_change, debit_rest, credit_rest = self.serial_control(self.get_serial())
                 if abs(debit_rest - credit_rest) >= 0.001:
-                    raise LucteriosException(GRAVE, "Account entry not balanced: sum credit=%.3f / sum debit=%.3f" % (debit_rest, credit_rest))
+                    raise LucteriosException(GRAVE, "Account entry not balanced: sum credit=%.3f / sum debit=%.3f / %s" % (debit_rest, credit_rest, self.get_description()))
             if Params.getvalue("accounting-needcost"):
                 for entryline in self.entrylineaccount_set.all():
                     if (entryline.account.type_of_account in (3, 4, 5)) and (entryline.costaccounting_id is None):
@@ -1776,6 +1789,9 @@ def accounting_convertdata():
     check_accountlink()
     for year in FiscalYear.objects.all().order_by('end'):
         year.check_report()
+        entries = year.get_result_entries()
+        if (len(entries) == 1) and (entries[0].entrylineaccount_set.count() == 1):
+            current_system_account()._add_total_income_entrylines(year, entries[0])
     for entryline in EntryLineAccount.objects.exclude(Q(entry__year=F("account__year"))):  # check link between year of entry and year of account code
         entryline.account = entryline.entry.year.getorcreate_chartaccount(entryline.account.code, entryline.account.name)
         entryline.save()
