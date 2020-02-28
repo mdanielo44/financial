@@ -47,6 +47,7 @@ from os.path import basename
 from datetime import date
 from lucterios.framework.models import get_value_if_choices
 from diacamma.accounting.views_entries import add_fiscalyear_result
+from lucterios.framework.error import LucteriosException, IMPORTANT
 
 MenuManage.add_sub("bookkeeping", "financial", "diacamma.accounting/images/accounting.png", _("Bookkeeping"), _("Manage of Bookkeeping"), 30)
 
@@ -160,6 +161,14 @@ class ChartsAccountMerge(ObjectMerge):
         self.params['modelname'] = ChartsAccount.get_long_name()
 
     def fillresponse(self):
+        type_of_account = None
+        for item in self.items:
+            if item.has_validated:
+                raise LucteriosException(IMPORTANT, _('Merge not possible !'))
+            if type_of_account is None:
+                type_of_account = item.type_of_account
+            elif type_of_account != item.type_of_account:
+                raise LucteriosException(IMPORTANT, _('Merge not possible !'))
         ObjectMerge.fillresponse(self, 'chartsaccount')
 
 

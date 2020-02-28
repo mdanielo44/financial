@@ -370,7 +370,7 @@ class FiscalYearIncomeStatement(FiscalYearReport):
         return max_line_idx + 1 - self.line_offset
 
     def calcul_table(self):
-        filter_exclude = Q(entry__in=self.item.get_result_entries())
+        filter_exclude = Q(entry__in=[entry for entry in EntryAccount.objects.filter(journal_id=5, entrylineaccount__account__code__in=current_system_account().result_accounting_codes)])
         self.budgetfilter_right = Q(year=self.item) & Q(code__regex=current_system_account().get_revenue_mask())
         self.budgetfilter_left = Q(year=self.item) & Q(code__regex=current_system_account().get_expence_mask())
         line_idx = self._add_left_right_accounting(Q(account__type_of_account=4) & ~filter_exclude, Q(account__type_of_account=3) & ~filter_exclude, True)
